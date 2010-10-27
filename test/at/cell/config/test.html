@@ -1,0 +1,20 @@
+<html>
+<head>
+    <script type="text/javascript" src="../../../../dist/current/cell.js"></script>
+    
+    <script type="text/javascript">//<![CDATA[
+        cell.configure({
+           resourceBasePaths: {
+              all:'cells/'
+           },
+        });
+        cell('celltest',function(app){
+           app.render(document.getElementById('container'),false,{});
+        });
+    //]]></script>
+</head>
+<body>
+   <header>Test cell.config</header>
+   <div id="container"></div>
+</body>
+</html>

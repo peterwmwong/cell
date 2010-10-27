@@ -1,0 +1,19 @@
+@import 'global-vars.less';
+
+.app {
+	background-color: @bg-color-light;
+	
+	#clickMe {
+		color: red;
+	}
+	
+	.resultClass {
+		color: green;
+		font-weight: bold;
+	}
+	
+	header, footer {
+		font-weight: bold;
+		font-style: italic;
+	}
+}

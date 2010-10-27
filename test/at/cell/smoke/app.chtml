@@ -1,0 +1,11 @@
+<header>&lt;app&gt;</header>
+Data:
+<pre>
+{  
+   fname:'{{fname}}' 
+   lname:'{{lname}}' 
+}
+</pre>
+<a id='clickMe' href="#">Add Text Below</a>
+<div id='result' class='resultClass'></div>
+<footer>&lt;/app&gt;</footer>
