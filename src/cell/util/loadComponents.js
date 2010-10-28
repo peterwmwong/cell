@@ -24,7 +24,7 @@ require.def('cell/util/loadComponents',
             // Do not explicitly handle errors, those should be
             // visible via console output in the browser.
             if (xhr.readyState === 4) {
-               callback(xhr.responseText);
+               callback(xhr.responseText, (xhr.status === 404));
             }
          };
          xhr.send(null);
@@ -42,8 +42,6 @@ require.def('cell/util/loadComponents',
             
             if (!errors) {
                cb(result, url);
-            } else {
-               ctx.errors.push(errors);
             }
             
             // Wait until all components are loaded

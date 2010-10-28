@@ -408,7 +408,7 @@ require.def('cell/util/loadComponents',
             // Do not explicitly handle errors, those should be
             // visible via console output in the browser.
             if (xhr.readyState === 4) {
-               callback(xhr.responseText);
+               callback(xhr.responseText, (xhr.status === 404));
             }
          };
          xhr.send(null);
@@ -426,8 +426,6 @@ require.def('cell/util/loadComponents',
             
             if (!errors) {
                cb(result, url);
-            } else {
-               ctx.errors.push(errors);
             }
             
             // Wait until all components are loaded
@@ -451,7 +449,8 @@ require.def('cell/util/loadComponents',
       __resloader('template',_loadingCtx,loadTplCb);
       __resloader('styling',_loadingCtx,loadStyleCb);
    };
-});require.def('cell/util/renderCSS',
+});
+require.def('cell/util/renderCSS',
    [ 'cell/config' ], 
    function(config) {
    return function(cname, styling){
@@ -592,11 +591,11 @@ require.def('cell/Cell',
                 console.log(err);
              });
              
-          }else{
+          }
              // Call Load Callback passing reference to Cell and errors 
              try{
                 if(typeof ctx.loadCb === 'function'){
-                  ctx.loadCb();
+                  ctx.loadCb(errors);
                 }
              }catch(e){
                 console.log('cell.Cell.resumeLoad(): error thrown calling Load Callback for "'+this.name+'" Cell',e);
@@ -628,7 +627,7 @@ require.def('cell/Cell',
                 
                 delete ctx.renderRequests;
              }
-          }
+          
        };
        
    return createClass({
