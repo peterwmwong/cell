@@ -408,7 +408,7 @@ require.def('cell/util/loadComponents',
             // Do not explicitly handle errors, those should be
             // visible via console output in the browser.
             if (xhr.readyState === 4) {
-               callback(xhr.responseText, (xhr.status === 404));
+               callback(xhr.responseText, (xhr.status !== 200));
             }
          };
          xhr.send(null);
@@ -592,41 +592,42 @@ require.def('cell/Cell',
              });
              
           }
-             // Call Load Callback passing reference to Cell and errors 
-             try{
-                if(typeof ctx.loadCb === 'function'){
-                  ctx.loadCb(errors);
-                }
-             }catch(e){
-                console.log('cell.Cell.resumeLoad(): error thrown calling Load Callback for "'+this.name+'" Cell',e);
+          
+          // Call Load Callback passing reference to Cell and errors 
+          try{
+             if(typeof ctx.loadCb === 'function'){
+               ctx.loadCb(errors);
              }
-             delete ctx.loadCb;
+          }catch(e){
+             console.log('cell.Cell.resumeLoad(): error thrown calling Load Callback for "'+this.name+'" Cell',e);
+          }
+          delete ctx.loadCb;
+          
+          // Render template if there were requests while loading Cell  
+          if(this.template){
              
-             // Render template if there were requests while loading Cell  
-             if(this.template){
-                
-                // Render styling
-                if(this.styling){
-                   renderCSS(this.name, this.styling);
-                }
-                
-                var _this = this;
-                ctx.renderRequests.forEach(function(req){
-                   try{
-                      __render(_this,
-                               ctx,
-                               req.domNodes, 
-                               req.replaceNodes,
-                               req.data,
-                               req.cb,
-                               req.id);
-                   }catch(e){
-                      console.log('cell.Cell.resumeLoad(): error thrown rendering "'+this.name+'" Cell',req,e);
-                   }
-                });
-                
-                delete ctx.renderRequests;
+             // Render styling
+             if(this.styling){
+                renderCSS(this.name, this.styling);
              }
+             
+             var _this = this;
+             ctx.renderRequests.forEach(function(req){
+                try{
+                   __render(_this,
+                            ctx,
+                            req.domNodes, 
+                            req.replaceNodes,
+                            req.data,
+                            req.cb,
+                            req.id);
+                }catch(e){
+                   console.log('cell.Cell.resumeLoad(): error thrown rendering "'+this.name+'" Cell',req,e);
+                }
+             });
+             
+             delete ctx.renderRequests;
+          }
           
        };
        
