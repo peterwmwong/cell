@@ -24,7 +24,7 @@ require.def('cell/util/loadComponents',
             // Do not explicitly handle errors, those should be
             // visible via console output in the browser.
             if (xhr.readyState === 4) {
-               callback(xhr.responseText, (xhr.status === 404));
+               callback(xhr.responseText, (xhr.status !== 200));
             }
          };
          xhr.send(null);
