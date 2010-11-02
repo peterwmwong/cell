@@ -408,7 +408,7 @@ require.def('cell/util/loadComponents',
             // Do not explicitly handle errors, those should be
             // visible via console output in the browser.
             if (xhr.readyState === 4) {
-               callback(xhr.responseText, (xhr.status !== 200));
+               callback(xhr.responseText, !(xhr.status === 200 || xhr.status === 0));
             }
          };
          xhr.send(null);
@@ -793,18 +793,53 @@ require.def('cell/cell-require-plugin',
    
       require.plugin(_this);
       
+      var throwError = function(msg){
+         throw new Error(msg);
+      };
+      var isString = function(v){return typeof v === 'string';};
       var __exports = {};
+      
       Object.defineProperty(__exports,'load',{
          value:function(cellName,cellLoadCallback){
-            return _this.load(cellName, require.s.ctxName, cellLoadCallback);
+            if(cellLoadCallback && typeof cellLoadCallback === 'function'){
+               var cellsToLoad = (cellName instanceof Array && cellName) || [cellName];
+
+               if(cellsToLoad.length > 0){
+                  if(!cellsToLoad.every(isString)){
+                     throwError('cell/cell-require-plugin.load(): only accepts string or array of cell names');
+                  }
+                  var cellsToLoadMap = {};
+                  var loadedCells = [];
+                  cellsToLoad.forEach(function(c,i){
+                     cellsToLoadMap[c] = i;
+                  });
+                  var loadCb = function(dep,e){
+                        if(loadedCells !== null){
+                           if(e){
+                              loadedCells = null;
+                           }else{
+                              loadedCells[cellsToLoadMap[dep.name]] = dep;
+                              if(loadedCells.length == cellsToLoad.length){
+                                 var cbArgs = loadedCells;
+                                 loadedCells = null;
+                                 cellLoadCallback.apply(null,cbArgs);
+                              }
+                           }
+                        }
+                     };
+                  cellsToLoad.forEach(function(cellName){
+                     _this.load(cellName, require.s.ctxName,loadCb);
+                  });
+               }
+            }
          }
-      })
+      });
       return __exports;
    }
 );
 
 var cell;
-require(['cell/cell-require-plugin','cell/config'], function(cellReqPlug,config,undefined){
+require.def('cell',['cell/cell-require-plugin','cell/config'], function(cellReqPlug,config,undefined){
    cell = function(cellName,loadCallback){
       if(cellName !== undefined  || cellName.length > 0){
          return cellReqPlug.load(cellName,loadCallback);
@@ -815,9 +850,9 @@ require(['cell/cell-require-plugin','cell/config'], function(cellReqPlug,config,
       enumerable: true,
       value: config.configure
    });
+   return cell;
 });
 
-      
 /*
   mustache.js — Logic-less templates in JavaScript
 

@@ -1,5 +1,5 @@
 var cell;
-require(['cell/cell-require-plugin','cell/config'], function(cellReqPlug,config,undefined){
+require.def('cell',['cell/cell-require-plugin','cell/config'], function(cellReqPlug,config,undefined){
    cell = function(cellName,loadCallback){
       if(cellName !== undefined  || cellName.length > 0){
          return cellReqPlug.load(cellName,loadCallback);
@@ -10,6 +10,6 @@ require(['cell/cell-require-plugin','cell/config'], function(cellReqPlug,config,
       enumerable: true,
       value: config.configure
    });
+   return cell;
 });
 
-      
