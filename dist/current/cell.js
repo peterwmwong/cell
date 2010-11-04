@@ -808,25 +808,26 @@ require.def('cell/cell-require-plugin',
                   if(!cellsToLoad.every(isString)){
                      throwError('cell/cell-require-plugin.load(): only accepts string or array of cell names');
                   }
-                  var cellsToLoadMap = {};
-                  var loadedCells = [];
-                  cellsToLoad.forEach(function(c,i){
-                     cellsToLoadMap[c] = i;
-                  });
-                  var loadCb = function(dep,e){
-                        if(loadedCells !== null){
-                           if(e){
-                              loadedCells = null;
-                           }else{
-                              loadedCells[cellsToLoadMap[dep.name]] = dep;
-                              if(loadedCells.length == cellsToLoad.length){
-                                 var cbArgs = loadedCells;
+                  var cellsToLoadMap = cellsToLoad.reduce(function(r,c,i){r[c]=i; return r;},{}),
+                      loadedCount = 0,
+                      loadedCells = [],
+                      loadCb = function(dep,e){
+                           if(loadedCells !== null){
+                              if(e){
                                  loadedCells = null;
-                                 cellLoadCallback.apply(null,cbArgs);
+                              }else{
+                                 var index = cellsToLoadMap[dep.name];
+                                 if(index !== undefined && !loadedCells[index]){
+                                    loadedCells[index] = dep;
+                                    if(++loadedCount == cellsToLoad.length){
+                                       var cbArgs = loadedCells;
+                                       loadedCells = null;
+                                       cellLoadCallback.apply(null,cbArgs);
+                                    }
+                                 }
                               }
                            }
-                        }
-                     };
+                        };
                   cellsToLoad.forEach(function(cellName){
                      _this.load(cellName, require.s.ctxName,loadCb);
                   });
