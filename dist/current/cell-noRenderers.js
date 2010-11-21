@@ -584,13 +584,30 @@ require.def('cell/Cell',
        },
        __loadComplete = function(ctx,errors){
           ctx.status = (errors)?'error':'loaded';
-          
+         
+          if(!errors){
+            try{
+               // Execute controller's creation code, with:
+               //    * an empty ExecutionContext ThisBinding
+               //    * free variables: on, delegate
+               (new Function('on','delegate',ctx.controllerSrc)).call(
+                     ctx.cell,
+                     ctx.events.on,
+                     ctx.delegator.delegate);
+            }catch(e2){
+               var theError = new Error("cell.Cell.<init>(): Controller for Cell("+qname+") from url("+u+"), threw error=");
+               theError.stack = e2;
+               errors.push(theError);
+            }finally{
+               delete ctx.controllerSrc;
+            }
+         }
+ 
           // Log Load Errors
           if(errors){
              errors.forEach(function(err){
                 console.log(err);
              });
-             
           }
           
           // Call Load Callback passing reference to Cell and errors 
@@ -634,9 +651,11 @@ require.def('cell/Cell',
    return createClass({
       'init': function(qname, loadCb){
          var _this = this,
-             _controller, _template, _styling,
+             _template, _styling,
              _ctx = {
+                cell:_this,
                 renderedInstances: 0,
+                controllerSrc : null,
                 status: 'loading',
                 events: EventSource(),
                 delegator: Delegator({
@@ -656,21 +675,7 @@ require.def('cell/Cell',
          loadComponents(
             qname,
             // Load Controller
-            function(r,u){ 
-               try{
-                  _controller = {};
-                  
-                  // Execute controller's creation code, with:
-                  //    * an empty ExecutionContext ThisBinding
-                  //    * free variables: on, delegate
-                  (new Function('on','delegate',r)).call(
-                        _controller,
-                        _ctx.events.on,
-                        _ctx.delegator.delegate);
-               }catch(e2){
-                  throw "cell.Cell.<init>(): Controller for Cell("+qname+") from url("+u+"), threw error="+e2;
-               }
-            },
+            function(r,u){ _ctx.controllerSrc = r; },
             // Load Template
             function(r,u){ _template = r; },
             // Load Styling
@@ -678,6 +683,7 @@ require.def('cell/Cell',
             // Load Complete
             __loadComplete.bind(_this,_ctx)
          );
+         
          
          return {
             'name'      : {enumerable:true, get:function(){return qname;}},
@@ -687,8 +693,6 @@ require.def('cell/Cell',
             'template'  : {enumerable:true, get:function(){return _template;}},
 
             'styling'   : {enumerable:true, get:function(){return _styling;}},
-
-            'presenter' : {enumerable:true, get:function(){return _controller;}},
             
             'render'    : {value:function(domNodes, replaceNodes, data, cb, id){
                if(_ctx.status === 'loaded' && _ctx.renderRequests === undefined){

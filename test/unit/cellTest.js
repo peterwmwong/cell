@@ -7,7 +7,7 @@ unitTest(
             getCell(function(cell){
                cell('mock/mockCellOne',function(One){
                   ok(One,'Should find mock/mockCellOne');
-                  ok(One.presenter.forAssert === 777,'Verify mockCellOne');
+                  ok(One.forAssert === 777,'Verify mockCellOne');
                   start();
                });
             });
@@ -17,9 +17,9 @@ unitTest(
             getCell(function(cell){
                cell(['mock/mockCellOne','mock/mockCellTwo'],function(One,Two){
                   ok(One,'Should find mock/mockCellOne')
-                  ok(One.presenter.forAssert === 777,'Verify mockCellOne');
+                  ok(One.forAssert === 777,'Verify mockCellOne');
                   ok(Two,'Should find mock/mockCellTwo')
-                  ok(Two.presenter.forAssert === 888,'Verify mockCellOne');
+                  ok(Two.forAssert === 888,'Verify mockCellOne');
                   start();
                });
             });
