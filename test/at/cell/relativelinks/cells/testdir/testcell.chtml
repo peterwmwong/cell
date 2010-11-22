@@ -1,0 +1,8 @@
+<b>[Relative urls are relative to Cell]</b> Lock Image should appear below:<br/>
+<img src='lock.png'/><br/>
+<br/>
+<b>[Protocol absolute urls are preserved]</b> Google Image should appear below:<br/>
+<img src='http://www.google.com/images/logos/ps_logo2.png'/><br/>
+<br/>
+<b>[Absolute urls are preserved]</b> Refresh Image should appear below:<br/>
+<img src='/refresh.png'/>

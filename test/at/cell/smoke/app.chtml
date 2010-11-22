@@ -1,4 +1,4 @@
-<header>&lt;app&gt;</header>
+<header>&#60;app&#62;</header>
 Data:
 <pre>
 {  
@@ -6,6 +6,6 @@ Data:
    lname:'{{lname}}' 
 }
 </pre>
-<a id='clickMe' href="#">Add Text Below</a>
-<div id='result' class='resultClass'></div>
-<footer>&lt;/app&gt;</footer>
+<a id='clickMe' href='#'>Add Text Below</a>
+<div id='result' class='resultClass'> </div>
+<footer>&#60;/app&#62;</footer>

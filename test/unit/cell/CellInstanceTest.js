@@ -72,11 +72,6 @@ unitTest(
                same(ci.data, mData, 
                     'data field');
    
-               ok(ci.node instanceof HTMLDivElement,
-                  'node is an HTMLDivElement');
-               same(ci.node.className, 'something_TestCellName',
-                  'node has correct className');
-               
                start();
             });
          },
@@ -104,14 +99,12 @@ unitTest(
                ok(mTplRenderer.test_args !== undefined, 
                   'cell/config defaultTemplateRenderer called');
                
-               same(mTplRenderer.test_template,mCell.template,
+               same(mTplRenderer.test_template,mCell,
                   'template argument');
                
                same(mTplRenderer.test_data,mData,
                   'data argument');
    
-               ok(mTplRenderer.test_target instanceof HTMLDivElement,
-                  'target argument is an HTMLDivElement');
                same(mTplRenderer.test_target.className, 'something_TestCellName',
                   'target argument has correct className');
                
@@ -155,14 +148,12 @@ unitTest(
                ok(mConfig_TplRenderer.test_args === undefined, 
                   'cell/config defaultTemplateRenderer should NOT be called');
                
-               same(mDelegates.templateRenderer.test_template,mCell.template,
+               same(mDelegates.templateRenderer.test_template,mCell,
                   'Delegate templateRenderer passed correct template argument');
                
                same(mDelegates.templateRenderer.test_data,mDelegates.getRenderData.test_sentData,
                   'Delegate templateRenderer passed correct data argument');
    
-               ok(mDelegates.templateRenderer.test_target instanceof HTMLDivElement,
-                  'Delegate templateRenderer passed correct target argument (is an HTMLDivElement)');
                same(mDelegates.templateRenderer.test_target.className, 'something_TestCellName',
                   'Delegate templateRenderer passed correct target argument (className attribute === mangled cell name)');
                

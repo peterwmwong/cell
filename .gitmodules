@@ -1,0 +1,3 @@
+[submodule "deps/test/express"]
+	path = deps/test/express
+	url = git://github.com/visionmedia/express.git

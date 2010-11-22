@@ -7,7 +7,7 @@ var unitTest = function(testObjName, tests){
          asyncTest(testName,(function(testName,test){
             // Create a new requirejs context
             require(
-               {  baseUrl: '../../src',
+               {  baseUrl: '/src',
                   context: testObjName+': '+testName  },
                ['require'],
                function(require){

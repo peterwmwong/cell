@@ -502,29 +502,30 @@ require.def('cell/util/renderCSS',
                 _mangledName = _cell.name.replace('/','_'),
                 _getRenderData = (_cellDelegates && _cellDelegates.getRenderData) || passThrough,
                 _templateRenderer = (_cellDelegates && _cellDelegates.templateRenderer) || config.defaultTemplateRenderer.value,
-                _container = document.createElement('div');
-             
-            _container.id = (typeof _instId === 'number' && _mangledName+_instId)
-                               || (typeof _instId === 'string' && _instId);
-            _container.className = _mangledName;
+                _container = {
+                     node:null,
+                     id:(typeof _instId === 'number' && _mangledName+_instId)
+                           || (typeof _instId === 'string' && _instId),
+                     className:_mangledName
+                  };
             
             Object.defineProperties(_this,{
                'cell' : {enumerable:true, get:function(){return _cell;}},
                
                'data' : {enumerable:true, get:function(){return _data;}},
                
-               'node' : {enumerable:true, get:function(){return _container;}}
+               'node' : {enumerable:true, get:function(){return _container.node;}}
             });
             
             _getRenderData(_data,function(newData){
                _data = newData;
                
-               _templateRenderer(_cell.template,_container,_data,function(){
+               _templateRenderer(_cell,_container,_data,function(xhtml){
                   // Attach DOM Node
                   if(_replaceNode){
-                     _targetNode.parentNode.replaceChild(_container,_targetNode);
+                     _targetNode.parentNode.replaceChild(_container.node,_targetNode);
                   }else{
-                     _targetNode.appendChild(_container);
+                     _targetNode.appendChild(_container.node);
                   }
    
                   try{
@@ -616,22 +617,21 @@ require.def('cell/Cell',
                ctx.loadCb(errors);
              }
           }catch(e){
-             console.log('cell.Cell.resumeLoad(): error thrown calling Load Callback for "'+this.name+'" Cell',e);
+             console.log('cell.Cell.resumeLoad(): error thrown calling Load Callback for "'+ctx.cell.name+'" Cell',e);
           }
           delete ctx.loadCb;
           
           // Render template if there were requests while loading Cell  
-          if(this.template){
+          if(ctx.cell.template){
              
              // Render styling
-             if(this.styling){
-                renderCSS(this.name, this.styling);
+             if(ctx.cell.styling){
+                renderCSS(ctx.cell.name, ctx.cell.styling);
              }
              
-             var _this = this;
              ctx.renderRequests.forEach(function(req){
                 try{
-                   __render(_this,
+                   __render(ctx.cell,
                             ctx,
                             req.domNodes, 
                             req.replaceNodes,
@@ -639,7 +639,7 @@ require.def('cell/Cell',
                             req.cb,
                             req.id);
                 }catch(e){
-                   console.log('cell.Cell.resumeLoad(): error thrown rendering "'+this.name+'" Cell',req,e);
+                   console.log('cell.Cell.resumeLoad(): error thrown rendering "'+ctx.cell.name+'" Cell',req,e.stack);
                 }
              });
              
@@ -1206,13 +1206,16 @@ var Mustache = function() {
 require.def('cell/integration/templating/mustache-template-renderer',
    ['cell/config'],
    function(config){
-   var __absURLRegex = /^[A-z][A-z0-9+-.]:/,
+   var __absURLRegex = /^([A-z][A-z0-9+-.]:)|[\/]/,
+       __pkgRegex = /(.*)\/.+/;
+       __domParser = new DOMParser(),
+       __xmlSerializer = new XMLSerializer(),
        __tmpNodeID = 0;
-       __renderer = function(template,containerDOMNode,data,attachCallback){
+       __renderer = function(cell,container,data,attachCallback){
          var nested = [],
              renderedCompSrc
                 =  Mustache.to_html(
-                      template,   
+                      cell.template,   
                       data,
                          
                       // Get nested cells to render
@@ -1225,38 +1228,57 @@ require.def('cell/integration/templating/mustache-template-renderer',
                             
                             // Load nested cell
                             require(['cell!'+cname],function(NewCell){
-                               var tmpNode = containerDOMNode.querySelectorAll('#'+tmpNodeID);
-                               
-                               // Outer cell was already been rendered
-                               if(tmpNode.length == 1){
-                                  NewCell.render(tmpNode[0],true,ndata,undefined, id);
+                               if(container.node){
+                                  var tmpNode = container.node.querySelectorAll('#'+tmpNodeID);
                                   
-                               // Outer cell has NOT been rendered yet,
-                               // add it to the list (nested) of cells 
-                               // to render afterwards 
-                               }else if(nested !== undefined){
-                                  nested.push({cell:NewCell,data:ndata,tmpNodeID:tmpNodeID,id:id});
+                                  // Outer cell was already been rendered
+                                  if(tmpNode.length == 1){
+                                     NewCell.render(tmpNode[0],true,ndata,undefined, id);
+                                     
+                                  // Outer cell has NOT been rendered yet,
+                                  // add it to the list (nested) of cells 
+                                  // to render afterwards 
+                                  }else if(nested !== undefined){
+                                     nested.push({cell:NewCell,data:ndata,tmpNodeID:tmpNodeID,id:id});
+                                  }
                                }
                             });
                             
                             // HTML Source for tmp DOM Node 
                             return '<div id="'+tmpNodeID+'" style="display:none"></div>';                
                       }});
-          
+         
+ 
          // Make sure src url's are all relative to the component resource base url
-         var templateRoot = (config.resourceBasePaths.template.value || config.resourceBasePaths.all.value);
-         containerDOMNode.innerHTML = renderedCompSrc;
-         Array.prototype.slice(containerDOMNode.querySelectorAll('[src]')).forEach(function(node){
-            __absURLRegex.test(node.src)
-               && node.src = templateRoot+a;
+         var templateRoot = (config.resourceBasePaths.template.value || config.resourceBasePaths.all.value),
+             tmpNode = document.createElement('div'),
+             doc = __domParser.parseFromString(
+                  '<div id="'+container.id+'" class="'+container.className+'">'+renderedCompSrc+'</div>',"text/xml"
+               ),
+             cellPkg = __pkgRegex.exec(cell.name);
+
+         if(cellPkg){
+            templateRoot+='/'+cellPkg[1];
+         }
+         
+         Array.prototype.slice.call(doc.querySelectorAll('[src]')).forEach(function(node){
+            var srcAttr = node.getAttribute('src');
+            if(!__absURLRegex.test(srcAttr)){
+               node.setAttribute('src',templateRoot+'/'+srcAttr);
+            }
          });
          
-         // Tell Cell to attach the containerDOMNode to the document  
+         tmpNode.innerHTML = __xmlSerializer.serializeToString(doc);
+         container.node = tmpNode.childNodes[0];
+
+         // Tell Cell to attach the container to the document  
          attachCallback();
+         
+         delete tmpNode;
          
          // Render any nested cells
          nested.forEach(function(nc){
-            nc.cell.render(containerDOMNode.querySelectorAll('#'+nc.tmpNodeID)[0],true,nc.data,nc.id);
+            nc.cell.render(container.node.querySelector('#'+nc.tmpNodeID),true,nc.data,nc.id);
          });
          nested = [];
       };

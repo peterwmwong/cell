@@ -74,22 +74,21 @@ require.def('cell/Cell',
                ctx.loadCb(errors);
              }
           }catch(e){
-             console.log('cell.Cell.resumeLoad(): error thrown calling Load Callback for "'+this.name+'" Cell',e);
+             console.log('cell.Cell.resumeLoad(): error thrown calling Load Callback for "'+ctx.cell.name+'" Cell',e);
           }
           delete ctx.loadCb;
           
           // Render template if there were requests while loading Cell  
-          if(this.template){
+          if(ctx.cell.template){
              
              // Render styling
-             if(this.styling){
-                renderCSS(this.name, this.styling);
+             if(ctx.cell.styling){
+                renderCSS(ctx.cell.name, ctx.cell.styling);
              }
              
-             var _this = this;
              ctx.renderRequests.forEach(function(req){
                 try{
-                   __render(_this,
+                   __render(ctx.cell,
                             ctx,
                             req.domNodes, 
                             req.replaceNodes,
@@ -97,7 +96,7 @@ require.def('cell/Cell',
                             req.cb,
                             req.id);
                 }catch(e){
-                   console.log('cell.Cell.resumeLoad(): error thrown rendering "'+this.name+'" Cell',req,e);
+                   console.log('cell.Cell.resumeLoad(): error thrown rendering "'+ctx.cell.name+'" Cell',req,e.stack);
                 }
              });
              
