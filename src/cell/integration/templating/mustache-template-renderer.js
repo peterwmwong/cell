@@ -16,7 +16,7 @@ require.def('cell/integration/templating/mustache-template-renderer',
                          
                       // Get nested cells to render
                       { 'getPartial': function(cname, ndata, id){
-                         
+                            
                             // Because the nested cell may need to be loaded,
                             // render an invisible tmp DOM Node (div) to be replaced
                             // when the nested cell has been loaded.
@@ -41,7 +41,7 @@ require.def('cell/integration/templating/mustache-template-renderer',
                             });
                             
                             // HTML Source for tmp DOM Node 
-                            return '<div id="'+tmpNodeID+'" style="display:none"></div>';                
+                            return '<div id="'+tmpNodeID+'" style="display:none"> </div>';                
                       }});
          
  
@@ -65,6 +65,7 @@ require.def('cell/integration/templating/mustache-template-renderer',
          });
          
          tmpNode.innerHTML = __xmlSerializer.serializeToString(doc);
+         
          container.node = tmpNode.childNodes[0];
 
          // Tell Cell to attach the container to the document  
@@ -76,7 +77,7 @@ require.def('cell/integration/templating/mustache-template-renderer',
          nested.forEach(function(nc){
             nc.cell.render(container.node.querySelector('#'+nc.tmpNodeID),true,nc.data,nc.id);
          });
-         nested = [];
+         nested = undefined;
       };
       
       return __renderer;

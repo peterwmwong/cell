@@ -1,0 +1,15 @@
+<html>
+<head>
+    <script type="text/javascript" src="/cell/cell.js"></script>
+    
+    <script type="text/javascript">//<![CDATA[
+        cell('outer',function(outer){
+           outer.render(
+                 document.getElementById('targetNode'),
+                 false,
+                 {outerdata:'outer data'});
+        });
+    //]]></script>
+</head>
+<body id='targetNode'></body>
+</html>
