@@ -1,0 +1,23 @@
+<html>
+<head>
+    <script type="text/javascript" src="/cell/cell.js"></script>
+    
+    <script type="text/javascript">//<![CDATA[
+
+        cell('outer',function(basic){
+           basic.render(
+                 document.getElementById('targetNode'),
+                 false,
+                 { list: [
+                     {name:'one'},
+                     {name:'two'}
+                 ] } );
+        });
+
+    //]]></script>
+</head>
+<body>
+   Should see "one" and "two" below:<br/>
+   <div id="targetNode"> </div>
+</body>
+</html>

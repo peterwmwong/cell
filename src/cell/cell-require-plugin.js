@@ -31,6 +31,11 @@ require.def('cell/cell-require-plugin',
                var context = require.s.contexts[contextName];
                // If cell has already been loaded
                if(context.cells[name] !== undefined){
+                  try{
+                     cellLoadCallback(context.cells[name]);
+                  }catch(e){
+                     console.log(e);
+                  }
                   return context.defined[name] = context.cells[name];
                   
                // ... if not
@@ -50,8 +55,10 @@ require.def('cell/cell-require-plugin',
                      = context.cellsWaiting[context.cellsWaiting.push(newCell) - 1];
                   
                   return newCell;
+               }else if(context.cellsWaiting[name].status === 'loading'){
+                  context.cellsWaiting[name].addLoadCallback(cellLoadCallback);
+                  return context.cellsWaiting[name];
                }
-               return context.cellsWaiting[name];
             },
    
             /**

@@ -652,23 +652,33 @@ require.def('cell/Cell',
       'init': function(qname, loadCb){
          var _this = this,
              _template, _styling,
+             _loadCbs = loadCb ? [loadCb] : [],
+             _loadCbFun = function(errors){
+                   _loadCbs.forEach(function(cb){
+                      try{
+                         cb(_this,errors);
+                      }catch(e){
+                         console.log(e);
+                      }
+                   });
+               },
              _ctx = {
-                cell:_this,
-                renderedInstances: 0,
-                controllerSrc : null,
-                status: 'loading',
-                events: EventSource(),
-                delegator: Delegator({
-                   // Let CellInstance default the value.
-                   // (should use cell/config.defaultTemplateRenderer)
-                   'templateRenderer' : undefined,
-                   'getRenderData': function(data,returns){ returns(data); }
-                }),
-                
-                // Temporary, will be removed during load
-                renderRequests: [],
-                loadCb: (typeof loadCb === 'function')?loadCb.bind(undefined,_this):undefined
-             };
+                   cell:_this,
+                   renderedInstances: 0,
+                   controllerSrc : null,
+                   status: 'loading',
+                   events: EventSource(),
+                   delegator: Delegator({
+                      // Let CellInstance default the value.
+                      // (should use cell/config.defaultTemplateRenderer)
+                      'templateRenderer' : undefined,
+                      'getRenderData': function(data,returns){ returns(data); }
+                   }),
+                   
+                   // Temporary, will be removed during load
+                   renderRequests: [],
+                   loadCb: _loadCbFun
+                };
          
          loadCb = undefined;
          
@@ -686,6 +696,9 @@ require.def('cell/Cell',
          
          
          return {
+            'addLoadCallback': {value: function(cb){
+                _loadCbs.push(cb);
+             }},
             'name'      : {enumerable:true, get:function(){return qname;}},
 
             'status'    : {enumerable:true, get:function(){return _ctx.status;}},
@@ -744,6 +757,11 @@ require.def('cell/cell-require-plugin',
                var context = require.s.contexts[contextName];
                // If cell has already been loaded
                if(context.cells[name] !== undefined){
+                  try{
+                     cellLoadCallback(context.cells[name]);
+                  }catch(e){
+                     console.log(e);
+                  }
                   return context.defined[name] = context.cells[name];
                   
                // ... if not
@@ -763,8 +781,10 @@ require.def('cell/cell-require-plugin',
                      = context.cellsWaiting[context.cellsWaiting.push(newCell) - 1];
                   
                   return newCell;
+               }else if(context.cellsWaiting[name].status === 'loading'){
+                  context.cellsWaiting[name].addLoadCallback(cellLoadCallback);
+                  return context.cellsWaiting[name];
                }
-               return context.cellsWaiting[name];
             },
    
             /**

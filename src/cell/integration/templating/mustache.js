@@ -98,10 +98,12 @@ var Mustache = function() {
          
          id = (typeof jsonObj.id === 'string'
                   && jsonObj.id);
-         
-         c =(typeof jsonObj.data === 'string'
-               && (c = context[jsonObj.data] || {}))
-               || jsonObj;
+        
+         c = (typeof jsonObj.data === 'string')
+               ? (jsonObj.data === '.')
+                   ? context 
+                   : {}
+               : jsonObj;
       }
       
       var p = partials.getPartial(name,c,id);
