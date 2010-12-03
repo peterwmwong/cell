@@ -30,7 +30,7 @@ require.def('cell/util/EventSource',
            }},
            
            'once': {'value':function(evtype,handler,evdata){
-              this.bind(evtype,handler,evdata,true);
+              this.on(evtype,handler,evdata,true);
            }},
            
            /**

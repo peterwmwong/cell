@@ -1,0 +1,53 @@
+<html>
+<head>
+    <script type="text/javascript" src="/cell/cell.js"></script>
+    
+    <script type="text/javascript">//<![CDATA[
+
+        cell('outer',function(basic){
+           basic.render(
+                 document.getElementById('targetNode'),
+                 false,
+                 { list: [
+                     {name:'one'},
+                     {name:'two'}
+                 ] },
+                 function(){    
+                    setTimeout( function(){
+                     console.log('render again2',document.getElementById('targetNode2'));
+                     basic.render(
+                       document.getElementById('targetNode2'),
+                       false,
+                       { list: [
+                           {name:'three'},
+                           {name:'four'}
+                           ] } );
+                     }, 50);
+                 });
+        });
+
+//]]></script>
+</head>
+<body>
+   <i>Expected:</i><br/>
+   <div>
+      <b>one</b>
+      <br>
+   </div>
+   <div>
+      <b>two</b>
+      <br>
+   </div>
+   <div>
+      <b>one</b>
+      <br>
+   </div>
+   <div>
+      <b>two</b>
+      <br>
+   </div>  <hr>
+   <i>Actual:</i><br/>
+   <div id="targetNode"> </div>
+   <div id="targetNode2"> </div>
+</body>
+</html>

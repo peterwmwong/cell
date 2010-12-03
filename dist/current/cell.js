@@ -167,7 +167,7 @@ require.def('cell/util/EventSource',
            }},
            
            'once': {'value':function(evtype,handler,evdata){
-              this.bind(evtype,handler,evdata,true);
+              this.on(evtype,handler,evdata,true);
            }},
            
            /**
@@ -1250,23 +1250,23 @@ require.def('cell/integration/templating/mustache-template-renderer',
                             
                             // Load nested cell
                             require(['cell!'+cname],function(NewCell){
-                               if(container.node){
-                                  var tmpNode = container.node.querySelectorAll('#'+tmpNodeID);
-                                  
-                                  // Outer cell was already been rendered
-                                  if(tmpNode.length == 1){
-                                     NewCell.render(tmpNode[0],true,ndata,undefined, id);
+                               var tmpNode = (container.node)
+                                                ? container.node.querySelectorAll('#'+tmpNodeID)
+                                                : null;
+
+                               // Container and temp nodes have already 
+                               // been attached to DOM, render now.
+                               if(tmpNode && tmpNode.length === 1){
+                                  NewCell.render(tmpNode[0],true,ndata,undefined, id);
                                      
-                                  // Outer cell has NOT been rendered yet,
-                                  // add it to the list (nested) of cells 
-                                  // to render afterwards 
-                                  }else if(nested !== undefined){
-                                     nested.push({cell:NewCell,data:ndata,tmpNodeID:tmpNodeID,id:id});
-                                  }
+                               // ... Otherwise, render later
+                               }else if(nested !== undefined){
+                                  nested.push({cell:NewCell,data:ndata,tmpNodeID:tmpNodeID,id:id});
                                }
+                               
                             });
                             
-                            // HTML Source for tmp DOM Node 
+                            // HTML Source for temp node 
                             return '<div id="'+tmpNodeID+'" style="display:none"> </div>';                
                       }});
          
@@ -1299,7 +1299,8 @@ require.def('cell/integration/templating/mustache-template-renderer',
          
          delete tmpNode;
          
-         // Render any nested cells
+         // Render any nested cells waiting for Container and 
+         // temp nodes to be attached
          nested.forEach(function(nc){
             nc.cell.render(container.node.querySelector('#'+nc.tmpNodeID),true,nc.data,nc.id);
          });
