@@ -3,7 +3,7 @@ define ->
 
    '<init>()': (require,get) ->
       loadComponentsSpy = sinon.spy()
-      require.def 'cell/util/loadComponents', [], -> loadComponentsSpy 
+      require.def 'cell/util/loadComponents', -> loadComponentsSpy
       get (Cell) ->
          mockCallback = ->
          ci = new Cell 'test name', mockCallback

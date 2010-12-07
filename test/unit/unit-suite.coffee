@@ -18,8 +18,7 @@ define ->
                      testFunc require, (getTestObjCB) ->
                         # Load module
                         require [testObjName], (testObj) ->
-                           try
-                              getTestObjCB(testObj)
+                           try getTestObjCB(testObj)
                            catch error
                               ok false, "TEST EXCEPTION: #{error.stack || error}"
                               start()
