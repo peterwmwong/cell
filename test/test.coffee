@@ -1,4 +1,5 @@
 {hasFlag, getFlagArg, isFlag} = require './util/commandflags.coffee'
+findtests = require './util/findtests.coffee'
 
 log = console.log
 port = 8080
@@ -21,30 +22,34 @@ isTest = (name) ->
 
 # Find tests
 testSpec= process.argv[process.argv.length-1]
-tests = if isTest __dirname+testSpec then [testSpec] else []
-return log 'No tests specified' if tests.length <= 0
 
-testsurl = "http://localhost:#{port}/test/unit/unit-runner.html?tests=#{(encodeURIComponent test for test in tests).join '.'}"
+findtests testSpec, (tests) ->
+   if tests.length <= 0
+      log "No tests found for \"#{testSpec}\""
+      process.exit 0
 
-# Setup test result server
-results = (require './util/test_result_server').create
-   baseDir: __dirname
-   port: port
+   log "Running tests: \n #{tests.join '\n '}"
+   testsurl = "http://localhost:#{port}/test/unit/unit-runner.html?tests=#{(encodeURIComponent test for test in tests).join ','}"
 
-# Listen for failure
-results.on 'test.assert', ({suite, test, assert, isPass}) ->
-   if not isPass
-      log "FAIL #{suite}/#{test} - #{assert}"
-      allPassed = false
+   # Setup test result server
+   results = (require './util/test_result_server').create
+      baseDir: __dirname
+      port: port
 
-# Listen for completion
-results.on 'done', ->
-   if not done
-      done = true
-      if debug
-         log "*** DEBUG: Goto #{testsurl} ***"
-      else
-         browser.kill()
-         process.exit 0
+   # Listen for failure
+   results.on 'test.assert', ({suite, test, assert, isPass}) ->
+      if not isPass
+         log "FAIL #{suite}/#{test} - #{assert}"
+         allPassed = false
 
-browser = spawn(browserCmd,[testsurl])
+   # Listen for completion
+   results.on 'done', ->
+      if not done
+         done = true
+         if debug
+            log "*** DEBUG: Goto #{testsurl} ***"
+         else
+            browser.kill()
+            process.exit 0
+
+   browser = spawn(browserCmd,[testsurl])
