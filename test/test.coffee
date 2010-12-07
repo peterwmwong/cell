@@ -1,7 +1,12 @@
+{hasFlag, getFlagArg, isFlag} = require './util/commandflags.coffee'
+
 log = console.log
 port = 8080
+browserCmd = (getFlagArg '-browser', 'b') or 'google-chrome'
 browser = undefined
-testFailed = false
+debug = hasFlag '-debug', 'd'
+allPassed = true
+done = false
 
 {lstatSync} = require 'fs'
 {spawn} = require 'child_process'
@@ -15,8 +20,10 @@ isTest = (name) ->
    return false
 
 # Find tests
-tests = (test for test in process.argv when isTest(__dirname+test))
+testSpec= process.argv[process.argv.length-1]
+tests = if isTest __dirname+testSpec then [testSpec] else []
 return log 'No tests specified' if tests.length <= 0
+
 testsurl = "http://localhost:#{port}/test/unit/unit-runner.html?tests=#{(encodeURIComponent test for test in tests).join '.'}"
 
 # Setup test result server
@@ -28,16 +35,16 @@ results = (require './util/test_result_server').create
 results.on 'test.assert', ({suite, test, assert, isPass}) ->
    if not isPass
       log "FAIL #{suite}/#{test} - #{assert}"
-      testFailed = true
+      allPassed = false
 
 # Listen for completion
 results.on 'done', ->
-   if not testFailed
-      browser.kill()
-      process.exit 0
-   else
-      log "*** Above test(s) failed ***"
-      log " 1) Goto #{testsurl}"
-      log " 2) Breakpoint on Exceptions"
+   if not done
+      done = true
+      if debug
+         log "*** DEBUG: Goto #{testsurl} ***"
+      else
+         browser.kill()
+         process.exit 0
 
-browser = spawn('google-chrome',[testsurl])
+browser = spawn(browserCmd,[testsurl])
