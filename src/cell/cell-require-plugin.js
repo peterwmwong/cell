@@ -41,19 +41,31 @@ require.def('cell/cell-require-plugin',
                // ... if not
                }else if(context.cellsWaiting[name] === undefined){
                   context.loaded[name] = false;
+
                   var newCell = Cell(name, function(c,err){
+
                      if(typeof cellLoadCallback === 'function'){
                         try{ cellLoadCallback(c,err); }
                         catch(e){}
                      }
+
+                     // TODO: These should probably be set before 
+                     //       calling the callback.
+                     //       Callback could then do another
+                     //       cell require on this cell and
+                     //       be hosed... Unit needed
                      context.cells[name] = newCell;
                      context.loaded[name] = true;
                      delete context.cellsWaiting[name];
                      require.checkLoaded(contextName);
                   });
+                 
+                  // TODO: This should probably set before calling 
+                  //       Cell to load just in case of a quick
+                  //       on blocked load... (is this possible?)
                   context.cellsWaiting[name] 
                      = context.cellsWaiting[context.cellsWaiting.push(newCell) - 1];
-                  
+
                   return newCell;
                }else if(context.cellsWaiting[name].status === 'loading'){
                   context.cellsWaiting[name].addLoadCallback(cellLoadCallback);
