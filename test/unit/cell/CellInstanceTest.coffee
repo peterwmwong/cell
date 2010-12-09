@@ -16,7 +16,7 @@ define ->
 
    $testObj: 'cell/CellInstance'
 
-   '<init>() uses cell/config/defaultTemplateRenderer' : (require, get) ->
+   '<init>() uses cell/config/defaultTemplateRenderer' : (require, get, done) ->
 
       rendererSpy = sinon.spy()
       require.def 'cell/config', ->
@@ -58,10 +58,10 @@ define ->
          equal acSpy.args[0][0], containerNodeMock, 'targetNode.appendChild arg[0] is containerNodeMock'
          ok not rcSpy.called, 'targetNode.parentNode.replaceChild should NOT be called'
 
-         start()
+         done()
 
 
-   '<init>() uses cell delegate templateRenderer' : (require, get) ->
+   '<init>() uses cell delegate templateRenderer' : (require, get, done) ->
 
       rendererSpy = sinon.spy()
       require.def 'cell/config', ->
@@ -89,10 +89,10 @@ define ->
          equal cellRendererSpy.args[0][2], dataMock, 'renderer arg[2] is data'
          equal typeof cellRendererSpy.args[0][3], 'function', 'renderer argument[3] is a function (callback)'
 
-         start()
+         done()
 
 
-   '<init>() uses cell delegate getRenderData' : (require, get) ->
+   '<init>() uses cell delegate getRenderData' : (require, get, done) ->
 
       rendererSpy = sinon.spy()
       require.def 'cell/config', ->
@@ -122,10 +122,10 @@ define ->
          equal rendererSpy.args[0][0], cellMock, 'renderer arg[0] is cell'
          equal rendererSpy.args[0][2], renderDataMock, 'renderer arg[2] is data'
          
-         start()
+         done()
 
 
-   '<init>() can replace targetNode' : (require, get) ->
+   '<init>() can replace targetNode' : (require, get, done) ->
 
       rendererSpy = sinon.spy()
       require.def 'cell/config', ->
@@ -158,4 +158,4 @@ define ->
          equal rcSpy.args[0][1], nodeStub, 'targetNode.parentNode.replaceChild arg[1] is targetNode'
          ok not acSpy.called, 'targetNode.parentNode.replaceChild should NOT be called'
 
-         start()
+         done()

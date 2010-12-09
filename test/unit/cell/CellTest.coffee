@@ -1,7 +1,7 @@
 define ->
    $testObj: 'cell/Cell'
 
-   '<init>()': (require,get) ->
+   '<init>()': (require,get,done) ->
       loadComponentsSpy = sinon.spy()
       require.def 'cell/util/loadComponents', -> loadComponentsSpy
       get (Cell) ->
@@ -21,5 +21,5 @@ define ->
          same typeof tmpCb, 'function', 'cell/util/loadComponents passed template callback function'
          same typeof styCb, 'function', 'cell/util/loadComponents passed styling callback function'
 
-         start()
+         done()
 
