@@ -1,5 +1,8 @@
-define ->
+define ['/test/util/reset-requirejs-plugins.js'], (resetplugins) ->
    $testObj: 'cell'
+   $beforeTest: (done) ->
+      resetplugins()
+      done()
 
    'cell() one cell': (require, get, done) -> get (cell) ->
       cell 'mock/mockCellOne', (One) ->
