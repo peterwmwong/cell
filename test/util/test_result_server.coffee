@@ -28,6 +28,13 @@ exports.create = ({baseDir,port,log}) ->
    log ?= ->
    app = express.createServer()
    emitter = new EventEmitter()
+   handleCoffeeCompile = (path,req,res,next)->
+      compileCoffeeFile log, path, (err,compiled_src) ->
+         if err?
+            res.send "Couldn't Coffee compile err=#{err}", (if err==404 then 404 else 500)
+         else
+            res.send compiled_src, {'Content-Type':'text/javascript'}, 200
+
 
    # Verify Base Directory for tests is valid
    stat baseDir, (err, stats) ->
@@ -63,13 +70,11 @@ exports.create = ({baseDir,port,log}) ->
       # Handle Coffee compile fallback
       #   If staticProvider (above) couldn't find the js file,
       #   try to compile and serve a coffee file with the same name
-      app.get '/test/**/*.js', (req,res,next) ->
-         # Slice off '/test' and '.js'
-         compileCoffeeFile log, baseDir+req.url.slice(5,-2)+'coffee', (err,compiled_src) ->
-            if err?
-               res.send "Couldn't Coffee compile err=#{err}", (if err==404 then 404 else 500)
-            else
-               res.send compiled_src, {'Content-Type':'text/javascript'}, 200
+      app.get '/test/**/*.js', (req,res,next)->
+         handleCoffeeCompile baseDir+req.url.slice(5,-2)+'coffee', req, res, next
+
+      app.get '/src/*.js', (req,res,next)->
+         handleCoffeeCompile __dirname+'/../../src'+req.url.slice(4,-2)+'coffee', req, res, next
 
       # Handle Test Events 
       app.post '/result', (req,res) ->

@@ -40,7 +40,7 @@ sinon.config = {
   injectIntoThis: true,
   injectInto: null,
   properties: ["spy", "stub", "mock", "clock", "sandbox"],
-  useFakeTimers: true,
+  useFakeTimers: false,
   useFakeServer: false
 };
 
