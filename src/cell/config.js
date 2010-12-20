@@ -112,9 +112,9 @@ require.def('cell/config',
             }),
             
             'resourceExtensions': Group('File Extensions for Component resources (Styling, Controller, Template).',{
-               'styling':    Option('Cell Styling file extension.','cless',__validateString),
-               'controller': Option('Cell Presenter (JavaScript) file extension.','cjs',__validateString),
-               'template':   Option('Cell Template file extension.','chtml',__validateString)
+               'styling':    Option('Cell Styling file extension.','less',__validateString),
+               'controller': Option('Cell Presenter (JavaScript) file extension.','js',__validateString),
+               'template':   Option('Cell Template file extension.','html',__validateString)
             }),
             
             'defaultTemplateRenderer' : Option('Default function used to render Template to a DOM Node',

@@ -1,0 +1,265 @@
+define ->
+   defer = (func) -> setTimeout func, 1000
+
+   $testObj: 'cell/Eventful'
+
+   "on(event,function): listener called when event fired": (require, get, done)->
+      get (Eventful) ->
+         e = new Eventful()
+         cbSpy = sinon.spy()
+
+         fireTestEvent = e.on.define 'testEvent'
+         e.on 'testEvent', cbSpy
+
+         ok not cbSpy.called, "listener shouldn't be called if event hasn't fired"
+         
+         testEventData = {}
+         fireTestEvent testEventData
+
+         ok cbSpy.calledOnce, "listener should be called once when event fired"
+         equal cbSpy.args[0].length, 1, "listener passed one argument"
+         equal cbSpy.args[0][0], testEventData, "listener passed event data"
+
+         done()
+
+   "on(event,function): multiple listeners called when event fired": (require, get, done)->
+      get (Eventful) ->
+         e = new Eventful()
+         cbSpies = [sinon.spy(),sinon.spy(),sinon.spy()]
+
+         fireTestEvent = e.on.define 'testEvent'
+
+         for cb in cbSpies
+            e.on 'testEvent', cb
+
+         for cb in cbSpies
+            ok not cb.called, "listener shouldn't be called if event hasn't fired"
+         
+         testEventData = {}
+         fireTestEvent testEventData
+
+         for cb in cbSpies
+            ok cb.calledOnce, "listener should be called once when event fired"
+            equal cb.args[0].length, 1, "listener passed one argument"
+            equal cb.args[0][0], testEventData, "listener passed event data"
+
+         done()
+ 
+   "on(event,function): returns function to unregister listener": (require, get, done)->
+      get (Eventful) ->
+         e = new Eventful()
+         cbSpy = sinon.spy()
+
+         fireTestEvent = e.on.define 'testEvent'
+         unregister = e.on 'testEvent', cbSpy
+
+         ok not cbSpy.called, "listener shouldn't be called if event hasn't fired"
+         
+         testEventData = {}
+         fireTestEvent testEventData
+
+         ok cbSpy.calledOnce, "listener should be called once when event fired"
+         equal cbSpy.args[0].length, 1, "listener passed one argument"
+         equal cbSpy.args[0][0], testEventData, "listener passed event data"
+
+         unregister()
+
+         testEventData2 = {}
+         fireTestEvent testEventData2
+         ok cbSpy.calledOnce, "listener should not be called after being unregistered"
+
+         done()
+ 
+
+   "on(event,function): listener that throws an error does NOT prevent other listeners from being called": (require, get, done)->
+      get (Eventful) ->
+         e = new Eventful()
+         cbSpies = [sinon.spy(-> throw new Error),sinon.spy(),sinon.spy()]
+
+         fireTestEvent = e.on.define 'testEvent'
+
+         for cb in cbSpies
+            e.on 'testEvent', cb
+
+         for cb in cbSpies
+            ok not cb.called, "listener shouldn't be called if event hasn't fired"
+         
+         testEventData = {}
+         fireTestEvent testEventData
+
+         for cb in cbSpies
+            ok cb.calledOnce, "listener should be called once when event fired"
+            equal cb.args[0].length, 1, "listener passed one argument"
+            equal cb.args[0][0], testEventData, "listener passed event data"
+
+         done()
+
+
+   "handle(event,function): returns function to unregister handler": (require, get, done)->
+      get (Eventful) ->
+         e = new Eventful()
+         handlerSpy = sinon.spy()
+         cbSpy = sinon.spy()
+
+         requestTest = e.handle.define 'test', cbSpy
+         unregister = e.handle 'test', handlerSpy
+
+         ok not cbSpy.called, "callback shouldn't be called if no request"
+         ok not handlerSpy.called, "handler shouldn't be called if no request"
+         
+         testRequestData = {}
+         requestTest testRequestData
+
+         ok handlerSpy.calledOnce, "handler called once when request"
+         
+         unregister()
+
+         testRequestData2 = {}
+         requestTest testRequestData2
+
+         ok handlerSpy.calledOnce, "handler should not be called after being unregistered"
+       
+         ok cbSpy.calledOnce, "callback called since no handler (or default handler) is registered"
+         [data] = cbSpy.args[0]
+         equal data, testRequestData2, "callback passed request data"
+
+         done()
+
+
+   "handle.define(event,function): handler called with request data": (require, get, done)->
+      get (Eventful) ->
+         e = new Eventful()
+         handlerSpy = sinon.spy()
+         cbSpy = sinon.spy()
+
+         requestTest = e.handle.define 'test', cbSpy
+         e.handle 'test', handlerSpy
+
+         ok not cbSpy.called, "callback shouldn't be called if no request"
+         ok not handlerSpy.called, "handler shouldn't be called if no request"
+         
+         testRequestData = {}
+         requestTest testRequestData
+
+         ok handlerSpy.calledOnce, "handler called once when request"
+         equal handlerSpy.args[0].length, 3, "handler passed 3 arguments (data, respond function, defer function)"
+         [data,respond,defer] = handlerSpy.args[0]
+         equal data, testRequestData, "handler arg[0] is request data"
+         equal typeof respond, "function", "handler arg[1] is function (respond)"
+         equal typeof defer, "function", "handler arg[1] is function (defer)"
+
+         ok not cbSpy.called, "callback shouldn't be called if handler doesn't respond"
+
+         done()
+
+
+   "handle.define(event,function): handler can respond with modified data": (require, get, done)->
+      get (Eventful) ->
+         e = new Eventful()
+         handlerSpy = sinon.spy()
+         cbSpy = sinon.spy()
+
+         requestTest = e.handle.define 'test', cbSpy
+         e.handle 'test', handlerSpy
+
+         ok not cbSpy.called, "callback shouldn't be called if no request"
+         ok not handlerSpy.called, "handler shouldn't be called if no request"
+         
+         requestTest {}
+
+         testRespData = {}
+         handlerSpy.args[0][1] testRespData
+
+         ok cbSpy.calledOnce, "callback called once"
+         equal cbSpy.args[0].length, 1, "callback passed 1 arguments (data)"
+         equal cbSpy.args[0][0], testRespData, "callback arg[0] is response data"
+
+         done()
+
+
+
+   "handle.define(event,function,function): handler can defer to default handler with modifying data": (require, get, done)->
+      get (Eventful) ->
+         e = new Eventful()
+         defaultHandlerSpy = sinon.spy()
+         handlerSpy = sinon.spy()
+         cbSpy = sinon.spy()
+
+         requestTest = e.handle.define 'test', cbSpy, defaultHandlerSpy
+         e.handle 'test', handlerSpy
+
+         ok not cbSpy.called, "callback shouldn't be called if no request"
+         ok not handlerSpy.called, "handler shouldn't be called if no request"
+         
+         requestTest {}
+
+         modifiedRequest = {}
+         handlerSpy.args[0][2] modifiedRequest
+
+         ok not cbSpy.called, "callback shouldn't be called if default handler hasn't responded"
+         
+         ok defaultHandlerSpy.calledOnce, "handler called once when request"
+         equal defaultHandlerSpy.args[0].length, 2, "handler passed 3 arguments (data, respond function)"
+         [data,respond] = defaultHandlerSpy.args[0]
+         equal data, modifiedRequest, "handler arg[0] is request data"
+         equal typeof respond, "function", "handler arg[1] is function (respond)"
+        
+         testRespData = {}
+         respond testRespData
+
+         ok cbSpy.calledOnce, "callback called once"
+         equal cbSpy.args[0].length, 1, "callback passed 1 arguments (data)"
+         equal cbSpy.args[0][0], testRespData, "callback arg[0] is response data"
+
+         done()
+
+
+   "handle.define(event,function): callback called with request data when no handlers or default handler is registered": (require, get, done)->
+      get (Eventful) ->
+         e = new Eventful()
+         cbSpy = sinon.spy()
+
+         requestTest = e.handle.define 'test', cbSpy
+
+         ok not cbSpy.called, "callback shouldn't be called if no request"
+         
+         testRequestData = {}
+         requestTest testRequestData
+
+         ok cbSpy.calledOnce, "callback called once"
+         equal cbSpy.args[0].length, 1, "callback passed 1 arguments (data)"
+         equal cbSpy.args[0][0], testRequestData, "callback arg[0] is response data"
+
+         done()
+
+
+   "handle.define(event,function,function): default handler called when no handler is registered": (require, get, done)->
+      get (Eventful) ->
+         e = new Eventful()
+         handlerSpy = sinon.spy()
+         cbSpy = sinon.spy()
+
+         requestTest = e.handle.define 'test', cbSpy, handlerSpy
+
+         ok not cbSpy.called, "callback shouldn't be called if no request"
+         ok not handlerSpy.called, "handler shouldn't be called if no request"
+         
+         testRequestData = {}
+         requestTest testRequestData
+
+         ok handlerSpy.calledOnce, "handler called once when request"
+         equal handlerSpy.args[0].length, 2, "handler passed 3 arguments (data, respond function)"
+         [data,respond] = handlerSpy.args[0]
+         equal data, testRequestData, "handler arg[0] is request data"
+         equal typeof respond, "function", "handler arg[1] is function (respond)"
+
+         ok not cbSpy.called, "callback shouldn't be called if handler doesn't respond"
+
+         testRespData = {}
+         handlerSpy.args[0][1] testRespData
+
+         ok cbSpy.calledOnce, "callback called once"
+         equal cbSpy.args[0].length, 1, "callback passed 1 arguments (data)"
+         equal cbSpy.args[0][0], testRespData, "callback arg[0] is response data"
+
+         done()
