@@ -1,28 +1,28 @@
-define [], ->
+define ['cell/Cell'], (Cell)->
    modNameRegex = /(.*?)(\.[a-zA-Z0-9]+)*$/
    cellMap = {}
 
    load: (name, require, done)->
-      loaded = {}
-      cell = cellMap[name] = {}
-
       names =
          template:"celltext!#{name}.html"
          style:"celltext!#{name}.less"
          controller:"#{name}.js"
 
-      onLoad = (tmpl,style,ctrl)->
-         cell.template = tmpl
-         cell.style = style
-         done cell
+      loadCtrl = (tmplLoaded)->
+         require [names.controller],
+            (ctrl)->
+               done cellMap[name]
+            (loaded,failed)->
+               if tmplLoaded then done cellMap[name]
+               else done undefined, new Error "Could not load cell '#{name}'"
 
-      onError = (found,errored)->
-         if names.template of found or names.controller of found
-            onLoad(found[names.template], found[names.style])
-         else
-            done undefined, new Error("Could not load cell '#{name}'")
-
-      require [names.template,names.style,names.controller], onLoad, onError
+      require [names.template,names.style],
+         (tmpl,style)->
+            cellMap[name] = new Cell tmpl, style
+            loadCtrl true
+         (loaded,failed)->
+            cellMap[name] = new Cell loaded[names.template], loaded[names.style]
+            loadCtrl names.template of loaded
          
          
    loadDefineDependency: (jsCellName)->

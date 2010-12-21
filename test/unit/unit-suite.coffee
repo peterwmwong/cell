@@ -18,7 +18,7 @@ define ->
             #   with mock/spy modules.
             require {baseUrl: '/src', context: "#{suiteName}/#{testName}"}, ['require'], (require) ->
                runAfterTest = ->
-                  try $afterTest.call(tests) if typeof $afterTest == 'function'
+                  try $afterTest() if typeof $afterTest == 'function'
                   start()
 
                try
@@ -38,7 +38,7 @@ define ->
                         runAfterTest()
 
                   if typeof $beforeTest == 'function'
-                     $beforeTest.call tests, runTestFunc
+                     try $beforeTest require, runTestFunc
                   else
                      runTestFunc()
                   

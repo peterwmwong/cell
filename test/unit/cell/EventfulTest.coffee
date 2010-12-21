@@ -15,9 +15,7 @@ define ->
          testEventData = {}
          e.fire 'testEvent', testEventData
 
-         ok cbSpy.calledOnce, "listener should be called once when event fired"
-         equal cbSpy.args[0].length, 1, "listener passed one argument"
-         equal cbSpy.args[0][0], testEventData, "listener passed event data"
+         ok cbSpy.calledOnce and cbSpy.calledWithExactly(testEventData), "listener called once and passed event data"
 
          done()
 
@@ -36,10 +34,8 @@ define ->
          e.fire 'testEvent', testEventData
 
          for cb in cbSpies
-            ok cb.calledOnce, "listener should be called once when event fired"
-            equal cb.args[0].length, 1, "listener passed one argument"
-            equal cb.args[0][0], testEventData, "listener passed event data"
-
+            ok cb.calledOnce and cb.calledWithExactly(testEventData), "listener called once and passed event data"
+ 
          done()
  
    "on(event,function): returns function to unregister listener": (require, get, done)->
@@ -55,8 +51,7 @@ define ->
          e.fire 'testEvent', testEventData
 
          ok cbSpy.calledOnce, "listener should be called once when event fired"
-         equal cbSpy.args[0].length, 1, "listener passed one argument"
-         equal cbSpy.args[0][0], testEventData, "listener passed event data"
+         ok cbSpy.calledWithExactly(testEventData), "listener passed event data"
 
          unregister()
 
@@ -82,9 +77,7 @@ define ->
          e.fire 'testEvent', testEventData
 
          for cb in cbSpies
-            ok cb.calledOnce, "listener should be called once when event fired"
-            equal cb.args[0].length, 1, "listener passed one argument"
-            equal cb.args[0][0], testEventData, "listener passed event data"
+            ok cb.calledOnce, cb.calledWithExactly(testEventData), "listener called once passed event data"
 
          done()
 
@@ -111,9 +104,7 @@ define ->
 
          ok handlerSpy.calledOnce, "handler should not be called after being unregistered"
        
-         ok cbSpy.calledOnce, "callback called since no handler (or default handler) is registered"
-         [data] = cbSpy.args[0]
-         equal data, testRequestData2, "callback passed request data"
+         ok cbSpy.calledOnce and cbSpy.calledWithExactly(testRequestData2), "callback called once and passed event data"
 
          done()
 
@@ -159,9 +150,7 @@ define ->
          testRespData = {}
          handlerSpy.args[0][1] testRespData
 
-         ok cbSpy.calledOnce, "callback called once"
-         equal cbSpy.args[0].length, 1, "callback passed 1 arguments (data)"
-         equal cbSpy.args[0][0], testRespData, "callback arg[0] is response data"
+         ok cbSpy.calledOnce and cbSpy.calledWithExactly(testRespData), "callback called once and passed response data"
 
          done()
 
@@ -194,9 +183,7 @@ define ->
          testRespData = {}
          respond testRespData
 
-         ok cbSpy.calledOnce, "callback called once"
-         equal cbSpy.args[0].length, 1, "callback passed 1 arguments (data)"
-         equal cbSpy.args[0][0], testRespData, "callback arg[0] is response data"
+         ok cbSpy.calledOnce and cbSpy.calledWithExactly(testRespData), "callback called once and passed response data"
 
          done()
 
@@ -209,9 +196,7 @@ define ->
          testRequestData = {}
          e.request 'test', testRequestData, cbSpy
 
-         ok cbSpy.calledOnce, "callback called once"
-         equal cbSpy.args[0].length, 1, "callback passed 1 arguments (data)"
-         equal cbSpy.args[0][0], testRequestData, "callback arg[0] is response data"
+         ok cbSpy.calledOnce and cbSpy.calledWithExactly(testRequestData), "callback called once and passed response data"
 
          done()
 
@@ -236,8 +221,6 @@ define ->
          testRespData = {}
          handlerSpy.args[0][1] testRespData
 
-         ok cbSpy.calledOnce, "callback called once"
-         equal cbSpy.args[0].length, 1, "callback passed 1 arguments (data)"
-         equal cbSpy.args[0][0], testRespData, "callback arg[0] is response data"
+         ok cbSpy.calledOnce and cbSpy.calledWithExactly(testRespData), "callback called once and passed response data"
 
          done()
