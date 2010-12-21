@@ -6,12 +6,14 @@ define ->
    "require(cell!) should not load cell that doesn't exist": (require,get,done)->
       get (cellPlugin)->
          loaded = false
-         require ['cell!/blarg/blarg'], (mockCell)->
-            loaded = true
-         
-         defer ()->
-            ok not loaded, 'Should NOT load a non-existent cell'
-            done()
+         require ['cell!/blarg/blarg'],
+            (mockCell)->
+               ok not loaded, 'Should NOT load a non-existent cell'
+               done()
+            (loaded,failed)->
+               ok 'cell!/blarg/blarg' not of loaded, 'non-existent cell should NOT be in loaded map'
+               ok 'cell!/blarg/blarg' of failed, 'non-existent cell should be in failed map'
+               done()
 
    "define(cell!) should provide cell reference to cell's js": (require, get, done)->
       get (cellPlugin) ->
