@@ -50,8 +50,7 @@ define ->
          testEventData = {}
          e.fire 'testEvent', testEventData
 
-         ok cbSpy.calledOnce, "listener should be called once when event fired"
-         ok cbSpy.calledWithExactly(testEventData), "listener passed event data"
+         ok cbSpy.calledOnce and cbSpy.calledWithExactly(testEventData), "listener called once and passed event data"
 
          unregister()
 
@@ -77,7 +76,7 @@ define ->
          e.fire 'testEvent', testEventData
 
          for cb in cbSpies
-            ok cb.calledOnce, cb.calledWithExactly(testEventData), "listener called once passed event data"
+            ok cb.calledOnce and cb.calledWithExactly(testEventData), "listener called once passed event data"
 
          done()
 
