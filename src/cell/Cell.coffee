@@ -1,22 +1,36 @@
-define ['Eventful','cell/Config','cell/CellInstance','cell/util/attachStyle'], (Eventful,Config,CellInstance,attachStyle)->
-   class Cell extends Eventful
-      constructor: (name,tmpl,style)->
-         Object.defineProperty this, 'name',
-            value: name
-            enumerable: true
+define ['cell/Eventful','cell/Config','cell/util/attachCSS','cell/util/attachHTML'],
+   (Eventful,Config,attachCSS,attachHTML)->
+      isNonEmptyString = (s)-> typeof s == 'string' and s.trim()
 
-         Object.defineProperty this, 'template',
-            value: tmpl
-            enumerable: true
+      class Cell extends Eventful
+         constructor: (name,tmpl,style)->
+            super()
+            unless isNonEmptyString name
+               throw new Error "Cell's name must be a non-empty string, instead was '#{name}'"
 
-         Object.defineProperty this, 'style',
-            value: style
-            enumerable: true
+            # Define read-only properties name, template, style
+            for k,v of {name: name, template: tmpl, style: style}
+               Object.defineProperty this, k, {value: v, enumerable: true}
          
-         if style
-            @request 'renderCSS',
-               (css)-> attachStyle name, css if css
-               Config.get('style.renderer')
-         
-      render: ({data,to})->
-
+         renderStyle: (->
+            # Render style ONCE
+            rendered = false
+            return ->
+               if not rendered and isNonEmptyString @name
+                  @request 'render.style',
+                     @style
+                     (css)=>
+                        if isNonEmptyString css
+                           attachCSS @name, css
+                     Config.get('renderer.style')
+               rendered = true
+            )()
+            
+         render: ({data,to})->
+            if isNonEmptyString @template
+               @request 'render.template',
+                  {template: @template, data:data}
+                  (html)=>
+                     if isNonEmptyString html
+                        attachHTML @name, html, to
+                  Config.get('renderer.template')
