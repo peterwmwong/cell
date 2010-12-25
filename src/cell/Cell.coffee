@@ -1,6 +1,12 @@
-define ['cell/Eventful','cell/Config','cell/util/attachCSS','cell/util/attachHTML'],
-   (Eventful,Config,attachCSS,attachHTML)->
+define ['require','cell/Eventful','cell/Config','cell/util/attachCSS'],
+   (require,Eventful,Config,attachCSS)->
       isNonEmptyString = (s)-> typeof s == 'string' and s.trim()
+      getInstanceId = (->
+         cellIdMap = {}
+         (cellName)->
+            cellIdMap[cellName] = (cellIdMap[cellName] or -1)+1
+      )()
+      cssClassRegex = /([^\/]*$)/
 
       class Cell extends Eventful
          constructor: (name,tmpl,style)->
@@ -21,16 +27,45 @@ define ['cell/Eventful','cell/Config','cell/util/attachCSS','cell/util/attachHTM
                      @style
                      (css)=>
                         if isNonEmptyString css
-                           attachCSS @name, css
+                           attachCSS @name, css, (styleTagNode)->
+                              
                      Config.get('renderer.style')
                rendered = true
             )()
-            
-         render: ({data,to})->
+         
+         __createDOMNode: (html)->
+            node = document.createElement 'div'
+            node.id = @name + '_' + getInstanceId @name
+            node.classList.add cssClassRegex.exec(@name)[0]
+            node.innerHTML = html
+            node
+
+         render: ({data,to},done)->
             if isNonEmptyString @template
+
+               unless to
+                  throw new Error "No 'to' DOM node was specified for Cell '#{@name}' to be rendered to"
+
                @request 'render.template',
+                  # Data
                   {template: @template, data:data}
-                  (html)=>
+
+                  # Callback
+                  ({html,nestedRequests})=>
                      if isNonEmptyString html
-                        attachHTML @name, html, to
+                        attachedNode = @__createDOMNode(html)
+                        to.parentNode.replaceChild attachedNode, to
+
+                        unless nestedRequests instanceof Array and nestedRequests.length > 0
+                           done()
+                        else
+                           for {cell,data,to} in nestedRequests
+                              do (cell,data,to)->
+                                 # TODO coffeescript 1.0.0 should have fixed this with "do" keyword
+                                 require ['cell!'+cell], (cell)->
+                                    cell.render {data:data, to:attachedNode.querySelector(to)}
+                           done()
+
+                  # Default Handler
                   Config.get('renderer.template')
+       

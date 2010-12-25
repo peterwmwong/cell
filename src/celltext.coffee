@@ -5,9 +5,10 @@ define [], ->
          return -> new XMLHttpRequest()
       else
          for progId in ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0']
-            try
-               new ActiveXObject progId
-               return -> new ActiveXObject progId
+            do(progId)->
+               try
+                  new ActiveXObject progId
+                  return -> new ActiveXObject progId
             )()
 
    fetchText = (url,cb)->

@@ -18,10 +18,10 @@ define ['cell/Cell'], (Cell)->
 
       require [names.template,names.style],
          (tmpl,style)->
-            cellMap[name] = new Cell tmpl, style
+            cellMap[name] = new Cell name, tmpl, style
             loadCtrl true
          (loaded,failed)->
-            cellMap[name] = new Cell loaded[names.template], loaded[names.style]
+            cellMap[name] = new Cell name, loaded[names.template], loaded[names.style]
             loadCtrl names.template of loaded
          
          

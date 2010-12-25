@@ -95,10 +95,11 @@ define ['/test/unit/unit-suite.js'], (unit_suite) ->
       if k == 'tests' and v?
          for suiteName in v.split ','
             suiteName = decodeURIComponent suiteName
-            
-            # Load test suite module
-            require ["/test/#{suiteName}.js"], (suite) ->
-            
-               # Run Unit Suite
-               unit_suite suiteName, suite
+               
+            do(suiteName)->
+               # Load test suite module
+               require ["/test/#{suiteName}.js"], (suite) ->
+               
+                  # Run Unit Suite
+                  unit_suite suiteName, suite
 

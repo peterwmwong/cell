@@ -21,7 +21,7 @@ define ->
             )()
             
       fire: (event, data)->
-         (@listeners[event] ? []).forEach (l)->
+         for l in (@listeners[event] ? [])
             try l data
 
       handle: (request,handler)->

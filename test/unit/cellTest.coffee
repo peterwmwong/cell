@@ -1,6 +1,7 @@
 define ->
    defer = (func) -> setTimeout func, 1000
-   MockCell = (t,s)->
+   MockCell = (n,t,s)->
+      this.name = n
       this.template = t
       this.style = s
 
@@ -33,11 +34,13 @@ define ->
          require ['cell!/test/unit/mock/tmplStyleJS','cell!/test/unit/mock/jsOnly'], (tmplStyleJS, jsOnly)->
 
             ok tmplStyleJS instanceof MockCell, 'cell should be an instanceof cell/Cell'
+            equal tmplStyleJS.name, '/test/unit/mock/tmplStyleJS', 'Should have loaded template'
             equal tmplStyleJS.template, 'tmplStyleJS template', 'Should have loaded template'
             equal tmplStyleJS.style, 'tmplStyleJS style', 'Should have loaded style'
             ok tmplStyleJS.jsSpy.calledOnce, 'Should have loaded js'
 
             ok jsOnly instanceof MockCell, 'cell should be an instanceof cell/Cell'
+            equal jsOnly.name, '/test/unit/mock/jsOnly', 'Should NOT have loaded template'
             equal jsOnly.template, undefined, 'Should NOT have loaded template'
             equal jsOnly.style, undefined, 'Should NOT have loaded style'
             ok jsOnly.jsSpy.calledOnce, 'Should have loaded js'
@@ -47,6 +50,7 @@ define ->
       get (cellPlugin)->
          require ['cell!/test/unit/mock/tmplStyleJS'], (mockCell)->
             ok mockCell instanceof MockCell, 'cell should be an instanceof cell/Cell'
+            equal mockCell.name, '/test/unit/mock/tmplStyleJS', 'Should have loaded template'
             equal mockCell.template, 'tmplStyleJS template', 'Should have loaded template'
             equal mockCell.style, 'tmplStyleJS style', 'Should have loaded style'
             ok mockCell.jsSpy.calledOnce, 'Should have loaded js'
@@ -56,6 +60,7 @@ define ->
       get (cellPlugin)->
          require ['cell!/test/unit/mock/tmplJS'], (mockCell)->
             ok mockCell instanceof MockCell, 'cell should be an instanceof cell/Cell'
+            equal mockCell.name, '/test/unit/mock/tmplJS', 'Should have loaded template'
             equal mockCell.template, 'tmplJS template', 'Should have loaded template'
             equal mockCell.style, undefined, 'Should NOT have loaded style'
             ok mockCell.jsSpy.calledOnce, 'Should have loaded js'
@@ -65,6 +70,7 @@ define ->
       get (cellPlugin)->
          require ['cell!/test/unit/mock/tmpl'], (mockCell)->
             ok mockCell instanceof MockCell, 'cell should be an instanceof cell/Cell'
+            equal mockCell.name, '/test/unit/mock/tmpl', 'Should have loaded template'
             equal mockCell.template, 'tmpl template', 'Should have loaded template'
             equal mockCell.style, undefined, 'Should NOT have loaded style'
             equal mockCell.jsSpy, undefined, 'Should NOT have loaded js'
@@ -74,6 +80,7 @@ define ->
       get (cellPlugin)->
          require ['cell!/test/unit/mock/jsOnly'], (mockCell)->
             ok mockCell instanceof MockCell, 'cell should be an instanceof cell/Cell'
+            equal mockCell.name, '/test/unit/mock/jsOnly', 'Should NOT have loaded template'
             equal mockCell.template, undefined, 'Should NOT have loaded template'
             equal mockCell.style, undefined, 'Should NOT have loaded style'
             ok mockCell.jsSpy.calledOnce, 'Should have loaded js'
