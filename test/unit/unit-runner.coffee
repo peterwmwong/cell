@@ -72,6 +72,7 @@ define ['/test/unit/unit-suite.js'], (unit_suite) ->
 
    QUnit.testDone = (test, fail, pass) ->
       overallCount.count fail == 0
+      curSuiteCount.count fail == 0
       sendTestEvent
          type: 'test.done'
          suite: curSuite
@@ -80,7 +81,6 @@ define ['/test/unit/unit-suite.js'], (unit_suite) ->
          fail: fail
    
    QUnit.log = (isPass, html_message, {message})->
-      curSuiteCount.count isPass
       sendTestEvent
          type: 'test.assert'
          suite: curSuite

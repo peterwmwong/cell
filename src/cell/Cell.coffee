@@ -1,5 +1,5 @@
-define ['require','cell/Eventful','cell/Config','cell/util/attachCSS'],
-   (require,Eventful,Config,attachCSS)->
+define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/attachCSS'],
+   (require,Eventful,Config,CellRendering,attachCSS)->
       isNonEmptyString = (s)-> typeof s == 'string' and s.trim()
       getInstanceId = (->
          cellIdMap = {}
@@ -52,19 +52,20 @@ define ['require','cell/Eventful','cell/Config','cell/util/attachCSS'],
 
                   # Callback
                   ({html,nestedRequests})=>
-                     if isNonEmptyString html
+                     unless isNonEmptyString html
+                        done undefined, new Error("No HTML was rendered from template:\n#{@template}")
+                     else
                         attachedNode = @__createDOMNode(html)
                         to.parentNode.replaceChild attachedNode, to
+                        done new CellRendering(this,data,attachedNode)
 
-                        unless nestedRequests instanceof Array and nestedRequests.length > 0
-                           done()
-                        else
+                        if nestedRequests instanceof Array
                            for {cell,data,to} in nestedRequests
                               do (cell,data,to)->
                                  # TODO coffeescript 1.0.0 should have fixed this with "do" keyword
                                  require ['cell!'+cell], (cell)->
                                     cell.render {data:data, to:attachedNode.querySelector(to)}
-                           done()
+
 
                   # Default Handler
                   Config.get('renderer.template')
