@@ -40,7 +40,7 @@ findtests {spec:process.argv[process.argv.length-1], dir:testsdir}, (tests) ->
    results.on 'done', (ev)->
       log """
           ----------------------------------
-          FAIL: #{ev.pass}  PASS: #{ev.fail}
+          FAIL: #{ev.fail}  PASS: #{ev.pass}
           ----------------------------------
           """
       if not done

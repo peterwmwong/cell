@@ -29,7 +29,7 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                         if isNonEmptyString css
                            attachCSS @name, css, (styleTagNode)->
                               
-                     Config.get('renderer.style')
+                     Config.get 'renderer.style'
                rendered = true
             )()
          
@@ -68,5 +68,5 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
 
 
                   # Default Handler
-                  Config.get('renderer.template')
+                  Config.get 'renderer.template'
        
