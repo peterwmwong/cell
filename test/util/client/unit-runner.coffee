@@ -1,4 +1,4 @@
-define ['/test/unit/unit-suite.js'], (unit_suite) ->
+define ['/util/unit-suite.js'], (unit_suite) ->
    class Count
       constructor: ->
          @counts = {}
@@ -52,8 +52,8 @@ define ['/test/unit/unit-suite.js'], (unit_suite) ->
       type: 'start'
    QUnit.done = (fail, pass)-> sendTestEvent
       type: 'done'
-      pass: pass
-      fail: fail
+      pass: overallCount.passed()
+      fail: overallCount.failed()
 
    QUnit.moduleStart= (mod) ->
       curSuiteCount.reset()
@@ -98,7 +98,7 @@ define ['/test/unit/unit-suite.js'], (unit_suite) ->
                
             do(suiteName)->
                # Load test suite module
-               require ["/test/#{suiteName}.js"], (suite) ->
+               require ["#{suiteName}.js"], (suite) ->
                
                   # Run Unit Suite
                   unit_suite suiteName, suite
