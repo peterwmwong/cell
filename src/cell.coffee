@@ -2,6 +2,7 @@ define ['cell/Cell'], (Cell)->
    modNameRegex = /(.*?)(\.[a-zA-Z0-9]+)*$/
    cellMap = {}
 
+   # RequireJS Plugin load API
    load: (name, require, done)->
       names =
          template:"celltext!#{name}.html"
@@ -24,7 +25,7 @@ define ['cell/Cell'], (Cell)->
             cellMap[name] = new Cell name, loaded[names.template], loaded[names.style]
             loadCtrl names.template of loaded
          
-         
+   # RequireJS Cell Extension Plugin loadDefineDependency API
    loadDefineDependency: (jsCellName)->
       match = modNameRegex.exec jsCellName
       return match and match[1] and cellMap[match[1]]
