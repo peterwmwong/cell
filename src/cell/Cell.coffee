@@ -1,11 +1,10 @@
 define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/attachCSS'],
    (require,Eventful,Config,CellRendering,attachCSS)->
       isNonEmptyString = (s)-> typeof s == 'string' and s.trim()
-      getInstanceId = (->
+      getInstanceId = do->
          cellIdMap = {}
          (cellName)->
             cellIdMap[cellName] = (cellIdMap[cellName] or -1)+1
-      )()
       cssClassRegex = /([^\/]*$)/
 
       class Cell extends Eventful
@@ -33,14 +32,14 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                rendered = true
             )()
          
-         __createDOMNode: (html)->
+         __createDOMNode: (html,id)->
             node = document.createElement 'div'
-            node.id = @name + '_' + getInstanceId @name
+            node.id = id or @name + '_' + getInstanceId @name
             node.classList.add cssClassRegex.exec(@name)[0]
             node.innerHTML = html
             node
 
-         render: ({data,to},done)->
+         render: ({data,to,id},done)->
             if isNonEmptyString @template
 
                unless to
@@ -55,16 +54,15 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                      unless isNonEmptyString html
                         done undefined, new Error("No HTML was rendered from template:\n#{@template}")
                      else
-                        attachedNode = @__createDOMNode(html)
+                        attachedNode = @__createDOMNode(html,id)
                         to.parentNode.replaceChild attachedNode, to
                         done new CellRendering(this,data,attachedNode)
 
                         if nestedRequests instanceof Array
-                           for {cell,data,to} in nestedRequests
-                              do (cell,data,to)->
-                                 # TODO coffeescript 1.0.0 should have fixed this with "do" keyword
+                           for {cell,data,to,id} in nestedRequests
+                              do (cell,data,to,id)->
                                  require ['cell!'+cell], (cell)->
-                                    cell.render {data:data, to:attachedNode.querySelector(to)}
+                                    cell.render {data:data, to:attachedNode.querySelector(to), id:id}
 
 
                   # Default Handler

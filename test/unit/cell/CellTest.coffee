@@ -217,8 +217,28 @@ define ->
             done()
 
 
-   'render({data,to},done): failing to render nested cells does NOT prevent parent cell from rendering': (require,get,done)-> get (Cell)->
-      done()
+   'render({data,to,id},done): Should create container div with specified id': (require,get,done)-> get (Cell)->
+ 
+      mockRenderedHTML = 'blarg'
+
+      # Attach {to} node
+      testNode = document.createElement 'div'
+      testNode.id = 'testNode'
+      document.body.appendChild testNode
+
+      cell = new Cell 'name', 'tmpl', 'style'
+      cell.render {data:'data',to:testNode,id:'testid'}, (rendering)->
+         equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
+         node = document.querySelectorAll 'div#testid'
+         equal node.length, 1, 'container node (div#testid) should exist'
+         node = node[0]
+         equal node.innerHTML, mockRenderedHTML, 'container node should contain rendered html'
+         done()
+
+      # Handle render.template request, w/nested requests
+      defaultTemplateRenderer.args[0][1]
+         html:mockRenderedHTML
+         nestedRequests: []
 
 
    '__createDOMNode(html): creates <div id="{cell}_#" class="{local cell name}">{html}</div>': (require,get,done)-> get (Cell)->
@@ -226,6 +246,16 @@ define ->
       node = cell.__createDOMNode 'html'
 
       equal node.id, 'root/name_0', 'node id should be {cell}_#'
+      equal node.classList.length, 1, 'node should only have 1 class'
+      equal node.classList[0], 'name', 'node class should be local cell name (ex. root/name => name)'
+      equal node.innerHTML,'html','node innerHTML should be {html}'
+      done()
+
+   '__createDOMNode(html,id): uses id when specifed': (require,get,done)-> get (Cell)->
+      cell = new Cell 'root/name', 'tmpl', 'style'
+      node = cell.__createDOMNode 'html', 'testid'
+
+      equal node.id, 'testid', 'node id should be {id}'
       equal node.classList.length, 1, 'node should only have 1 class'
       equal node.classList[0], 'name', 'node class should be local cell name (ex. root/name => name)'
       equal node.innerHTML,'html','node innerHTML should be {html}'

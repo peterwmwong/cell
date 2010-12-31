@@ -10,8 +10,7 @@ debug = hasFlag '-debug', 'd'
 {spawn} = require 'child_process'
 
 # Find tests
-testSpec = process.argv[process.argv.length-1]
-findtests {spec:testSpec, dir:testsdir}, (tests) ->
+findtests {spec:process.argv[process.argv.length-1], dir:testsdir}, (tests) ->
    if tests.length <= 0
       log "No tests found for \"#{testSpec}\""
       process.exit 0
