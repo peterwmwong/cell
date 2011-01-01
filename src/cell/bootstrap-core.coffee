@@ -1,0 +1,1 @@
+define ['cell/loader'], (loader)->

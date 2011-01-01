@@ -1,5 +1,5 @@
 define ['cell/util/ConfigMap'], (ConfigMap)->
-   isFunction = (v)-> typeof v === 'function'
+   isFunction = (v)-> typeof v == 'function'
 
    new ConfigMap
       'template.renderer':

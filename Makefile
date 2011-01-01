@@ -1,113 +1,42 @@
-VERSION       = `cat version`
+VERSION  = `cat version`
+src_files = $(shell find src -type f -name "*.coffee")
 
-DEPS          = deps
+define compile_coffee
+	mkdir -p build/js
+	coffee -b -o build/js/ -c src/
+endef
 
-DEPS_LIB      = $(DEPS)/lib
-REQUIREJS     = $(DEPS_LIB)/require.js
-LESS          = $(DEPS_LIB)/less.js
-LESS_MIN      = $(DEPS_LIB)/less-min.js
+define build_requirejs_module
+	./deps/lib/requirejs/build/build.sh name=$1 out=$2 baseUrl=build/js includeRequire=true $3
+endef
 
-DEPS_BUILD    = $(DEPS)/build
-GOOGLE_CLOSURE_COMPILER = $(DEPS_BUILD)/google-closure-compiler.jar
-
-DEPS_TEST	  = $(DEPS)/test
-QUNIT		     = $(DEPS_TEST)/qunit.js
-QUNIT_CSS	  = $(DEPS_TEST)/qunit.css
-
-
-DIST          = dist
-DIST_CURRENT  = $(DIST)/current
-DIST_VERSION  = $(DIST)/release/$(VERSION)
-DIST_CURRENT_FILES = $(DIST_CURRENT)/cell.js \
-						$(DIST_CURRENT)/cell-noRenderers.js
-
-
-SRC           = src/cell
-SRC_FILES     = $(SRC)/util/createClass.js \
-					$(SRC)/util/Delegator.js \
-					$(SRC)/util/EventSource.js \
-					$(SRC)/util/isHTMLNode.js \
-					$(SRC)/config.js \
-					$(SRC)/util/loadComponents.js \
-					$(SRC)/util/renderCSS.js \
-					$(SRC)/CellInstance.js \
-					$(SRC)/Cell.js \
-					$(SRC)/cell-require-plugin.js \
-					src/cell.js
-
-MUSTACHE_RENDERER_FILES = $(SRC)/integration/templating/mustache.js \
-							$(SRC)/integration/templating/mustache-template-renderer.js
-							
-LESS_RENDERER_FILES = $(SRC)/integration/styling/less-style-renderer.js
-
+define minify
+	java -jar deps/build/google-closure-compiler/compiler.jar --js $1 --js_output_file $2
+endef
 
 #-------------------------------------------------------------------
 # Convenience
 #------------------------------------------------------------------- 
-.PHONY : clean update-deps-lib update-deps-build update-deps-test
+.PHONY : all nomin clean
 
-clean : 
-	@@echo "Removing all files and directories under $(DIST_CURRENT)"
-		@@rm -rf $(DIST_CURRENT)/*
+all: build/cell-core.js build/cell.js
+nomin: build/cell-core-nomin.js build/cell-nomin.js
 
-update-deps-test : 
-	rm -rf $(DEPS_TEST)/*
-	$(MAKE) -f Makefile $(DEPS_TEST)
+build/cell-core-nomin.js: $(src_files)
+	$(compile_coffee)
+	$(call build_requirejs_module,cell/bootstrap-core,build/cell-core-nomin.js,optimize=none)
 
-#update-deps-build : 
-#	rm -rf $(DEPS_BUILD)/*
-#	$(MAKE) -f Makefile $(DEPS_BUILD)
+build/cell-nomin.js: build/cell-core-nomin.js
+	$(call build_requirejs_module,cell/bootstrap,build/cell.js.tmp,optimize=none)
+	cat deps/lib/less.js/less.js deps/lib/mustache.js/mustache.js build/cell.js.tmp > build/cell-nomin.js
+	rm build/cell.js.tmp
 
-update-deps-lib :
-	rm -rf $(DEPS_LIB)/*
-	$(MAKE) -f Makefile $(DEPS_LIB)
+build/cell-core.js: build/cell-core-nomin.js
+	$(call minify,build/cell-core-nomin.js,build/cell-core.js)
 
+build/cell.js: build/cell-nomin.js
+	$(call minify,build/cell-nomin.js,build/cell.js)
 
-#-------------------------------------------------------------------
-# deps/lib
-#-------------------------------------------------------------------
-$(DEPS_LIB) : $(REQUIREJS) $(LESS) $(LESS_MIN)
+clean: 
+	@@rm -rf build
 
-$(REQUIREJS) : 
-	wget http://requirejs.org/docs/release/0.14.5/minified/require.js -O $(REQUIREJS)
-
-$(LESS) : 
-	wget http://github.com/cloudhead/less.js/raw/master/dist/less-1.0.36.js -O $(LESS)
-
-$(LESS_MIN) : 
-	wget http://github.com/cloudhead/less.js/raw/master/dist/less-1.0.36.min.js -O $(LESS_MIN)
-
-
-#-------------------------------------------------------------------
-# deps/test
-#-------------------------------------------------------------------
-$(DEPS_TEST) : $(QUNIT) $(QUNIT_CSS)
-
-$(QUNIT) : 
-	wget http://github.com/jquery/qunit/raw/master/qunit/qunit.js -O $(QUNIT)
-	
-$(QUNIT_CSS) : 
-	wget http://github.com/jquery/qunit/raw/master/qunit/qunit.css -O $(QUNIT_CSS)
-
-
-#-------------------------------------------------------------------
-# deps/build
-#-------------------------------------------------------------------
-
-#-------------------------------------------------------------------
-# dist/current
-#-------------------------------------------------------------------
-$(DIST_CURRENT) : $(DIST_CURRENT_FILES)
-
-$(DIST_CURRENT)/cell.js : $(SRC_FILES) $(DEPS_LIB) $(MUSTACHE_RENDERER_FILES) $(LESS_RENDERER_FILES)
-	cat $(REQUIREJS) \
-			$(SRC_FILES) \
-			$(MUSTACHE_RENDERER_FILES) \
-			$(LESS) \
-			$(LESS_RENDERER_FILES) \
-				> $(DIST_CURRENT)/cell.js
-
-$(DIST_CURRENT)/cell-noRenderers.js : $(SRC_FILES) $(DEPS_LIB) $(DEPS_BUILD)
-	cat $(REQUIREJS) \
-			$(SRC_FILES) \
-				> $(DIST_CURRENT)/cell-noRenderers.js

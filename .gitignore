@@ -1,0 +1,7 @@
+# BUILD #
+#########
+build/
+
+# Temp Files #
+##############
+*.swp

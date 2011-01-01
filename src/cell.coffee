@@ -1,4 +1,4 @@
-define ['cell/Cell'], (Cell)->
+define ['cell/Cell','celltext'], (Cell)->
    modNameRegex = /(.*?)(\.[a-zA-Z0-9]+)*$/
    cellMap = {}
 
