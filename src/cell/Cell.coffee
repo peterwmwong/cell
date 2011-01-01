@@ -17,7 +17,7 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
             for k,v of {name: name, template: tmpl, style: style}
                Object.defineProperty this, k, {value: v, enumerable: true}
          
-         renderStyle: (->
+         renderStyle: do->
             # Render style ONCE
             rendered = false
             return ->
@@ -30,7 +30,6 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                               
                      Config.get 'renderer.style'
                rendered = true
-            )()
          
          __createDOMNode: (html,id)->
             node = document.createElement 'div'

@@ -1,15 +1,14 @@
 define [], ->
    # Determine appropriate XHR impl
-   createXhr = (->
+   createXhr = do->
       if XMLHttpRequest?
          return -> new XMLHttpRequest()
       else
          for progId in ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0']
-            do(progId)->
+            do (progId)->
                try
                   new ActiveXObject progId
                   return -> new ActiveXObject progId
-            )()
 
    fetchText = (url,cb)->
       xhr = createXhr()

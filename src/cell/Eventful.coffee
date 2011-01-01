@@ -11,14 +11,13 @@ define ->
                ls.push cb
 
             # unregister function
-            (->
+            do->
                called = false
                return ->
                   unless called
                      called = true
                      index = ls.indexOf cb
                      ls.splice index, 1 if index > -1
-            )()
             
       fire: (event, data)->
          for l in (@listeners[event] ? [])
@@ -29,13 +28,12 @@ define ->
             @requests[request] ?= handler
 
             # unregister function
-            (=>
+            do=>
                called = false
                return =>
                   unless called
                      called = true
                      delete @requests[request]
-            )()
 
       request: (request, data, cb, defaultHandler=(data,resp)->resp(data))->
          if typeof request == 'string' and typeof cb == 'function' and typeof defaultHandler == 'function'
