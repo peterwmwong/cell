@@ -1,5 +1,8 @@
 define ->
    defer = (t,f)-> setTimeout f,t
+   class MockNode
+      querySelector: sinon.spy()
+      querySelectorAll: sinon.spy()
 
    $testObj: 'cell/CellRendering'
 
@@ -15,21 +18,29 @@ define ->
       done()
 
 
-   '@cell, @data, and @node are read-only fields': (require,get,done)-> get (CellRendering)->
-      [mCell,mData,mNode] = [{},{},{}]
+   '@cell, @data, @node, @$, and @$$ are read-only fields': (require,get,done)-> get (CellRendering)->
+      [mCell,mData,mNode] = [{},{},new MockNode()]
       cr = new CellRendering mCell,mData,mNode
 
       try cr.cell={}
       try cr.data={}
       try cr.node={}
+      try cr.$=->
+      try cr.$$=->
       equal cr.cell, mCell, 'cell property should be read-only'
       equal cr.data, mData, 'data property should be read-only'
       equal cr.node, mNode, 'node property should be read-only'
+
+      try cr.$()
+      ok mNode.querySelector.calledOnce and mNode.querySelector.calledOn(mNode), '$ property should be read-only'
+      try cr.$$()
+      ok mNode.querySelectorAll.calledOnce and mNode.querySelectorAll.calledOn(mNode), '$$ property should be read-only'
+
       done()
 
 
    'update(data,done): sets @data and calls @cell.render({data:@data,to:@node},{done})': (require,get,done)-> get (CellRendering)->
-      [mData,mNode] = [{},{}]
+      [mData,mNode] = [{},new MockNode()]
       mCell = render: sinon.spy((a,b)->b())
       cr = new CellRendering mCell,mData,mNode
 
@@ -38,6 +49,5 @@ define ->
       cr.update newData, ->
          ok mCell.render.calledOnce, 'cell.render called once'
          equal mCell.render.args[0][0].data, newData, 'cell.render passed new data'
-         equal mCell.render.args[0][0].to, mNode, 'cell.render passed @node'
          equal mCell.render.args[0][0].to, mNode, 'cell.render passed @node'
          done()

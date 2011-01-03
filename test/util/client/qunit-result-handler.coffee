@@ -1,4 +1,4 @@
-define ->
+define ['/util/qunit-event-formatters.js'], (eventFormatters)->
    class Count
       constructor: ->
          @counts = {}
@@ -17,23 +17,6 @@ define ->
    curSuiteCount = new Count()
    curSuite = undefined
    curTest = undefined
-
-   eventFormatters =
-      start: -> "----------------------------------------"
-      done: ->
-         """
-         ----------------------------------------
-         [ FAIL: #{overallCount.failed()}  PASS: #{overallCount.passed()} ]
-         """
-      'suite.start': ({suite}) -> suite
-      'suite.done': ({suite}) -> "#{suite} [ FAIL: #{curSuiteCount.failed()}  PASS: #{curSuiteCount.passed()} ]"
-      'test.start': ({suite,test}) -> undefined
-      'test.done': ({suite,test}) -> undefined
-      'test.assert': ({suite,test,assert,isPass}) ->
-         unless isPass
-            ">>> FAIL <<< #{suite} | #{test} | #{assert}"
-         else
-            undefined
 
    sendTestEvent = (event) ->
       logmsg = eventFormatters[event.type](event)
@@ -63,6 +46,8 @@ define ->
 
    QUnit.moduleDone = (mod) -> sendTestEvent
       type: 'suite.done'
+      pass: curSuiteCount.passed()
+      fail: curSuiteCount.failed()
       suite: mod
 
    QUnit.testStart= (test) -> sendTestEvent

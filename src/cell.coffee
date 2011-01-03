@@ -9,21 +9,21 @@ define ['cell/Cell','celltext'], (Cell)->
          style:"celltext!#{name}.less"
          controller:"#{name}.js"
 
-      loadCtrl = (tmplLoaded)->
+      loadCtrl = (tmplLoaded,cell)->
          require [names.controller],
             (ctrl)->
-               done cellMap[name]
+               cell.renderStyle()
+               done cell
             (loaded,failed)->
+               cell.renderStyle()
                if tmplLoaded then done cellMap[name]
                else done undefined, new Error "Could not load cell '#{name}'"
 
       require [names.template,names.style],
          (tmpl,style)->
-            cellMap[name] = new Cell name, tmpl, style
-            loadCtrl true
+            loadCtrl true, (cellMap[name] = new Cell name, tmpl, style)
          (loaded,failed)->
-            cellMap[name] = new Cell name, loaded[names.template], loaded[names.style]
-            loadCtrl names.template of loaded
+            loadCtrl names.template of loaded, (cellMap[name] = new Cell name, loaded[names.template], loaded[names.style])
          
    # RequireJS Cell Extension Plugin loadDefineDependency API
    loadDefineDependency: (jsCellName)->

@@ -21,15 +21,15 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
             # Render style ONCE
             rendered = false
             return ->
-               if not rendered and isNonEmptyString @name
+               if not rendered and isNonEmptyString @style
+                  rendered = true
                   @request 'render.style',
                      @style
                      (css)=>
                         if isNonEmptyString css
                            attachCSS @name, css, (styleTagNode)->
                               
-                     Config.get 'renderer.style'
-               rendered = true
+                     Config.get 'style.renderer'
          
          __createDOMNode: (html,id)->
             node = document.createElement 'div'
@@ -51,11 +51,14 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                   # Callback
                   ({html,nestedRequests})=>
                      unless isNonEmptyString html
-                        done undefined, new Error("No HTML was rendered from template:\n#{@template}")
+                        try done? undefined, new Error("No HTML was rendered from template:\n#{@template}")
                      else
                         attachedNode = @__createDOMNode(html,id)
                         to.parentNode.replaceChild attachedNode, to
-                        done new CellRendering(this,data,attachedNode)
+
+                        rendering = new CellRendering(this,data,attachedNode)
+                        try done? rendering
+                        @fire 'render', rendering
 
                         if nestedRequests instanceof Array
                            for {cell,data,to,id} in nestedRequests
@@ -65,5 +68,5 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
 
 
                   # Default Handler
-                  Config.get 'renderer.template'
+                  Config.get 'template.renderer'
        
