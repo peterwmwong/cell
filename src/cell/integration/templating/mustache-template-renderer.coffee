@@ -12,7 +12,7 @@ define ['cell/Config'], (Config)->
               nestedRequests.push
                  cell: cname
                  data: ndata
-                 to: (nodeid = 'cellTmpNode' + tmpNodeId++)
+                 to: '#'+(nodeid = 'cellTmpNode' + tmpNodeId++)
                  id: id
 
               # Hidden temp node that will be replaced when

@@ -17,19 +17,16 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
             for k,v of {name: name, template: tmpl, style: style}
                Object.defineProperty this, k, {value: v, enumerable: true}
          
-         renderStyle: do->
-            # Render style ONCE
-            rendered = false
-            return ->
-               if not rendered and isNonEmptyString @style
-                  rendered = true
-                  @request 'render.style',
-                     @style
-                     (css)=>
-                        if isNonEmptyString css
-                           attachCSS @name, css, (styleTagNode)->
-                              
-                     Config.get 'style.renderer'
+         renderStyle: ->
+            if not @__rendered and isNonEmptyString @style
+               @__rendered = true
+               @request 'render.style',
+                  @style
+                  (css)=>
+                     if isNonEmptyString css
+                        attachCSS @name, css, (styleTagNode)->
+                           
+                  Config.get 'style.renderer'
          
          __createDOMNode: (html,id)->
             node = document.createElement 'div'

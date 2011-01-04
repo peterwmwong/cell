@@ -68,9 +68,10 @@ define ->
          r = nestedRequests[i]
          ok r.cell, name, "Nested request [#{i}] {cell} should be partials name"
          ok r.data, data, "Nested request [#{i}] {data} should be partials data"
-         tmpNodeHTML = "id='#{r.to}'"
          ok r.id, id, "Nested request [#{i}] {id} should be partials id"
-         ok (mockHTML.indexOf(tmpNodeHTML) == mockHTML.lastIndexOf(tmpNodeHTML)) > -1, "Nested request [#{i}] {to} should be a node id in rendered partial (and only one)"
+         tmpNodeHTML = "id='#{r.to.slice 1}'"
+         ok r.to[0] == '#', "Nested request [#{i}] {to} should be an CSS id selector"
+         ok mockHTML.indexOf(tmpNodeHTML) == mockHTML.lastIndexOf(tmpNodeHTML) > -1, "Nested request [#{i}] {to} should be a node id in rendered partial (and only one)"
       done()
 
 

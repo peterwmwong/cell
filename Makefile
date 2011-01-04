@@ -1,13 +1,19 @@
 VERSION  = `cat version`
 src_files = $(shell find src -type f -name "*.coffee")
 
+ifneq (,$(findstring CYGWIN,$(shell uname -s)))
+	requirejsBuild = ./deps/lib/requirejs/build/build.bat
+else
+	requirejsBuild = ./deps/lib/requirejs/build/build.sh
+endif
+
 define compile_coffee
 	mkdir -p build/js
 	coffee -b -o build/js/ -c src/
 endef
 
 define build_requirejs_module
-	./deps/lib/requirejs/build/build.sh name=$1 out=$2 baseUrl=build/js includeRequire=true $3
+	$(requirejsBuild) name=$1 out=$2 baseUrl=build/js includeRequire=true $3
 endef
 
 define minify

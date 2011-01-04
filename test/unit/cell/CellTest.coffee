@@ -99,18 +99,22 @@ define ->
       done()
 
 
-   'renderStyle(): multiple calls will only render/attach style once': (require,get,done)-> get (Cell)->
+   'renderStyle(): multiple calls will only render/attach style once for each Cell': (require,get,done)-> get (Cell)->
       cell = new Cell 'name', 'tmpl', 'style'
       cell.renderStyle()
       defaultStyleRenderer.args[0][1]('css')
-
-      ok attachCSSSpy.calledOnce, "cell/util/attachCSS should be called once the first time"
-
       cell.renderStyle()
 
       ok defaultStyleRenderer.calledOnce, "Default renderer should only be called once"
       ok attachCSSSpy.calledOnce, "cell/util/attachCSS should only be called once"
 
+      cell2 = new Cell 'name2', 'tmpl2', 'style2'
+      cell2.renderStyle()
+      defaultStyleRenderer.args[0][1]('css')
+      cell2.renderStyle()
+
+      equal defaultStyleRenderer.callCount, 2, "Default renderer should only be called twice (2nd Cell)"
+      equal attachCSSSpy.callCount, 2, "cell/util/attachCSS should only be called twice (2nd Cell)"
       done()
 
 

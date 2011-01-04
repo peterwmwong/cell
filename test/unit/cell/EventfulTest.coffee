@@ -3,7 +3,7 @@ define ->
 
    $testObj: 'cell/Eventful'
 
-   "on(event,function): listener called when event fired": (require, get, done)->
+   "on(event,callback): listener called when event fired": (require, get, done)->
       get (Eventful) ->
          e = new Eventful()
          cbSpy = sinon.spy()
@@ -19,7 +19,7 @@ define ->
 
          done()
 
-   "on(event,function): multiple listeners called when event fired": (require, get, done)->
+   "on(event,callback): multiple listeners called when event fired": (require, get, done)->
       get (Eventful) ->
          e = new Eventful()
          cbSpies = [sinon.spy(),sinon.spy(),sinon.spy()]
@@ -38,7 +38,7 @@ define ->
  
          done()
  
-   "on(event,function): returns function to unregister listener": (require, get, done)->
+   "on(event,callback): returns function to unregister listener": (require, get, done)->
       get (Eventful) ->
          e = new Eventful()
          cbSpy = sinon.spy()
@@ -61,7 +61,7 @@ define ->
          done()
  
 
-   "on(event,function): listener that throws an error does NOT prevent other listeners from being called": (require, get, done)->
+   "on(event,callback): listener that throws an error does NOT prevent other listeners from being called": (require, get, done)->
       get (Eventful) ->
          e = new Eventful()
          cbSpies = [sinon.spy(-> throw new Error),sinon.spy(),sinon.spy()]
@@ -81,7 +81,7 @@ define ->
          done()
 
 
-   "handle(event,function): returns function to unregister handler": (require, get, done)->
+   "handle(event,callback): returns function to unregister handler": (require, get, done)->
       get (Eventful) ->
          e = new Eventful()
          handlerSpy = sinon.spy()
@@ -108,7 +108,7 @@ define ->
          done()
 
 
-   "request(event,data,cb): handler called with request data": (require, get, done)->
+   "request(event,data,callback): handler called with request data": (require, get, done)->
       get (Eventful) ->
          e = new Eventful()
          handlerSpy = sinon.spy()
@@ -133,7 +133,7 @@ define ->
          done()
 
 
-   "request(event,data,cb): handler can respond with modified data": (require, get, done)->
+   "request(event,data,callback): handler can respond with modified data": (require, get, done)->
       get (Eventful) ->
          e = new Eventful()
          handlerSpy = sinon.spy()
@@ -155,7 +155,7 @@ define ->
 
 
 
-   "request(event,data,cb,defaultHandler): handler can defer to default handler with modifying data": (require, get, done)->
+   "request(event,data,callback,defaultHandler): handler can defer to default handler with modified data": (require, get, done)->
       get (Eventful) ->
          e = new Eventful()
          defaultHandlerSpy = sinon.spy()
@@ -187,7 +187,7 @@ define ->
          done()
 
 
-   "request(event,data,cb): callback called with request data when no handlers or default handler is registered": (require, get, done)->
+   "request(event,data,callback): callback called with request data when no handlers or default handler is registered": (require, get, done)->
       get (Eventful) ->
          e = new Eventful()
          cbSpy = sinon.spy()
@@ -200,7 +200,7 @@ define ->
          done()
 
 
-   "request(event,data,cb,defaultHandler): default handler called when no handler is registered": (require, get, done)->
+   "request(event,data,callback,defaultHandler): default handler called when no handler is registered": (require, get, done)->
       get (Eventful) ->
          e = new Eventful()
          handlerSpy = sinon.spy()
