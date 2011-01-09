@@ -28,7 +28,7 @@ endef
 all: build/cell-core.js build/cell.js
 nomin: build/cell-core-nomin.js build/cell-nomin.js
 
-build/cell-core-nomin.js: $(src_files)
+build/cell-core-nomin.js: $(src_files) deps/lib/requirejs/build
 	$(compile_coffee)
 	$(call build_requirejs_module,cell/bootstrap-core,build/cell-core-nomin.js,optimize=none)
 
@@ -42,6 +42,10 @@ build/cell-core.js: build/cell-core-nomin.js
 
 build/cell.js: build/cell-nomin.js
 	$(call minify,build/cell-nomin.js,build/cell.js)
+
+deps/lib/requirejs/build:
+	git submodule init
+	git submodule update
 
 clean: 
 	@@rm -rf build
