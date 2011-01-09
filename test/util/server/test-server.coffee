@@ -1,8 +1,6 @@
 express = require 'express' #TODO Figure out why deps/test/express doesn't work
-http = require 'http'
 {inspect} = require 'util'
-{stat,readFile} = require 'fs'
-url = require 'url'
+{readFile} = require 'fs'
 {EventEmitter} = require 'events'
 path = require 'path'
 coffee = require 'coffee-script'
