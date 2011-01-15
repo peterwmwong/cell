@@ -80,41 +80,52 @@ var Mustache = function() {
       });
     },
 
-    hela_partialNameRestRegex: (new RegExp('^([A-z][A-z0-9_-]*)[ ]*([\'"].*)?')),
     
     /*
       Tries to find a partial in the curent scope and render it
     */
     /*CELL MODIFIED BEGIN*/
-    render_partial: function(name, context, partials) {
-      name = this.trim(name);
-      var c = context[name];
-      var id = undefined;
-      
-      var results = (this.hela_partialNameRestRegex.exec(name) || name).slice(1);
-      name = results[0];      
-      if(results.length>1 && results[1]){
-         var jsonObj = JSON.parse('{'+results[1]+'}');
+    render_partial: (function(){
+      cellNameRegex = /^([A-z]([\/]?[A-z0-9_\-])*)[ ]*([\'"].*)?$/;
+
+      return function(name, context, partials) {
+         name = this.trim(name);
+         var c = {},
+             id = undefined;
+             results = (cellNameRegex.exec(name) || name).slice(1);
+
+         name = results[0];
+         if(results.length>2 && results[2]){
+            var jsonObj = JSON.parse('{'+results[2]+'}');
+            
+            id = (typeof jsonObj.$id === 'string')
+                  ? jsonObj.$id
+                  : undefined;
+            delete jsonObj.$id;
+          
+            var datadesc = Object.getOwnPropertyDescriptor(jsonObj,'$data');
+            if(datadesc){
+               delete jsonObj.$data;
+               var val = datadesc.value;
+               if(typeof val === 'string'){
+                  c = (val === '.')
+                        ? context
+                        : context[val];
+               }
+            }else{
+               c = jsonObj;
+            }
+         }
          
-         id = (typeof jsonObj.id === 'string'
-                  && jsonObj.id);
-        
-         c = (typeof jsonObj.data === 'string')
-               ? (jsonObj.data === '.')
-                   ? context 
-                   : {}
-               : jsonObj;
-      }
-      
-      var p = partials.getPartial(name,c,id);
-      if(!p) {
-        throw({message: "unknown_partial '" + name + "'"});
-      }
-      if(typeof(c) != "object") {
-        return this.render(p, context, partials, true);
-      }
-      return this.render(p, c, partials, true);
-    },
+         var p = partials.getPartial(name,c,id);
+         if(!p) {
+            var msg = "[ERROR] cell: unknown cell '"+name+"'";
+            try{throw new Error(msg);}catch(e){} // Allow for easier debugging w/break on error
+            return "<!-- "+msg+" -->";
+         }
+         return this.render(p, c, partials, true);
+      };
+    })(),
     /*CELL MODIFIED END*/
 
     /*
@@ -172,7 +183,7 @@ var Mustache = function() {
       var that = this;
 
       var new_regex = function() {
-        return new RegExp(that.otag + "(=|!|>|\\{|%)?([^\\/#\\^]+?)\\1?" +
+        return new RegExp(that.otag + "(=|!|>|\\{|%)?(.+?)\\1?" +
           that.ctag + "+", "g");
       };
 
