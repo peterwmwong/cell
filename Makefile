@@ -1,4 +1,3 @@
-VERSION  = `cat version`
 src_files = $(shell find src -type f -name "*.coffee")
 
 ifneq (,$(findstring CYGWIN,$(shell uname -s)))
@@ -28,7 +27,7 @@ endef
 all: build/cell-core.js build/cell.js
 nomin: build/cell-core-nomin.js build/cell-nomin.js
 
-build/cell-core-nomin.js: $(src_files) deps/lib/requirejs/build
+build/cell-core-nomin.js: $(src_files) deps/lib/requirejs/require.js
 	$(compile_coffee)
 	$(call build_requirejs_module,cell/bootstrap-core,build/cell-core-nomin.js,optimize=none)
 
@@ -43,7 +42,7 @@ build/cell-core.js: build/cell-core-nomin.js
 build/cell.js: build/cell-nomin.js
 	$(call minify,build/cell-nomin.js,build/cell.js)
 
-deps/lib/requirejs/build:
+deps/lib/requirejs/require.js:
 	git submodule init
 	git submodule update
 
