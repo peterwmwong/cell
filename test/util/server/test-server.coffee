@@ -1,4 +1,4 @@
-express = require 'express' #TODO Figure out why deps/test/express doesn't work
+express = require '../../../deps/test/express'
 {inspect} = require 'util'
 {readFile} = require 'fs'
 {EventEmitter} = require 'events'
@@ -41,23 +41,7 @@ exports.create = ({srcDir,depsDir,testsDir,mocksDir,utilDir,port,log}) ->
       app.use '/tests',express.staticProvider(testsDir)
       app.use '/mocks',express.staticProvider(mocksDir)
       app.use '/util',express.staticProvider(utilDir)
-
-      # JSON body decoder
-      # TODO why doesn't express.bodyDecoder() work
-      app.use (req,res,next) ->
-         if req.headers['content-type'] == 'application/json'
-            data = ''
-            req.setEncoding 'utf8'
-            req.addListener 'data', (chunk) -> data+=chunk
-            req.addListener 'end', () ->
-               req.rawBody = data
-               try
-                  req.body = JSON.parse data
-               catch err
-                  return next(err)
-               next()
-         else
-            next()
+      app.use(express.bodyDecoder())
 
    # Handle Coffee compile fallback
    #   If staticProvider (above) couldn't find the js file,
