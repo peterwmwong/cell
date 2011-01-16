@@ -6,6 +6,7 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
          (cellName)->
             cellIdMap[cellName] = (cellIdMap[cellName] or -1)+1
       cssClassRegex = /([^\/]*$)/
+      pathRegex = /(.*?)[^\/]*$/
 
       class Cell extends Eventful
          constructor: (name,tmpl,style)->
@@ -14,7 +15,7 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                throw new Error "Cell's name must be a non-empty string, instead was '#{name}'"
 
             # Define read-only properties name, template, style
-            for k,v of {name: name, template: tmpl, style: style}
+            for k,v of {name: name, template: tmpl, style: style, path:pathRegex.exec(name)[1]}
                Object.defineProperty this, k, {value: v, enumerable: true}
          
          renderStyle: ->
@@ -30,7 +31,7 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
          
          __createDOMNode: (html,id)->
             node = document.createElement 'div'
-            node.id = id or @name + '_' + getInstanceId @name
+            node.id = id or @name.replace('/','__') + '_' + getInstanceId @name
             node.classList.add cssClassRegex.exec(@name)[0]
             node.innerHTML = html
             node
@@ -59,8 +60,8 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
 
                         if nestedRequests instanceof Array
                            for {cell,data,to,id} in nestedRequests
-                              do (cell,data,to,id)->
-                                 require ['cell!'+cell], (cell)->
+                              do (cell,data,to,id)=>
+                                 require ["cell!#{@path}#{cell}"], (cell)->
                                     cell.render {data:data, to:attachedNode.querySelector(to), id:id}
 
 

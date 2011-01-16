@@ -39,15 +39,25 @@ define ->
          try ok not (new Cell name,'',''), "Should throw error if name is '#{name}'"
       done()
 
-   'new Cell(name, template, style): constructor arguments are used for name, template, and style properties': (require,get,done)-> get (Cell)->
+   'new Cell(name, template, style): constructor arguments are used for name, path, template, and style properties': (require,get,done)-> get (Cell)->
       cell = new Cell 'testName', 'testTemplate', 'testStyle'
 
       equal cell.name, 'testName', 'name property should be the 0 constructor argument'
+      equal cell.path, '', 'path property should be derived from name property'
       equal cell.template, 'testTemplate', 'template property should be the 1 constructor argument'
       equal cell.style, 'testStyle', 'style property should be the 2 constructor argument'
 
       done()
 
+   'new Cell(name, template, style): path property derived from name "name", "rel/name", "rel1/rel2/name", and "/name" ': (require,get,done)-> get (Cell)->
+      [['name',''],
+       ['rel/name','rel/'],
+       ['rel1/rel2/name','rel1/rel2/'],
+       ['/name','/']].forEach ([cname,cpath])->
+         cell = new Cell cname, 'testTemplate', 'testStyle'
+         equal cell.path, cpath, "given name '#{cname}', path should be '#{cpath}' (#{cell.path})"
+
+      done()
 
    'name, template, and style properties are read-only and unconfigurable': (require,get,done)-> get (Cell)->
       cell = new Cell 'test', 'test', 'test'
@@ -280,10 +290,62 @@ define ->
 
       defer 0, ->
          equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
-         node = document.querySelectorAll 'div#name_0'
+         node = document.querySelectorAll('div#name_0')[0]
+
+         ok nested_one.render.calledOnce, 'first nested cell render() called once'
+         arg = nested_one.render.args[0][0]
+         equal arg.data, 'nested_one.data', 'first nested cell render() passed {data}'
+         equal arg.to, node.querySelector('#nested_one_to'), 'first nested cell render() passed {to}'
+
+         ok nested_two.render.calledOnce, 'second nested cell render() called once'
+         arg = nested_two.render.args[0][0]
+         equal arg.data, 'nested_two.data', 'second nested cell render() passed {data}'
+         equal arg.to, node.querySelector('#nested_two_to'), 'second nested cell render() passed {to}'
+
+         if verifiedRenderCallback and (verifiedNestedRender = true)
+            done()
+
+   'render({data,to},done): loads and renders nested cells with relative paths': (require,get,done)-> get (Cell)->
+      nested_one = render: sinon.spy()
+      nested_two = render: sinon.spy()
+      mockRenderedHTML = '<div id="nested_one_to"></div><div id="nested_two_to"></div>'
+      mockCellPlugin.load = (name,require,done)->
+         switch name
+            when 'root/nested_one' then done nested_one
+            when 'root/nested_two' then done nested_two
+            else throw new Error 'DAMMIT'
+
+      # Attach {to} node
+      testNode = document.createElement 'div'
+      testNode.id = 'testNode'
+      document.body.appendChild testNode
+
+      cell = new Cell 'root/name', 'tmpl', 'style'
+
+      [verifiedRenderCallback,verifiedNestedRender] = [false,false]
+      cell.render {data:'data',to:testNode}, (rendering)->
+         equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
+         node = document.querySelectorAll 'div#root__name_0'
          equal node.length, 1, 'container node (div#name_0) should exist'
          node = node[0]
          equal node.innerHTML, mockRenderedHTML, 'container node should contain rendered html'
+
+         ok mCellRendering.calledOnce and mCellRendering.calledWithExactly(cell,'data',node), 'CellRendering called once and passed cell, data and node'
+         ok mCellRendering.calledOn(rendering), 'CellRendering called once and passed cell, data and node'
+         if (verifiedRenderCallback = true) and verifiedNestedRender
+            done()
+
+      # Handle render.template request, w/nested requests
+      defaultTemplateRenderer.args[0][1]
+         html:mockRenderedHTML
+         nestedRequests: [
+            {cell:'nested_one',data:'nested_one.data',to:'#nested_one_to'}
+            {cell:'nested_two',data:'nested_two.data',to:'#nested_two_to'}
+         ]
+
+      defer 0, ->
+         equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
+         node = document.querySelectorAll('div#root__name_0')[0]
 
          ok nested_one.render.calledOnce, 'first nested cell render() called once'
          arg = nested_one.render.args[0][0]
@@ -327,7 +389,7 @@ define ->
       cell = new Cell 'root/name', 'tmpl', 'style'
       node = cell.__createDOMNode 'html'
 
-      equal node.id, 'root/name_0', 'node id should be {cell}_#'
+      equal node.id, 'root__name_0', 'node id should be {cell}_#'
       equal node.classList.length, 1, 'node should only have 1 class'
       equal node.classList[0], 'name', 'node class should be local cell name (ex. root/name => name)'
       equal node.innerHTML,'html','node innerHTML should be {html}'
@@ -342,3 +404,5 @@ define ->
       equal node.classList[0], 'name', 'node class should be local cell name (ex. root/name => name)'
       equal node.innerHTML,'html','node innerHTML should be {html}'
       done()
+
+
