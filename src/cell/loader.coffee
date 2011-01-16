@@ -4,5 +4,8 @@ define ['require','cell'], (require,cell)->
       do (node,cellname)->
          require ["cell!#{cellname}"], (c)->
             c.render
-               data: try JSON.parse datastring if datastring=node.dataset.cellData
+               data: do->
+                  if datastring=node.dataset.cellData
+                     try return JSON.parse datastring
+                  {}
                to: node
