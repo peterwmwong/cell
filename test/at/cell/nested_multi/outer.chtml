@@ -1,3 +1,0 @@
-<b>{{outerdata}}</b>
-<i>{{>inner "innerArg":"passed from Outer"}}</i>
-<i>{{>inner2 "innerArg":"passed from Outer"}}</i>

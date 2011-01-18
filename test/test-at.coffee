@@ -12,7 +12,7 @@ debug = hasFlag '-debug', 'd'
 
 # Find tests
 testSpec = process.argv[process.argv.length-1]
-findtests {spec:testSpec+'.coffee', dir:testsdir}, (tests) ->
+findtests {spec:testSpec+'/test.coffee', dir:testsdir}, (tests) ->
    if tests.length <= 0
       log "No tests found for \"#{testSpec}\""
       process.exit 0

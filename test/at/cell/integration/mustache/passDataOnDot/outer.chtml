@@ -1,3 +1,0 @@
-{{#list}}
-   {{>inner "data":"."}}
-{{/list}}

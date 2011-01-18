@@ -1,10 +1,11 @@
+# Help express find it's own support modules
+require.paths.unshift "#{__dirname}/../../../deps/test/express/support"
 express = require '../../../deps/test/express'
 {inspect} = require 'util'
 {readFile} = require 'fs'
 {EventEmitter} = require 'events'
 path = require 'path'
 coffee = require 'coffee-script'
-
 
 compileCoffeeFile = (log, file, cb) ->
    path.exists file, (exists) ->
