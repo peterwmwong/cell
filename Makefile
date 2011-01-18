@@ -93,12 +93,19 @@ deps/lib/requirejs/require.js:
 #-------------------------------------------------------------------
 # TEST
 #------------------------------------------------------------------- 
-test-at: $(dist_files)
+test-at: $(dist_files) deps/test/express/index.js deps/test/express/support/connect/index.js
 	coffee test/test-at.coffee $(TEST_DEBUG_) -b $(TEST_BROWSER) $(TESTS)
 
-test-unit:
+test-unit: deps/test/express/index.js deps/test/express/support/connect/index.js
 	coffee test/test-unit.coffee $(TEST_DEBUG_) -b $(TEST_BROWSER) $(TESTS)
 
+deps/test/express/index.js:
+	git submodule init
+	git submodule update
+
+# test server depends on express, express depends on connect
+deps/test/express/support/connect/index.js:
+	cd deps/test/express; git submodule init; git submodule update
 
 clean: 
 	@@rm -rf build
