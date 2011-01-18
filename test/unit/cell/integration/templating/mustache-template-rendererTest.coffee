@@ -42,16 +42,18 @@ define ->
       doneSpy = sinon.spy()
       mockData = {}
       partials = for i in [0..5]
-         do->
+         console.log [undefined,'div','span','tr','a','td'][i]
+         do(i)->
             name: 'partial'+i,
             data: {},
             id: 'testid'+i
+            tag: [undefined,'div','span','tr','a','td'][i]
 
       mockMustache = window.Mustache =
          to_html: sinon.spy (template,data,{getPartial})->
             mockHTML = ''
-            for {name, data, id} in partials
-               mockHTML += getPartial name, data, id
+            for {name, data, id, tag} in partials
+               mockHTML += getPartial name, data, id, tag
             mockHTML
 
       mockConfig.set.getCall(0).args[1] {template:'test template',data:mockData}, doneSpy
@@ -64,12 +66,13 @@ define ->
       equal html, mockHTML, 'Should pass rendered HTML to {done}'
       ok nestedRequests instanceof Array and nestedRequests.length == partials.length, 'Should pass array of nested render requests to {done}'
 
-      partials.forEach ({name,data,id},i)->
+      partials.forEach ({name,data,id,tag},i)->
          r = nestedRequests[i]
          ok r.cell, name, "Nested request [#{i}] {cell} should be partials name"
          ok r.data, data, "Nested request [#{i}] {data} should be partials data"
          ok r.id, id, "Nested request [#{i}] {id} should be partials id"
          tmpNodeHTML = "id='#{r.to.slice 1}'"
+         ok r.tag == tag, "Nested request [#{i}] {tag} should be an CSS tag selector #{tag} #{r.tag}"
          ok r.to[0] == '#', "Nested request [#{i}] {to} should be an CSS id selector"
          ok mockHTML.indexOf(tmpNodeHTML) == mockHTML.lastIndexOf(tmpNodeHTML) > -1, "Nested request [#{i}] {to} should be a node id in rendered partial (and only one)"
       done()

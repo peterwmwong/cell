@@ -29,14 +29,14 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                            
                   Config.get 'style.renderer'
          
-         __createDOMNode: (html,id)->
-            node = document.createElement 'div'
+         __createDOMNode: (html,id,tag)->
+            node = document.createElement(tag or 'div')
             node.id = id or @name.replace('/','__') + '_' + getInstanceId @name
             node.classList.add cssClassRegex.exec(@name)[0]
             node.innerHTML = html
             node
 
-         render: ({data,to,id},done)->
+         render: ({data,to,id,tag},done)->
             if isNonEmptyString @template
 
                unless to
@@ -51,7 +51,7 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                      unless isNonEmptyString html
                         try done? undefined, new Error("No HTML was rendered from template:\n#{@template}")
                      else
-                        attachedNode = @__createDOMNode(html,id)
+                        attachedNode = @__createDOMNode(html,id,tag)
                         to.parentNode.replaceChild attachedNode, to
 
                         rendering = new CellRendering(this,data,attachedNode)
@@ -59,10 +59,10 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                         @fire 'render', rendering
 
                         if nestedRequests instanceof Array
-                           for {cell,data,to,id} in nestedRequests
-                              do (cell,data,to,id)=>
+                           for {cell,data,to,id,tag} in nestedRequests
+                              do (cell,data,to,id,tag)=>
                                  require ["cell!#{@path}#{cell}"], (cell)->
-                                    cell.render {data:data, to:attachedNode.querySelector(to), id:id}
+                                    cell.render {data:data, to:attachedNode.querySelector(to), id:id, tag:tag}
 
 
                   # Default Handler

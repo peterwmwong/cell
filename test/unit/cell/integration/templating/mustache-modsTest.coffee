@@ -39,6 +39,11 @@ define ->
          getPartial_receives: ['CellName', _isEmptyObj, undefined]
          returns: 'test html'
 
+   'Mustache.to_html() template partial using $tag': do->
+      calling_with '{{>CellName "$tag":"tr"}}', {contextStuff:'stuff'}, (-> 'test html'),
+         getPartial_receives: ['CellName', _isEmptyObj, undefined, 'tr']
+         returns: 'test html'
+
    'Mustache.to_html() template partial using $data': do->
       calling_with '{{>CellName "$data":"mydata"}}', {mydata: mockData = {stuff:'stuff'}}, (-> 'test html'),
          getPartial_receives: ['CellName', _strictEqual(mockData), undefined]

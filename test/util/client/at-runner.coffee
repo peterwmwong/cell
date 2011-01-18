@@ -41,7 +41,7 @@ define ['/util/parseTestsFromLocation.js','/util/load_iframe.js','/util/qunit-re
                               getStyle: (node,style)-> contentDocument.defaultView.getComputedStyle(node,null).getPropertyValue(style)
                               $: waitfor.bind(null, (sel)->contentDocument.querySelector(sel))
                               $$:waitfor.bind(null, (sel)->
-                                 if nodes = contentDocument.querySelectorAll(sel) and nodes.length > 0
+                                 if ((nodes = contentDocument.querySelectorAll(sel)) and nodes.length > 0)
                                     nodes
                               )
                               start

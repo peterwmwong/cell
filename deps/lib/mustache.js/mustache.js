@@ -91,7 +91,8 @@ var Mustache = function() {
       return function(name, context, partials) {
          name = this.trim(name);
          var c = {},
-             id = undefined;
+             id = undefined,
+             tag = undefined,
              results = (cellNameRegex.exec(name) || name).slice(1);
 
          name = results[0];
@@ -115,9 +116,14 @@ var Mustache = function() {
             }else{
                c = jsonObj;
             }
+
+            tag = (typeof jsonObj.$tag === 'string')
+                  ? jsonObj.$tag
+                  : undefined;
+            delete jsonObj.$tag
          }
          
-         var p = partials.getPartial(name,c,id);
+         var p = partials.getPartial(name,c,id,tag);
          if(!p) {
             var msg = "[ERROR] cell: unknown cell '"+name+"'";
             try{throw new Error(msg);}catch(e){} // Allow for easier debugging w/break on error

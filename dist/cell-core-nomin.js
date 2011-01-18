@@ -2010,17 +2010,17 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
         }, this), Config.get('style.renderer'));
       }
     };
-    Cell.prototype.__createDOMNode = function(html, id) {
+    Cell.prototype.__createDOMNode = function(html, id, tag) {
       var node;
-      node = document.createElement('div');
+      node = document.createElement(tag || 'div');
       node.id = id || this.name.replace('/', '__') + '_' + getInstanceId(this.name);
       node.classList.add(cssClassRegex.exec(this.name)[0]);
       node.innerHTML = html;
       return node;
     };
     Cell.prototype.render = function(_arg, done) {
-      var data, id, to;
-      data = _arg.data, to = _arg.to, id = _arg.id;
+      var data, id, tag, to;
+      data = _arg.data, to = _arg.to, id = _arg.id, tag = _arg.tag;
       if (isNonEmptyString(this.template)) {
         if (!to) {
           throw new Error("No 'to' DOM node was specified for Cell '" + this.name + "' to be rendered to");
@@ -2036,7 +2036,7 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
               return typeof done === "function" ? done(void 0, new Error("No HTML was rendered from template:\n" + this.template)) : void 0;
             } catch (_e) {}
           } else {
-            attachedNode = this.__createDOMNode(html, id);
+            attachedNode = this.__createDOMNode(html, id, tag);
             to.parentNode.replaceChild(attachedNode, to);
             rendering = new CellRendering(this, data, attachedNode);
             try {
@@ -2048,16 +2048,17 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
             if (nestedRequests instanceof Array) {
               _results = [];
               for (_i = 0, _len = nestedRequests.length; _i < _len; _i++) {
-                _ref = nestedRequests[_i], cell = _ref.cell, data = _ref.data, to = _ref.to, id = _ref.id;
-                _results.push(__bind(function(cell, data, to, id) {
+                _ref = nestedRequests[_i], cell = _ref.cell, data = _ref.data, to = _ref.to, id = _ref.id, tag = _ref.tag;
+                _results.push(__bind(function(cell, data, to, id, tag) {
                   return require(["cell!" + this.path + cell], function(cell) {
                     return cell.render({
                       data: data,
                       to: attachedNode.querySelector(to),
-                      id: id
+                      id: id,
+                      tag: tag
                     });
                   });
-                }, this)(cell, data, to, id));
+                }, this)(cell, data, to, id, tag));
               }
               return _results;
             }

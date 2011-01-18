@@ -8,15 +8,17 @@ define ['cell/Config'], (Config)->
       done
          html: window.Mustache.to_html( template, data,
             #TODO Support id (templates can specify id of container div)
-            getPartial: (cname,ndata,id)->
+            getPartial: (cname,ndata,id,tag)->
               nestedRequests.push
                  cell: cname
                  data: ndata
                  to: '#'+(nodeid = 'cellTmpNode' + tmpNodeId++)
                  id: id
+                 tag: tag
 
               # Hidden temp node that will be replaced when
-              return "<div id='#{nodeid}' style='display:none'> </div>"
+              tag ?= 'div'
+              return "<#{tag} id='#{nodeid}' style='display:none'> </#{tag}>"
          )
          nestedRequests: nestedRequests
 

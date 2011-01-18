@@ -285,7 +285,7 @@ define ->
          html:mockRenderedHTML
          nestedRequests: [
             {cell:'nested_one',data:'nested_one.data',to:'#nested_one_to'}
-            {cell:'nested_two',data:'nested_two.data',to:'#nested_two_to'}
+            {cell:'nested_two',data:'nested_two.data',to:'#nested_two_to',tag:'span'}
          ]
 
       defer 0, ->
@@ -300,7 +300,8 @@ define ->
          ok nested_two.render.calledOnce, 'second nested cell render() called once'
          arg = nested_two.render.args[0][0]
          equal arg.data, 'nested_two.data', 'second nested cell render() passed {data}'
-         equal arg.to, node.querySelector('#nested_two_to'), 'second nested cell render() passed {to}'
+         equal arg.to, node.querySelector('div#nested_two_to'), 'second nested cell render() passed {to}'
+         equal arg.tag, 'span', 'second nested cell render() passed {to}'
 
          if verifiedRenderCallback and (verifiedNestedRender = true)
             done()
@@ -350,12 +351,12 @@ define ->
          ok nested_one.render.calledOnce, 'first nested cell render() called once'
          arg = nested_one.render.args[0][0]
          equal arg.data, 'nested_one.data', 'first nested cell render() passed {data}'
-         equal arg.to, node.querySelector('#nested_one_to'), 'first nested cell render() passed {to}'
+         equal arg.to, node.querySelector('div#nested_one_to'), 'first nested cell render() passed {to}'
 
          ok nested_two.render.calledOnce, 'second nested cell render() called once'
          arg = nested_two.render.args[0][0]
          equal arg.data, 'nested_two.data', 'second nested cell render() passed {data}'
-         equal arg.to, node.querySelector('#nested_two_to'), 'second nested cell render() passed {to}'
+         equal arg.to, node.querySelector('div#nested_two_to'), 'second nested cell render() passed {to}'
 
          if verifiedRenderCallback and (verifiedNestedRender = true)
             done()
@@ -389,6 +390,7 @@ define ->
       cell = new Cell 'root/name', 'tmpl', 'style'
       node = cell.__createDOMNode 'html'
 
+      equal node.tagName.toUpperCase(), 'DIV', 'node should be a <div>'
       equal node.id, 'root__name_0', 'node id should be {cell}_#'
       equal node.classList.length, 1, 'node should only have 1 class'
       equal node.classList[0], 'name', 'node class should be local cell name (ex. root/name => name)'
@@ -399,10 +401,20 @@ define ->
       cell = new Cell 'root/name', 'tmpl', 'style'
       node = cell.__createDOMNode 'html', 'testid'
 
+      equal node.tagName.toUpperCase(), 'DIV', 'node should be a <div>'
       equal node.id, 'testid', 'node id should be {id}'
       equal node.classList.length, 1, 'node should only have 1 class'
       equal node.classList[0], 'name', 'node class should be local cell name (ex. root/name => name)'
       equal node.innerHTML,'html','node innerHTML should be {html}'
       done()
 
+   '__createDOMNode(html,id,tag): uses tag when specifed': (require,get,done)-> get (Cell)->
+      cell = new Cell 'root/name', 'tmpl', 'style'
+      node = cell.__createDOMNode 'html', 'testid', 'tr'
 
+      equal node.tagName.toUpperCase(), 'TR', 'node should be a <tr>, because {tag} specified it'
+      equal node.id, 'testid', 'node id should be {id}'
+      equal node.classList.length, 1, 'node should only have 1 class'
+      equal node.classList[0], 'name', 'node class should be local cell name (ex. root/name => name)'
+      equal node.innerHTML,'html','node innerHTML should be {html}'
+      done()
