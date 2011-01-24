@@ -35,7 +35,7 @@ define ->
                      called = true
                      delete @requests[request]
 
-      request: (request, data, cb, defaultHandler=(data,resp)->resp(data))->
+      request: (request, data, cb, defaultHandler=((data,resp)->resp data) )->
          if typeof request == 'string' and typeof cb == 'function' and typeof defaultHandler == 'function'
             respond = (data)->
                try cb data

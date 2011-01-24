@@ -38,13 +38,11 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                      unless (html = isNonEmptyString html)
                         try done? undefined, new Error("No HTML was rendered from template:\n#{@template}")
                      else
-                        attachedNodes = DOMHelper.htmlToDOMNodes html #, attach.target.tagName
+                        attachedNodes = DOMHelper[attach.method] attach.target, html
                         
                         if attachedNodes.length > 0
                            for n in attachedNodes
                               n.classList.add @cssClassName
-
-                           DOMHelper[attach.method] attach.target, attachedNodes
 
                            rendering = new CellRendering(this,data,attachedNodes)
                            try done? rendering

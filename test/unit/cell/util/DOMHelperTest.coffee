@@ -10,20 +10,18 @@ define ->
          root.innerHTML = "<span id='parent'><div id='child'></div></span>"
          target = $(root,targetSel)
 
-         tmp = document.createElement 'div'
-         tmp.innerHTML = '<div id="test0"></div><div id="test1"><div id="test1child"></div></div><div id="test2"></div>'
-         children = DOMHelper.htmlColToArray tmp.children
-         
-         DOMHelper[funcName] target, children
+         result = DOMHelper[funcName] target, '<div id="test0"></div><div id="test1"><div id="test1child"></div></div><div id="test2"></div>'
 
          if shouldTargetNotExist
             ok !$(root,targetSel), '{target} node should not exist'
 
          parent = $(root,expParentSel)
          
-         for sel in ['#test0','#test1','#test2','#test1 > #test1child']
-            ok $$(parent,sel).length, 1, "div:nth-of-type(#{startPos++})##{sel} should exist"
-
+         for sel,n of {'#test0':result[0],'#test1':result[1],'#test2':result[2],'#test1 > #test1child':undefined}
+            nodes = $$(parent,sel)
+            ok nodes, 1, "div:nth-of-type(#{startPos++})##{sel} should exist"
+            if n then equal nodes[0], n, 'Returned node is correct'
+            
          done()
 
    equalObj = (a,e)->
@@ -55,26 +53,26 @@ define ->
       done()
 
 
-   "htmlToDOMNodes(html): {html} has no nodes, returns []": (require,get,done)-> get ({htmlToDOMNodes})->
-      equal htmlToDOMNodes("blarg").length, 0
+   "__htmlToDOMNodes(html,parentTagName): {html} has no nodes, returns []": (require,get,done)-> get ({__htmlToDOMNodes})->
+      equal __htmlToDOMNodes("blarg","div").length, 0
       done()
 
 
-   "htmlToDOMNodes(html): {html} has one node, returns [node]": (require,get,done)-> get ({htmlToDOMNodes})->
-      nodes = htmlToDOMNodes "<span></span>"
+   "__htmlToDOMNodes(html): {html} has one node, returns [node]": (require,get,done)-> get ({__htmlToDOMNodes})->
+      nodes = __htmlToDOMNodes "<span></span>", "div"
       equal nodes.length, 1
       ok nodes[0].tagName.toLowerCase() == 'span'
       done()
 
 
-   "htmlToDOMNodes(html,parentTagName): Uses {parentTagName} to create nodes from {html}, returns [node...] (Tags like <tr/> have parent tag restrictions)": (require,get,done)-> get ({htmlToDOMNodes})->
-      nodes = htmlToDOMNodes "<tr></tr>", "tbody"
+   "__htmlToDOMNodes(html,parentTagName): Uses {parentTagName} to create nodes from {html}, returns [node...] (Tags like <tr/> have parent tag restrictions)": (require,get,done)-> get ({__htmlToDOMNodes})->
+      nodes = __htmlToDOMNodes "<tr></tr>", "tbody"
       equal nodes.length, 1
       ok nodes[0].tagName.toLowerCase() == 'tr'
       done()
 
-   "htmlToDOMNodes(html): {html} has multiple node, returns [node...]": (require,get,done)-> get ({htmlToDOMNodes})->
-      nodes = htmlToDOMNodes "<span></span><div></div><p></p>"
+   "__htmlToDOMNodes(html): {html} has multiple node, returns [node...]": (require,get,done)-> get ({__htmlToDOMNodes})->
+      nodes = __htmlToDOMNodes "<span></span><div></div><p></p>", "div"
       equal nodes.length, 3
       for i in [0..(expTags=['span','div','p']).length-1]
          ok nodes[i].tagName.toLowerCase() == expTags[i]
@@ -113,8 +111,8 @@ define ->
 
       done()
 
-   "replace(target,nodes)": testDOMInsertion('replace', '#child', '#parent', 1, true)
-   "prependTo(target,nodes)": testDOMInsertion('prependTo', '#parent', '#parent', 1)
-   "appendTo(target,nodes)": testDOMInsertion('appendTo', '#parent', '#parent', 2)
-   "before(target,nodes)": testDOMInsertion('before', '#child', '#parent', 1)
-   "after(target,nodes)": testDOMInsertion('after', '#child', '#parent', 2)
+   "replace(target,html)": testDOMInsertion('replace', '#child', '#parent', 1, true)
+   "prependTo(target,html)": testDOMInsertion('prependTo', '#parent', '#parent', 1)
+   "appendTo(target,html)": testDOMInsertion('appendTo', '#parent', '#parent', 2)
+   "before(target,html)": testDOMInsertion('before', '#child', '#parent', 1)
+   "after(target,html)": testDOMInsertion('after', '#child', '#parent', 2)

@@ -4843,9 +4843,9 @@ define('cell/Eventful',['require','exports','module'],function() {
     Eventful.prototype.request = function(request, data, cb, defaultHandler) {
       var defer, handler, respond;
       if (defaultHandler == null) {
-        defaultHandler = function(data, resp) {
+        defaultHandler = (function(data, resp) {
           return resp(data);
-        };
+        });
       }
       if (typeof request === 'string' && typeof cb === 'function' && typeof defaultHandler === 'function') {
         respond = function(data) {
@@ -4946,7 +4946,7 @@ define('cell/util/attachCSS',['require','exports','module'],function() {
   };
 });
 define('cell/util/DOMHelper',['require','exports','module'],function() {
-  var after, attachMethods, htmlColToArray, numAttachMethods;
+  var after, attachMethods, numAttachMethods, __htmlToDOMNodes;
   attachMethods = ['replace', 'appendTo', 'prependTo', 'before', 'after'];
   numAttachMethods = attachMethods.length;
   after = function(target, nodes) {
@@ -4959,6 +4959,19 @@ define('cell/util/DOMHelper',['require','exports','module'],function() {
     return _results;
   };
   return {
+    __htmlToDOMNodes: __htmlToDOMNodes = function(html, parentTagName) {
+      var htmlcol, i, l, tmp, _results;
+      tmp = document.createElement(parentTagName);
+      tmp.innerHTML = html;
+      htmlcol = tmp.children;
+      i = -1;
+      l = htmlcol.length;
+      _results = [];
+      while (++i < l) {
+        _results.push(htmlcol[i]);
+      }
+      return _results;
+    },
     getAttachMethodTarget: function(o) {
       var m, t, _i, _len;
       for (_i = 0, _len = attachMethods.length; _i < _len; _i++) {
@@ -4984,36 +4997,36 @@ define('cell/util/DOMHelper',['require','exports','module'],function() {
         }
       }
     },
-    htmlToDOMNodes: function(html, parentTagName) {
-      var tmp;
-      tmp = document.createElement(parentTagName || 'div');
-      tmp.innerHTML = html;
-      return htmlColToArray(tmp.children);
-    },
-    htmlColToArray: htmlColToArray = function(htmlcol) {
-      var i, l, _results;
-      i = -1;
-      l = htmlcol.length;
-      _results = [];
-      while (++i < l) {
-        _results.push(htmlcol[i]);
-      }
-      return _results;
-    },
-    replace: function(target, nodes) {
-      var newTarget;
+    replace: function(target, html) {
+      var newTarget, nodes;
+      nodes = __htmlToDOMNodes(html, target.parentNode.tagName);
       target.parentNode.replaceChild(newTarget = nodes[0], target);
-      return after(newTarget, nodes.slice(1));
+      after(newTarget, nodes.slice(1));
+      return nodes;
     },
-    before: function(target, nodes) {
-      return after(target.insertAdjacentElement('beforeBegin', nodes[0]), nodes.slice(1));
+    before: function(target, html) {
+      var nodes;
+      nodes = __htmlToDOMNodes(html, target.parentNode.tagName);
+      after(target.insertAdjacentElement('beforeBegin', nodes[0]), nodes.slice(1));
+      return nodes;
     },
-    after: after,
-    appendTo: function(target, nodes) {
-      return after(target.appendChild(nodes[0]), nodes.slice(1));
+    after: function(target, html) {
+      var nodes;
+      nodes = __htmlToDOMNodes(html, target.parentNode.tagName);
+      after(target, nodes);
+      return nodes;
     },
-    prependTo: function(target, nodes) {
-      return after(target.insertAdjacentElement('afterBegin', nodes[0]), nodes.slice(1));
+    appendTo: function(target, html) {
+      var nodes;
+      nodes = __htmlToDOMNodes(html, target.tagName);
+      after(target.appendChild(nodes[0]), nodes.slice(1));
+      return nodes;
+    },
+    prependTo: function(target, html) {
+      var nodes;
+      nodes = __htmlToDOMNodes(html, target.tagName);
+      after(target.insertAdjacentElement('afterBegin', nodes[0]), nodes.slice(1));
+      return nodes;
     }
   };
 });
@@ -5085,13 +5098,12 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
               return typeof done == "function" ? done(void 0, new Error("No HTML was rendered from template:\n" + this.template)) : void 0;
             } catch (_e) {}
           } else {
-            attachedNodes = DOMHelper.htmlToDOMNodes(html);
+            attachedNodes = DOMHelper[attach.method](attach.target, html);
             if (attachedNodes.length > 0) {
               for (_i = 0, _len = attachedNodes.length; _i < _len; _i++) {
                 n = attachedNodes[_i];
                 n.classList.add(this.cssClassName);
               }
-              DOMHelper[attach.method](attach.target, attachedNodes);
               rendering = new CellRendering(this, data, attachedNodes);
               try {
                 if (typeof done == "function") {

@@ -201,6 +201,21 @@ define ->
       defaultTemplateRenderer.args[0][1] html: '<div id="testRender">rendered</div>'
 
 
+   'render({data,appendTo},done): can handle rendered templates with restrictive root tags (ex. tr)': (require,get,done)-> get (Cell)->
+      cell = new Cell 'name', 'tmpl', 'style'
+
+      document.body.innerHTML = "<table><tbody id='testNode'></tbody></table>"
+
+      cell.render data:'data',appendTo:$('#testNode'), (rendering)->
+         equal $$('tbody#testNode').length, 1, '{appendTo} node should exist'
+         assertNodeInnerHTML 'body > table > tbody > tr#testRender > td', 'rendered'
+         assertCellRenderingCall rendering, cell, 'data', ['testRender']
+         done()
+
+      # Handle render.template request
+      defaultTemplateRenderer.args[0][1] html: '<tr id="testRender"><td>rendered</td></tr>'
+
+
    'render({data,replace},done): renders template to {replace} node, calls {done}, and passes the instance of CellRendering to {done}': (require,get,done)-> get (Cell)->
       cell = new Cell 'name', 'tmpl', 'style'
 
