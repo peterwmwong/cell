@@ -12,7 +12,7 @@ define ['cell/Config'], (Config)->
               nestedRequests.push
                  cell: cname
                  data: ndata
-                 to: '#'+(nodeid = 'cellTmpNode' + tmpNodeId++)
+                 replace: (nodeid='cellTmpNode' + tmpNodeId++)
                  id: id
                  tag: tag
 

@@ -8,11 +8,36 @@ define ->
    mockCellPlugin = undefined
    mCellRendering = undefined
 
+   # Helpers
+   $ = document.querySelector.bind document
+   $$ = document.querySelectorAll.bind document
+   equal
+   assertCallOnce = (desc,spy,expArgs...)->
+      ok spy.calledOnce, "#{desc} called once"
+      i = 0
+      for expArg in expArgs
+         arg = spy.args[0][i]
+         unless typeof expArg == 'object'
+            equal arg, expArg, "#{desc} argument #{i} #{arg} === #{expArg}"
+         else
+            deepEqual arg, expArg, "#{desc} argument #{i} (object) #{arg} === #{expArg}"
+
+   assertCellRenderingCall = (thisBind, eCell,eData,eNodeIds)->
+      ok mCellRendering.calledOn(thisBind), 'CellRendering called bound to proper this binding'
+      ok mCellRendering.calledOnce and mCellRendering.calledWith(eCell,eData), 'CellRendering called once and passed proper {cell}, {data}'
+      nodes = mCellRendering.args[0][2]
+      for i in [0..eNodeIds.length-1]
+         equal nodes[i].id, eNodeIds[i], 'CellRendering passed proper {nodes}'
+
+   assertNodeInnerHTML = (sel, expectedInnerHTML)->
+      body = document.body.innerHTML
+      nodes = $$ sel
+      equal nodes.length, 1, "one and only one node (#{sel}) should exist in '#{body}'"
+      equal nodes[0].innerHTML, expectedInnerHTML, "node innerHTML '#{nodes[0].innerHTML}' should be '#{expectedInnerHTML}' HTML"
+
    $testObj: 'cell/Cell'
    $afterTest: (done)->
-      # Clear body
-      while document.body.firstChild
-         document.body.removeChild document.body.firstChild
+      document.body.innerHTML = ''
       done()
 
    $beforeTest: (require,done)->
@@ -39,6 +64,7 @@ define ->
          try ok not (new Cell name,'',''), "Should throw error if name is '#{name}'"
       done()
 
+
    'new Cell(name, template, style): constructor arguments are used for name, path, template, and style properties': (require,get,done)-> get (Cell)->
       cell = new Cell 'testName', 'testTemplate', 'testStyle'
 
@@ -49,6 +75,7 @@ define ->
 
       done()
 
+
    'new Cell(name, template, style): path property derived from name "name", "rel/name", "rel1/rel2/name", and "/name" ': (require,get,done)-> get (Cell)->
       [['name',''],
        ['rel/name','rel/'],
@@ -58,6 +85,7 @@ define ->
          equal cell.path, cpath, "given name '#{cname}', path should be '#{cpath}' (#{cell.path})"
 
       done()
+
 
    'name, template, and style properties are read-only and unconfigurable': (require,get,done)-> get (Cell)->
       cell = new Cell 'test', 'test', 'test'
@@ -128,20 +156,20 @@ define ->
       done()
 
 
-   'render({data,to}): calls cell/Config.get("template.renderer") if no "render.template" handler': (require,get,done)-> get (Cell)->
+   'render({data,replace}): calls cell/Config.get("template.renderer") if no "render.template" handler': (require,get,done)-> get (Cell)->
       cell = new Cell 'name', 'tmpl', 'style'
-      cell.render {data: 'data', to: 'to'}
+      cell.render {data: 'data', replace: 'replace'}
       ok defaultTemplateRenderer.calledOnce and defaultTemplateRenderer.calledWith(template: 'tmpl', data: 'data'),
          "Default renderer, cell/Config.get('template.renderer'), should be called once and passed {template, data}"
       ok typeof defaultTemplateRenderer.args[0][1], 'function', 'Default renderer should be passed callback function'
       done()
 
 
-   'render({data,to}): calls "render.template" handler': (require,get,done)-> get (Cell)->
+   'render({data,replace}): calls "render.template" handler': (require,get,done)-> get (Cell)->
       cell = new Cell 'name', 'tmpl', 'style'
       handlerSpy = sinon.spy()
       cell.handle 'render.template', handlerSpy
-      cell.render {data: 'data', to: 'to'}
+      cell.render {data: 'data', replace: 'replace'}
       ok not defaultTemplateRenderer.calledOnce, "Default renderer, cell/Config.get('template.renderer'), should NOT be called"
       ok handlerSpy.calledOnce and handlerSpy.calledWith(template: 'tmpl', data: 'data'),
          "'template.renderer' handler should be called once and passed {template, data}"
@@ -149,59 +177,120 @@ define ->
       done()
 
 
-   'render({data},done): throws error if {to} is not specified': (require,get,done)-> get (Cell)->
+   'render({data}): throws error if {replace}, {appendTo}, {prependTo}, {before}, or {after} is not specified': (require,get,done)-> get (Cell)->
       cell = new Cell 'name', 'tmpl', 'style'
       try
          cell.render {data: 'data'}
-         ok false, 'Should throw error if {to} is not specified'
+         ok false, 'Should throw error'
 
       done()
 
 
-   'render({data,to},done): calls "render" listeners, passing the instance of CellRendering': (require,get,done)-> get (Cell)->
+   'render({data,replace}): emits "render" event, calls "render" listeners, and passes the instance of CellRendering to listeners': (require,get,done)-> get (Cell)->
       cell = new Cell 'name', 'tmpl', 'style'
+      document.body.innerHTML = "<div id='testNode'></div>"
 
       cell.on 'render', (rendering)->
-         node = document.querySelector 'div#name_0'
-         ok mCellRendering.calledOnce and mCellRendering.calledWithExactly(cell,'data',node), 'CellRendering called once and passed cell, data and node'
-         ok mCellRendering.calledOn(rendering), '"render" listener was passed the instance of CellRendering'
+         assertNodeInnerHTML 'body > div#testRender', 'rendered'
+         assertCellRenderingCall rendering, cell, 'data', ['testRender']
          done()
 
-      # Attach {to} node
-      testNode = document.createElement 'div'
-      testNode.id = 'testNode'
-      document.body.appendChild testNode
-
-      cell.render {data:'data',to:testNode}
+      cell.render data:'data', replace:$('#testNode')
 
       # Handle render.template request
-      defaultTemplateRenderer.args[0][1] html: 'rendered'
+      defaultTemplateRenderer.args[0][1] html: '<div id="testRender">rendered</div>'
 
 
-   'render({data,to},done): renders template to {to} node and calls {done}, passing the instance of CellRendering': (require,get,done)-> get (Cell)->
+   'render({data,replace},done): renders template to {replace} node, calls {done}, and passes the instance of CellRendering to {done}': (require,get,done)-> get (Cell)->
       cell = new Cell 'name', 'tmpl', 'style'
 
-      # Attach {to} node
-      testNode = document.createElement 'div'
-      testNode.id = 'testNode'
-      document.body.appendChild testNode
+      document.body.innerHTML = "<div id='testNode'></div>"
 
-      cell.render {data:'data',to:testNode}, (rendering)->
-         equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
-         node = document.querySelectorAll 'div#name_0'
-         equal node.length, 1, 'container node (div#name_0) should exist'
-         node = node[0]
-         equal node.innerHTML, 'rendered', 'container node should contain rendered html'
-
-         ok mCellRendering.calledOnce and mCellRendering.calledWithExactly(cell,'data',node), 'CellRendering called once and passed cell, data and node'
-         ok mCellRendering.calledOn(rendering), '{done} was passed the instance of CellRendering'
+      cell.render data:'data',replace:$('#testNode'), (rendering)->
+         equal $$('div#testNode').length, 0, '{replace} node should not exist and be replaced by the container node'
+         assertNodeInnerHTML 'body > div#testRender', 'rendered'
+         assertCellRenderingCall rendering, cell, 'data', ['testRender']
          done()
 
       # Handle render.template request
-      defaultTemplateRenderer.args[0][1] html: 'rendered'
+      defaultTemplateRenderer.args[0][1] html: '<div id="testRender">rendered</div>'
 
 
-   'render({data,to},done): Errors thrown by {done} does not prevent loading and rendering of nested cells': (require,get,done)-> get (Cell)->
+   'render({data,appendTo},done): renders template and appends it to {appendTo} node ': (require,get,done)-> get (Cell)->
+      cell = new Cell 'name', 'tmpl', 'style'
+
+      document.body.innerHTML =
+         """
+         <div id='testNode'>
+            <div id='testChildNode'></div>
+         </div>
+         """
+ 
+      cell.render data:'data', appendTo:$('#testNode'), (rendering)->
+         assertNodeInnerHTML 'body > div#testNode > div:nth-of-type(2)#testRender', 'rendered'
+         done()
+
+      # Handle render.template request
+      defaultTemplateRenderer.args[0][1] html: '<div id="testRender">rendered</div>'
+
+
+
+   'render({data,prependTo},done): renders template and appends it to {prependTo} node ': (require,get,done)-> get (Cell)->
+      cell = new Cell 'name', 'tmpl', 'style'
+
+      document.body.innerHTML =
+         """
+         <div id='testNode'>
+            <div id='testChildNode'></div>
+         </div>
+         """
+ 
+      cell.render data:'data', prependTo:$('#testNode'), (rendering)->
+         assertNodeInnerHTML 'body > div#testNode > div:nth-of-type(1)#testRender', 'rendered'
+         done()
+
+      # Handle render.template request
+      defaultTemplateRenderer.args[0][1] html: '<div id="testRender">rendered</div>'
+
+
+
+   'render({data,before},done): renders template and appends it to {before} node ': (require,get,done)-> get (Cell)->
+      cell = new Cell 'name', 'tmpl', 'style'
+
+      document.body.innerHTML =
+         """
+         <div id='testNode'>
+            <div id='testChildNode'></div>
+         </div>
+         """
+ 
+      cell.render data:'data', before:$('#testChildNode'), (rendering)->
+         assertNodeInnerHTML 'body > div#testNode > div:nth-of-type(1)#testRender', 'rendered'
+         done()
+
+      # Handle render.template request
+      defaultTemplateRenderer.args[0][1] html: '<div id="testRender">rendered</div>'
+
+
+   'render({data,after},done): renders template and appends it to {after} node ': (require,get,done)-> get (Cell)->
+      cell = new Cell 'name', 'tmpl', 'style'
+
+      document.body.innerHTML =
+         """
+         <div id='testNode'>
+            <div id='testChildNode'></div>
+         </div>
+         """
+ 
+      cell.render data:'data', after:$('#testChildNode'), (rendering)->
+         assertNodeInnerHTML 'body > div#testNode > div:nth-of-type(2)#testRender', 'rendered'
+         done()
+
+      # Handle render.template request
+      defaultTemplateRenderer.args[0][1] html: '<div id="testRender">rendered</div>'
+
+
+   'render({data,replace},done): Errors thrown by {done} does not prevent loading and rendering of nested cells': (require,get,done)-> get (Cell)->
       nested_one = render: sinon.spy()
       nested_two = render: sinon.spy()
       mockRenderedHTML = '<div id="nested_one_to"></div><div id="nested_two_to"></div>'
@@ -211,46 +300,40 @@ define ->
             when 'nested_two' then done nested_two
             else throw new Error 'DAMMIT'
 
-      # Attach {to} node
-      testNode = document.createElement 'div'
-      testNode.id = 'testNode'
-      document.body.appendChild testNode
+      document.body.innerHTML = "<div id='testNode'></div>"
 
       cell = new Cell 'name', 'tmpl', 'style'
 
-      [verifiedRenderCallback,verifiedNestedRender] = [false,false]
-      cell.render {data:'data',to:testNode}, (rendering)->
+      cell.render data:'data', replace:$('#testNode'), (rendering)->
          throw new Error()
 
       # Handle render.template request, w/nested requests
       defaultTemplateRenderer.args[0][1]
          html:mockRenderedHTML
          nestedRequests: [
-            {cell:'nested_one',data:'nested_one.data',to:'#nested_one_to'}
-            {cell:'nested_two',data:'nested_two.data',to:'#nested_two_to'}
+            {cell:'nested_one',data:'nested_one.data',before:'nested_one_to'}
+            {cell:'nested_two',data:'nested_two.data',appendTo:'nested_two_to'}
          ]
 
       defer 0, ->
-         equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
-         node = document.querySelectorAll 'div#name_0'
-         equal node.length, 1, 'container node (div#name_0) should exist'
-         node = node[0]
-         equal node.innerHTML, mockRenderedHTML, 'container node should contain rendered html'
+         equal $$('div#testNode').length, 0, '{replace} node should not exist and be replaced by the container node'
 
-         ok nested_one.render.calledOnce, 'first nested cell render() called once'
-         arg = nested_one.render.args[0][0]
-         equal arg.data, 'nested_one.data', 'first nested cell render() passed {data}'
-         equal arg.to, node.querySelector('#nested_one_to'), 'first nested cell render() passed {to}'
+         assertCallOnce "first nested cell render()", nested_one.render,
+            data: 'nested_one.data'
+            attach:
+               method:'before'
+               target:$('body > #nested_one_to')
 
-         ok nested_two.render.calledOnce, 'second nested cell render() called once'
-         arg = nested_two.render.args[0][0]
-         equal arg.data, 'nested_two.data', 'second nested cell render() passed {data}'
-         equal arg.to, node.querySelector('#nested_two_to'), 'second nested cell render() passed {to}'
+         assertCallOnce "first nested cell render()", nested_two.render,
+            data: 'nested_two.data'
+            attach:
+               method:'appendTo'
+               target:$('body > #nested_two_to')
 
          done()
 
-
-   'render({data,to},done): loads and renders nested cells from template': (require,get,done)-> get (Cell)->
+ 
+   'render({data,replace},done): loads and renders nested cells': (require,get,done)-> get (Cell)->
       nested_one = render: sinon.spy()
       nested_two = render: sinon.spy()
       mockRenderedHTML = '<div id="nested_one_to"></div><div id="nested_two_to"></div>'
@@ -260,53 +343,37 @@ define ->
             when 'nested_two' then done nested_two
             else throw new Error 'DAMMIT'
 
-      # Attach {to} node
-      testNode = document.createElement 'div'
-      testNode.id = 'testNode'
-      document.body.appendChild testNode
+      document.body.innerHTML = "<div id='testNode'></div>"
 
       cell = new Cell 'name', 'tmpl', 'style'
 
-      [verifiedRenderCallback,verifiedNestedRender] = [false,false]
-      cell.render {data:'data',to:testNode}, (rendering)->
-         equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
-         node = document.querySelectorAll 'div#name_0'
-         equal node.length, 1, 'container node (div#name_0) should exist'
-         node = node[0]
-         equal node.innerHTML, mockRenderedHTML, 'container node should contain rendered html'
-
-         ok mCellRendering.calledOnce and mCellRendering.calledWithExactly(cell,'data',node), 'CellRendering called once and passed cell, data and node'
-         ok mCellRendering.calledOn(rendering), 'CellRendering called once and passed cell, data and node'
-         if (verifiedRenderCallback = true) and verifiedNestedRender
-            done()
+      cell.render data:'data', replace:$('#testNode')
 
       # Handle render.template request, w/nested requests
       defaultTemplateRenderer.args[0][1]
          html:mockRenderedHTML
          nestedRequests: [
-            {cell:'nested_one',data:'nested_one.data',to:'#nested_one_to'}
-            {cell:'nested_two',data:'nested_two.data',to:'#nested_two_to',tag:'span'}
+            {cell:'nested_one',data:'nested_one.data',before:'nested_one_to'}
+            {cell:'nested_two',data:'nested_two.data',appendTo:'nested_two_to'}
          ]
 
       defer 0, ->
-         equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
-         node = document.querySelectorAll('div#name_0')[0]
+         equal $$('div#testNode').length, 0, '{replace} node should not exist and be replaced by the container node'
+         assertCallOnce "first nested cell render()", nested_one.render,
+            data: 'nested_one.data'
+            attach:
+               method:'before'
+               target:$('body > #nested_one_to')
 
-         ok nested_one.render.calledOnce, 'first nested cell render() called once'
-         arg = nested_one.render.args[0][0]
-         equal arg.data, 'nested_one.data', 'first nested cell render() passed {data}'
-         equal arg.to, node.querySelector('#nested_one_to'), 'first nested cell render() passed {to}'
+         assertCallOnce "first nested cell render()", nested_two.render,
+            data: 'nested_two.data'
+            attach:
+               method:'appendTo'
+               target:$('body > #nested_two_to')
 
-         ok nested_two.render.calledOnce, 'second nested cell render() called once'
-         arg = nested_two.render.args[0][0]
-         equal arg.data, 'nested_two.data', 'second nested cell render() passed {data}'
-         equal arg.to, node.querySelector('div#nested_two_to'), 'second nested cell render() passed {to}'
-         equal arg.tag, 'span', 'second nested cell render() passed {to}'
+         done()
 
-         if verifiedRenderCallback and (verifiedNestedRender = true)
-            done()
-
-   'render({data,to},done): loads and renders nested cells with relative paths': (require,get,done)-> get (Cell)->
+   'render({data,replace},done): loads and renders nested cells with relative paths': (require,get,done)-> get (Cell)->
       nested_one = render: sinon.spy()
       nested_two = render: sinon.spy()
       mockRenderedHTML = '<div id="nested_one_to"></div><div id="nested_two_to"></div>'
@@ -316,105 +383,33 @@ define ->
             when 'root/nested_two' then done nested_two
             else throw new Error 'DAMMIT'
 
-      # Attach {to} node
-      testNode = document.createElement 'div'
-      testNode.id = 'testNode'
-      document.body.appendChild testNode
+      document.body.innerHTML = "<div id='testNode'></div>"
 
       cell = new Cell 'root/name', 'tmpl', 'style'
 
-      [verifiedRenderCallback,verifiedNestedRender] = [false,false]
-      cell.render {data:'data',to:testNode}, (rendering)->
-         equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
-         node = document.querySelectorAll 'div#root__name_0'
-         equal node.length, 1, 'container node (div#name_0) should exist'
-         node = node[0]
-         equal node.innerHTML, mockRenderedHTML, 'container node should contain rendered html'
-
-         ok mCellRendering.calledOnce and mCellRendering.calledWithExactly(cell,'data',node), 'CellRendering called once and passed cell, data and node'
-         ok mCellRendering.calledOn(rendering), 'CellRendering called once and passed cell, data and node'
-         if (verifiedRenderCallback = true) and verifiedNestedRender
-            done()
+      cell.render {data:'data',replace:testNode}
 
       # Handle render.template request, w/nested requests
       defaultTemplateRenderer.args[0][1]
          html:mockRenderedHTML
          nestedRequests: [
-            {cell:'nested_one',data:'nested_one.data',to:'#nested_one_to'}
-            {cell:'nested_two',data:'nested_two.data',to:'#nested_two_to'}
+            {cell:'nested_one',data:'nested_one.data',replace:'nested_one_to'}
+            {cell:'nested_two',data:'nested_two.data',replace:'nested_two_to'}
          ]
 
       defer 0, ->
-         equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
-         node = document.querySelectorAll('div#root__name_0')[0]
+         equal $$('div#testNode').length, 0, '{replace} node should not exist and be replaced by the container node'
 
-         ok nested_one.render.calledOnce, 'first nested cell render() called once'
-         arg = nested_one.render.args[0][0]
-         equal arg.data, 'nested_one.data', 'first nested cell render() passed {data}'
-         equal arg.to, node.querySelector('div#nested_one_to'), 'first nested cell render() passed {to}'
+         assertCallOnce "first nested cell render()", nested_one.render,
+            data: 'nested_one.data'
+            attach:
+               method:'replace'
+               target:$('body > #nested_one_to')
 
-         ok nested_two.render.calledOnce, 'second nested cell render() called once'
-         arg = nested_two.render.args[0][0]
-         equal arg.data, 'nested_two.data', 'second nested cell render() passed {data}'
-         equal arg.to, node.querySelector('div#nested_two_to'), 'second nested cell render() passed {to}'
+         assertCallOnce "first nested cell render()", nested_two.render,
+            data: 'nested_two.data'
+            attach:
+               method:'replace'
+               target:$('body > #nested_two_to')
 
-         if verifiedRenderCallback and (verifiedNestedRender = true)
-            done()
-
-
-   'render({data,to,id},done): Should create container div with specified id': (require,get,done)-> get (Cell)->
- 
-      mockRenderedHTML = 'blarg'
-
-      # Attach {to} node
-      testNode = document.createElement 'div'
-      testNode.id = 'testNode'
-      document.body.appendChild testNode
-
-      cell = new Cell 'name', 'tmpl', 'style'
-      cell.render {data:'data',to:testNode,id:'testid'}, (rendering)->
-         equal document.querySelectorAll('div#testNode').length, 0, '{to} node should not exist and be replaced by the container node'
-         node = document.querySelectorAll 'div#testid'
-         equal node.length, 1, 'container node (div#testid) should exist'
-         node = node[0]
-         equal node.innerHTML, mockRenderedHTML, 'container node should contain rendered html'
          done()
-
-      # Handle render.template request, w/nested requests
-      defaultTemplateRenderer.args[0][1]
-         html:mockRenderedHTML
-         nestedRequests: []
-
-
-   '__createDOMNode(html): creates <div id="{cell}_#" class="{local cell name}">{html}</div>': (require,get,done)-> get (Cell)->
-      cell = new Cell 'root/name', 'tmpl', 'style'
-      node = cell.__createDOMNode 'html'
-
-      equal node.tagName.toUpperCase(), 'DIV', 'node should be a <div>'
-      equal node.id, 'root__name_0', 'node id should be {cell}_#'
-      equal node.classList.length, 1, 'node should only have 1 class'
-      equal node.classList[0], 'name', 'node class should be local cell name (ex. root/name => name)'
-      equal node.innerHTML,'html','node innerHTML should be {html}'
-      done()
-
-   '__createDOMNode(html,id): uses id when specifed': (require,get,done)-> get (Cell)->
-      cell = new Cell 'root/name', 'tmpl', 'style'
-      node = cell.__createDOMNode 'html', 'testid'
-
-      equal node.tagName.toUpperCase(), 'DIV', 'node should be a <div>'
-      equal node.id, 'testid', 'node id should be {id}'
-      equal node.classList.length, 1, 'node should only have 1 class'
-      equal node.classList[0], 'name', 'node class should be local cell name (ex. root/name => name)'
-      equal node.innerHTML,'html','node innerHTML should be {html}'
-      done()
-
-   '__createDOMNode(html,id,tag): uses tag when specifed': (require,get,done)-> get (Cell)->
-      cell = new Cell 'root/name', 'tmpl', 'style'
-      node = cell.__createDOMNode 'html', 'testid', 'tr'
-
-      equal node.tagName.toUpperCase(), 'TR', 'node should be a <tr>, because {tag} specified it'
-      equal node.id, 'testid', 'node id should be {id}'
-      equal node.classList.length, 1, 'node should only have 1 class'
-      equal node.classList[0], 'name', 'node class should be local cell name (ex. root/name => name)'
-      equal node.innerHTML,'html','node innerHTML should be {html}'
-      done()

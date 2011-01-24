@@ -1875,7 +1875,7 @@ define('cell/util/ConfigMap',['require','exports','module'],function() {
         c = spec[k];
         if (!c) {
           throw new Error("No Config for '" + k + "'");
-        } else if ((typeof c.validate === "function" ? c.validate(v) : void 0) === false) {
+        } else if ((typeof c.validate == "function" ? c.validate(v) : void 0) === false) {
           throw new Error("Config '" + k + "' should be a " + c.api);
         }
         return c.value = v;
@@ -1911,16 +1911,36 @@ define('cell/Config',['cell/util/ConfigMap'], function(ConfigMap) {
 define('cell/CellRendering',[], function() {
   var CellRendering;
   return CellRendering = (function() {
-    function CellRendering(cell, data, node) {
-      var k, v, _ref;
-      if (!(cell && node)) {
+    function CellRendering(cell, data, nodes) {
+      var $, $$, k, v, _ref;
+      if (!(cell && nodes)) {
         throw new Error("CellRendering must have a cell and node");
       }
+      $ = function(sel) {
+        var hit, n, _i, _len;
+        for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+          n = nodes[_i];
+          if (hit = n.querySelector(sel)) {
+            return hit;
+          }
+        }
+      };
+      $$ = function(sel) {
+        var hits, n, r, _i, _len;
+        r = [];
+        for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+          n = nodes[_i];
+          if (hits = n.querySelectorAll(sel) && hits.length > 0) {
+            r.push.apply(r, hits);
+          }
+        }
+        return r;
+      };
       _ref = {
         cell: cell,
-        node: node,
-        '$': node.querySelector.bind(node),
-        '$$': node.querySelectorAll.bind(node)
+        nodes: nodes,
+        '$': $,
+        '$$': $$
       };
       for (k in _ref) {
         v = _ref[k];
@@ -1936,10 +1956,16 @@ define('cell/CellRendering',[], function() {
         enumerable: true
       });
       this.update = function(newdata, done) {
+        var n, replace, _i, _len;
         data = newdata;
+        replace = nodes.splice(0, 1)[0];
+        for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+          n = nodes[_i];
+          n.parentNode.removeChild(n);
+        }
         return this.cell.render({
           data: data,
-          to: node
+          replace: replace
         }, done);
       };
     }
@@ -1956,6 +1982,78 @@ define('cell/util/attachCSS',['require','exports','module'],function() {
     return done(styleTag);
   };
 });
+define('cell/util/DOMHelper',['require','exports','module'],function() {
+  var after, attachMethods, htmlColToArray, numAttachMethods;
+  attachMethods = ['replace', 'appendTo', 'prependTo', 'before', 'after'];
+  numAttachMethods = attachMethods.length;
+  after = function(target, nodes) {
+    var n, _i, _len, _results;
+    _results = [];
+    for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+      n = nodes[_i];
+      _results.push(target = target.insertAdjacentElement('afterEnd', n));
+    }
+    return _results;
+  };
+  return {
+    getAttachMethodTarget: function(o) {
+      var m, t, _i, _len;
+      for (_i = 0, _len = attachMethods.length; _i < _len; _i++) {
+        m = attachMethods[_i];
+        if (t = o[m]) {
+          return {
+            target: t,
+            method: m
+          };
+        }
+      }
+      return {
+        target: void 0
+      };
+    },
+    getElementFromNodes: function(nid, nodes) {
+      var n, sel, _i, _len;
+      sel = '#' + nid;
+      for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+        n = nodes[_i];
+        if (n.id === nid || (n = n.querySelector(sel))) {
+          return n;
+        }
+      }
+    },
+    htmlToDOMNodes: function(html, parentTagName) {
+      var tmp;
+      tmp = document.createElement(parentTagName || 'div');
+      tmp.innerHTML = html;
+      return htmlColToArray(tmp.children);
+    },
+    htmlColToArray: htmlColToArray = function(htmlcol) {
+      var i, l, _results;
+      i = -1;
+      l = htmlcol.length;
+      _results = [];
+      while (++i < l) {
+        _results.push(htmlcol[i]);
+      }
+      return _results;
+    },
+    replace: function(target, nodes) {
+      var newTarget;
+      target.parentNode.replaceChild(newTarget = nodes[0], target);
+      return after(newTarget, nodes.slice(1));
+    },
+    before: function(target, nodes) {
+      return after(target.insertAdjacentElement('beforeBegin', nodes[0]), nodes.slice(1));
+    },
+    after: after,
+    appendTo: function(target, nodes) {
+      return after(target.appendChild(nodes[0]), nodes.slice(1));
+    },
+    prependTo: function(target, nodes) {
+      return after(target.insertAdjacentElement('afterBegin', nodes[0]), nodes.slice(1));
+    }
+  };
+});
 var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
   for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
   function ctor() { this.constructor = child; }
@@ -1964,18 +2062,11 @@ var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, par
   child.__super__ = parent.prototype;
   return child;
 }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRendering', 'cell/util/attachCSS'], function(require, Eventful, Config, CellRendering, attachCSS) {
-  var Cell, cssClassRegex, getInstanceId, isNonEmptyString, pathRegex;
+define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRendering', 'cell/util/attachCSS', 'cell/util/DOMHelper'], function(require, Eventful, Config, CellRendering, attachCSS, DOMHelper) {
+  var Cell, cssClassRegex, isNonEmptyString, pathRegex;
   isNonEmptyString = function(s) {
     return typeof s === 'string' && s.trim();
   };
-  getInstanceId = (function() {
-    var cellIdMap;
-    cellIdMap = {};
-    return function(cellName) {
-      return cellIdMap[cellName] = (cellIdMap[cellName] || -1) + 1;
-    };
-  })();
   cssClassRegex = /([^\/]*$)/;
   pathRegex = /(.*?)[^\/]*$/;
   return Cell = (function() {
@@ -1990,7 +2081,9 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
         name: name,
         template: tmpl,
         style: style,
-        path: pathRegex.exec(name)[1]
+        path: pathRegex.exec(name)[1],
+        hasTemplate: !!isNonEmptyString(tmpl),
+        cssClassName: cssClassRegex.exec(name)[0]
       };
       for (k in _ref) {
         v = _ref[k];
@@ -2004,63 +2097,67 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
       if (!this.__rendered && isNonEmptyString(this.style)) {
         this.__rendered = true;
         return this.request('render.style', this.style, __bind(function(css) {
-          if (isNonEmptyString(css)) {
+          if (css = isNonEmptyString(css)) {
             return attachCSS(this.name, css, function(styleTagNode) {});
           }
         }, this), Config.get('style.renderer'));
       }
     };
-    Cell.prototype.__createDOMNode = function(html, id, tag) {
-      var node;
-      node = document.createElement(tag || 'div');
-      node.id = id || this.name.replace('/', '__') + '_' + getInstanceId(this.name);
-      node.classList.add(cssClassRegex.exec(this.name)[0]);
-      node.innerHTML = html;
-      return node;
-    };
-    Cell.prototype.render = function(_arg, done) {
-      var data, id, tag, to;
-      data = _arg.data, to = _arg.to, id = _arg.id, tag = _arg.tag;
-      if (isNonEmptyString(this.template)) {
-        if (!to) {
-          throw new Error("No 'to' DOM node was specified for Cell '" + this.name + "' to be rendered to");
+    Cell.prototype.render = function(opts, done) {
+      var attach, data;
+      if (this.hasTemplate && (opts != null)) {
+        data = opts.data;
+        attach = opts.attach || DOMHelper.getAttachMethodTarget(opts);
+        if (attach.target == null) {
+          throw new Error("One attach method (" + (attachMethods.join(',')) + ") needs to be specified to determine how Cell '" + this.name + "' will be attached to the DOM.");
         }
         return this.request('render.template', {
           template: this.template,
           data: data
         }, __bind(function(_arg) {
-          var attachedNode, cell, html, nestedRequests, rendering, _i, _len, _ref, _results;
+          var attachedNodes, html, n, nestedRequests, path, rendering, req, _i, _j, _len, _len2, _results;
           html = _arg.html, nestedRequests = _arg.nestedRequests;
-          if (!isNonEmptyString(html)) {
+          if (!(html = isNonEmptyString(html))) {
             try {
-              return typeof done === "function" ? done(void 0, new Error("No HTML was rendered from template:\n" + this.template)) : void 0;
+              return typeof done == "function" ? done(void 0, new Error("No HTML was rendered from template:\n" + this.template)) : void 0;
             } catch (_e) {}
           } else {
-            attachedNode = this.__createDOMNode(html, id, tag);
-            to.parentNode.replaceChild(attachedNode, to);
-            rendering = new CellRendering(this, data, attachedNode);
-            try {
-              if (typeof done === "function") {
-                done(rendering);
+            attachedNodes = DOMHelper.htmlToDOMNodes(html);
+            if (attachedNodes.length > 0) {
+              for (_i = 0, _len = attachedNodes.length; _i < _len; _i++) {
+                n = attachedNodes[_i];
+                n.classList.add(this.cssClassName);
               }
-            } catch (_e) {}
-            this.fire('render', rendering);
-            if (nestedRequests instanceof Array) {
-              _results = [];
-              for (_i = 0, _len = nestedRequests.length; _i < _len; _i++) {
-                _ref = nestedRequests[_i], cell = _ref.cell, data = _ref.data, to = _ref.to, id = _ref.id, tag = _ref.tag;
-                _results.push(__bind(function(cell, data, to, id, tag) {
-                  return require(["cell!" + this.path + cell], function(cell) {
-                    return cell.render({
-                      data: data,
-                      to: attachedNode.querySelector(to),
-                      id: id,
-                      tag: tag
+              DOMHelper[attach.method](attach.target, attachedNodes);
+              rendering = new CellRendering(this, data, attachedNodes);
+              try {
+                if (typeof done == "function") {
+                  done(rendering);
+                }
+              } catch (_e) {}
+              this.fire('render', rendering);
+              if (nestedRequests instanceof Array) {
+                path = this.path;
+                _results = [];
+                for (_j = 0, _len2 = nestedRequests.length; _j < _len2; _j++) {
+                  req = nestedRequests[_j];
+                  _results.push((function(req) {
+                    var cell, method, target, _ref;
+                    _ref = DOMHelper.getAttachMethodTarget(req), method = _ref.method, target = _ref.target;
+                    req.attach = {
+                      method: method,
+                      target: DOMHelper.getElementFromNodes(target, attachedNodes)
+                    };
+                    delete req[method];
+                    cell = req.cell;
+                    delete req.cell;
+                    return require(["cell!" + path + cell], function(cell) {
+                      return cell.render(req);
                     });
-                  });
-                }, this)(cell, data, to, id, tag));
+                  })(req));
+                }
+                return _results;
               }
-              return _results;
             }
           }
         }, this), Config.get('template.renderer'));
@@ -2174,7 +2271,7 @@ define('cell/loader',['require', 'cell'], function(require, cell) {
               }
               return {};
             })(),
-            to: node
+            replace: node
           });
         });
       })(node, cellname));

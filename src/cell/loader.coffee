@@ -8,4 +8,4 @@ define ['require','cell'], (require,cell)->
                   if datastring=node.dataset.cellData
                      try return JSON.parse datastring
                   {}
-               to: node
+               replace: node

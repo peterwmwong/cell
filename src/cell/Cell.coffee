@@ -1,10 +1,6 @@
-define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/attachCSS'],
-   (require,Eventful,Config,CellRendering,attachCSS)->
+define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/attachCSS','cell/util/DOMHelper'],
+   (require,Eventful,Config,CellRendering,attachCSS,DOMHelper)->
       isNonEmptyString = (s)-> typeof s == 'string' and s.trim()
-      getInstanceId = do->
-         cellIdMap = {}
-         (cellName)->
-            cellIdMap[cellName] = (cellIdMap[cellName] or -1)+1
       cssClassRegex = /([^\/]*$)/
       pathRegex = /(.*?)[^\/]*$/
 
@@ -15,7 +11,7 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                throw new Error "Cell's name must be a non-empty string, instead was '#{name}'"
 
             # Define read-only properties name, template, style
-            for k,v of {name: name, template: tmpl, style: style, path:pathRegex.exec(name)[1]}
+            for k,v of {name:name, template:tmpl, style:style, path:pathRegex.exec(name)[1], hasTemplate:!!isNonEmptyString(tmpl), cssClassName:cssClassRegex.exec(name)[0]}
                Object.defineProperty this, k, {value: v, enumerable: true}
          
          renderStyle: ->
@@ -24,46 +20,46 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                @request 'render.style',
                   @style
                   (css)=>
-                     if isNonEmptyString css
+                     if css = isNonEmptyString css
                         attachCSS @name, css, (styleTagNode)->
                            
                   Config.get 'style.renderer'
-         
-         __createDOMNode: (html,id,tag)->
-            node = document.createElement(tag or 'div')
-            node.id = id or @name.replace('/','__') + '_' + getInstanceId @name
-            node.classList.add cssClassRegex.exec(@name)[0]
-            node.innerHTML = html
-            node
 
-         render: ({data,to,id,tag},done)->
-            if isNonEmptyString @template
+         render: (opts,done)->
+            if @hasTemplate and opts?
+               data = opts.data
+               attach = opts.attach or DOMHelper.getAttachMethodTarget opts
 
-               unless to
-                  throw new Error "No 'to' DOM node was specified for Cell '#{@name}' to be rendered to"
+               unless attach.target?
+                  throw new Error "One attach method (#{attachMethods.join ','}) needs to be specified to determine how Cell '#{@name}' will be attached to the DOM."
 
-               @request 'render.template',
-                  # Data
-                  {template: @template, data:data}
-
-                  # Callback
+               @request 'render.template', template:@template, data:data,
                   ({html,nestedRequests})=>
-                     unless isNonEmptyString html
+                     unless (html = isNonEmptyString html)
                         try done? undefined, new Error("No HTML was rendered from template:\n#{@template}")
                      else
-                        attachedNode = @__createDOMNode(html,id,tag)
-                        to.parentNode.replaceChild attachedNode, to
+                        attachedNodes = DOMHelper.htmlToDOMNodes html #, attach.target.tagName
+                        
+                        if attachedNodes.length > 0
+                           for n in attachedNodes
+                              n.classList.add @cssClassName
 
-                        rendering = new CellRendering(this,data,attachedNode)
-                        try done? rendering
-                        @fire 'render', rendering
+                           DOMHelper[attach.method] attach.target, attachedNodes
 
-                        if nestedRequests instanceof Array
-                           for {cell,data,to,id,tag} in nestedRequests
-                              do (cell,data,to,id,tag)=>
-                                 require ["cell!#{@path}#{cell}"], (cell)->
-                                    cell.render {data:data, to:attachedNode.querySelector(to), id:id, tag:tag}
+                           rendering = new CellRendering(this,data,attachedNodes)
+                           try done? rendering
+                           @fire 'render', rendering
 
+                           if nestedRequests instanceof Array
+                              path = @path
+                              for req in nestedRequests
+                                 do(req)->
+                                    {method,target} = DOMHelper.getAttachMethodTarget req
+                                    req.attach = {method:method, target:DOMHelper.getElementFromNodes(target, attachedNodes)}
+                                    delete req[method]
+                                    cell = req.cell
+                                    delete req.cell
+                                    require ["cell!#{path}#{cell}"], (cell)-> cell.render(req)
 
                   # Default Handler
                   Config.get 'template.renderer'

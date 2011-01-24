@@ -35,7 +35,7 @@ define ->
          renderSpy = mockPlugin.load.returnValues[0].render
          ok renderSpy.calledOnce, 'Should render cell'
          equal JSON.stringify(renderSpy.args[0][0].data), JSON.stringify({}), 'Should call cell.render passing {data} == {}, when data-cell-data attribute is NOT specified'
-         equal renderSpy.args[0][0].to, document.querySelector('#node'), 'Should call cell.render passing {to} the node with the data-cell attribute'
+         equal renderSpy.args[0][0].replace, document.querySelector('#node'), 'Should call cell.render passing {to} the node with the data-cell attribute'
          done()
 
 
@@ -47,7 +47,7 @@ define ->
          renderSpy = mockPlugin.load.returnValues[0].render
          ok renderSpy.calledOnce, 'Should render cell'
          equal renderSpy.args[0][0].data.key1, 'val1', 'Should call cell.render passing {data} JSON.parse-ed data-cell-data attribute'
-         equal renderSpy.args[0][0].to, document.querySelector('#node'), 'Should call cell.render passing {to} the node with the data-cell attribute'
+         equal renderSpy.args[0][0].replace, document.querySelector('#node'), 'Should call cell.render passing {to} the node with the data-cell attribute'
          done()
 
 
@@ -59,7 +59,7 @@ define ->
          renderSpy = mockPlugin.load.returnValues[0].render
          ok renderSpy.calledOnce, 'Should render cell'
          equal JSON.stringify(renderSpy.args[0][0].data), JSON.stringify({}), 'Should call cell.render passing {data} == {}, when data-cell-data attribute is JSON unparseable'
-         equal renderSpy.args[0][0].to,  document.querySelector('#node'), 'Should call cell.render passing {to} the node with the data-cell attribute'
+         equal renderSpy.args[0][0].replace,  document.querySelector('#node'), 'Should call cell.render passing {to} the node with the data-cell attribute'
          done()
 
 
@@ -79,13 +79,13 @@ define ->
          renderSpy = call.returnValue.render
          ok renderSpy.calledOnce, 'Should render cell #1'
          equal JSON.stringify(renderSpy.args[0][0].data), JSON.stringify({}), 'Should call cell.render passing {data} == {}, when data-cell-data attribute is JSON unparseable'
-         equal renderSpy.args[0][0].to, document.querySelector('#node1'), 'Should call cell.render passing {to} the node with the data-cell attribute'
+         equal renderSpy.args[0][0].replace, document.querySelector('#node1'), 'Should call cell.render passing {to} the node with the data-cell attribute'
 
          call = mockPlugin.load.getCall 1
          ok call.calledWith('cellname2'), 'Should load cell #2'
          renderSpy = call.returnValue.render
          ok renderSpy.calledOnce, 'Should render cell #2'
          equal renderSpy.args[0][0].data.key2, 'val2', 'Should call cell.render passing {data} JSON.parse-ed data-cell-data attribute'
-         equal renderSpy.args[0][0].to, document.querySelector('#node2'), 'Should call cell.render passing {to} the node with the data-cell attribute'
+         equal renderSpy.args[0][0].replace, document.querySelector('#node2'), 'Should call cell.render passing {to} the node with the data-cell attribute'
          
          done()

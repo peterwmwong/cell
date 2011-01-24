@@ -42,7 +42,6 @@ define ->
       doneSpy = sinon.spy()
       mockData = {}
       partials = for i in [0..5]
-         console.log [undefined,'div','span','tr','a','td'][i]
          do(i)->
             name: 'partial'+i,
             data: {},
@@ -71,9 +70,9 @@ define ->
          ok r.cell, name, "Nested request [#{i}] {cell} should be partials name"
          ok r.data, data, "Nested request [#{i}] {data} should be partials data"
          ok r.id, id, "Nested request [#{i}] {id} should be partials id"
-         tmpNodeHTML = "id='#{r.to.slice 1}'"
+         tmpNodeHTML = "id='#{r.replace}'"
          ok r.tag == tag, "Nested request [#{i}] {tag} should be an CSS tag selector #{tag} #{r.tag}"
-         ok r.to[0] == '#', "Nested request [#{i}] {to} should be an CSS id selector"
+         ok typeof r.replace == 'string', "Nested request [#{i}] {replace} should be an id"
          ok mockHTML.indexOf(tmpNodeHTML) == mockHTML.lastIndexOf(tmpNodeHTML) > -1, "Nested request [#{i}] {to} should be a node id in rendered partial (and only one)"
       done()
 
