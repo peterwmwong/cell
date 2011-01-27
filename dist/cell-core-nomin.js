@@ -1926,12 +1926,15 @@ define('cell/CellRendering',[], function() {
         }
       };
       $$ = function(sel) {
-        var hits, n, r, _i, _len;
+        var hit, hits, n, r, _i, _j, _len, _len2;
         r = [];
         for (_i = 0, _len = nodes.length; _i < _len; _i++) {
           n = nodes[_i];
-          if (hits = n.querySelectorAll(sel) && hits.length > 0) {
-            r.push.apply(r, hits);
+          if ((hits = n.querySelectorAll(sel)) && hits.length > 0) {
+            for (_j = 0, _len2 = hits.length; _j < _len2; _j++) {
+              hit = hits[_j];
+              r.push(hit);
+            }
           }
         }
         return r;

@@ -42,6 +42,92 @@ define ->
  
       done()
 
+
+   '@$({sel}): Should run querySelector on all nodes and return the undefined if nothing found': (require,get,done)-> get (CellRendering)->
+      testParent = document.createElement 'div'
+      testParent.innerHTML =
+         """
+            <div id='testNode1'>
+               <div id='t1' class='test'></div><div id='t2' class='test'></div>
+            </div>
+            <div id='testNode2'>
+               <div id='t3' class='test'></div><div id='t4' class='test'></div>
+            </div>
+         """
+
+      cr = new CellRendering {}, {}, [testParent.querySelector('#testNode1'),testParent.querySelector('#testNode2')]
+      node = cr.$('.blarg')
+
+      equal node, undefined
+
+      done()
+
+
+   '@$({sel}): Should run querySelector on all nodes and return the first node found': (require,get,done)-> get (CellRendering)->
+      testParent = document.createElement 'div'
+      testParent.innerHTML =
+         """
+            <div id='testNode1'>
+               <div id='t1' class='test'></div><div id='t2' class='test'></div>
+            </div>
+            <div id='testNode2'>
+               <div id='t3' class='test'></div><div id='t4' class='test'></div>
+            </div>
+         """
+
+      cr = new CellRendering {}, {}, [testParent.querySelector('#testNode1'),testParent.querySelector('#testNode2')]
+      node = cr.$('.test')
+
+      ok node instanceof window.HTMLElement, "returned node should be an window.HTMLElement"
+      equal node, testParent.querySelector("#t1")
+
+      done()
+
+
+   '@$$({sel}): Should run querySelectorAll on all nodes and collect return results in an Array': (require,get,done)-> get (CellRendering)->
+      testParent = document.createElement 'div'
+      testParent.innerHTML =
+         """
+            <div id='testNode1'>
+               <div id='t1' class='test'></div><div id='t2' class='test'></div>
+            </div>
+            <div id='testNode2'>
+               <div id='t3' class='test'></div><div id='t4' class='test'></div>
+            </div>
+         """
+
+      cr = new CellRendering {}, {}, [testParent.querySelector('#testNode1'),testParent.querySelector('#testNode2')]
+      nodes = cr.$$('.test')
+
+      ok nodes instanceof Array, "returned nodes should be an Array"
+      equal nodes.length, 4, "should return 4 nodes"
+      for i in [0..3]
+         equal nodes[i], testParent.querySelector("#t#{i+1}")
+
+      done()
+
+
+   '@$$({sel}): Should run querySelectorAll on all nodes and return an empty Array if nothing found': (require,get,done)-> get (CellRendering)->
+      testParent = document.createElement 'div'
+      testParent.innerHTML =
+         """
+            <div id='testNode1'>
+               <div id='t1' class='test'></div><div id='t2' class='test'></div>
+            </div>
+            <div id='testNode2'>
+               <div id='t3' class='test'></div><div id='t4' class='test'></div>
+            </div>
+         """
+
+      cr = new CellRendering {}, {}, [testParent.querySelector('#testNode1'),testParent.querySelector('#testNode2')]
+      nodes = cr.$$('.blarg')
+
+      ok nodes instanceof Array, "returned nodes should be an Array"
+      equal nodes.length, 0, "should return 0 nodes"
+
+      done()
+
+
    'update(data,done): sets @data and calls @cell.render({data:@data,to:@node},{done})': (require,get,done)-> get (CellRendering)->
       [mData,mNodes] = [{},[new MockNode()]]
       mCell = render: sinon.spy((a,b)->b())

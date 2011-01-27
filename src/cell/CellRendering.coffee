@@ -10,8 +10,9 @@ define [], ->
          
          $$ = (sel)->
             r = []
-            for n in nodes when hits=n.querySelectorAll(sel) and hits.length>0
-               r.push.apply(r,hits)
+            for n in nodes when (hits=n.querySelectorAll(sel)) and hits.length>0
+               for hit in hits
+                  r.push hit
             r
 
          # Define read-only properties cell, node, $, $$ and data
