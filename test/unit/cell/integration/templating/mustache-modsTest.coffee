@@ -5,11 +5,15 @@ define ->
       typeof o == 'object' and Object.getOwnPropertyNames(o).length == 0
 
    _strictEqual = (expObj)->
-      (o)-> expObj == o
+      (o)-> strictEqual(o,expObj)
 
    _equalObj = (expObj)->
       (o)->
-         typeof o == 'object' and JSON.stringify(o) == JSON.stringify(expObj)
+         try
+            deepEqual(o,expObj)
+            true
+         catch e
+            false
 
    # Helper that generates test case
    calling_with = (tmpl,data,getPartial,{getPartial_receives,returns})->
@@ -34,47 +38,57 @@ define ->
       delete window.Mustache
       done()
 
-   'Mustache.to_html()':
-      calling_with '{{>CellName}}', {contextStuff:'stuff'}, (-> 'test html'),
-         getPartial_receives: ['CellName', _isEmptyObj, undefined]
+   'Mustache.to_html()': do ->
+      calling_with '{{>CellName}}', (mockData = {contextStuff:'stuff'}), (-> 'test html'),
+         getPartial_receives: ['CellName', _equalObj(mockData), undefined]
          returns: 'test html'
 
    'Mustache.to_html() template partial using $tag': do->
-      calling_with '{{>CellName "$tag":"tr"}}', {contextStuff:'stuff'}, (-> 'test html'),
-         getPartial_receives: ['CellName', _isEmptyObj, undefined, 'tr']
+      calling_with '{{>CellName "$tag":"tr"}}', (mockData = {contextStuff:'stuff'}), (-> 'test html'),
+         getPartial_receives: ['CellName', _equalObj(mockData), undefined, 'tr']
          returns: 'test html'
 
-   'Mustache.to_html() template partial using $data': do->
-      calling_with '{{>CellName "$data":"mydata"}}', {mydata: mockData = {stuff:'stuff'}}, (-> 'test html'),
-         getPartial_receives: ['CellName', _strictEqual(mockData), undefined]
+   'Mustache.to_html() template partial using $inherit-context:true': do->
+      calling_with '{{>CellName "$inherit-context":true}}', (mockData = {mydata: {stuff:'stuff'}}), (-> 'test html'),
+         getPartial_receives: ['CellName', _equalObj(mockData), undefined]
          returns: 'test html'
 
-   'Mustache.to_html() template partial using $data="."': do->
-      calling_with '{{>CellName "$data":"."}}', mockData = {contextStuff:'stuff'}, (-> 'test html'),
-         getPartial_receives: ['CellName', _strictEqual(mockData), undefined]
+   'Mustache.to_html() template partial using $inherit-context:false': do->
+      calling_with '{{>CellName "$inherit-context":false}}', (mockData = {mydata: {stuff:'stuff'}}), (-> 'test html'),
+         getPartial_receives: ['CellName', _isEmptyObj, undefined]
          returns: 'test html'
 
-   'Mustache.to_html() template partial using $id':
-      calling_with '{{>CellName "$id":"myid"}}', {contextStuff:'stuff'}, (-> 'test html'),
-         getPartial_receives: ['CellName', _isEmptyObj, 'myid']
+   'Mustache.to_html() template partial $inherit-context NOT specified, same as $inherit-context:true': do->
+      calling_with '{{>CellName}}', (mockData = {mydata: {stuff:'stuff'}}), (-> 'test html'),
+         getPartial_receives: ['CellName', _equalObj(mockData), undefined]
+         returns: 'test html'
+
+   'Mustache.to_html() template partial using $inherit-context: <NOT BOOLEAN> is the same as true': do->
+      calling_with '{{>CellName "$inherit-context":"asdf"}}', (mockData = {mydata: {stuff:'stuff'}}), (-> 'test html'),
+         getPartial_receives: ['CellName', _equalObj(mockData), undefined]
+         returns: 'test html'
+
+   'Mustache.to_html() template partial using $id': do->
+      calling_with '{{>CellName "$id":"myid"}}', (mockData = {contextStuff:'stuff'}), (-> 'test html'),
+         getPartial_receives: ['CellName', _equalObj(mockData), 'myid']
          returns: 'test html'
 
    'Mustache.to_html() template partial with JSON data':
       calling_with '{{>CellName "mykey":"mydata", "mykey2":2}}', {contextStuff:'stuff'}, (-> 'test html'),
-         getPartial_receives: ['CellName', _equalObj({mykey:"mydata",mykey2:2}), undefined]
+         getPartial_receives: ['CellName', _equalObj({contextStuff:'stuff', mykey:"mydata",mykey2:2}), undefined]
          returns: 'test html'
 
    'Mustache.to_html() template partial with JSON data and using $id':
       calling_with '{{>CellName "$id":"myid2", "mykey":"mydata", "mykey2":2}}', {contextStuff:'stuff'}, (-> 'test html'),
-         getPartial_receives: ['CellName', _equalObj({mykey:"mydata",mykey2:2}), "myid2"]
+         getPartial_receives: ['CellName', _equalObj({contextStuff:'stuff', mykey:"mydata",mykey2:2}), "myid2"]
          returns: 'test html'
 
-   'Mustache.to_html() template partial with JSON data and using $data': do->
-      calling_with '{{>CellName "$data":"mydata", "dataThatWont":"beUsed", "because":"$dataTakesPrecedence"}}', {mydata: mockData = {stuff:'stuff'}}, (-> 'test html'),
-         getPartial_receives: ['CellName', _strictEqual(mockData), undefined]
+   'Mustache.to_html() template partial with JSON data and using $inherit-context:false':
+      calling_with '{{>CellName "$inherit-context":false, "extraData":"yup", "someMore":"youGotIt"}}', {mydata: {stuff:'stuff'}}, (-> 'test html'),
+         getPartial_receives: ['CellName', _equalObj({extraData:'yup',someMore:'youGotIt'}), undefined]
          returns: 'test html'
 
-   'Mustache.to_html() template partial name with "/"':
-      calling_with '{{>cells/CellName}}', {contextStuff:'stuff'}, (-> 'test html'),
-         getPartial_receives: ['cells/CellName', _isEmptyObj, undefined]
+   'Mustache.to_html() template partial name with "/"': do->
+      calling_with '{{>cells/CellName}}', (mockData = {contextStuff:'stuff'}), (-> 'test html'),
+         getPartial_receives: ['cells/CellName', _equalObj(mockData), undefined]
          returns: 'test html'

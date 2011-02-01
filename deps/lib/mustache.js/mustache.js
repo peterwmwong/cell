@@ -93,34 +93,33 @@ var Mustache = function() {
          var c = {},
              id = undefined,
              tag = undefined,
+             inheritContext = true,
              results = (cellNameRegex.exec(name) || name).slice(1);
 
          name = results[0];
          if(results.length>2 && results[2]){
-            var jsonObj = JSON.parse('{'+results[2]+'}');
+            c = JSON.parse('{'+results[2]+'}');
             
-            id = (typeof jsonObj.$id === 'string')
-                  ? jsonObj.$id
+            id = (typeof c.$id === 'string')
+                  ? c.$id
                   : undefined;
-            delete jsonObj.$id;
+            delete c.$id;
           
-            var datadesc = Object.getOwnPropertyDescriptor(jsonObj,'$data');
-            if(datadesc){
-               delete jsonObj.$data;
-               var val = datadesc.value;
-               if(typeof val === 'string'){
-                  c = (val === '.')
-                        ? context
-                        : context[val];
-               }
-            }else{
-               c = jsonObj;
-            }
-
-            tag = (typeof jsonObj.$tag === 'string')
-                  ? jsonObj.$tag
+            tag = (typeof c.$tag === 'string')
+                  ? c.$tag
                   : undefined;
-            delete jsonObj.$tag
+            delete c.$tag;
+
+            if(c["$inherit-context"] === false){
+               inheritContext = false;
+            }
+            delete c["$inherit-context"];
+         }
+
+         if(inheritContext){
+            Object.getOwnPropertyNames(context).forEach(function(k){
+               c[k] = context[k];
+            });
          }
          
          var p = partials.getPartial(name,c,id,tag);
