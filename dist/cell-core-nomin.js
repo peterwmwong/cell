@@ -2230,8 +2230,9 @@ define('celltext',[], function() {
   };
 });
 define('cell',['cell/Cell', 'celltext'], function(Cell) {
-  var cellMap, modNameRegex;
+  var baseUrlRegex, cellMap, modNameRegex;
   modNameRegex = /(.*?)(\.[a-zA-Z0-9]+)*$/;
+  baseUrlRegex = /(.*\/)?([a-zA-Z0-9]+)(\.[\w]+)?$/;
   cellMap = {};
   return {
     load: function(name, require, done) {
@@ -2261,9 +2262,9 @@ define('cell',['cell/Cell', 'celltext'], function(Cell) {
       });
     },
     loadDefineDependency: function(jsCellName) {
-      var match;
-      match = modNameRegex.exec(jsCellName);
-      return match && match[1] && cellMap[match[1]];
+      var absName, match, _ref;
+      _ref = modNameRegex.exec(jsCellName), match = _ref[0], absName = _ref[1];
+      return absName && cellMap[absName];
     }
   };
 });

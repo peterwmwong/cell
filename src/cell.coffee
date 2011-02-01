@@ -1,5 +1,6 @@
 define ['cell/Cell','celltext'], (Cell)->
    modNameRegex = /(.*?)(\.[a-zA-Z0-9]+)*$/
+   baseUrlRegex = /(.*\/)?([a-zA-Z0-9]+)(\.[\w]+)?$/
    cellMap = {}
 
    # RequireJS Plugin load API
@@ -27,6 +28,6 @@ define ['cell/Cell','celltext'], (Cell)->
          
    # RequireJS Cell Extension Plugin loadDefineDependency API
    loadDefineDependency: (jsCellName)->
-      match = modNameRegex.exec jsCellName
-      return match and match[1] and cellMap[match[1]]
+      [match,absName] = modNameRegex.exec jsCellName
+      return absName and cellMap[absName]
 

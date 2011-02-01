@@ -32,16 +32,16 @@ define ->
          require ['cell!/mocks/tmplStyleJS','cell!/mocks/jsOnly'], (tmplStyleJS, jsOnly)->
 
             ok tmplStyleJS instanceof MockCell, 'cell should be an instanceof cell/Cell'
-            equal tmplStyleJS.name, '/mocks/tmplStyleJS', 'Should have loaded template'
-            equal tmplStyleJS.template, 'tmplStyleJS template', 'Should have loaded template'
-            equal tmplStyleJS.style, 'tmplStyleJS style', 'Should have loaded style'
+            strictEqual tmplStyleJS.name, '/mocks/tmplStyleJS', 'Should have loaded template'
+            strictEqual tmplStyleJS.template, 'tmplStyleJS template', 'Should have loaded template'
+            strictEqual tmplStyleJS.style, 'tmplStyleJS style', 'Should have loaded style'
             ok tmplStyleJS.renderStyle.calledOnce, 'renderStyle should be called'
             ok tmplStyleJS.jsSpy.calledOnce, 'Should have loaded js'
 
             ok jsOnly instanceof MockCell, 'cell should be an instanceof cell/Cell'
-            equal jsOnly.name, '/mocks/jsOnly', 'Should NOT have loaded template'
-            equal jsOnly.template, undefined, 'Should NOT have loaded template'
-            equal jsOnly.style, undefined, 'Should NOT have loaded style'
+            strictEqual jsOnly.name, '/mocks/jsOnly', 'Should NOT have loaded template'
+            strictEqual jsOnly.template, undefined, 'Should NOT have loaded template'
+            strictEqual jsOnly.style, undefined, 'Should NOT have loaded style'
             ok jsOnly.renderStyle.calledOnce, 'renderStyle should be called'
             ok jsOnly.jsSpy.calledOnce, 'Should have loaded js'
             done()
@@ -50,9 +50,9 @@ define ->
       get (cellPlugin)->
          require ['cell!/mocks/tmplStyleJS'], (mockCell)->
             ok mockCell instanceof MockCell, 'cell should be an instanceof cell/Cell'
-            equal mockCell.name, '/mocks/tmplStyleJS', 'Should have loaded template'
-            equal mockCell.template, 'tmplStyleJS template', 'Should have loaded template'
-            equal mockCell.style, 'tmplStyleJS style', 'Should have loaded style'
+            strictEqual mockCell.name, '/mocks/tmplStyleJS', 'Should have loaded template'
+            strictEqual mockCell.template, 'tmplStyleJS template', 'Should have loaded template'
+            strictEqual mockCell.style, 'tmplStyleJS style', 'Should have loaded style'
             ok mockCell.jsSpy.calledOnce, 'Should have loaded js'
             ok mockCell.renderStyle.calledOnce, 'renderStyle should be called'
             done()
@@ -61,9 +61,9 @@ define ->
       get (cellPlugin)->
          require ['cell!/mocks/tmplJS'], (mockCell)->
             ok mockCell instanceof MockCell, 'cell should be an instanceof cell/Cell'
-            equal mockCell.name, '/mocks/tmplJS', 'Should have loaded template'
-            equal mockCell.template, 'tmplJS template', 'Should have loaded template'
-            equal mockCell.style, undefined, 'Should NOT have loaded style'
+            strictEqual mockCell.name, '/mocks/tmplJS', 'Should have loaded template'
+            strictEqual mockCell.template, 'tmplJS template', 'Should have loaded template'
+            strictEqual mockCell.style, undefined, 'Should NOT have loaded style'
             ok mockCell.renderStyle.calledOnce, 'renderStyle should be called'
             ok mockCell.jsSpy.calledOnce, 'Should have loaded js'
             done()
@@ -72,20 +72,20 @@ define ->
       get (cellPlugin)->
          require ['cell!/mocks/tmpl'], (mockCell)->
             ok mockCell instanceof MockCell, 'cell should be an instanceof cell/Cell'
-            equal mockCell.name, '/mocks/tmpl', 'Should have loaded template'
-            equal mockCell.template, 'tmpl template', 'Should have loaded template'
-            equal mockCell.style, undefined, 'Should NOT have loaded style'
+            strictEqual mockCell.name, '/mocks/tmpl', 'Should have loaded template'
+            strictEqual mockCell.template, 'tmpl template', 'Should have loaded template'
+            strictEqual mockCell.style, undefined, 'Should NOT have loaded style'
             ok mockCell.renderStyle.calledOnce, 'renderStyle should be called'
-            equal mockCell.jsSpy, undefined, 'Should NOT have loaded js'
+            strictEqual mockCell.jsSpy, undefined, 'Should NOT have loaded js'
             done()
 
    'require(cell!) should load cell w/ js': (require, get, done)->
       get (cellPlugin)->
          require ['cell!/mocks/jsOnly'], (mockCell)->
             ok mockCell instanceof MockCell, 'cell should be an instanceof cell/Cell'
-            equal mockCell.name, '/mocks/jsOnly', 'Should NOT have loaded template'
-            equal mockCell.template, undefined, 'Should NOT have loaded template'
-            equal mockCell.style, undefined, 'Should NOT have loaded style'
+            strictEqual mockCell.name, '/mocks/jsOnly', 'Should have correct name'
+            strictEqual mockCell.template, undefined, 'Should NOT have loaded template'
+            strictEqual mockCell.style, undefined, 'Should NOT have loaded style'
             ok mockCell.renderStyle.calledOnce, 'renderStyle should be called'
             ok mockCell.jsSpy.calledOnce, 'Should have loaded js'
             done()
@@ -95,7 +95,21 @@ define ->
          require ['cell!/mocks/jsOnly'], (mockCell1)->
             ok mockCell1.jsSpy.calledOnce, "js called once"
             require ['cell!/mocks/jsOnly'], (mockCell2)->
-               equal mockCell1, mockCell2, "cell should be the same"
+               strictEqual mockCell1, mockCell2, "cell should be the same"
                ok mockCell2.jsSpy.calledOnce, "js called once"
                done()
 
+   'require(cell!) should load cell js w/ relatively pathed dependencies (ex. cell!./otherCells/anotherCell and ./otherJS/anotherModule)': (require,get,done)->
+      get (cellPlugin)->
+         require ['cell!/mocks/jsWithRelDeps',], (mockCell)->
+            require ['cell!/mocks/others/jsOnlyCell','/mocks/others/jsOnly'], (otherCell, otherJS)->
+               ok mockCell instanceof MockCell, 'cell should be an instanceof cell/Cell'
+               strictEqual mockCell.name, '/mocks/jsWithRelDeps', 'Should have correct name'
+               strictEqual mockCell.template, undefined, 'Should NOT have loaded template'
+               strictEqual mockCell.style, undefined, 'Should NOT have loaded style'
+               ok mockCell.renderStyle.calledOnce, 'renderStyle should be called'
+
+               jsSpy = mockCell.jsSpy
+               strictEqual jsSpy.args[0][1], otherJS, 'cell should have received relative cell dependency'
+               strictEqual jsSpy.args[0][2], otherCell, 'cell should have received relative RequireJS module dependency'
+               done()
