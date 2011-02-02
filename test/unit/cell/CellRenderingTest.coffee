@@ -1,11 +1,23 @@
 define ->
    defer = (t,f)-> setTimeout f,t
+
+   class MockEventful
+
    class MockNode
       constructor: (cell,data,nodes)->
          @querySelector = sinon.spy()
          @querySelectorAll = sinon.spy()
 
    $testObj: 'cell/CellRendering'
+
+   $beforeTest: (require,done)->
+      require.def 'cell/Eventful', [], -> MockEventful
+      require ['cell/Eventful'], done
+
+
+   'new CellRendering(cell,data,nodes): produces an object that is an instance of cell/Eventful': (require,get,done)-> get (CellRendering)->
+      ok (new CellRendering {},{},[]) instanceof MockEventful, "Should be an instanceof cell/Eventful"
+      done()
 
    'new CellRendering(cell,data,nodes): throws error if {cell} is undefined or null': (require,get,done)-> get (CellRendering)->
       [undefined,null].forEach (cell)->

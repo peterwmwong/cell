@@ -1,5 +1,5 @@
-define [], ->
-   class CellRendering
+define ['cell/Eventful'], (Eventful)->
+   class CellRendering extends Eventful
       constructor: (cell,data,nodes)->
          unless cell and nodes
             throw new Error "CellRendering must have a cell and node"
