@@ -4973,6 +4973,7 @@ define('cell/CellRendering',['cell/Eventful'], function(Eventful) {
     __extends(CellRendering, Eventful);
     function CellRendering(cell, data, nodes) {
       var $, $$, k, v, _ref;
+      CellRendering.__super__.constructor.call(this);
       if (!(cell && nodes)) {
         throw new Error("CellRendering must have a cell and node");
       }

@@ -2,6 +2,8 @@ define ->
    defer = (t,f)-> setTimeout f,t
 
    class MockEventful
+      constructor: ->
+         @listeners = {}
 
    class MockNode
       constructor: (cell,data,nodes)->
@@ -16,7 +18,9 @@ define ->
 
 
    'new CellRendering(cell,data,nodes): produces an object that is an instance of cell/Eventful': (require,get,done)-> get (CellRendering)->
-      ok (new CellRendering {},{},[]) instanceof MockEventful, "Should be an instanceof cell/Eventful"
+      cr = new CellRendering {},{},[]
+      ok cr instanceof MockEventful, "Should be an instanceof cell/Eventful"
+      ok cr.listeners?, "Should call cell/Eventful constructor"
       done()
 
    'new CellRendering(cell,data,nodes): throws error if {cell} is undefined or null': (require,get,done)-> get (CellRendering)->

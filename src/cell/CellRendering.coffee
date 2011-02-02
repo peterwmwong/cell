@@ -1,6 +1,7 @@
 define ['cell/Eventful'], (Eventful)->
    class CellRendering extends Eventful
       constructor: (cell,data,nodes)->
+         super()
          unless cell and nodes
             throw new Error "CellRendering must have a cell and node"
 
