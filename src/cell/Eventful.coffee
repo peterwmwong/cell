@@ -10,30 +10,31 @@ define ->
             if ls.indexOf cb == -1
                ls.push cb
 
+            called = false
             # unregister function
-            do->
-               called = false
-               return ->
-                  unless called
-                     called = true
-                     index = ls.indexOf cb
-                     ls.splice index, 1 if index > -1
+            ->
+               unless called
+                  called = true
+                  index = ls.indexOf cb
+                  ls.splice index, 1 if index > -1
             
       fire: (event, data)->
-         for l in (@listeners[event] ? [])
-            try l data
+         if ls=@listeners[event]
+            (try l data) for l in ls
+         # Prevent coffee-script from creating a result array
+         return
 
       handle: (request,handler)->
          if typeof request == 'string' and typeof handler == 'function'
             @requests[request] ?= handler
 
+            called = false
+            requests = @requests
             # unregister function
-            do=>
-               called = false
-               return =>
-                  unless called
-                     called = true
-                     delete @requests[request]
+            ->
+               unless called
+                  called = true
+                  delete requests[request]
 
       request: (request, data, cb, defaultHandler=((data,resp)->resp data) )->
          if typeof request == 'string' and typeof cb == 'function' and typeof defaultHandler == 'function'
@@ -43,8 +44,7 @@ define ->
             defer = (data)->
                try defaultHandler data, respond
             
-            handler = @requests[request]
-            if handler
+            if handler = @requests[request]
                try handler data, respond, defer
             else
                defer data

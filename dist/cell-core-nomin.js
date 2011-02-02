@@ -1862,7 +1862,6 @@ var require, define;
     }
 }());
 
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 define('cell/Eventful',['require','exports','module'],function() {
   var Eventful;
   return Eventful = (function() {
@@ -1871,56 +1870,48 @@ define('cell/Eventful',['require','exports','module'],function() {
       this.requests = {};
     }
     Eventful.prototype.on = function(event, cb) {
-      var ls, _base, _ref;
+      var called, ls, _base, _ref;
       if (typeof event === 'string' && typeof cb === 'function') {
         ls = (_ref = (_base = this.listeners)[event]) != null ? _ref : _base[event] = [];
         if (ls.indexOf(cb === -1)) {
           ls.push(cb);
         }
-        return (function() {
-          var called;
-          called = false;
-          return function() {
-            var index;
-            if (!called) {
-              called = true;
-              index = ls.indexOf(cb);
-              if (index > -1) {
-                return ls.splice(index, 1);
-              }
+        called = false;
+        return function() {
+          var index;
+          if (!called) {
+            called = true;
+            index = ls.indexOf(cb);
+            if (index > -1) {
+              return ls.splice(index, 1);
             }
-          };
-        })();
+          }
+        };
       }
     };
     Eventful.prototype.fire = function(event, data) {
-      var l, _i, _len, _ref, _ref2, _results;
-      _ref2 = (_ref = this.listeners[event]) != null ? _ref : [];
-      _results = [];
-      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-        l = _ref2[_i];
-        _results.push((function() {
+      var l, ls, _i, _len;
+      if (ls = this.listeners[event]) {
+        for (_i = 0, _len = ls.length; _i < _len; _i++) {
+          l = ls[_i];
           try {
-            return l(data);
+            l(data);
           } catch (_e) {}
-        })());
+        }
       }
-      return _results;
     };
     Eventful.prototype.handle = function(request, handler) {
-      var _base, _ref;
+      var called, requests, _base, _ref;
       if (typeof request === 'string' && typeof handler === 'function') {
         (_ref = (_base = this.requests)[request]) != null ? _ref : _base[request] = handler;
-        return __bind(function() {
-          var called;
-          called = false;
-          return __bind(function() {
-            if (!called) {
-              called = true;
-              return delete this.requests[request];
-            }
-          }, this);
-        }, this)();
+        called = false;
+        requests = this.requests;
+        return function() {
+          if (!called) {
+            called = true;
+            return delete requests[request];
+          }
+        };
       }
     };
     Eventful.prototype.request = function(request, data, cb, defaultHandler) {
@@ -1941,8 +1932,7 @@ define('cell/Eventful',['require','exports','module'],function() {
             return defaultHandler(data, respond);
           } catch (_e) {}
         };
-        handler = this.requests[request];
-        if (handler) {
+        if (handler = this.requests[request]) {
           try {
             return handler(data, respond, defer);
           } catch (_e) {}
