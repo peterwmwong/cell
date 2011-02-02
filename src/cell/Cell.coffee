@@ -51,14 +51,14 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                            if nestedRequests instanceof Array
                               path = @path
                               for req in nestedRequests
-                                 do(req)->
-                                    {method,target} = DOMHelper.getAttachMethodTarget req
-                                    req.attach = {method:method, target:DOMHelper.getElementFromNodes(target, attachedNodes)}
-                                    delete req[method]
-                                    cell = req.cell
-                                    delete req.cell
-                                    require ["cell!#{path}#{cell}"], (cell)-> cell.render(req)
+                                 {method,target} = DOMHelper.getAttachMethodTarget req
+                                 req.attach = {method:method, target:DOMHelper.getElementFromNodes(target, attachedNodes)}
+                                 delete req[method]
+                                 cell = req.cell
+                                 delete req.cell
+                                 require ["cell!#{path}#{cell}"], do(req)->
+                                    (cell)-> cell.render(req)
+                              return # Prevent coffee-script from creating a result array
 
                   # Default Handler
                   Config.get 'template.renderer'
-       

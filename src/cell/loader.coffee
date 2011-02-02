@@ -9,3 +9,4 @@ define ['require','cell'], (require,cell)->
                      try return JSON.parse datastring
                   {}
                replace: node
+   return

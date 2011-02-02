@@ -4,16 +4,13 @@ define ->
    after = (target,nodes)->
       for n in nodes
          target = target.insertAdjacentElement 'afterEnd', n
+      return
 
    # Exposed for testing
    __htmlToDOMNodes: __htmlToDOMNodes = (html,parentTagName)->
       tmp = document.createElement(parentTagName)
       tmp.innerHTML = html
-      htmlcol = tmp.children
-      i=-1
-      l=htmlcol.length
-      while(++i<l)
-         htmlcol[i]
+      n for n in tmp.children
 
    getAttachMethodTarget: (o)->
       for m in attachMethods when t=o[m]

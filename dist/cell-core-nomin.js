@@ -2088,25 +2088,22 @@ define('cell/util/DOMHelper',['require','exports','module'],function() {
   attachMethods = ['replace', 'appendTo', 'prependTo', 'before', 'after'];
   numAttachMethods = attachMethods.length;
   after = function(target, nodes) {
-    var n, _i, _len, _results;
-    _results = [];
+    var n, _i, _len;
     for (_i = 0, _len = nodes.length; _i < _len; _i++) {
       n = nodes[_i];
-      _results.push(target = target.insertAdjacentElement('afterEnd', n));
+      target = target.insertAdjacentElement('afterEnd', n);
     }
-    return _results;
   };
   return {
     __htmlToDOMNodes: __htmlToDOMNodes = function(html, parentTagName) {
-      var htmlcol, i, l, tmp, _results;
+      var n, tmp, _i, _len, _ref, _results;
       tmp = document.createElement(parentTagName);
       tmp.innerHTML = html;
-      htmlcol = tmp.children;
-      i = -1;
-      l = htmlcol.length;
+      _ref = tmp.children;
       _results = [];
-      while (++i < l) {
-        _results.push(htmlcol[i]);
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        n = _ref[_i];
+        _results.push(n);
       }
       return _results;
     },
@@ -2229,7 +2226,7 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
           template: this.template,
           data: data
         }, __bind(function(_arg) {
-          var attachedNodes, html, n, nestedRequests, path, rendering, req, _i, _j, _len, _len2, _results;
+          var attachedNodes, cell, html, method, n, nestedRequests, path, rendering, req, target, _i, _j, _len, _len2, _ref;
           html = _arg.html, nestedRequests = _arg.nestedRequests;
           if (!(html = isNonEmptyString(html))) {
             try {
@@ -2251,25 +2248,22 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
               this.fire('render', rendering);
               if (nestedRequests instanceof Array) {
                 path = this.path;
-                _results = [];
                 for (_j = 0, _len2 = nestedRequests.length; _j < _len2; _j++) {
                   req = nestedRequests[_j];
-                  _results.push((function(req) {
-                    var cell, method, target, _ref;
-                    _ref = DOMHelper.getAttachMethodTarget(req), method = _ref.method, target = _ref.target;
-                    req.attach = {
-                      method: method,
-                      target: DOMHelper.getElementFromNodes(target, attachedNodes)
-                    };
-                    delete req[method];
-                    cell = req.cell;
-                    delete req.cell;
-                    return require(["cell!" + path + cell], function(cell) {
+                  _ref = DOMHelper.getAttachMethodTarget(req), method = _ref.method, target = _ref.target;
+                  req.attach = {
+                    method: method,
+                    target: DOMHelper.getElementFromNodes(target, attachedNodes)
+                  };
+                  delete req[method];
+                  cell = req.cell;
+                  delete req.cell;
+                  require(["cell!" + path + cell], (function(req) {
+                    return function(cell) {
                       return cell.render(req);
-                    });
+                    };
                   })(req));
                 }
-                return _results;
               }
             }
           }
@@ -2367,13 +2361,12 @@ define('cell',['cell/Cell', 'celltext'], function(Cell) {
   };
 });
 define('cell/loader',['require', 'cell'], function(require, cell) {
-  var cellname, node, _i, _len, _ref, _results;
+  var cellname, node, _i, _len, _ref;
   _ref = document.querySelectorAll('[data-cell]');
-  _results = [];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     node = _ref[_i];
     if (cellname = node.dataset.cell) {
-      _results.push((function(node, cellname) {
+      (function(node, cellname) {
         return require(["cell!" + cellname], function(c) {
           return c.render({
             data: (function() {
@@ -2388,9 +2381,8 @@ define('cell/loader',['require', 'cell'], function(require, cell) {
             replace: node
           });
         });
-      })(node, cellname));
+      })(node, cellname);
     }
   }
-  return _results;
 });
 define('cell/bootstrap-core',['cell/loader'], function(loader) {});
