@@ -186,11 +186,11 @@ define ->
       done()
 
 
-   'render({data,replace}): emits "render" event, calls "render" listeners, and passes the instance of CellRendering to listeners': (require,get,done)-> get (Cell)->
+   'render({data,replace}): emits "rendered" event, calls "rendered" listeners, and passes the instance of CellRendering to listeners': (require,get,done)-> get (Cell)->
       cell = new Cell 'name', 'tmpl', 'style'
       document.body.innerHTML = "<div id='testNode'></div>"
 
-      cell.on 'render', (rendering)->
+      cell.on 'rendered', (rendering)->
          assertNodeInnerHTML 'body > div#testRender', 'rendered'
          assertCellRenderingCall rendering, cell, 'data', ['testRender']
          done()
@@ -225,6 +225,19 @@ define ->
          equal $$('div#testNode').length, 0, '{replace} node should not exist and be replaced by the container node'
          assertNodeInnerHTML 'body > div#testRender', 'rendered'
          assertCellRenderingCall rendering, cell, 'data', ['testRender']
+         done()
+
+      # Handle render.template request
+      defaultTemplateRenderer.args[0][1] html: '<div id="testRender">rendered</div>'
+
+
+   'render({data,replace},done): {done} called AFTER Cell "rendered" listeners called.': (require,get,done)-> get (Cell)->
+      cell = new Cell 'name', 'tmpl', 'style'
+      listenerCalled = false
+      cell.on 'rendered', -> listenerCalled = true
+
+      cell.render data:'data',appendTo:document.createElement('div'), ->
+         ok listenerCalled, 'Should call Cell "rendered" listeners first'
          done()
 
       # Handle render.template request

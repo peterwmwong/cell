@@ -27,13 +27,14 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
 
          render: (opts,done)->
             if @hasTemplate and opts?
-               data = opts.data
                attach = opts.attach or DOMHelper.getAttachMethodTarget opts
+               if typeof done == 'function'
+                  @on 'rendered', done
 
                unless attach.target?
                   throw new Error "One attach method (#{attachMethods.join ','}) needs to be specified to determine how Cell '#{@name}' will be attached to the DOM."
 
-               @request 'render.template', template:@template, data:data,
+               @request 'render.template', template:@template, data:opts.data,
                   ({html,nestedRequests})=>
                      unless (html = isNonEmptyString html)
                         try done? undefined, new Error("No HTML was rendered from template:\n#{@template}")
@@ -44,19 +45,16 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                            for n in attachedNodes
                               n.classList.add @cssClassName
 
-                           rendering = new CellRendering(this,data,attachedNodes)
-                           try done? rendering
-                           @fire 'render', rendering
+                           @fire 'rendered', new CellRendering(this,opts.data,attachedNodes)
 
                            if nestedRequests instanceof Array
-                              path = @path
                               for req in nestedRequests
                                  {method,target} = DOMHelper.getAttachMethodTarget req
                                  req.attach = {method:method, target:DOMHelper.getElementFromNodes(target, attachedNodes)}
                                  delete req[method]
                                  cell = req.cell
                                  delete req.cell
-                                 require ["cell!#{path}#{cell}"], do(req)->
+                                 require ["cell!#{@path}#{cell}"], do(req)->
                                     (cell)-> cell.render(req)
                               return # Prevent coffee-script from creating a result array
 

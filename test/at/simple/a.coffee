@@ -1,4 +1,4 @@
 define ['cell!'], (c)->
-   c.on 'render', ({$,$$})->
+   c.on 'rendered', ({$,$$})->
      $('#firstName').innerHTML = 'Grace'
 

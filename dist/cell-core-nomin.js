@@ -2216,18 +2216,20 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
       }
     };
     Cell.prototype.render = function(opts, done) {
-      var attach, data;
+      var attach;
       if (this.hasTemplate && (opts != null)) {
-        data = opts.data;
         attach = opts.attach || DOMHelper.getAttachMethodTarget(opts);
+        if (typeof done === 'function') {
+          this.on('rendered', done);
+        }
         if (attach.target == null) {
           throw new Error("One attach method (" + (attachMethods.join(',')) + ") needs to be specified to determine how Cell '" + this.name + "' will be attached to the DOM.");
         }
         return this.request('render.template', {
           template: this.template,
-          data: data
+          data: opts.data
         }, __bind(function(_arg) {
-          var attachedNodes, cell, html, method, n, nestedRequests, path, rendering, req, target, _i, _j, _len, _len2, _ref;
+          var attachedNodes, cell, html, method, n, nestedRequests, req, target, _i, _j, _len, _len2, _ref;
           html = _arg.html, nestedRequests = _arg.nestedRequests;
           if (!(html = isNonEmptyString(html))) {
             try {
@@ -2240,15 +2242,8 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
                 n = attachedNodes[_i];
                 n.classList.add(this.cssClassName);
               }
-              rendering = new CellRendering(this, data, attachedNodes);
-              try {
-                if (typeof done == "function") {
-                  done(rendering);
-                }
-              } catch (_e) {}
-              this.fire('render', rendering);
+              this.fire('rendered', new CellRendering(this, opts.data, attachedNodes));
               if (nestedRequests instanceof Array) {
-                path = this.path;
                 for (_j = 0, _len2 = nestedRequests.length; _j < _len2; _j++) {
                   req = nestedRequests[_j];
                   _ref = DOMHelper.getAttachMethodTarget(req), method = _ref.method, target = _ref.target;
@@ -2259,7 +2254,7 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
                   delete req[method];
                   cell = req.cell;
                   delete req.cell;
-                  require(["cell!" + path + cell], (function(req) {
+                  require(["cell!" + this.path + cell], (function(req) {
                     return function(cell) {
                       return cell.render(req);
                     };
