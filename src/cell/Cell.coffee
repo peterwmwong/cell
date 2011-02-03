@@ -28,8 +28,6 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
          render: (opts,done)->
             if @hasTemplate and opts?
                attach = opts.attach or DOMHelper.getAttachMethodTarget opts
-               if typeof done == 'function'
-                  @on 'rendered', done
 
                unless attach.target?
                   throw new Error "One attach method (#{attachMethods.join ','}) needs to be specified to determine how Cell '#{@name}' will be attached to the DOM."
@@ -45,7 +43,8 @@ define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/
                            for n in attachedNodes
                               n.classList.add @cssClassName
 
-                           @fire 'rendered', new CellRendering(this,opts.data,attachedNodes)
+                           @fire 'rendered', view=new CellRendering(this,opts.data,attachedNodes)
+                           try done? view
 
                            if nestedRequests instanceof Array
                               for req in nestedRequests

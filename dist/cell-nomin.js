@@ -5181,9 +5181,6 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
       var attach;
       if (this.hasTemplate && (opts != null)) {
         attach = opts.attach || DOMHelper.getAttachMethodTarget(opts);
-        if (typeof done === 'function') {
-          this.on('rendered', done);
-        }
         if (attach.target == null) {
           throw new Error("One attach method (" + (attachMethods.join(',')) + ") needs to be specified to determine how Cell '" + this.name + "' will be attached to the DOM.");
         }
@@ -5191,7 +5188,7 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
           template: this.template,
           data: opts.data
         }, __bind(function(_arg) {
-          var attachedNodes, cell, html, method, n, nestedRequests, req, target, _i, _j, _len, _len2, _ref;
+          var attachedNodes, cell, html, method, n, nestedRequests, req, target, view, _i, _j, _len, _len2, _ref;
           html = _arg.html, nestedRequests = _arg.nestedRequests;
           if (!(html = isNonEmptyString(html))) {
             try {
@@ -5204,7 +5201,12 @@ define('cell/Cell',['require', 'cell/Eventful', 'cell/Config', 'cell/CellRenderi
                 n = attachedNodes[_i];
                 n.classList.add(this.cssClassName);
               }
-              this.fire('rendered', new CellRendering(this, opts.data, attachedNodes));
+              this.fire('rendered', view = new CellRendering(this, opts.data, attachedNodes));
+              try {
+                if (typeof done == "function") {
+                  done(view);
+                }
+              } catch (_e) {}
               if (nestedRequests instanceof Array) {
                 for (_j = 0, _len2 = nestedRequests.length; _j < _len2; _j++) {
                   req = nestedRequests[_j];
