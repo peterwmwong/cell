@@ -1,5 +1,5 @@
-define ['require','cell/Eventful','cell/Config','cell/CellRendering','cell/util/attachCSS','cell/util/DOMHelper'],
-   (require,Eventful,Config,CellRendering,attachCSS,DOMHelper)->
+define ['require','cell/Eventful','cell/CellRendering','cell/util/attachCSS','cell/util/DOMHelper'],
+   (require,Eventful,CellRendering,attachCSS,DOMHelper)->
       isNonEmptyString = (s)-> typeof s == 'string' and s.trim()
       cssClassRegex = /([^\/]*$)/
       pathRegex = /(.*?)[^\/]*$/

@@ -1,8 +1,3 @@
-/*
- RequireJS 0.22.0 Copyright (c) 2010, The Dojo Foundation All Rights Reserved.
- Available via the MIT or new BSD license.
- see: http://github.com/jrburke/requirejs for details
-*/
 var require,define;
 (function(){function o(j){return v.call(j)==="[object Function]"}function h(j){return v.call(j)==="[object Array]"}function k(j,m,s){for(var t in m)if(!(t in M)&&(!(t in j)||s))j[t]=m[t];return l}function d(j,m,s){var t,F,p;for(t=0;p=m[t];t++){p=typeof p==="string"?{name:p}:p;F=p.location;if(s&&(!F||F.indexOf("/")!==0&&F.indexOf(":")===-1))p.location=s+"/"+(p.location||p.name);p.location=p.location||p.name;p.lib=p.lib||"lib";p.main=(p.main||"lib/main").replace(w,"");j[p.name]=p}}function g(j){function m(a){var b,
 c;for(b=0;c=a[b];b++)if(c==="."){a.splice(b,1);b-=1}else if(c==="..")if(b===1&&(a[2]===".."||a[0]===".."))break;else if(b>0){a.splice(b-1,2);b-=2}}function s(a,b){var c,e;if(a.charAt(0)===".")if(b){if(K.packages[b])b=[b];else{b=b.split("/");b=b.slice(0,b.length-1)}a=b.concat(a.split("/"));m(a);e=K.packages[c=a[0]];a=a.join("/");if(e&&a===c+"/"+e.main)a=c}return a.replace("/./","/")}function t(a,b){var c=a?a.indexOf("!"):-1,e=null,i=b?b.name:null,x=a,A;if(c!==-1){e=a.substring(0,c);a=a.substring(c+
