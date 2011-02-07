@@ -1,0 +1,3 @@
+cell.define({
+   id:"defObjectCell"
+});
