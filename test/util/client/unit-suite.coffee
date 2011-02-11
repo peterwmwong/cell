@@ -18,6 +18,7 @@ define ->
                #   being tested, it allows tests to override/inject modules 
                #   with mock/spy modules.
                require {baseUrl: '/src', context: "#{suiteName}/#{testName}"}, ['require'], (require) ->
+                  testFuncCtx = testName: testName
                   runAfterTest = ->
                      if typeof $afterTest == 'function'
                         try $afterTest start
@@ -27,24 +28,24 @@ define ->
                   try
                      runTestFunc = ->
                         try
-                           testFunc require, (getTestObjCB) ->
+                           testFunc.call testFuncCtx, require, (getTestObjCB) ->
                               # Load module
                               require [$testObj], (testObj) ->
-                                 try getTestObjCB(testObj)
+                                 try getTestObjCB.call(testFuncCtx, testObj)
                                  catch error
                                     ok false, "TEST EXCEPTION: #{error.stack || error}"
-                                    runAfterTest()
-                           , runAfterTest
+                                    runAfterTest.call testFuncCtx
+                           , runAfterTest.bind testFuncCtx
 
                         catch error
                            ok false, "TEST EXCEPTION: #{error.stack || error}"
-                           runAfterTest()
+                           runAfterTest.call testFuncCtx
 
                      if typeof $beforeTest == 'function'
-                        try $beforeTest require, runTestFunc
+                        try $beforeTest.call testFuncCtx, require, runTestFunc
                      else
                         runTestFunc()
                      
                   catch error
                      ok false, "TEST EXCEPTION: #{error.stack || error}"
-                     runAfterTest()
+                     runAfterTest.call testFuncCtx
