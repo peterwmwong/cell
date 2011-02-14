@@ -65,7 +65,7 @@ define ['/util/qunit-event-formatters.js'], (eventFormatters)->
          pass: pass
          fail: fail
    
-   QUnit.log = (isPass, html_message, {message})->
+   QUnit.log = (isPass, html_message, {message,actual,expected})->
       # Allows breakpoint on exception -> breakpoint on assertion failure
       unless isPass then try throw new Error()
 
@@ -75,3 +75,5 @@ define ['/util/qunit-event-formatters.js'], (eventFormatters)->
          test: curTest
          assert: message
          isPass: isPass
+         actual: Object.prototype.toString.call actual
+         expected: Object.prototype.toString.call expected

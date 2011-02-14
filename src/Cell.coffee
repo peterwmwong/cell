@@ -1,82 +1,86 @@
 define ->
-   renderFuncNameRegex = /render( <(\w*)>)*/
-   renderingQ = {}
-   renderedQ = []
+   nextId = 0
+   tmpNode = document.createElement 'div'
 
-   Cell = window.Cell = (cell)->
-      Object.defineProperty this, '__cell', value: cell
-      return this
+   Cell = window.Cell = (parent, options)->
+      if not (parent instanceof Cell or (parent instanceof HTMLElement))
+         throw new Error 'new Cell(parent:{HTMLElement or Cell}, [options:Object])'
 
-   Cell::render = (options)->
-      {id,__cell_render,__cell_renderTag} = @__cell
-
-      domid = "__cell_#{id}__"
-      renderTo = renderingQ[domid] = {}
-      __cell_render options, (innerHTML)->
-         if renderTo.ancestor
-            renderTo.ancestor.querySelector("#"+domid).innerHTML = innerHTML
-         else if renderingQ[domid]
-            delete renderingQ[domid]
-            renderedQ.push domid:domid, innerHTML:innerHTML
-
-      "<#{__cell_renderTag} id='#{domid}'></#{__cell_renderTag}>"
-
-
-   Cell::renderElement = (options)->
-      (tmpNode = document.createElement 'div').innerHTML = @render options
-      di = node = undefined
-      `for(var i=renderedQ.length-1; i>=0; i--){
-         if(di = renderedQ[i], node = tmpNode.querySelector("#"+di.domid)){
-            node.innerHTML = di.innerHTML;
-         }
-      }`
-      renderedQ = []
-      node = tmpNode.children[0]
-      for k of renderingQ
-         renderingQ[k].ancestor = node
-      renderingQ = {}
-      node
-      
-
-   CellPrivate = do->
-      nextid = 0
-      ->
-         Object.defineProperties this, id: value: nextid++
-         return this
-
-   CellPrivate::init = (options)->
-      # Find Render Function and Tag
-      {func,tag} = do=>
-         for key in Object.getOwnPropertyNames this when matches = renderFuncNameRegex.exec key
-            return func:this[key], tag:matches[3]
-
+      @__rendered = false
+      @__renderQ = {}
       Object.defineProperties this,
-         exports:
-            value: new Cell(this)
-         __cell_renderTag:
-            value: tag or 'div'
-         __cell_render:
-            value: func
+         parent:  {value: parent }
+         options: {value: options}
+
+      pcid = "#__cell_#{nextId++}__"
+      tmpNode.innerHTML = @__renderStartTag+@__renderEndTag
+      @node = tmpNode.children[0]
+
+      @html = "<#{@__renderTag} id='#{pcid.slice 1}'></#{@__renderTag}>"
+
+      innerHTML = @__render options, (innerHTML)=>
+         @__renderInnerHTML innerHTML, pcid
+
+      if typeof innerHTML == 'string'
+         @__renderInnerHTML innerHTML, pcid
 
 
-   createInitCell = (spec,options)->
-      for k,v of spec
-         spec[k] = value: spec[k]
-      cell = Object.create new CellPrivate(), spec
-      CellPrivate::init.call cell, options
-      spec.init?.call cell, options
-      cell
+   Cell.renderHTML = (parent,options)-> (new this parent, options).html
+   Cell.extend = (conFunc, obj)->
+      if typeof conFunc != 'function'
+         obj = conFunc
+         conFunc = undefined
 
+      if typeof obj != 'object' or obj instanceof Array
+         throw new Error 'Cell.extend([constructor:function],prototypeMembers:Object) expects prototypeMembers to be an Object, but was '+obj
 
-   Renderer = (spec)->
-      @spec = spec
-      this
+      NewCell = not conFunc and @ or ->
+         ParentCell.apply @, arguments
+         conFunc and conFunc.apply @, arguments
 
-   Renderer::render = (options)->
-      createInitCell(@spec, options).exports.render options
+      (obj[k] = value: v) for k,v of obj
+      
+      NewCell.prototype = Object.create @.prototype, obj
+      Cell::__addRenderProps.call NewCell.prototype
+      NewCell::constructor = NewCell
+      NewCell.extend = Cell.extend
+      NewCell.renderHTML = Cell.renderHTML
+      NewCell
 
-   Renderer::renderElement = (options)->
-      createInitCell(@spec, options).exports.renderElement options
+   Cell.prototype =
+      constructor: Cell
 
+      __addRenderProps: do->
+         renderFuncNameRegex = /render( <(\w+)([ ]+.*)*>)*/
+         ->
+            for p in Object.getOwnPropertyNames @ when match = renderFuncNameRegex.exec(p)
+               throw new Error "Cell.extend expects '#{p}' to be a function" if typeof (func=@[p]) != 'function'
 
-   Cell.extend = (spec)-> new Renderer spec
+               @__render = @[p]
+               @__renderTag = match[2] or 'div'
+               @__renderStartTag = "<#{@__renderTag}#{match[3] or ""}>"
+               @__renderEndTag   = "</#{@__renderTag}>"
+               return
+            return
+
+      __renderTheQ: ->
+         for pcid,child of @__renderQ
+            if pc = @node.querySelector pcid
+               pc.parentNode.replaceChild child.node
+         delete @__renderQ
+      
+      __renderInnerHTML: (innerHTML, pcid)->
+         if not @__rendered
+            @__rendered = true
+            @node.innerHTML = innerHTML
+
+            placeholder = (@parent.node or @parent).querySelector(pcid)
+            if placeholder
+               placeholder.parentNode.replaceChild @node, placeholder
+            else if @parent instanceof Cell
+               @parent.__renderQ[pcid] = this
+            else if @parent instanceof HTMLElement
+               @parent.appendChild @node
+
+            @__renderTheQ()
+      

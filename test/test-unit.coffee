@@ -19,8 +19,6 @@ findtests {spec:testSpec+'Test.coffee', dir:testsdir}, (tests) ->
 
    testsurl = "http://localhost:#{port}/util/unit-runner.html?tests=#{(encodeURIComponent '/tests'+test for test in tests).join ','}"
 
-   log "Running tests: \n #{tests.join '\n '}"
-
    # Setup test result server
    results = (require './util/server/test-server').create
       testsDir: testsdir
@@ -30,17 +28,15 @@ findtests {spec:testSpec+'Test.coffee', dir:testsdir}, (tests) ->
       utilDir: __dirname+'/util/client'
       port: port
 
-   # Listen for failure
-   results.on 'test.assert', (event) ->
-      if not event.isPass
-         log eventFormatters['test.assert'](event)
+   for eventType in Object.getOwnPropertyNames eventFormatters
+      # Listen for failure
+      results.on eventType, (event) ->
+         log l if l = eventFormatters[event.type](event)
 
    # Listen for completion
    results.on 'done', do->
       debugPrinted = false
       (event)->
-         log eventFormatters['done'](event)
-
          if not debugPrinted
             debugPrinted = true
             if debug
