@@ -9,109 +9,36 @@ define ->
       done()
    
    """
-   return Cell.extend({render:function(){return 'testRender';}});
+   /* Sync Render */
+   var MyCell = Cell.extend({
+      render: function(options,render){
+         return options.key;
+      }
+   });
+   return new MyCell({key:'value'}).node;
    """: test (_,done)->
-      done()
-
-
-   """
-   var desc = {
-         'render <span class="myclass" id="theId" style="background-color:#FFF; display:block">': function(){
-            return "testRender";
-         }
-       };
-   Cell.prototype.__addRenderProps.call(desc);
-   return desc;
-   """: test ({__renderTag,__render,__renderTagId,__renderStartTag,__renderEndTag},done)->
-      strictEqual __renderTag, 'span', '.__renderTag'
-      strictEqual __render?(), 'testRender', '.__render()'
-      strictEqual __renderStartTag, '<span class="myclass" id="theId" style="background-color:#FFF; display:block">', '.__renderStartTag'
-      strictEqual __renderEndTag, '</span>', '.__renderEndTag'
-      done()
+      strictEqual _.innerHTML, 'value'
 
    """
-   var desc = {
-         'render <span>': function(){ return "testRender"; }
-       };
-   Cell.prototype.__addRenderProps.call(desc);
-   return desc;
-   """: test ({__renderTag,__render,__renderStartTag,__renderEndTag},done)->
-      strictEqual __renderTag, 'span', '.__renderTag'
-      strictEqual __render?(), 'testRender', '.__render()'
-      strictEqual __renderStartTag, '<span>', '.__renderStartTag'
-      strictEqual __renderEndTag, '</span>', '.__renderEndTag'
-      done()
-   """
-
-   var desc = {
-         'render <span': function(){ return "testRender"; }
-       };
-   Cell.prototype.__addRenderProps.call(desc);
-   return desc;
-   """: test ({__renderTag,__render,__renderStartTag,__renderEndTag},done)->
-      strictEqual __renderTag, 'div', '.__renderTag'
-      strictEqual __render?(), 'testRender', '.__render()'
-      strictEqual __renderStartTag, '<div>', '.__renderStartTag'
-      strictEqual __renderEndTag, '</div>', '.__renderEndTag'
-      done()
-
-   """
-   var desc = {
-         'render': function(){ return "testRender"; }
-       };
-   Cell.prototype.__addRenderProps.call(desc);
-   return desc;
-   """: test ({__renderTag,__render,__renderStartTag,__renderEndTag},done)->
-      strictEqual __renderTag, 'div', '.__renderTag'
-      strictEqual __render?(), 'testRender', '.__render()'
-      strictEqual __renderStartTag, '<div>', '.__renderStartTag'
-      strictEqual __renderEndTag, '</div>', '.__renderEndTag'
-      done()
-
-   """
-   var desc = {
-         'rende': function(){ return "testRender"; }
-       };
-   Cell.prototype.__addRenderProps.call(desc);
-   return desc;
-   """: test ({__renderTag,__render,__renderStartTag,__renderEndTag},done)->
-      strictEqual __renderTag, undefined, '.__renderTag'
-      strictEqual __render?(), undefined, '.__render()'
-      strictEqual __renderStartTag, undefined, '.__renderStartTag'
-      strictEqual __renderEndTag, undefined, '.__renderEndTag'
-      done()
-
-   """
-   var desc = {
-         'render': []
-       };
-   try {
-      Cell.prototype.__addRenderProps.call({render:[]});
-   }catch(e){
-      return true;
-   }
+   /* AsyncSync Render */
+   var MyCell = Cell.extend({
+      render: function(options,render){
+         return options.key;
+      }
+   });
+   return new MyCell({key:'value'}).node;
    """: test (_,done)->
-      strictEqual _, true, 'Should throw error if render function is NOT a function'
-      done()
+      strictEqual _.innerHTML, 'value'
 
-   """
-   var ExtCell = Cell.extend({
-         render:function(){ return 'testRender'; }
-       }),
-       parentNode = document.createElement('div');
-   return { cell: new ExtCell(parentNode), parentNode: parentNode }
-   """: test ({cell,parentNode},done)->
-      ok cell instanceof Cell, 'should be an instanceof Cell'
-      strictEqual cell.node, parentNode.children[0], 'should have rendered node to parentNode'
-      done()
 
    ###
    """
+
    return Cell.extend({
-      'render <span>':function(options,done){
-         done(options.key);
+      'render <span>':function(options,render){
+         render.async(options.key);
       }
-   }).renderHTML({key:"value"});
+   }).render({key:"value"}).node;
    """: test (_,done)->
       strictEqual _, "<span>value</span>"
       done()
@@ -119,46 +46,45 @@ define ->
    """
    // All combinations rendering a nested Cells asynchronously, deferred asynchronously, and synchronously
    var DeferAsync = Cell.extend({
-      render:function(options,done){
+      render:function(options,render){
          setTimeout(function(){
-            done("DeferAsync: "+options);
+            render.async("DeferAsync: "+options);
          },100);
       }
    });
    var Async = Cell.extend({
-      render:function(options,done){
-         done("Async: "+options);
+      render:function(options,render){
+         render.async("Async: "+options);
       }
    });
    var Sync = Cell.extend({
-      render:function(options,done){
+      render:function(options){
          return "Sync: "+options;
       }
    });
 
-   function renderAll(options){
-      return Sync.renderHTML(options)+Async.renderHTML(options)+DeferAsync.renderHTML(options);
+   function renderAll(options,render){
+      return render.cells( [Sync,options], [Async,options], [DeferAsync,options] );
    }
 
    return {
       DeferAsyncParent: Cell.extend({
-         render: function(options,done){
+         render: function(options,render){
             setTimeout(function(){
-               debugger;
-               done(renderAll(options));
+               render.async(renderAll(options,render));
             },100);
          }
-      }).renderElement('DeferAsyncParent'),
+      }).render('DeferAsyncParent').node,
 
       AsyncParent: Cell.extend({
-         render:function(options,done){
-            done(renderAll(options));
+         render:function(options,render){
+            render.async(renderAll(options,render));
          }
-      }).renderElement('AsyncParent'),
+      }).render('AsyncParent').node,
 
       SyncParent: Cell.extend({
          render: renderAll
-      }).renderElement('SyncParent'),
+      }).render('SyncParent').node,
    };
    """: test ({DeferAsyncParent, AsyncParent, SyncParent},done)->
       window.DeferAsyncParent = DeferAsyncParent
