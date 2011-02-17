@@ -1,6 +1,12 @@
 [submodule "deps/test/express"]
 	path = deps/test/express
 	url = git://github.com/visionmedia/express.git
-[submodule "deps/lib/requirejs"]
-	path = deps/lib/requirejs
-	url = git@github.com:peterwmwong/requirejs.git
+[submodule "deps/lib/backbone"]
+	path = deps/lib/backbone
+	url = git@github.com:peterwmwong/backbone.git
+[submodule "deps/lib/underscore"]
+	path = deps/lib/underscore
+	url = git://github.com/documentcloud/underscore.git
+[submodule "deps/test/requirejs"]
+	path = deps/test/requirejs
+	url = git://github.com/jrburke/requirejs.git

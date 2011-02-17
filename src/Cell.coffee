@@ -1,86 +1,84 @@
-define ->
-   nextId = 0
+do ->
+   nextUID= 0
    tmpNode = document.createElement 'div'
+   getDOMID = (uid)-> "__cell_#{uid}__"
 
-   Cell = window.Cell = (parent, options)->
-      if not (parent instanceof Cell or (parent instanceof HTMLElement))
-         throw new Error 'new Cell(parent:{HTMLElement or Cell}, [options:Object])'
+   Cell = window.Cell = (@options)->
+      @cid = _.uniqueId('view')
+      @_configure(options || {})
 
-      @__rendered = false
-      @__renderQ = {}
-      Object.defineProperties this,
-         parent:  {value: parent }
-         options: {value: options}
+      @_renderQ = {}
+      @_onrender = options and options.onrender
 
-      pcid = "#__cell_#{nextId++}__"
-      tmpNode.innerHTML = @__renderStartTag+@__renderEndTag
-      @node = tmpNode.children[0]
+      tmpNode.innerHTML = @__renderOuterHTML
+      @el = tmpNode.children[0]
+      renderInnerHTML = @__renderInnerHTML.bind this
+      renderHelpers =
+         node: (node)=>
+            unless node instanceof HTMLElement then throw new Error "render.node(node:HTMLElement) was expecting an HTMLElement"
+            else if @_renderQ
+               @_renderQ[uid = nextUID++] = node
+               "<#{node.tagName} id='#{getDOMID(uid)}'></#{node.tagName}>"
 
-      @html = "<#{@__renderTag} id='#{pcid.slice 1}'></#{@__renderTag}>"
+         cells: (cellOptionArrays...)=>
+            if @_renderQ
+               unless cellOptionArrays instanceof Array or cellOptionArrays == undefined
+                  throw new Error 'render.cells( (cell:Cell,options:Object)* ) expects an Array'
+               result = ""
+               for [CellType, option] in cellOptionArrays
+                  result += _rcell CellType, option
+               result
+            
+         cell: _rcell = (CellType, options)=>
+            if @_renderQ
+               cell = new CellType Object.create options or {}, onrender: value: (cell)=>
+                  if @_renderQ
+                     @_renderQ[cell.cid] = cell
+                  else if pc = @el.querySelector "##{getDOMID(cell.cid)}"
+                     pc.parentNode.replaceChild cell.el, pc
 
-      innerHTML = @__render options, (innerHTML)=>
-         @__renderInnerHTML innerHTML, pcid
+                  try options.onrender and options.onrender(cell)
+               "<#{cell.__renderTagName} id='#{getDOMID(cell.cid)}'></#{cell.__renderTagName}>"
 
+         async: renderInnerHTML
+
+         each: (list,func)->
+            (func l for l in list).join '\n'
+
+      innerHTML = @__render options, renderHelpers
       if typeof innerHTML == 'string'
-         @__renderInnerHTML innerHTML, pcid
+         renderInnerHTML innerHTML
 
-
-   Cell.renderHTML = (parent,options)-> (new this parent, options).html
-   Cell.extend = (conFunc, obj)->
-      if typeof conFunc != 'function'
-         obj = conFunc
-         conFunc = undefined
-
-      if typeof obj != 'object' or obj instanceof Array
-         throw new Error 'Cell.extend([constructor:function],prototypeMembers:Object) expects prototypeMembers to be an Object, but was '+obj
-
-      NewCell = not conFunc and @ or ->
-         ParentCell.apply @, arguments
-         conFunc and conFunc.apply @, arguments
-
-      (obj[k] = value: v) for k,v of obj
-      
-      NewCell.prototype = Object.create @.prototype, obj
+   Cell.extend = (protoProps)->
+      NewCell = Backbone.View.extend.call this, protoProps
       Cell::__addRenderProps.call NewCell.prototype
-      NewCell::constructor = NewCell
-      NewCell.extend = Cell.extend
-      NewCell.renderHTML = Cell.renderHTML
       NewCell
 
-   Cell.prototype =
-      constructor: Cell
+
+   _.extend Cell.prototype, Backbone.View.prototype,
+      __onrender: ->
+         @delegateEvents()
+         @initialize @options
+         try @_onrender and @_onrender this
 
       __addRenderProps: do->
          renderFuncNameRegex = /render( <(\w+)([ ]+.*)*>)*/
          ->
             for p in Object.getOwnPropertyNames @ when match = renderFuncNameRegex.exec(p)
                throw new Error "Cell.extend expects '#{p}' to be a function" if typeof (func=@[p]) != 'function'
-
                @__render = @[p]
-               @__renderTag = match[2] or 'div'
-               @__renderStartTag = "<#{@__renderTag}#{match[3] or ""}>"
-               @__renderEndTag   = "</#{@__renderTag}>"
+               @__renderTagName = match[2] or 'div'
+               @__renderOuterHTML = "<#{@__renderTagName}#{match[3] or ""}></#{@__renderTagName}>"
                return
-            return
+            throw new Error 'Cell.extend([constructor:Function],prototypeMembers:Object): could not find a render function in prototypeMembers'
 
-      __renderTheQ: ->
-         for pcid,child of @__renderQ
-            if pc = @node.querySelector pcid
-               pc.parentNode.replaceChild child.node
-         delete @__renderQ
-      
-      __renderInnerHTML: (innerHTML, pcid)->
-         if not @__rendered
-            @__rendered = true
-            @node.innerHTML = innerHTML
-
-            placeholder = (@parent.node or @parent).querySelector(pcid)
-            if placeholder
-               placeholder.parentNode.replaceChild @node, placeholder
-            else if @parent instanceof Cell
-               @parent.__renderQ[pcid] = this
-            else if @parent instanceof HTMLElement
-               @parent.appendChild @node
-
-            @__renderTheQ()
+      __renderInnerHTML: (innerHTML)->
+         if @_renderQ
+            @el.innerHTML = innerHTML
+            for pcid,child of @_renderQ
+               try
+                  if pc = @el.querySelector "##{getDOMID(pcid)}"
+                     pc.parentNode.replaceChild (child instanceof HTMLElement and child) or child.el, pc
+            delete @_renderQ
+            @__onrender()
       
