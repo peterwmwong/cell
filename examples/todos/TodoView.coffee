@@ -26,9 +26,8 @@ window.TodoView = Cell.extend
     # a one-to-one correspondence between a **Todo** and a **TodoView** in this
     # app, we set a direct reference on the model for convenience.
     initialize: ->
-      @model.bind 'change', @render.bind this
+      @model.bind 'change', @update.bind this
       @model.view = this
-
 
     # Toggle the `"done"` state of the model.
     toggleDone: -> @model.toggle()
@@ -40,7 +39,7 @@ window.TodoView = Cell.extend
 
     # Close the `"editing"` mode, saving changes to the todo.
     close: ->
-      @model.save content: @input.val()
+      @model.save content: @$('.todo-input').val()
       $(@el).removeClass 'editing'
 
     # If you hit `enter`, we're through editing the item.

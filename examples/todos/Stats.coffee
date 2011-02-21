@@ -1,16 +1,13 @@
 window.Stats = Cell.extend
    'render <div>': ->
-      Todos.fetch()
-      done = Todos.done().length
-      remaining = Todos.remaining().length
       """
-      #{not remaining and " " or
+      #{not (remaining = @model.remaining().length) and " " or
         "<span class='todo-count'>
           <span class='number'>#{remaining}</span>
           <span class='word'>#{ (remaining==1) and 'item' or 'items' }</span> left.
          </span>"
        }
-      #{not done and " " or
+      #{not (done = @model.done().length) and " " or
         "<span class='todo-clear'>
             <a href='#'>
                Clear <span class='number-done'>#{done}</span>
@@ -20,3 +17,4 @@ window.Stats = Cell.extend
        }
       """
 
+   initialize: -> @model.bind 'all', @update.bind this

@@ -16,7 +16,7 @@
     <script src="TodoApp.js"></script>
     <script>
        $(function(){
-          $('body').prepend(new TodoApp().el);
+          $('body').prepend(new TodoApp({model:Todos}).el);
        });
     </script>
   </head>
