@@ -19,7 +19,7 @@ do ->
       tmpNode.innerHTML = @__renderOuterHTML
       @el = tmpNode.children[0]
 
-      renderHelpers =
+      @_renderHelpers =
          node: (node)=>
             unless node instanceof HTMLElement then throw new Error "render.node(node:HTMLElement) was expecting an HTMLElement"
             else if @_renderQ
@@ -28,22 +28,17 @@ do ->
 
          cells: (cellOptionArrays...)=>
             if @_renderQ
-               unless cellOptionArrays instanceof Array or cellOptionArrays == undefined
+               unless cellOptionArrays instanceof Array
                   throw new Error 'render.cells( (cell:Cell,options:Object)* ) expects an Array'
                cellOptionArrays.reduce ((r,co)=> r+=@__rendercell co[0], co[1]), ""
             
          cell: (CellType, options)=> if @_renderQ then @__rendercell CellType, options
 
-         async: @__renderInnerHTML.bind this
+         async: _.bind(@__renderInnerHTML, this)
 
          each: (list,func)->
             (func l for l in list).join '\n'
 
-      @update = =>
-         if not @_renderQ
-            @_renderQ = {}
-            if typeof (innerHTML = @__render renderHelpers) == 'string'
-               @__renderInnerHTML innerHTML
       @update()
 
    Cell.extend = (protoProps)->
@@ -52,6 +47,12 @@ do ->
       NewCell
 
    _.extend Cell.prototype, Backbone.View.prototype,
+      update: ->
+         if not @_renderQ
+            @_renderQ = {}
+            if typeof (innerHTML = @__render @_renderHelpers) == 'string'
+               @__renderInnerHTML innerHTML
+
       __init_cell: ->
          for p in Object.getOwnPropertyNames @ when match = renderFuncNameRegex.exec(p)
             if typeof (@__render=@[p]) != 'function'

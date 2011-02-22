@@ -26,6 +26,7 @@ window.TodoView = Cell.extend
     # a one-to-one correspondence between a **Todo** and a **TodoView** in this
     # app, we set a direct reference on the model for convenience.
     initialize: ->
+      @input = @$ '.todo-input'
       @model.bind 'change', @update.bind this
       @model.view = this
 
