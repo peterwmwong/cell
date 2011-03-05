@@ -1,4 +1,5 @@
 window.TodoApp = Cell.extend
+
    'render <div id="todoapp">': (render)->
       """
       <div class="title">
@@ -21,57 +22,44 @@ window.TodoApp = Cell.extend
       </div>
       """
 
-   # Delegated events for creating new items, and clearing completed ones.
-   events:
-     'keypress #new-todo':  'createOnEnter'
-     'keyup #new-todo':     'showTooltip'
-     'click .todo-clear a': 'clearCompleted'
+   'events el':
+      # If you hit return in the main input field, create new **Todo** model,
+      # persisting it to *localStorage*.
+      'keypress #new-todo': (e)->
+         if e.keyCode == 13
+            @model.create
+               content: @$('#new-todo').val()
+               order:   @model.nextOrder()
+               done:    false
+            @$('#new-todo').val ''
+
+      # Lazily show the tooltip that tells you to press `enter` to save
+      # a new todo item, after one second.
+      'keyup #new-todo': (e)->
+         tooltip = @$ ".ui-tooltip-top"
+         val = @$('#new-todo').val()
+         tooltip.hide()
+         if @tooltipTimeout then clearTimeout @tooltipTimeout
+         if val == '' or val == @$('#new-todo').attr 'placeholder' then return
+         @tooltipTimeout = _.delay (-> tooltip.show()), 1000
+
+      # Clear all done todo items, destroying their models.
+      'click .todo-clear a': ->
+           _.each @model.done(), (todo)-> todo.clear()
+           return false
+
+   'events model':
+      # Add a single todo item to the list by creating a view for it, and
+      # appending its element to the `<ul>`.
+      add: addOne=(todo)->
+         @$('#todo-list').append new TodoView(model: todo).el
+
+      # Add all items in the **Todos** collection at once.
+      refresh: ->
+         @model.each (todo)=> addOne.call this, todo
 
    # At initialization we bind to the relevant events on the `Todos`
    # collection, when items are added or changed. Kick things off by
    # loading any preexisting todos that might be saved in *localStorage*.
-   initialize: ->
-      @input = @$ '#new-todo'
+   initialize: -> @model.fetch()
 
-      @model.bind 'add',     _.bind(@addOne, this)
-      @model.bind 'refresh', _.bind(@addAll, this)
-      @model.bind 'all',     _.bind(@render, this)
-      @model.fetch()
-
-   # Add a single todo item to the list by creating a view for it, and
-   # appending its element to the `<ul>`.
-   addOne: (todo)->
-      @$('#todo-list').append new TodoView(model: todo).el
-
-   # Add all items in the **Todos** collection at once.
-   addAll: ->
-      @model.each (todo)=> @addOne todo
-
-   # Generate the attributes for a new Todo item.
-   newAttributes: ->
-      content: @input.val()
-      order:   @model.nextOrder()
-      done:    false
-
-   # If you hit return in the main input field, create new **Todo** model,
-   # persisting it to *localStorage*.
-   createOnEnter: (e)->
-      if e.keyCode == 13
-         @model.create @newAttributes()
-         @input.val ''
-
-   # Clear all done todo items, destroying their models.
-   clearCompleted: ->
-     _.each @model.done(), (todo)-> todo.clear()
-     return false
-
-   # Lazily show the tooltip that tells you to press `enter` to save
-   # a new todo item, after one second.
-   showTooltip: (e)->
-     tooltip = @$ ".ui-tooltip-top"
-     val = @input.val()
-     tooltip.fadeOut()
-     if @tooltipTimeout then clearTimeout @tooltipTimeout
-     if val == '' or val == @input.attr 'placeholder' then return
-     show = -> tooltip.show().fadeIn()
-     @tooltipTimeout = _.delay show, 1000

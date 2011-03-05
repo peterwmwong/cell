@@ -1,5 +1,8 @@
+# The TodoView listens for changes to its model, re-rendering. Since there's
+# a one-to-one correspondence between a **Todo** and a **TodoView** in this
+# app, we set a direct reference on the model for convenience.
 window.TodoView = Cell.extend
-
+   
    'render <li>': ->
       """
       <div class="todo #{ @model.get('done') and 'done' or '' }">
@@ -14,40 +17,29 @@ window.TodoView = Cell.extend
       </div>
       """
 
-    # The DOM events specific to an item.
-    events:
-      "click .check"              : "toggleDone"
-      "dblclick div.todo-content" : "edit"
-      "click span.todo-destroy"   : "clear"
-      "keypress .todo-input"      : "updateOnEnter"
-      "blur"                      : "close"
+   # The DOM events specific to an item.
+   'events el':
+      "click .check" : -> @model.toggle()
 
-    # The TodoView listens for changes to its model, re-rendering. Since there's
-    # a one-to-one correspondence between a **Todo** and a **TodoView** in this
-    # app, we set a direct reference on the model for convenience.
-    initialize: ->
-      @input = @$ '.todo-input'
-      @model.bind 'change', @update.bind this
-      @model.view = this
+      # Switch this view into `"editing"` mode, displaying the input field.
+      "dblclick div.todo-content" : ->
+         $(@el).addClass "editing"
+         @$('.todo-input').focus()
 
-    # Toggle the `"done"` state of the model.
-    toggleDone: -> @model.toggle()
+      # Remove the item, destroy the model.
+      "click span.todo-destroy" : -> @model.clear()
 
-    # Switch this view into `"editing"` mode, displaying the input field.
-    edit: ->
-      $(@el).addClass "editing"
-      @input.focus()
+      # If you hit `enter`, we're through editing the item.
+      "keypress .todo-input" : (e)->
+         if e.keyCode == 13
+            close.call this
 
-    # Close the `"editing"` mode, saving changes to the todo.
-    close: ->
-      @model.save content: @$('.todo-input').val()
-      $(@el).removeClass 'editing'
+      # Close the "editing" mode, saving changes to the todo.
+      "blur .todo-input" : close = ->
+         @model.save content: @$('.todo-input').val()
+         $(@el).removeClass 'editing'
 
-    # If you hit `enter`, we're through editing the item.
-    updateOnEnter: (e)-> if e.keyCode == 13 then @close()
-
-    # Remove this view from the DOM.
-    remove: -> $(@el).remove()
-
-    # Remove the item, destroy the model.
-    clear: -> @model.clear()
+   'events model':
+      'change': 'update'
+       # Remove this view from the DOM.
+      'removed': -> $(@el).remove()

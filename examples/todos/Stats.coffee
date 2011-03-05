@@ -19,4 +19,5 @@ window.Stats = Cell.extend
        }
       """
 
-   initialize: -> @model.bind 'all', @update.bind this
+   'events model':
+      all: 'update'

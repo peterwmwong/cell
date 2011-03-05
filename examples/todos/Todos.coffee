@@ -16,7 +16,7 @@ window.Todo = Backbone.Model.extend
  # Remove this Todo from *localStorage* and delete its view.
  clear: ->
    @destroy()
-   @view.remove()
+   @trigger 'removed'
 
 
 # Todo Collection
