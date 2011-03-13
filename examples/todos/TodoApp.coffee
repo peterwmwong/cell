@@ -14,10 +14,12 @@ window.TodoApp = Cell.extend
         </div>
 
         <div id="todos">
-          <ul id="todo-list"></ul>
+          <ul id="todo-list">
+            #{render.each @collection.models, (todo)-> render.cell TodoView, model:todo}
+          </ul>
         </div>
 
-        #{render.cell Stats, model: @model}
+        #{render.cell Stats, model: @collection}
 
       </div>
       """
@@ -27,9 +29,9 @@ window.TodoApp = Cell.extend
       # persisting it to *localStorage*.
       'keypress #new-todo': (e)->
          if e.keyCode == 13
-            @model.create
+            @collection.create
                content: @$('#new-todo').val()
-               order:   @model.nextOrder()
+               order:   @collection.nextOrder()
                done:    false
             @$('#new-todo').val ''
 
@@ -45,10 +47,10 @@ window.TodoApp = Cell.extend
 
       # Clear all done todo items, destroying their models.
       'click .todo-clear a': ->
-           _.each @model.done(), (todo)-> todo.clear()
+           _.each @collection.done(), (todo)-> todo.clear()
            return false
 
-   'events model':
+   'events collection':
       # Add a single todo item to the list by creating a view for it, and
       # appending its element to the `<ul>`.
       add: addOne=(todo)->
@@ -56,10 +58,5 @@ window.TodoApp = Cell.extend
 
       # Add all items in the **Todos** collection at once.
       refresh: ->
-         @model.each (todo)=> addOne.call this, todo
-
-   # At initialization we bind to the relevant events on the `Todos`
-   # collection, when items are added or changed. Kick things off by
-   # loading any preexisting todos that might be saved in *localStorage*.
-   initialize: -> @model.fetch()
+         @collection.each (todo)=> addOne.call this, todo
 

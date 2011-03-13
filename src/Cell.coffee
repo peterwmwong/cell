@@ -3,7 +3,6 @@ bind =
     (func,obj)-> func.bind obj
   else
     (func,obj)-> (-> func.apply obj, arguments)
-
 err =
   if console and typeof console.err == 'function' then (msg)-> console.error msg
   else ->
@@ -61,16 +60,14 @@ window.cell ?= Object.create {},
         args.push (deps..., require, module)->
           cellName = moduleNameRegex.exec(module.id)[2]
           def = if typeof def == 'function' then def deps... else def
-          def.css_href = require.toUrl "./#{cellName}.css"
-          NewCell = Cell.extend def
-          NewCell::__class = cellName
-          NewCell
+          def.css_href ?= require.toUrl "./#{cellName}.css"
+          Cell.extend def, cellName
 
         define args...
 
 window.Cell ?= Cell = do->
   tmpNode = document.createElement 'div'
-  renderEach = (list,func)-> (func l for l in list).join '\n'
+  renderEach = (list,func)-> (func list[i],i,list for i in [0..list.length-1]).join '\n'
   renderCell_nocheck = (self,CellType,options)->
     cell = new CellType Object.create(options or {}, parent: value: self)
     "<#{cell.__renderTagName} id='#{cell._cid}'></#{cell.__renderTagName}>"
@@ -90,21 +87,13 @@ window.Cell ?= Cell = do->
     @_onrender = if typeof @options.onrender == 'function' then options.onrender
 
     @__attach_css()
-    
-    # run-initialize-once wrapper function
-    @_initialize = if @initialize then do =>
-      hasRan = false
-      =>
-        unless hasRan
-          hasRan = true
-          try @initialize()
 
     # Create DOM node
     tmpNode.innerHTML = @__renderOuterHTML
     @el = tmpNode.children[0]
 
     # Add the Cell's class
-    @el.className = "#{@__class or ''} #{@el.className or ''} #{@class or ''}"
+    @el.className = "#{@__cell_name or ''} #{@el.className or ''} #{@class or ''}"
 
     # Hash of helper rendering functions passed to render function to make
     # the following easier:
@@ -140,18 +129,24 @@ window.Cell ?= Cell = do->
 Cell.extend = do->
   renderFuncNameRegex = /render( <(\w+)([ ]+.*)*>)*/
   eventsNameRegex = /events (.+)/
-  setupCellProto = (NewCell)->
-    p = NewCell.prototype
-    # Unique identifier for Cell
+
+  extend = (protoProps, name)->
+    child = inherits this, protoProps
+    child.extend = extend
+    p = child.prototype
+
+    p.__cell_name = name
     p.__cell_id = uniqueId '__cell_'
     p.__cssAttached = false
     ebinds = p.__eventBindings = []
 
     for prop in Object.getOwnPropertyNames p
       # Find and add event binding
-      if match = eventsNameRegex.exec prop
-        if typeof (binddesc = p[prop]) == 'object'
-          ebinds.push prop: match[1], desc: binddesc
+      if (match = eventsNameRegex.exec prop) and typeof (binddesc = p[prop]) == 'object'
+        # Map event handler functions specified by name
+        for desc,handler of binddesc when typeof handler == 'string'
+          binddesc[desc] = p[handler]
+        ebinds.push prop: match[1], desc: binddesc
           
       # Find and add render function (if not already found)
       else if not p.renderTagName and match = renderFuncNameRegex.exec prop
@@ -162,13 +157,8 @@ Cell.extend = do->
         p.__renderOuterHTML = "<#{p.__renderTagName}#{match[3] or ""}></#{p.__renderTagName}>"
 
     # Must have found a render function 
-    if p.__renderTagName then NewCell
+    if p.__renderTagName then child
     else err 'Cell.extend([constructor:Function],prototypeMembers:Object): could not find a render function in prototypeMembers'
-
-  extend = (protoProps)->
-    child = inherits this, protoProps
-    child.extend = extend
-    setupCellProto child
 
 Cell.prototype =
   $: (selector)-> $ selector, @el
@@ -176,49 +166,65 @@ Cell.prototype =
   update: ->
     if not @_renderQ
       @_renderQ = {}
+      @initialize?()
       if typeof (innerHTML = @__render @_renderHelpers) == 'string'
         @__renderinnerHTML innerHTML
 
-  bind: do->
+  __delegateEvents: do->
     elEventRegex = /^(\w+)\s*(.*)$/
+    selbinder = (sel,eventName,prop,handler,obj)->
+      handler = bind handler, obj
+      eventName = "#{eventName}.#{obj._cid}"
+      (observed = $(obj[prop])).delegate sel, eventName, handler
+      -> observed.undelegate sel, eventName, handler
 
-    (observed, bindDesc)->
-      if observed
-        binder =
-          if observed instanceof HTMLElement then (desc,handler)=>
-            [_,eventName,selector] = elEventRegex.exec(desc) or []
-            eventName = "#{eventName}.#{@_cid}"
-            target = $(observed)
-            if selector
-              target.delegate selector, eventName, handler
-              -> target.undelegate selector, eventName, handler
-            else
-              target.bind eventName, handler
-              -> target.unbind eventName, handler
-          else if typeof observed.bind == 'function' then (desc,handler)=>
-            observed.bind desc, handler
-            -> observed.unbind desc, handler
+    elbinder = (eventName,prop,handler,obj)->
+      handler = bind handler, obj
+      (observed = $(obj[prop])).bind eventName, handler
+      -> observed.unbind eventName, handler
 
-        if binder
-          for desc,handler of bindDesc when typeof desc == 'string'
-            binder desc, @__getHandler(handler)
+    bindablebinder = (eventName,prop,handler,obj)->
+      handler = bind handler, obj
+      (observed = obj[prop]).bind eventName, handler
+      -> observed.unbind eventName, handler
 
-  __getHandler: (handler)->
-    handler =
-      if typeof handler == 'string' then @[handler]
-      else if typeof handler == 'function' then handler
-    handler and bind handler,this
+    getBinders = (obj,prop,bindDesc)->
+      observed = obj[prop]
+      binders = []
+      for desc,handler of bindDesc when typeof desc == 'string'
+        if observed instanceof HTMLElement
+          [matched,eventName,selector] = elEventRegex.exec(desc) or []
+          if match = elEventRegex.exec(desc)
+            binders.push(
+              if sel = match[2] then selbinder.bind null, sel, eventName, prop, handler
+              else elbinder.bind null, eventName, prop, handler
+            )
+        else if typeof observed.bind == 'function'
+          binders.push bindablebinder.bind null, desc, prop, handler
+      return binders
 
-  __delegateEvents: ->
-    if @__unbinds
-      for ubs in @__unbinds when ubs
-        for ub in ubs when ub
+    ->
+      if @_unbinds
+        for ub in @_unbinds
           try ub()
-    @__unbinds = (@bind @[prop],desc for {prop,desc} in @__eventBindings)
-    return
+      @_unbinds = []
+
+      if @__eventBindings
+        ebindings = @__eventBindings
+        cellProto = Object.getPrototypeOf this
+        delete cellProto.__eventBindings
+        binderCache = []
+        for b in ebindings
+          binderCache = binderCache.concat getBinders(this, b.prop, b.desc)
+        cellProto.__binderCache = binderCache
+
+      for b in @__binderCache
+        @_unbinds.push b(this)
+
+      return
 
   __attach_css: ->
-    if not @__cssAttached and not document.querySelector "[data-cell-style=#{@__cell_id}]"
+    if not @__cssAttached and not document.querySelector "[data-cell-id=#{@__cell_id}]"
       @__cssAttached = true
       if typeof @css == 'string'
         el = document.createElement 'style'
@@ -231,8 +237,8 @@ Cell.prototype =
         el.type = 'text/css'
 
       if el
-        if el.dataset then (el.dataset.cellStyle = @__cell_id)
-        else el.setAttribute "data-cell-style", @__cell_id
+        if el.dataset then (el.dataset.cellId = @__cell_id)
+        else el.setAttribute "data-cell-id", @__cell_id
         document.head.appendChild el
        
   __renderinnerHTML: (innerHTML)->
@@ -253,6 +259,5 @@ Cell.prototype =
 
   __onrender: ->
     @__delegateEvents()
-    @_initialize?()
     @_parent?.__onchildrender? this
     try @_onrender? this
