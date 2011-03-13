@@ -4,7 +4,7 @@ bind =
   else
     (func,obj)-> (-> func.apply obj, arguments)
 err =
-  if console and typeof console.err == 'function' then (msg)-> console.error msg
+  if typeof console?.error == 'function' then (msg)-> console.error msg
   else ->
 
 extendObj = (destObj, srcObj)->
