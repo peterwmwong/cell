@@ -1,15 +1,19 @@
-bind =
-  if Function.prototype.bind
-    (func,obj)-> func.bind obj
+bind = do->
+  slice = Array.prototype.slice
+  if fbind = Function.prototype.bind
+    (func,obj)-> fbind.apply func, [obj].concat(slice.call(arguments,2))
   else
-    (func,obj)-> (-> func.apply obj, arguments)
+    (func,obj)->
+      args = slice.call(arguments,2)
+      -> func.apply obj, args.concat(slice.call(arguments))
+
 err =
   if typeof console?.error == 'function' then (msg)-> console.error msg
   else ->
 
 extendObj = (destObj, srcObj)->
   destObj[p] = srcObj[p] for p of srcObj
-  return
+  destObj
 
 uniqueId = do->
   postfix = 0
@@ -17,60 +21,34 @@ uniqueId = do->
 
 inherits = do->
   ctor = ->
-  (parent, protoProps, staticProps)->
+  (parent, protoProps)->
     child =
       if protoProps and protoProps.hasOwnProperty 'constructor' then protoProps.constructor
       else -> return parent.apply this, arguments
     extendObj child, parent
     ctor.prototype = parent.prototype
     child.prototype = new ctor()
-    if protoProps then extendObj child.prototype, protoProps
-    if staticProps then extendObj child, staticProps
+    extendObj child.prototype, protoProps
     child::constructor = child
     child.__super__ = parent.prototype
     child
 
-
-window.cell ?= Object.create {},
-  define: value: do->
-    moduleNameRegex = /(.*\/)?(.*)/
-    ensureDef = (def)->
-      if (typedef = typeof def) == 'function' or typedef == 'object' then def
-      else err('Cell definition is not a function or object')
-
-    (id,deps,def)->
-      # Normalize arguments, these are valid combinations: (id,deps,def), (id,def), (deps,def)
-      if def then def = ensureDef def
-      else if deps
-        def = ensureDef deps
-        deps = undefined
-        if id instanceof Array
-          deps = id
-          id = undefined
-      else if id
-        def = ensureDef id
-        id = deps = undefined
-
-      if def
-        deps = (if deps instanceof Array then deps else []).concat(['require', 'module'])
-        id = typeof id == 'string' and id
-        args = []
-        if id then args.push id
-        args.push deps
-        args.push (deps..., require, module)->
-          cellName = moduleNameRegex.exec(module.id)[2]
-          def = if typeof def == 'function' then def deps... else def
-          def.css_href ?= require.toUrl "./#{cellName}.css"
-          Cell.extend def, cellName
-
-        define args...
-
 window.Cell ?= Cell = do->
   tmpNode = document.createElement 'div'
-  renderEach = (list,func)-> (func list[i],i,list for i in [0..list.length-1]).join '\n'
+
+  renderEach = (list,func)->
+    if not list?.length then ''
+    else
+      result = ''
+      `for(var i=0; i<list.length; ++i){
+        result+=func(list[i],i,list)+'\n';
+      }`
+      result
+
   renderCell_nocheck = (self,CellType,options)->
-    cell = new CellType Object.create(options or {}, parent: value: self)
+    cell = new CellType extendObj(options or {}, parent: self)
     "<#{cell.__renderTagName} id='#{cell._cid}'></#{cell.__renderTagName}>"
+
   optsToProps = ['model', 'collection', 'class', 'id']
 
   (@options = {})->
@@ -131,34 +109,36 @@ Cell.extend = do->
   eventsNameRegex = /events (.+)/
 
   extend = (protoProps, name)->
-    child = inherits this, protoProps
-    child.extend = extend
-    p = child.prototype
-
-    p.__cell_name = name
-    p.__cell_id = uniqueId '__cell_'
-    p.__cssAttached = false
-    ebinds = p.__eventBindings = []
-
-    for prop in Object.getOwnPropertyNames p
+    ebinds = protoProps.__eventBindings = []
+    for prop of protoProps
       # Find and add event binding
-      if (match = eventsNameRegex.exec prop) and typeof (binddesc = p[prop]) == 'object'
+      if (match = eventsNameRegex.exec prop) and typeof (binddesc = protoProps[prop]) == 'object'
         # Map event handler functions specified by name
         for desc,handler of binddesc when typeof handler == 'string'
-          binddesc[desc] = p[handler]
+          binddesc[desc] = protoProps[handler] or @::[handler]
         ebinds.push prop: match[1], desc: binddesc
           
       # Find and add render function (if not already found)
-      else if not p.renderTagName and match = renderFuncNameRegex.exec prop
-        if typeof (p.__render=p[prop]) != 'function'
+      else if not protoProps.__renderTagName and match = renderFuncNameRegex.exec prop
+        if typeof (protoProps.__render=protoProps[prop]) != 'function'
           err "Cell.extend expects '#{prop}' to be a function"
           return
-        p.__renderTagName = match[2] or 'div'
-        p.__renderOuterHTML = "<#{p.__renderTagName}#{match[3] or ""}></#{p.__renderTagName}>"
+        tag = protoProps.__renderTagName = match[2] or 'div'
+        protoProps.__renderOuterHTML = "<#{tag}#{match[3] or ""}></#{tag}>"
 
     # Must have found a render function 
-    if p.__renderTagName then child
-    else err 'Cell.extend([constructor:Function],prototypeMembers:Object): could not find a render function in prototypeMembers'
+    if not protoProps.__renderTagName
+      err 'Cell.extend([constructor:Function],prototypeMembers:Object): could not find a render function in prototypeMembers'
+    else
+      child = inherits this, protoProps
+      child.extend = extend
+      p = child.prototype
+      p.__cell_proto = p
+      p.__cell_name = name
+      p.__cell_id = uniqueId '__cell_'
+      p.__cssAttached = false
+      child
+
 
 Cell.prototype =
   $: (selector)-> $ selector, @el
@@ -172,6 +152,7 @@ Cell.prototype =
 
   __delegateEvents: do->
     elEventRegex = /^(\w+)\s*(.*)$/
+
     selbinder = (sel,eventName,prop,handler,obj)->
       handler = bind handler, obj
       eventName = "#{eventName}.#{obj._cid}"
@@ -196,11 +177,11 @@ Cell.prototype =
           [matched,eventName,selector] = elEventRegex.exec(desc) or []
           if match = elEventRegex.exec(desc)
             binders.push(
-              if sel = match[2] then selbinder.bind null, sel, eventName, prop, handler
-              else elbinder.bind null, eventName, prop, handler
+              if sel = match[2] then bind selbinder, null, sel, eventName, prop, handler
+              else bind elbinder, null, eventName, prop, handler
             )
         else if typeof observed.bind == 'function'
-          binders.push bindablebinder.bind null, desc, prop, handler
+          binders.push bind bindablebinder, null, desc, prop, handler
       return binders
 
     ->
@@ -211,12 +192,11 @@ Cell.prototype =
 
       if @__eventBindings
         ebindings = @__eventBindings
-        cellProto = Object.getPrototypeOf this
-        delete cellProto.__eventBindings
+        delete @__cell_proto.__eventBindings
         binderCache = []
         for b in ebindings
           binderCache = binderCache.concat getBinders(this, b.prop, b.desc)
-        cellProto.__binderCache = binderCache
+        @__cell_proto.__binderCache = binderCache
 
       for b in @__binderCache
         @_unbinds.push b(this)
@@ -239,7 +219,7 @@ Cell.prototype =
       if el
         if el.dataset then (el.dataset.cellId = @__cell_id)
         else el.setAttribute "data-cell-id", @__cell_id
-        document.head.appendChild el
+        $('head').append el
        
   __renderinnerHTML: (innerHTML)->
     if @_renderQ
@@ -261,3 +241,47 @@ Cell.prototype =
     @__delegateEvents()
     @_parent?.__onchildrender? this
     try @_onrender? this
+
+
+if typeof window.define == 'function'
+  $ ->
+    # Load/render Cells specified in DOM node data-cell attributes
+    for node in $('[data-cell]') when cellname=$(node).attr 'data-cell'
+      do(node)->
+        require urlArgs:"bust=#{new Date().getTime()}",
+          [cellname], (CellType)-> $(node).append(new CellType().el)
+    return
+
+  window.cell ?=
+    define: do->
+      moduleNameRegex = /(.*\/)?(.*)/
+      ensureDef = (def)->
+        if (typedef = typeof def) == 'function' or typedef == 'object' then def
+        else err('Cell definition is not a function or object')
+
+      (id,deps,def)->
+        # Normalize arguments, these are valid combinations: (id,deps,def), (id,def), (deps,def)
+        if def then def = ensureDef def
+        else if deps
+          def = ensureDef deps
+          deps = undefined
+          if id instanceof Array
+            deps = id
+            id = undefined
+        else if id
+          def = ensureDef id
+          id = deps = undefined
+
+        if def
+          deps = (if deps instanceof Array then deps else []).concat(['require', 'module'])
+          id = typeof id == 'string' and id
+          args = []
+          if id then args.push id
+          args.push deps
+          args.push (deps..., require, module)->
+            cellName = moduleNameRegex.exec(module.id)[2]
+            def = if typeof def == 'function' then def deps... else def
+            def.css_href ?= require.toUrl "./#{cellName}.css"
+            Cell.extend def, cellName
+
+          define args...
