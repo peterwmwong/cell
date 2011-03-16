@@ -72,7 +72,7 @@ window.Cell ?= Cell = do->
 
     # Add the Cell's class
     @el.className = "#{@__cell_name or ''} #{@el.className or ''} #{@class or ''}"
-    @el.id = @id
+    (typeof @id == 'string') and @el.id = @id
 
     # Hash of helper rendering functions passed to render function to make
     # the following easier:
