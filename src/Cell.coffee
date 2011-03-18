@@ -71,7 +71,11 @@ window.Cell ?= Cell = do->
     @el = tmpNode.children[0]
 
     # Add the Cell's class
-    @el.className = "#{@__cell_name or ''} #{@el.className or ''} #{@class or ''}"
+    className = ""
+    for n in [@__cell_name,@el.className,@class] when n
+      className += if className then ' '+n else n
+    @el.className = className
+
     (typeof @id == 'string') and @el.id = @id
 
     # Hash of helper rendering functions passed to render function to make
@@ -134,7 +138,8 @@ Cell.extend = do->
       child = inherits this, protoProps
       child.extend = extend
       p = child.prototype
-      p.__cell_proto = p
+      p.Cell = child
+      p.CellProto = p
       p.__cell_name = name
       p.__cell_id = uniqueId '__cell_'
       p.__cssAttached = false
@@ -193,11 +198,11 @@ Cell.prototype =
 
       if @__eventBindings
         ebindings = @__eventBindings
-        delete @__cell_proto.__eventBindings
+        delete @CellProto.__eventBindings
         binderCache = []
         for b in ebindings
           binderCache = binderCache.concat getBinders(this, b.prop, b.desc)
-        @__cell_proto.__binderCache = binderCache
+        @CellProto.__binderCache = binderCache
 
       for b in @__binderCache
         @_unbinds.push b(this)
@@ -249,8 +254,11 @@ if typeof window.define == 'function'
     # Load/render Cells specified in DOM node data-cell attributes
     for node in $('[data-cell]') when cellname=$(node).attr 'data-cell'
       do(node)->
-        require urlArgs:"bust=#{new Date().getTime()}",
-          [cellname], (CellType)-> $(node).append(new CellType().el)
+        require
+          urlArgs:"bust=#{new Date().getTime()}"
+          baseUrl: $(node).attr 'data-cell-baseurl'
+          [cellname]
+          (CellType)-> $(node).append(new CellType().el)
     return
 
   window.cell ?=
