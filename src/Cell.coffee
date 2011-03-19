@@ -254,11 +254,14 @@ if typeof window.define == 'function'
     # Load/render Cells specified in DOM node data-cell attributes
     for node in $('[data-cell]') when cellname=$(node).attr 'data-cell'
       do(node)->
-        require
-          urlArgs:"bust=#{new Date().getTime()}"
-          baseUrl: $(node).attr 'data-cell-baseurl'
-          [cellname]
-          (CellType)-> $(node).append(new CellType().el)
+        opts = {}
+        if $(node).attr 'data-cell-cachebust'
+          opts.urlArgs = "bust=#{new Date().getTime()}"
+
+        if baseurl = $(node).attr 'data-cell-baseurl'
+          opts.baseUrl = baseurl
+
+        require opts, [cellname], (CellType)-> $(node).append(new CellType().el)
     return
 
   window.cell ?=
