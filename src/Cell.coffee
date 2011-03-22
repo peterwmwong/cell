@@ -64,7 +64,7 @@ window.Cell ?= Cell = do->
     # On render/update callback function
     @_onrender = if typeof @options.onrender == 'function' then options.onrender
 
-    @__attach_css()
+    @__attach_css?()
 
     # Create DOM node
     tmpNode.innerHTML = @__renderOuterHTML
@@ -136,17 +136,25 @@ Cell.extend = do->
 
     child = inherits this, protoProps
 
-    # Must have found a render function 
+    # Must find a render function 
     if not (p = child.prototype).__renderTagName
       err 'Cell.extend([constructor:Function],prototypeMembers:Object): could not find a render function in prototypeMembers'
     else
       child.extend = extend
       p.Cell = child
-      p.CellProto = p
       if name then p.__cell_name = name
-      if p.__cssAttached
-        p.__cssAttached = protoProps.css_href == this::css_href
-      p.__cell_id = uniqueId '__cell_'
+      if typeof protoProps.css_href == 'string' or typeof protoProps.css == 'string'
+        p.__attach_css = ->
+          delete p.__attach_css
+          if typeof (css = protoProps.css) == 'string'
+            el = document.createElement 'style'
+            el.innerHTML = css
+          else
+            el = document.createElement 'link'
+            el.href = protoProps.css_href
+            el.rel = 'stylesheet'
+          el.type = 'text/css'
+          $('head').append el
       child
 
 
@@ -200,38 +208,22 @@ Cell.prototype =
       if @_unbinds
         for ub in @_unbinds
           try ub()
-      @_unbinds = []
+        delete @_unbinds
 
-      if ebindings = @CellProto.__eventBindings
-        delete @CellProto.__eventBindings
+      if ebindings = @Cell::__eventBindings
+        delete @Cell::__eventBindings
         binderCache = []
         for b in ebindings
           binderCache = binderCache.concat getBinders this, b.prop, b.desc
-        @CellProto.__binderCache = binderCache
+        @Cell::__binderCache = binderCache
 
       if @__binderCache
+        @_unbinds = []
         for b in @__binderCache
           @_unbinds.push b this
 
       return
-
-  __attach_css: ->
-    if not @__cssAttached and $("[data-cell-css-id=#{@__cell_id}]").length == 0
-      @__cssAttached = true
-      if typeof @css == 'string'
-        el = document.createElement 'style'
-        el.type = "text/css"
-        el.innerHTML = @css
-      else if typeof @css_href == 'string'
-        el = document.createElement 'link'
-        el.href = @css_href
-        el.rel = 'stylesheet'
-        el.type = 'text/css'
-
-      if el
-        el.setAttribute "data-cell-css-id", @__cell_id
-        $('head').append el
-       
+      
   __renderinnerHTML: (innerHTML)->
     if @_renderQ
       @el.innerHTML = @_ie_hack_innerHTML = innerHTML
