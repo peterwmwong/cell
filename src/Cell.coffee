@@ -1,10 +1,10 @@
 bind = do->
   slice = Array.prototype.slice
   if fbind = Function.prototype.bind
-    (func,obj)-> fbind.apply func, [obj].concat(slice.call(arguments,2))
+    (func,obj)-> fbind.apply func, [obj].concat slice.call arguments, 2
   else
     (func,obj)->
-      args = slice.call(arguments,2)
+      args = slice.call arguments, 2
       -> func.apply obj, args.concat(slice.call(arguments))
 
 err =
@@ -114,7 +114,7 @@ Cell.extend = do->
   eventsNameRegex = /events (.+)/
 
   extend = (protoProps, name)->
-    ebinds = protoProps.__eventBindings = []
+    ebinds = []
     for prop of protoProps
       # Find and add event binding
       if (match = eventsNameRegex.exec prop) and typeof (binddesc = protoProps[prop]) == 'object'
@@ -131,18 +131,22 @@ Cell.extend = do->
         tag = protoProps.__renderTagName = match[2] or 'div'
         protoProps.__renderOuterHTML = "<#{tag}#{match[3] or ""}></#{tag}>"
 
+    if ebinds.length
+      protoProps.__eventBindings = ebinds
+
+    child = inherits this, protoProps
+
     # Must have found a render function 
-    if not protoProps.__renderTagName
+    if not (p = child.prototype).__renderTagName
       err 'Cell.extend([constructor:Function],prototypeMembers:Object): could not find a render function in prototypeMembers'
     else
-      child = inherits this, protoProps
       child.extend = extend
-      p = child.prototype
       p.Cell = child
       p.CellProto = p
-      p.__cell_name = name
+      if name then p.__cell_name = name
+      if p.__cssAttached
+        p.__cssAttached = protoProps.css_href == this::css_href
       p.__cell_id = uniqueId '__cell_'
-      p.__cssAttached = false
       child
 
 
@@ -179,12 +183,14 @@ Cell.prototype =
       observed = obj[prop]
       binders = []
       for desc,handler of bindDesc when typeof desc == 'string'
-        if observed instanceof HTMLElement
+        if observed.nodeType == 1
           [matched,eventName,selector] = elEventRegex.exec(desc) or []
           if match = elEventRegex.exec(desc)
             binders.push(
-              if sel = match[2] then bind selbinder, null, sel, eventName, prop, handler
-              else bind elbinder, null, eventName, prop, handler
+              if sel = match[2]
+                bind selbinder, null, sel, eventName, prop, handler
+              else
+                bind elbinder, null, eventName, prop, handler
             )
         else if typeof observed.bind == 'function'
           binders.push bind bindablebinder, null, desc, prop, handler
@@ -196,21 +202,21 @@ Cell.prototype =
           try ub()
       @_unbinds = []
 
-      if @__eventBindings
-        ebindings = @__eventBindings
+      if ebindings = @CellProto.__eventBindings
         delete @CellProto.__eventBindings
         binderCache = []
         for b in ebindings
-          binderCache = binderCache.concat getBinders(this, b.prop, b.desc)
+          binderCache = binderCache.concat getBinders this, b.prop, b.desc
         @CellProto.__binderCache = binderCache
 
-      for b in @__binderCache
-        @_unbinds.push b(this)
+      if @__binderCache
+        for b in @__binderCache
+          @_unbinds.push b this
 
       return
 
   __attach_css: ->
-    if not @__cssAttached and not document.querySelector "[data-cell-id=#{@__cell_id}]"
+    if not @__cssAttached and $("[data-cell-css-id=#{@__cell_id}]").length == 0
       @__cssAttached = true
       if typeof @css == 'string'
         el = document.createElement 'style'
@@ -223,25 +229,26 @@ Cell.prototype =
         el.type = 'text/css'
 
       if el
-        if el.dataset then (el.dataset.cellId = @__cell_id)
-        else el.setAttribute "data-cell-id", @__cell_id
+        el.setAttribute "data-cell-css-id", @__cell_id
         $('head').append el
        
   __renderinnerHTML: (innerHTML)->
     if @_renderQ
-      @el.innerHTML = innerHTML
+      @el.innerHTML = @_ie_hack_innerHTML = innerHTML
       for pcid,child of @_renderQ
-        try
-          if pc = @el.querySelector "##{pcid}"
-            pc.parentNode.replaceChild (if child instanceof HTMLElement then child else child.el), pc
+        if not child.el.innerHTML
+          child.el.innerHTML = child._ie_hack_innerHTML
+        @$("##{pcid}").replaceWith child.el
+        delete child._ie_hack_innerHTML
       delete @_renderQ
       @__onrender()
 
   __onchildrender: (cell)->
     if @_renderQ
       @_renderQ[cell._cid] = cell
-    else if pc = @el.querySelector "##{cell._cid}"
-      pc.parentNode.replaceChild cell.el, pc
+    else
+      delete cell._ie_hack_innerHTML
+      @$("##{cell._cid}").replaceWith child.el
 
   __onrender: ->
     @__delegateEvents()
@@ -252,15 +259,13 @@ Cell.prototype =
 if typeof window.define == 'function'
   $ ->
     # Load/render Cells specified in DOM node data-cell attributes
-    for node in $('[data-cell]') when cellname=$(node).attr 'data-cell'
+    for node in $('[data-cell]') when cellname=node.getAttribute('data-cell')
       do(node)->
         opts = {}
-        if $(node).attr 'data-cell-cachebust'
+        if node.getAttribute('data-cell-cachebust') != null
           opts.urlArgs = "bust=#{new Date().getTime()}"
-
-        if baseurl = $(node).attr 'data-cell-baseurl'
+        if baseurl = node.getAttribute 'data-cell-baseurl'
           opts.baseUrl = baseurl
-
         require opts, [cellname], (CellType)-> $(node).append(new CellType().el)
     return
 
