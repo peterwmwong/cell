@@ -240,7 +240,7 @@ Cell.prototype =
       @_renderQ[cell._cid] = cell
     else
       delete cell._ie_hack_innerHTML
-      @$("##{cell._cid}").replaceWith child.el
+      @$("##{cell._cid}").replaceWith cell.el
 
   __onrender: ->
     @__delegateEvents()
