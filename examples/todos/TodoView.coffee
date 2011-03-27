@@ -18,7 +18,7 @@ window.TodoView = Cell.extend
       """
 
    # The DOM events specific to an item.
-   'events el':
+   bind:
       "click .check" : -> @model.toggle()
 
       # Switch this view into `"editing"` mode, displaying the input field.
@@ -39,7 +39,7 @@ window.TodoView = Cell.extend
          @model.save content: @$('.todo-input').val()
          $(@el).removeClass 'editing'
 
-   'events model':
+   'bind model':
       'change': 'update'
        # Remove this view from the DOM.
       'removed': -> $(@el).remove()

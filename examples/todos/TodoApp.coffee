@@ -24,7 +24,7 @@ window.TodoApp = Cell.extend
       </div>
       """
 
-   'events el':
+   bind:
       # If you hit return in the main input field, create new **Todo** model,
       # persisting it to *localStorage*.
       'keypress #new-todo': (e)->
@@ -50,7 +50,7 @@ window.TodoApp = Cell.extend
            _.each @collection.done(), (todo)-> todo.clear()
            return false
 
-   'events collection':
+   'bind collection':
       # Add a single todo item to the list by creating a view for it, and
       # appending its element to the `<ul>`.
       add: addOne=(todo)->

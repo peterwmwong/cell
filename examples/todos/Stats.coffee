@@ -19,5 +19,5 @@ window.Stats = Cell.extend
        }
       """
 
-   'events model':
+   'bind model':
       all: 'update'
