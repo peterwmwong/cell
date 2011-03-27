@@ -111,22 +111,24 @@ window.Cell ?= Cell = do->
 
 Cell.extend = do->
   renderFuncNameRegex = /render( <(\w+)([ ]+.*)*>)*/
-  eventsNameRegex = /events (.+)/
+  eventsNameRegex = /bind( (.+))?/
 
   extend = (protoProps, name)->
     ebinds = []
-    for prop of protoProps
+    for propName,prop of protoProps
       # Find and add event binding
-      if (match = eventsNameRegex.exec prop) and typeof (binddesc = protoProps[prop]) == 'object'
+      if (match = eventsNameRegex.exec propName) and typeof prop == 'object'
+        # default bind -> 'bind el'
+        bindProp = match[2] or 'el'
         # Map event handler functions specified by name
-        for desc,handler of binddesc when typeof handler == 'string'
-          binddesc[desc] = protoProps[handler] or @::[handler]
-        ebinds.push prop: match[1], desc: binddesc
+        for desc,handler of prop when typeof handler == 'string'
+          prop[desc] = protoProps[handler] or @::[handler]
+        ebinds.push prop: bindProp, desc: prop
           
       # Find and add render function (if not already found)
-      else if not protoProps.__renderTagName and match = renderFuncNameRegex.exec prop
-        if typeof (protoProps.__render=protoProps[prop]) != 'function'
-          err "Cell.extend expects '#{prop}' to be a function"
+      else if not protoProps.__renderTagName and match = renderFuncNameRegex.exec propName
+        if typeof (protoProps.__render=prop) != 'function'
+          err "Cell.extend expects '#{propName}' to be a function"
           return
         tag = protoProps.__renderTagName = match[2] or 'div'
         protoProps.__renderOuterHTML = "<#{tag}#{match[3] or ""}></#{tag}>"
