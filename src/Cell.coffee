@@ -11,6 +11,8 @@ err =
   if typeof console?.error == 'function' then (msg)-> console.error msg
   else ->
 
+identity = (a)->a
+
 extendObj = (destObj, srcObj)->
   destObj[p] = srcObj[p] for p of srcObj
   destObj
@@ -35,19 +37,6 @@ inherits = do->
 
 window.Cell ?= Cell = do->
   tmpNode = document.createElement 'div'
-
-  renderEach = (list,func)->
-    if not list?.length then ''
-    else
-      result = ''
-      `for(var i=0; i<list.length; ++i){
-        result+=func(list[i],i,list)+'\n';
-      }`
-      result
-
-  renderCell_nocheck = (self,CellType,options)->
-    cell = new CellType extendObj(options or {}, parent: self)
-    "<#{cell.__renderTagName} id='#{cell._cid}'></#{cell.__renderTagName}>"
 
   optsToProps = ['model', 'collection', 'class', 'id']
 
@@ -78,35 +67,35 @@ window.Cell ?= Cell = do->
 
     (typeof @id == 'string') and @el.id = @id
 
-    # Hash of helper rendering functions passed to render function to make
+    # Rendering helper function passed to the Cell.render function to make
     # the following easier:
     #  - asynchronous and synchronous rendering
     #  - rendering other cells and DOM nodes
-    #  - rendering lists
-    @_renderHelpers =
-      node: (node)=>
-        if @_renderQ
-          unless node instanceof HTMLElement
-            err "render.node(node:HTMLElement) was expecting an HTMLElement"
-            ""
-          else
-            @_renderQ[uid = uniqueId '__cell_render_node_'] = node
-            "<#{node.tagName} id='#{uid}'></#{node.tagName}>"
+    #  - rendering strings, numbers, and potentially null/undefined values
+    renderHelper_nocheck = (a, b)=>
+      if not a? or a==false then ""
+      else if typeof a == 'string' or typeof a == 'number' then a
+      else if a.prototype?.Cell == a
+        cell = new a extendObj b ? {}, parent: this
+        "<#{cell.__renderTagName} id='#{cell._cid}'></#{cell.__renderTagName}>"
+      else if a instanceof HTMLElement
+        @_renderQ[uid = uniqueId '__cell_render_node_'] = a
+        "<#{a.tagName} id='#{uid}'></#{a.tagName}>"
+      else if a instanceof Array
+        i=0
+        res = ""
+        if typeof b != 'function' then b = identity
+        for e in a then res += renderHelper_nocheck b e,i++,a
+        res
+      else
+        err 'render({CellType,HTMLElement,string,number},[cellOptions])'
+        ""
 
-      cells: (cellOptionArrays...)=>
-        if @_renderQ
-          unless cellOptionArrays instanceof Array
-            err 'render.cells( (cell:Cell,options:Object)* ) expects an Array'
-            ""
-          else
-            cellOptionArrays.reduce ((r,co)=> r+=renderCell_nocheck this, co[0], co[1]), ""
+    @_renderHelper = (a, cellOpts)=>
+      unless @_renderQ? then ""
+      else renderHelper_nocheck a, cellOpts
 
-      cell: (CellType, options)=> @_renderQ and renderCell_nocheck this, CellType, options
-
-      async: bind(@__renderinnerHTML, this)
-
-      each: renderEach
-
+    @_renderHelper.async = bind @__renderinnerHTML, this
     @update()
 
 Cell.extend = do->
@@ -119,10 +108,10 @@ Cell.extend = do->
       # Find and add event binding
       if (match = eventsNameRegex.exec propName) and typeof prop == 'object'
         # default bind -> 'bind el'
-        bindProp = match[2] or 'el'
+        bindProp = match[2] ? 'el'
         # Map event handler functions specified by name
         for desc,handler of prop when typeof handler == 'string'
-          prop[desc] = protoProps[handler] or @::[handler]
+          prop[desc] = protoProps[handler] ? @::[handler]
         ebinds.push prop: bindProp, desc: prop
           
       # Find and add render function (if not already found)
@@ -130,8 +119,8 @@ Cell.extend = do->
         if typeof (protoProps.__render=prop) != 'function'
           err "Cell.extend expects '#{propName}' to be a function"
           return
-        tag = protoProps.__renderTagName = match[2] or 'div'
-        protoProps.__renderOuterHTML = "<#{tag}#{match[3] or ""}></#{tag}>"
+        tag = protoProps.__renderTagName = match[2] ? 'div'
+        protoProps.__renderOuterHTML = "<#{tag}#{match[3] ? ""}></#{tag}>"
 
     if ebinds.length
       protoProps.__eventBindings = ebinds
@@ -145,7 +134,7 @@ Cell.extend = do->
       child.extend = extend
       p.Cell = child
       if name then p.__cell_name = name
-      if typeof protoProps.css_href == 'string' or typeof protoProps.css == 'string'
+      if typeof protoProps.css_href == 'string' ? typeof protoProps.css == 'string'
         p.__attach_css = ->
           delete p.__attach_css
           if typeof (css = protoProps.css) == 'string'
@@ -167,7 +156,7 @@ Cell.prototype =
     if not @_renderQ
       @_renderQ = {}
       @initialize?()
-      if typeof (innerHTML = @__render @_renderHelpers) == 'string'
+      if typeof (innerHTML = @__render @_renderHelper) == 'string'
         @__renderinnerHTML innerHTML
 
   __delegateEvents: do->
@@ -194,7 +183,7 @@ Cell.prototype =
       binders = []
       for desc,handler of bindDesc when typeof desc == 'string'
         if observed.nodeType == 1
-          [matched,eventName,selector] = elEventRegex.exec(desc) or []
+          [matched,eventName,selector] = elEventRegex.exec(desc) ? []
           if match = elEventRegex.exec(desc)
             binders.push(
               if sel = match[2]

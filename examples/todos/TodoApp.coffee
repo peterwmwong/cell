@@ -1,6 +1,6 @@
 window.TodoApp = Cell.extend
 
-   'render <div id="todoapp">': (render)->
+   'render <div id="todoapp">': (R)->
       """
       <div class="title">
         <h1>Todos</h1>
@@ -15,11 +15,11 @@ window.TodoApp = Cell.extend
 
         <div id="todos">
           <ul id="todo-list">
-            #{render.each @collection.models, (todo)-> render.cell TodoView, model:todo}
+            #{R @collection.models, (todo)-> R TodoView, model:todo}
           </ul>
         </div>
 
-        #{render.cell Stats, model: @collection}
+        #{R Stats, model: @collection}
 
       </div>
       """

@@ -3,11 +3,11 @@
 # app, we set a direct reference on the model for convenience.
 window.TodoView = Cell.extend
    
-   'render <li>': ->
+   'render <li>': (R)->
       """
-      <div class="todo #{ @model.get('done') and 'done' or '' }">
+      <div class="todo #{R @model.get('done') and 'done' }">
         <div class="display">
-          <input class="check" type="checkbox" #{ @model.get('done') and 'checked="checked"' or '' } />
+          <input class="check" type="checkbox" #{R @model.get('done') and 'checked="checked"' } />
           <div class="todo-content">#{@model.get 'content'}</div>
           <span class="todo-destroy"></span>
         </div>
