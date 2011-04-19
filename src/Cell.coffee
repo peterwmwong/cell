@@ -74,7 +74,7 @@ window.Cell ?= Cell = do->
     #  - rendering strings, numbers, and potentially null/undefined values
     renderHelper_nocheck = (a, b)=>
       if not a? or a==false then ""
-      else if typeof a == 'string' or typeof a == 'number' then a
+      else if (type = typeof a) == 'string' or type == 'number' then a
       else if a.prototype?.Cell == a
         cell = new a extendObj b ? {}, parent: this
         "<#{cell.__renderTagName} id='#{cell._cid}'></#{cell.__renderTagName}>"
