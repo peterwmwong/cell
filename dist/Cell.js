@@ -18,7 +18,7 @@
       };
     }
   })();
-  err = typeof (typeof console != "undefined" && console != null ? console.error : void 0) === 'function' ? function(msg) {
+  err = typeof (typeof console != "undefined" && console !== null ? console.error : void 0) === 'function' ? function(msg) {
     return console.error(msg);
   } : function() {};
   identity = function(a) {
@@ -55,82 +55,78 @@
       return child;
     };
   })();
-    if ((_ref = window.Cell) != null) {
-    _ref;
-  } else {
-    window.Cell = Cell = (function() {
-      var optsToProps, tmpNode;
-      tmpNode = document.createElement('div');
-      optsToProps = ['model', 'collection', 'class', 'id'];
-      return function(options) {
-        var className, n, prop, propName, renderHelper_nocheck, _i, _j, _len, _len2, _ref;
-        this.options = options != null ? options : {};
-        this._cid = uniqueId('__cell_instance_');
-        for (_i = 0, _len = optsToProps.length; _i < _len; _i++) {
-          propName = optsToProps[_i];
-          if (prop = this.options[propName]) {
-            this[propName] = prop;
-          }
+  (_ref = window.Cell) != null ? _ref : window.Cell = Cell = (function() {
+    var optsToProps, tmpNode;
+    tmpNode = document.createElement('div');
+    optsToProps = ['model', 'collection', 'class', 'id'];
+    return function(options) {
+      var className, n, prop, propName, renderHelper_nocheck, _i, _j, _len, _len2, _ref;
+      this.options = options != null ? options : {};
+      this._cid = uniqueId('__cell_instance_');
+      for (_i = 0, _len = optsToProps.length; _i < _len; _i++) {
+        propName = optsToProps[_i];
+        if (prop = this.options[propName]) {
+          this[propName] = prop;
         }
-        this._parent = this.options.parent;
-        this._onrender = typeof this.options.onrender === 'function' ? options.onrender : void 0;
-        if (typeof this.__attach_css == "function") {
-          this.__attach_css();
+      }
+      this._parent = this.options.parent;
+      this._onrender = typeof this.options.onrender === 'function' ? options.onrender : void 0;
+      if (typeof this.__attach_css == "function") {
+        this.__attach_css();
+      }
+      tmpNode.innerHTML = this.__renderOuterHTML;
+      this.el = tmpNode.children[0];
+      className = "";
+      _ref = [this.__cell_name, this.el.className, this["class"]];
+      for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
+        n = _ref[_j];
+        if (n) {
+          className += className ? ' ' + n : n;
         }
-        tmpNode.innerHTML = this.__renderOuterHTML;
-        this.el = tmpNode.children[0];
-        className = "";
-        _ref = [this.__cell_name, this.el.className, this["class"]];
-        for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
-          n = _ref[_j];
-          if (n) {
-            className += className ? ' ' + n : n;
+      }
+      this.el.className = className;
+      (typeof this.id === 'string') && (this.el.id = this.id);
+      renderHelper_nocheck = __bind(function(a, b) {
+        var cell, e, i, res, type, uid, _i, _len, _ref;
+        if (!(a != null) || a === false) {
+          return "";
+        } else if ((type = typeof a) === 'string' || type === 'number') {
+          return a;
+        } else if (((_ref = a.prototype) != null ? _ref.Cell : void 0) === a) {
+          cell = new a(extendObj(b != null ? b : {}, {
+            parent: this
+          }));
+          return "<" + cell.__renderTagName + " id='" + cell._cid + "'></" + cell.__renderTagName + ">";
+        } else if (a instanceof HTMLElement) {
+          this._renderQ[uid = uniqueId('__cell_render_node_')] = a;
+          return "<" + a.tagName + " id='" + uid + "'></" + a.tagName + ">";
+        } else if (a instanceof Array) {
+          i = 0;
+          res = "";
+          if (typeof b !== 'function') {
+            b = identity;
           }
+          for (_i = 0, _len = a.length; _i < _len; _i++) {
+            e = a[_i];
+            res += renderHelper_nocheck(b(e, i++, a));
+          }
+          return res;
+        } else {
+          err('render({CellType,HTMLElement,string,number},[cellOptions])');
+          return "";
         }
-        this.el.className = className;
-        (typeof this.id === 'string') && (this.el.id = this.id);
-        renderHelper_nocheck = __bind(function(a, b) {
-          var cell, e, i, res, type, uid, _i, _len, _ref;
-          if (!(a != null) || a === false) {
-            return "";
-          } else if ((type = typeof a) === 'string' || type === 'number') {
-            return a;
-          } else if (((_ref = a.prototype) != null ? _ref.Cell : void 0) === a) {
-            cell = new a(extendObj(b != null ? b : {}, {
-              parent: this
-            }));
-            return "<" + cell.__renderTagName + " id='" + cell._cid + "'></" + cell.__renderTagName + ">";
-          } else if (a instanceof HTMLElement) {
-            this._renderQ[uid = uniqueId('__cell_render_node_')] = a;
-            return "<" + a.tagName + " id='" + uid + "'></" + a.tagName + ">";
-          } else if (a instanceof Array) {
-            i = 0;
-            res = "";
-            if (typeof b !== 'function') {
-              b = identity;
-            }
-            for (_i = 0, _len = a.length; _i < _len; _i++) {
-              e = a[_i];
-              res += renderHelper_nocheck(b(e, i++, a));
-            }
-            return res;
-          } else {
-            err('render({CellType,HTMLElement,string,number},[cellOptions])');
-            return "";
-          }
-        }, this);
-        this._renderHelper = __bind(function(a, cellOpts) {
-          if (this._renderQ == null) {
-            return "";
-          } else {
-            return renderHelper_nocheck(a, cellOpts);
-          }
-        }, this);
-        this._renderHelper.async = bind(this.__renderinnerHTML, this);
-        return this.update();
-      };
-    })();
-  };
+      }, this);
+      this._renderHelper = __bind(function(a, cellOpts) {
+        if (this._renderQ == null) {
+          return "";
+        } else {
+          return renderHelper_nocheck(a, cellOpts);
+        }
+      }, this);
+      this._renderHelper.async = bind(this.__renderinnerHTML, this);
+      return this.update();
+    };
+  })();
   Cell.extend = (function() {
     var eventsNameRegex, extend, renderFuncNameRegex;
     renderFuncNameRegex = /render( <(\w+)([ ]+.*)*>)*/;
@@ -333,9 +329,10 @@
         node = _ref[_i];
         if (cellname = node.getAttribute('data-cell')) {
           (function(node) {
-            var baseurl, opts;
+            var baseurl, cachebust, cachebustAttr, opts;
             opts = {};
-            if (node.getAttribute('data-cell-cachebust') !== null) {
+            cachebust = /(^\?cachebust)|(&cachebust)/.test(window.location.search);
+            if (((cachebustAttr = node.getAttribute('data-cell-cachebust')) !== null || cachebust) && cachebustAttr !== 'false') {
               opts.urlArgs = "bust=" + (new Date().getTime());
             }
             if (baseurl = node.getAttribute('data-cell-baseurl')) {
@@ -348,61 +345,53 @@
         }
       }
     });
-        if ((_ref2 = window.cell) != null) {
-      _ref2;
-    } else {
-      window.cell = {
-        define: (function() {
-          var ensureDef, moduleNameRegex;
-          moduleNameRegex = /(.*\/)?(.*)/;
-          ensureDef = function(def) {
-            var typedef;
-            if ((typedef = typeof def) === 'function' || typedef === 'object') {
-              return def;
-            } else {
-              return err('Cell definition is not a function or object');
+    (_ref2 = window.cell) != null ? _ref2 : window.cell = {
+      define: (function() {
+        var ensureDef, moduleNameRegex;
+        moduleNameRegex = /(.*\/)?(.*)/;
+        ensureDef = function(def) {
+          var typedef;
+          if ((typedef = typeof def) === 'function' || typedef === 'object') {
+            return def;
+          } else {
+            return err('Cell definition is not a function or object');
+          }
+        };
+        return function(id, deps, def) {
+          var args;
+          if (def) {
+            def = ensureDef(def);
+          } else if (deps) {
+            def = ensureDef(deps);
+            deps = void 0;
+            if (id instanceof Array) {
+              deps = id;
+              id = void 0;
             }
-          };
-          return function(id, deps, def) {
-            var args;
-            if (def) {
-              def = ensureDef(def);
-            } else if (deps) {
-              def = ensureDef(deps);
-              deps = void 0;
-              if (id instanceof Array) {
-                deps = id;
-                id = void 0;
-              }
-            } else if (id) {
-              def = ensureDef(id);
-              id = deps = void 0;
+          } else if (id) {
+            def = ensureDef(id);
+            id = deps = void 0;
+          }
+          if (def) {
+            deps = (deps instanceof Array ? deps : []).concat(['require', 'module']);
+            id = typeof id === 'string' && id;
+            args = [];
+            if (id) {
+              args.push(id);
             }
-            if (def) {
-              deps = (deps instanceof Array ? deps : []).concat(['require', 'module']);
-              id = typeof id === 'string' && id;
-              args = [];
-              if (id) {
-                args.push(id);
-              }
-              args.push(deps);
-              args.push(function() {
-                var cellName, deps, module, require, _i, _ref;
-                deps = 3 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 2) : (_i = 0, []), require = arguments[_i++], module = arguments[_i++];
-                cellName = moduleNameRegex.exec(module.id)[2];
-                def = typeof def === 'function' ? def.apply(null, deps) : def;
-                                if ((_ref = def.css_href) != null) {
-                  _ref;
-                } else {
-                  def.css_href = require.toUrl("./" + cellName + ".css");
-                };
-                return Cell.extend(def, cellName);
-              });
-              return define.apply(null, args);
-            }
-          };
-        })()
-      };
+            args.push(deps);
+            args.push(function() {
+              var cellName, module, require, _i, _ref;
+              deps = 3 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 2) : (_i = 0, []), require = arguments[_i++], module = arguments[_i++];
+              cellName = moduleNameRegex.exec(module.id)[2];
+              def = typeof def === 'function' ? def.apply(null, deps) : def;
+              (_ref = def.css_href) != null ? _ref : def.css_href = require.toUrl("./" + cellName + ".css");
+              return Cell.extend(def, cellName);
+            });
+            return define.apply(null, args);
+          }
+        };
+      })()
     };
   }
 }).call(this);

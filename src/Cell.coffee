@@ -245,7 +245,8 @@ if typeof window.define == 'function'
     for node in $('[data-cell]') when cellname=node.getAttribute('data-cell')
       do(node)->
         opts = {}
-        if node.getAttribute('data-cell-cachebust') != null
+        cachebust = /(^\?cachebust)|(&cachebust)/.test window.location.search
+        if ((cachebustAttr = node.getAttribute('data-cell-cachebust')) != null or cachebust) and cachebustAttr != 'false'
           opts.urlArgs = "bust=#{new Date().getTime()}"
         if baseurl = node.getAttribute 'data-cell-baseurl'
           opts.baseUrl = baseurl
