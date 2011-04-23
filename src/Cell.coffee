@@ -53,8 +53,6 @@ window.Cell ?= Cell = do->
     # On render/update callback function
     @_onrender = if typeof @options.onrender == 'function' then options.onrender
 
-    @__attach_css?()
-
     # Create DOM node
     tmpNode.innerHTML = @__renderOuterHTML
     @el = tmpNode.children[0]
@@ -134,18 +132,21 @@ Cell.extend = do->
       child.extend = extend
       p.Cell = child
       if name then p.__cell_name = name
-      if typeof protoProps.css_href == 'string' ? typeof protoProps.css == 'string'
-        p.__attach_css = ->
-          delete p.__attach_css
-          if typeof (css = protoProps.css) == 'string'
-            el = document.createElement 'style'
-            el.innerHTML = css
-          else
-            el = document.createElement 'link'
-            el.href = protoProps.css_href
-            el.rel = 'stylesheet'
-          el.type = 'text/css'
-          $('head').append el
+
+      # Render CSS in <style>
+      if typeof (css = protoProps.css) == 'string'
+        el = document.createElement 'style'
+        el.innerHTML = css
+      # Attach CSS <link>
+      else if typeof (cssref = protoProps.css_href) == 'string'
+        el = document.createElement 'link'
+        el.href = cssref
+        el.rel = 'stylesheet'
+
+      if el
+        el.type = 'text/css'
+        $('head').append el
+        
       child
 
 

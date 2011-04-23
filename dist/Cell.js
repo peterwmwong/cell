@@ -71,9 +71,6 @@
       }
       this._parent = this.options.parent;
       this._onrender = typeof this.options.onrender === 'function' ? options.onrender : void 0;
-      if (typeof this.__attach_css == "function") {
-        this.__attach_css();
-      }
       tmpNode.innerHTML = this.__renderOuterHTML;
       this.el = tmpNode.children[0];
       className = "";
@@ -132,7 +129,7 @@
     renderFuncNameRegex = /render( <(\w+)([ ]+.*)*>)*/;
     eventsNameRegex = /bind( (.+))?/;
     return extend = function(protoProps, name) {
-      var bindProp, child, desc, ebinds, handler, match, p, prop, propName, tag, _ref, _ref2, _ref3, _ref4, _ref5;
+      var bindProp, child, css, cssref, desc, ebinds, el, handler, match, p, prop, propName, tag, _ref, _ref2, _ref3, _ref4;
       ebinds = [];
       for (propName in protoProps) {
         prop = protoProps[propName];
@@ -169,21 +166,17 @@
         if (name) {
           p.__cell_name = name;
         }
-        if ((_ref5 = typeof protoProps.css_href === 'string') != null ? _ref5 : typeof protoProps.css === 'string') {
-          p.__attach_css = function() {
-            var css, el;
-            delete p.__attach_css;
-            if (typeof (css = protoProps.css) === 'string') {
-              el = document.createElement('style');
-              el.innerHTML = css;
-            } else {
-              el = document.createElement('link');
-              el.href = protoProps.css_href;
-              el.rel = 'stylesheet';
-            }
-            el.type = 'text/css';
-            return $('head').append(el);
-          };
+        if (typeof (css = protoProps.css) === 'string') {
+          el = document.createElement('style');
+          el.innerHTML = css;
+        } else if (typeof (cssref = protoProps.css_href) === 'string') {
+          el = document.createElement('link');
+          el.href = cssref;
+          el.rel = 'stylesheet';
+        }
+        if (el) {
+          el.type = 'text/css';
+          $('head').append(el);
         }
         return child;
       }
