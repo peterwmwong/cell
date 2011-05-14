@@ -2,19 +2,16 @@
 #===================================================================
 #--------------------------- Variables -----------------------------
 #===================================================================
-src_files = $(shell find src -type f -name "*.coffee")
-dist_files = build/cell-core.js \
-				 build/cell.js \
-				 build/cell-core-nomin.js \
-				 build/cell-nomin.js
+coffee = node_modules/.bin/coffee
+express = node_modules/express/package.json
 
 #-------------------------------------------------------------------
 # BUILD
 #------------------------------------------------------------------- 
 ifneq (,$(findstring CYGWIN,$(shell uname -s)))
-	requirejsBuild = ./deps/lib/requirejs/build/build.bat
+	requirejsBuild = ./support/requirejs/build/build.bat
 else
-	requirejsBuild = ./deps/lib/requirejs/build/build.sh
+	requirejsBuild = ./support/requirejs/build/build.sh
 endif
 
 #-------------------------------------------------------------------
@@ -37,75 +34,73 @@ endif
 #----------------------------- MACROS ------------------------------
 #===================================================================
 
-#-------------------------------------------------------------------
-# BUILD
-#------------------------------------------------------------------- 
-define compile_coffee
-	mkdir -p build/js
-	coffee -b -o build/js/ -c src/
-endef
-
-define build_requirejs_module
-	$(requirejsBuild) name=$1 out=$2 baseUrl=build/js includeRequire=true $3
-endef
-
-define minify
-	java -jar deps/build/google-closure-compiler/compiler.jar --js $1 --js_output_file $2
-endef
-
 
 #===================================================================
 #­--------------------------- TARGETS ------------------------------
 #===================================================================
-.PHONY : test-unit clean
+.PHONY : clean
+
+all: build/require-cell.js build/require-cell.min.js build/cell-pluginBuilder.js
 
 #-------------------------------------------------------------------
-# DIST
+# DEV 
 #------------------------------------------------------------------- 
-dist: $(dist_files)
-	rm -rf dist/*
-	cp build/cell*.js dist/
+dev: lib/cell.coffee $(coffee)
+	mkdir -p build/
+	$(coffee) --watch -o build/ -c lib/cell.coffee lib/cell-pluginBuilder.coffee
+
+dev-test-server: $(coffee) $(express)
+	$(coffee) test/util/test-server.coffee
+
+dev-test: $(coffee)
+	find test/ -name '*.coffee' | xargs $(coffee) --watch -c
+
 
 #-------------------------------------------------------------------
 # BUILD
 #------------------------------------------------------------------- 
-all: $(dist_files)
+build/cell.js: lib/cell.coffee $(coffee)
+	mkdir -p build/
+	$(coffee) -o build/ -c lib/cell.coffee
 
-build/cell-core-nomin.js: $(src_files) deps/lib/requirejs/require.js
-	$(compile_coffee)
-	$(call build_requirejs_module,cell/bootstrap-core,build/cell-core-nomin.js,optimize=none)
+build/cell-pluginBuilder.js: lib/cell-pluginBuilder.coffee $(coffee)
+	mkdir -p build/
+	$(coffee) -o build/ -c lib/cell-pluginBuilder.coffee
 
-build/cell-nomin.js: build/cell-core-nomin.js
-	$(call build_requirejs_module,cell/bootstrap,build/cell.js.tmp,optimize=none)
-	cat deps/lib/less.js/less.js deps/lib/mustache.js/mustache.js build/cell.js.tmp > build/cell-nomin.js
-	rm build/cell.js.tmp
+build/require-cell.js: build/cell.js
+	$(requirejsBuild) name=cell out=build/require-cell.js baseUrl=build/ includeRequire=true optimize=none
 
-build/cell-core.js: build/cell-core-nomin.js
-	$(call minify,build/cell-core-nomin.js,build/cell-core.js)
+build/require-cell.min.js: build/cell.js
+	$(requirejsBuild) name=cell out=build/require-cell.min.js baseUrl=build/ includeRequire=true
 
-build/cell.js: build/cell-nomin.js
-	$(call minify,build/cell-nomin.js,build/cell.js)
+#-------------------------------------------------------------------
+# Dependencies 
+#------------------------------------------------------------------- 
+$(coffee):
+	npm install coffee-script
 
-deps/lib/requirejs/require.js:
-	git submodule init
-	git submodule update
+$(express):
+	npm install express
 
 #-------------------------------------------------------------------
 # TEST
 #------------------------------------------------------------------- 
-test-at: $(dist_files) deps/test/express/index.js deps/test/express/support/connect/index.js
+
+# Build test/at/runs-with-requirejs-optimizer
+# 	- Tests C is properly used by requirejs build script
+test-runs-with-requirejs-optimizer: build/cell.js build/cell-pluginBuilder.js
+	cp build/cell.js build/cell-pluginBuilder.js test/at/runs-with-requirejs-optimizer
+	$(requirejsBuild) includeRequire=true name="cell!Mock" out=test/at/runs-with-requirejs-optimizer/all.js baseUrl=test/at/runs-with-requirejs-optimizer/
+	rm test/at/runs-with-requirejs-optimizer/cell.js test/at/runs-with-requirejs-optimizer/cell-pluginBuilder.js
+
+test-at: $(coffee) $(express) test/at/_alltests.js
 	coffee test/test-at.coffee $(TEST_DEBUG_) -b $(TEST_BROWSER) $(TESTS)
 
 test-unit: deps/test/express/index.js deps/test/express/support/connect/index.js
 	coffee test/test-unit.coffee $(TEST_DEBUG_) -b $(TEST_BROWSER) $(TESTS)
 
-deps/test/express/index.js:
-	git submodule init
-	git submodule update
-
-# test server depends on express, express depends on connect
-deps/test/express/support/connect/index.js:
-	cd deps/test/express; git submodule init; git submodule update
+test/at/_alltests.js: $(coffee)
+	cd test/at; ls */test.js | xargs coffee -e 'console.log "define({tests:#{JSON.stringify process.argv[4..].map (e)->/(.*?)\/test.js/.exec(e)[1]}});"' > _alltests.js
 
 clean: 
 	@@rm -rf build

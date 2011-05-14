@@ -1,7 +1,5 @@
-# BUILD #
-#########
-build/
-
 # Temp Files #
 ##############
 *.swp
+
+node_modules/

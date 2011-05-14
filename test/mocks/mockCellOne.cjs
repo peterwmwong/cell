@@ -1,1 +1,0 @@
-this.forAssert = 777;
