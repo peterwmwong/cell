@@ -55,14 +55,12 @@ define 'cell', [], ->
   window.cell ?= cell = do->
     tmpNode = document.createElement 'div'
 
-    optsToProps = ['model', 'collection', 'class', 'id']
-
     (@options = {})->
       @_cid = uniqueId '__cell_instance_'
         
-      # Copy over 'most used' options into this for convenience
-      for propName in optsToProps when prop = @options[propName]
-        @[propName] = prop
+      # Copy over class and id properties for convenience
+      @class = @options.class
+      @id = @options.id
 
       # Parent cell
       @_parent = @options.parent
@@ -115,18 +113,36 @@ define 'cell', [], ->
   cell.extend = do->
     renderFuncNameRegex = /render( <(\w+)([ ]+.*)*>)*/
     eventsNameRegex = /bind( (.+))?/
+    eventSelRegex = /^(\w+)(\s(.*))?$/
 
-    extend = (protoProps, name)->
-      ebinds = []
+    (protoProps, name)->
+      protoProps.__eventBindings = []
+
+      # Find and process Event Bindings and Render Function specified in
+      # the cell's definition
       for propName,prop of protoProps
-        # Find and add event binding
+
+        # Parse Event Bindings
+        # Syntax: bind [property name]?
+        #   [property name] name of property to observe
+        #     If not specified, 'el' (view) is used.
         if (match = eventsNameRegex.exec propName) and typeof prop == 'object'
-          # default bind -> 'bind el'
           bindProp = match[2] ? 'el'
-          # Map event handler functions specified by name
-          for desc,handler of prop when typeof handler == 'string'
-            prop[desc] = protoProps[handler] ? @::[handler]
-          ebinds.push prop: bindProp, desc: prop
+          binds = []
+
+          # Parse each Event Binding
+          # Syntax: [event name] [CSS selector]?
+          #   [event name]    Event to observe
+          #   [CSS selector]  If property being observed is an HTMLElement,
+          #     the CSS selector will be used to only target selected nodes.
+          for desc,handler of prop when (selmatch = eventSelRegex.exec desc)
+            binds.push
+              name: selmatch[1]
+              sel: selmatch[3]
+              handler: handler
+
+          if binds.length
+            protoProps.__eventBindings.push prop: bindProp, binds: binds
             
         # Find and add render function (if not already found)
         else if not protoProps.__renderTagName and match = renderFuncNameRegex.exec propName
@@ -136,16 +152,13 @@ define 'cell', [], ->
           tag = protoProps.__renderTagName = match[2] != "" and match[2] or 'div'
           protoProps.__renderOuterHTML = "<#{tag}#{match[3] ? ""}></#{tag}>"
 
-      if ebinds.length
-        protoProps.__eventBindings = ebinds
-
       child = inherits this, protoProps
 
       # Must find a render function 
       if not (p = child.prototype).__renderTagName
         E 'cell.extend([constructor:Function],prototypeMembers:Object): could not find a render function in prototypeMembers'
       else
-        child.extend = extend
+        child.extend = cell.extend
         p.cell = child
         if name then p.__cell_name = name
 
@@ -172,65 +185,35 @@ define 'cell', [], ->
     update: ->
       if not @_renderQ
         @_renderQ = {}
-        @initialize?()
+        @init? @options
         if typeof (innerHTML = @__render @_renderHelper, bind @__renderinnerHTML, this) == 'string'
           @__renderinnerHTML innerHTML
 
-    __delegateEvents: do->
-      elEventRegex = /^(\w+)\s*(.*)$/
+    __delegateEvents: ->
+      # Unbind any previous event bindings
+      if @_unbinds
+        for ub in @_unbinds then try ub()
+        delete @_unbinds
+      @_unbinds = []
 
-      selbinder = (sel,eventName,prop,handler,obj)->
-        handler = bind handler, obj
-        eventName = "#{eventName}.#{obj._cid}"
-        (observed = $(obj[prop])).delegate sel, eventName, handler
-        -> observed.undelegate sel, eventName, handler
+      for {prop,binds} in @cell::__eventBindings
+        obj = @[prop]
+        do(obj)=>
+          if isElement obj
+            obj = @$(obj)
+            for {name,sel,handler} in binds then do(name,sel,handler)=>
+              if typeof handler is 'string'
+                handler = @[handler]
 
-      elbinder = (eventName,prop,handler,obj)->
-        handler = bind handler, obj
-        (observed = $(obj[prop])).bind eventName, handler
-        -> observed.unbind eventName, handler
-
-      bindablebinder = (eventName,prop,handler,obj)->
-        handler = bind handler, obj
-        (observed = obj[prop]).bind eventName, handler
-        -> observed.unbind eventName, handler
-
-      getBinders = (obj,prop,bindDesc)->
-        observed = obj[prop]
-        binders = []
-        for desc,handler of bindDesc when typeof desc == 'string'
-          if observed.nodeType == 1
-            [matched,eventName,selector] = elEventRegex.exec(desc) ? []
-            if match = elEventRegex.exec(desc)
-              binders.push(
-                if sel = match[2]
-                  bind selbinder, null, sel, eventName, prop, handler
+              if typeof handler is 'function'
+                handler = bind handler, this
+                if sel
+                  obj.delegate sel, name, handler
+                  @_unbinds.push -> obj.undelegate sel, name, handler
                 else
-                  bind elbinder, null, eventName, prop, handler
-              )
-          else if typeof observed.bind == 'function'
-            binders.push bind bindablebinder, null, desc, prop, handler
-        return binders
-
-      ->
-        if @_unbinds
-          for ub in @_unbinds
-            try ub()
-          delete @_unbinds
-
-        if ebindings = @cell::__eventBindings
-          delete @cell::__eventBindings
-          binderCache = []
-          for b in ebindings
-            binderCache = binderCache.concat getBinders this, b.prop, b.desc
-          @cell::__binderCache = binderCache
-
-        if @__binderCache
-          @_unbinds = []
-          for b in @__binderCache
-            @_unbinds.push b this
-
-        return
+                  obj.bind name, handler
+                  @_unbinds.push -> obj.unbind name, handler
+      return
         
     __renderinnerHTML: (innerHTML)->
       if @_renderQ

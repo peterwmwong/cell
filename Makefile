@@ -38,7 +38,7 @@ endif
 #===================================================================
 #­--------------------------- TARGETS ------------------------------
 #===================================================================
-.PHONY : clean
+.PHONY : clean test
 
 all: build/require-cell.js build/require-cell.min.js build/cell-pluginBuilder.js
 
@@ -87,19 +87,13 @@ $(express):
 #------------------------------------------------------------------- 
 
 # Build test/at/runs-with-requirejs-optimizer
-# 	- Tests C is properly used by requirejs build script
+# 	- Tests cell can be properly used by requirejs build script
 test-runs-with-requirejs-optimizer: build/cell.js build/cell-pluginBuilder.js
 	cp build/cell.js build/cell-pluginBuilder.js test/at/runs-with-requirejs-optimizer
 	$(requirejsBuild) includeRequire=true name="cell!Mock" out=test/at/runs-with-requirejs-optimizer/all.js baseUrl=test/at/runs-with-requirejs-optimizer/
 	rm test/at/runs-with-requirejs-optimizer/cell.js test/at/runs-with-requirejs-optimizer/cell-pluginBuilder.js
 
-test-at: $(coffee) $(express) test/at/_alltests.js
-	coffee test/test-at.coffee $(TEST_DEBUG_) -b $(TEST_BROWSER) $(TESTS)
-
-test-unit: deps/test/express/index.js deps/test/express/support/connect/index.js
-	coffee test/test-unit.coffee $(TEST_DEBUG_) -b $(TEST_BROWSER) $(TESTS)
-
-test/at/_alltests.js: $(coffee)
+test: $(coffee)
 	cd test/at; ls */test.js | xargs coffee -e 'console.log "define({tests:#{JSON.stringify process.argv[4..].map (e)->/(.*?)\/test.js/.exec(e)[1]}});"' > _alltests.js
 
 clean: 

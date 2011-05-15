@@ -1,5 +1,5 @@
-define ->
-  initialize: ->
+define
+  init: ->
     @clickcount = 0
 
   render: (R)->
@@ -7,12 +7,16 @@ define ->
     Click Count: <span id='clickcount'>#{@clickcount}</span>
     <div class='foo'>
       <div id='bar'>
-        <button type="button" class='clickable'>Add One</a>
+        <button type="button" class='add'>Add</button>
+        <button type="button" class='remove'>Remove</button>
       </div>
     </div>
     """
   
   bind:
-    'click .foo > #bar > .clickable': ->
+    'click .foo > #bar > .add': ->
       @$('#clickcount').html ++@clickcount
+
+    'click .foo > #bar > .remove': ->
+      @$('#clickcount').html --@clickcount
 

@@ -1,1 +1,1 @@
-define({tests:["bind","paths","render-async-simple","render","runs-with-requirejs-optimizer"]});
+define({tests:["bind","init","paths","render-async-simple","render","runs-with-requirejs-optimizer"]});
