@@ -1,3 +1,3 @@
 define
   render: (R,A)->
-    @options.foo
+    "id:#{@id} class:#{@class} options.foo:#{@options.foo} collection:#{@collection} model:#{@model}"

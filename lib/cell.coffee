@@ -54,13 +54,14 @@ define 'cell', [], ->
 
   window.cell ?= cell = do->
     tmpNode = document.createElement 'div'
+    optsToProps = ['id','class','model','collection']
 
     (@options = {})->
       @_cid = uniqueId '__cell_instance_'
         
       # Copy over class and id properties for convenience
-      @class = @options.class
-      @id = @options.id
+      for p in optsToProps when (val = @options[p])
+        @[p] = val
 
       # Parent cell
       @_parent = @options.parent

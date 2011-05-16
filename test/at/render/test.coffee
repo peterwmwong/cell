@@ -13,5 +13,6 @@ define -> (done)->
   equal html('.RenderCell > .list > .li1'), "20, Passed input list: true"
   equal html('.RenderCell > .list > .li2'), "30, Passed input list: true"
 
-  equal html('.AnotherCell.anotherCellClass'), "bar"
+  equal html('#anotherCellId.AnotherCell.anotherCellClass'),
+    "id:anotherCellId class:anotherCellClass options.foo:bar collection:collection_val model:model_val"
   done()

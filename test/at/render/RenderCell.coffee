@@ -11,5 +11,10 @@ define ['cell!AnotherCell'], (AnotherCell)->
         "<li class='li#{pos}'>#{el}, Passed input list: #{list is inputList}</li>"
       }
     </ol>
-    #{R AnotherCell, class:'anotherCellClass', foo:'bar'}
+    #{R AnotherCell,
+        id: 'anotherCellId'
+        class: 'anotherCellClass'
+        foo: 'bar'
+        collection: 'collection_val'
+        model: 'model_val'}
     """

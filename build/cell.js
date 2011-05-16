@@ -67,22 +67,27 @@
       _ref;
     } else {
       window.cell = cell = (function() {
-        var tmpNode;
+        var optsToProps, tmpNode;
         tmpNode = document.createElement('div');
+        optsToProps = ['id', 'class', 'model', 'collection'];
         return function(options) {
-          var className, n, renderHelper_nocheck, _i, _len, _ref2;
+          var className, n, p, renderHelper_nocheck, val, _i, _j, _len, _len2, _ref2;
           this.options = options != null ? options : {};
           this._cid = uniqueId('__cell_instance_');
-          this["class"] = this.options["class"];
-          this.id = this.options.id;
+          for (_i = 0, _len = optsToProps.length; _i < _len; _i++) {
+            p = optsToProps[_i];
+            if ((val = this.options[p])) {
+              this[p] = val;
+            }
+          }
           this._parent = this.options.parent;
           this._onrender = typeof this.options.onrender === 'function' ? options.onrender : void 0;
           tmpNode.innerHTML = this.__renderOuterHTML;
           this.el = tmpNode.children[0];
           className = "";
           _ref2 = [this.__cell_name, this.el.className, this["class"]];
-          for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-            n = _ref2[_i];
+          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+            n = _ref2[_j];
             if (n) {
               className += className ? ' ' + n : n;
             }
@@ -90,7 +95,7 @@
           this.el.className = className;
           (typeof this.id === 'string') && (this.el.id = this.id);
           renderHelper_nocheck = __bind(function(a, b) {
-            var e, i, res, type, uid, _j, _len2, _ref3;
+            var e, i, res, type, uid, _k, _len3, _ref3;
             if (a === void 0 || a === null || a === false) {
               return "";
             } else if ((type = typeof a) === 'string' || type === 'number') {
@@ -111,8 +116,8 @@
                   return a;
                 };
               }
-              for (_j = 0, _len2 = a.length; _j < _len2; _j++) {
-                e = a[_j];
+              for (_k = 0, _len3 = a.length; _k < _len3; _k++) {
+                e = a[_k];
                 res += renderHelper_nocheck(b(e, i++, a));
               }
               return res;
