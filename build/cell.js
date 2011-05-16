@@ -95,16 +95,16 @@
           this.el.className = className;
           (typeof this.id === 'string') && (this.el.id = this.id);
           renderHelper_nocheck = __bind(function(a, b) {
-            var e, i, res, type, uid, _k, _len3, _ref3;
+            var acell, e, i, res, type, uid, _k, _len3, _ref3;
             if (a === void 0 || a === null || a === false) {
               return "";
             } else if ((type = typeof a) === 'string' || type === 'number') {
               return a;
             } else if (((_ref3 = a.prototype) != null ? _ref3.cell : void 0) === a) {
-              cell = new a(extendObj(b != null ? b : {}, {
+              acell = new a(extendObj(b != null ? b : {}, {
                 parent: this
               }));
-              return "<" + cell.__renderTagName + " id='" + cell._cid + "'></" + cell.__renderTagName + ">";
+              return "<" + acell.__renderTagName + " id='" + acell._cid + "'></" + acell.__renderTagName + ">";
             } else if (isElement(a)) {
               this._renderQ[uid = uniqueId('__cell_render_node_')] = a;
               return "<" + a.tagName + " id='" + uid + "'></" + a.tagName + ">";

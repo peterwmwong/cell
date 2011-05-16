@@ -90,8 +90,8 @@ define 'cell', [], ->
         if a is undefined or a is null or a==false then ""
         else if (type = typeof a) == 'string' or type == 'number' then a
         else if a.prototype?.cell == a
-          cell = new a extendObj b ? {}, parent: this
-          "<#{cell.__renderTagName} id='#{cell._cid}'></#{cell.__renderTagName}>"
+          acell = new a extendObj b ? {}, parent: this
+          "<#{acell.__renderTagName} id='#{acell._cid}'></#{acell.__renderTagName}>"
         else if isElement a
           @_renderQ[uid = uniqueId '__cell_render_node_'] = a
           "<#{a.tagName} id='#{uid}'></#{a.tagName}>"
