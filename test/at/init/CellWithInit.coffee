@@ -2,4 +2,11 @@ define
   init: (opts)->
     @initArg = opts
 
-  render: (R)-> "id: #{@initArg.id}, class: #{@initArg.class}, foo: #{@initArg.foo}, opts === initArgs: #{@initArg is @options}"
+  render: (R)->
+    """
+    id: #{@initArg.id}
+    class: #{@initArg.class}
+    foo: #{@initArg.foo}
+    opts === initArgs: #{@initArg is @options}
+    this.cell.prototype.name: #{@cell::name}
+    """

@@ -1,5 +1,5 @@
 define -> (done)->
-  equal '<div class="Mock">Mock: <div class="MockNested">MockNested</div> </div>',
+  equal '<div class=" Mock">Mock: <div class=" MockNested">MockNested</div> </div>',
     @$('body').html().trim()
     "Should render Mock and MockNested Cells"
 
