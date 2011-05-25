@@ -23,15 +23,15 @@ define ->
     ++writeCount
     if outcssfile? and Cstack.length > 0 and Cstack.length == writeCount
       allcss = ''
-      preinstalls = []
+      preinstalls = {}
       for {name,cssurl} in Cstack
-        preinstalls.push name
+        preinstalls[name] = 0
         get cssurl, (err, contents)->
           if not err? and typeof contents == 'string'
             allcss += contents
       write """
             require(['cell'],function(p){
-              p.__preinstalledCells__.push("#{preinstalls.join '","'}");
+              p.__preinstalledCells__ = #{JSON.stringify preinstalls};
             });\n
             """
       put outcssfile, allcss

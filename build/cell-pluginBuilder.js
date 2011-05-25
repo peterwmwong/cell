@@ -25,17 +25,17 @@
         ++writeCount;
         if ((outcssfile != null) && Cstack.length > 0 && Cstack.length === writeCount) {
           allcss = '';
-          preinstalls = [];
+          preinstalls = {};
           for (_i = 0, _len = Cstack.length; _i < _len; _i++) {
             _ref = Cstack[_i], name = _ref.name, cssurl = _ref.cssurl;
-            preinstalls.push(name);
+            preinstalls[name] = 0;
             get(cssurl, function(err, contents) {
               if (!(err != null) && typeof contents === 'string') {
                 return allcss += contents;
               }
             });
           }
-          write("require(['cell'],function(p){\n  p.__preinstalledCells__.push(\"" + (preinstalls.join('","')) + "\");\n});\n");
+          write("require(['cell'],function(p){\n  p.__preinstalledCells__ = " + (JSON.stringify(preinstalls)) + ";\n});\n");
           return put(outcssfile, allcss);
         }
       },

@@ -111,7 +111,7 @@ window.cell ?= cell = do->
     @update()
 
 cell.extend = do->
-  renderFuncNameRegex = /render( <(\w+)([ ]+.*)*>)*/
+  renderFuncNameRegex = /render([ ]+<(\w+)([ ]+.*)*>[ ]*)?$/
   eventsNameRegex = /bind( (.+))?/
   eventSelRegex = /^(\w+)(\s(.*))?$/
 
@@ -219,9 +219,9 @@ cell.prototype =
     if @_renderQ
       @el.innerHTML = @_ie_hack_innerHTML = innerHTML
       for pcid,child of @_renderQ
-        if not child.el.innerHTML
+        if child.el and not child.el.innerHTML
           child.el.innerHTML = child._ie_hack_innerHTML
-        @$("##{pcid}").replaceWith child.el
+        @$("##{pcid}").replaceWith isElement(child) and child or child.el
         delete child._ie_hack_innerHTML
       delete @_renderQ
       @__onrender()
@@ -259,26 +259,28 @@ if typeof window.define == 'function' and typeof window.require == 'function'
     ###
     Module Exports
     ###
-    __preinstalledCells__: __preinstalledCells__ = []
+    exports =
+      pluginBuilder: 'cell-pluginBuilder'
 
-    pluginBuilder: 'cell-pluginBuilder'
+      load: do->
+        moduleNameRegex = /(.*\/)?(.*)/
+        loadDef = (name, load, parentCell, def)-> load parentCell.extend def, moduleNameRegex.exec(name)[2]
+        (name, req, load, config)->
+          req [name], (CDef)->
+            if typeof CDef != 'object'
+              E "Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
+            else
+              if typeof exports.__preinstalledCells__?[name] == 'undefined'
+                CDef.css_href ?= req.toUrl "#{name}.css"
 
-    load: do->
-      moduleNameRegex = /(.*\/)?(.*)/
-      (name, req, load, config)->
-        req [name], (CDef)->
-          if typeof CDef != 'object'
-            E "Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
-          else
-            found = false
-            for cname in __preinstalledCells__ when name == cname
-              found = true
-
-            if not found
-              CDef.css_href ?= req.toUrl "#{name}.css"
-
-            load cell.extend CDef, moduleNameRegex.exec(name)[2]
+              if typeof CDef.extends == 'string'
+                req ["cell!#{CDef.extends}"], (parentCell)->
+                  if parentCell::name
+                    CDef.class = "#{parentCell::name}#{CDef.class or ""}"
+                  loadDef name, load, parentCell, CDef
+              else
+                loadDef name, load, cell, CDef
+            return
           return
-        return
 
 

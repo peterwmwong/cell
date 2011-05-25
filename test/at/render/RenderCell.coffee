@@ -11,6 +11,7 @@ define ['cell!AnotherCell'], (AnotherCell)->
         "<li class='li#{pos}'>#{el}, Passed input list: #{list is inputList}</li>"
       }
     </ol>
+    <div class='node'>#{R $('<a href="www.google.com">blargo</div>')[0]}</div>
     #{R AnotherCell,
         id: 'anotherCellId'
         class: 'anotherCellClass'

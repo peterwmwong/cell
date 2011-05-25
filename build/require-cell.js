@@ -2024,7 +2024,7 @@ var require, define;
   };
   cell.extend = (function() {
     var eventSelRegex, eventsNameRegex, renderFuncNameRegex;
-    renderFuncNameRegex = /render( <(\w+)([ ]+.*)*>)*/;
+    renderFuncNameRegex = /render([ ]+<(\w+)([ ]+.*)*>[ ]*)?$/;
     eventsNameRegex = /bind( (.+))?/;
     eventSelRegex = /^(\w+)(\s(.*))?$/;
     return function(protoProps, name) {
@@ -2158,10 +2158,10 @@ var require, define;
         _ref2 = this._renderQ;
         for (pcid in _ref2) {
           child = _ref2[pcid];
-          if (!child.el.innerHTML) {
+          if (child.el && !child.el.innerHTML) {
             child.el.innerHTML = child._ie_hack_innerHTML;
           }
-          this.$("#" + pcid).replaceWith(child.el);
+          this.$("#" + pcid).replaceWith(isElement(child) && child || child.el);
           delete child._ie_hack_innerHTML;
         }
         delete this._renderQ;
@@ -2191,7 +2191,7 @@ var require, define;
   };
   if (typeof window.define === 'function' && typeof window.require === 'function') {
     window.define('cell', [], (function() {
-      var __preinstalledCells__;
+      var exports;
       $(function() {
         var cellname, node, _i, _len, _ref2;
         _ref2 = $('[data-cell]');
@@ -2215,36 +2215,40 @@ var require, define;
           }
         }
       });
-      return {
-        /*
-            Module Exports
-            */
-        __preinstalledCells__: __preinstalledCells__ = [],
+      /*
+          Module Exports
+          */
+      return exports = {
         pluginBuilder: 'cell-pluginBuilder',
         load: (function() {
-          var moduleNameRegex;
+          var loadDef, moduleNameRegex;
           moduleNameRegex = /(.*\/)?(.*)/;
+          loadDef = function(name, load, parentCell, def) {
+            return load(parentCell.extend(def, moduleNameRegex.exec(name)[2]));
+          };
           return function(name, req, load, config) {
             req([name], function(CDef) {
-              var cname, found, _i, _len, _ref2;
+              var _ref2, _ref3;
               if (typeof CDef !== 'object') {
                 E("Couldn't load " + name + " cell. cell definitions should be objects, but instead was " + (typeof CDef));
               } else {
-                found = false;
-                for (_i = 0, _len = __preinstalledCells__.length; _i < _len; _i++) {
-                  cname = __preinstalledCells__[_i];
-                  if (name === cname) {
-                    found = true;
-                  }
-                }
-                if (!found) {
-                                    if ((_ref2 = CDef.css_href) != null) {
-                    _ref2;
+                if (typeof ((_ref2 = exports.__preinstalledCells__) != null ? _ref2[name] : void 0) === 'undefined') {
+                                    if ((_ref3 = CDef.css_href) != null) {
+                    _ref3;
                   } else {
                     CDef.css_href = req.toUrl("" + name + ".css");
                   };
                 }
-                load(cell.extend(CDef, moduleNameRegex.exec(name)[2]));
+                if (typeof CDef["extends"] === 'string') {
+                  req(["cell!" + CDef["extends"]], function(parentCell) {
+                    if (parentCell.prototype.name) {
+                      CDef["class"] = "" + parentCell.prototype.name + (CDef["class"] || "");
+                    }
+                    return loadDef(name, load, parentCell, CDef);
+                  });
+                } else {
+                  loadDef(name, load, cell, CDef);
+                }
               }
             });
           };
