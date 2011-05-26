@@ -19,3 +19,7 @@ define ['cell!AnotherCell'], (AnotherCell)->
         collection: 'collection_val'
         model: 'model_val'}
     """
+
+  bind:
+    afterRender: ->
+      $(@el).append "<div class='afterRender'>afterRender</div>"

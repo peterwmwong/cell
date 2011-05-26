@@ -63,9 +63,6 @@ window.cell ?= cell = do->
     # Parent cell
     @_parent = @options.parent
 
-    # On render/update callback function
-    @_onrender = if typeof @options.onrender == 'function' then options.onrender
-
     # Create DOM node
     tmpNode.innerHTML = @__renderOuterHTML
     @el = tmpNode.children[0]
@@ -224,20 +221,16 @@ cell.prototype =
         @$("##{pcid}").replaceWith isElement(child) and child or child.el
         delete child._ie_hack_innerHTML
       delete @_renderQ
-      @__onrender()
+      @__delegateEvents()
+      $(@el).trigger 'afterRender', @el
+      @_parent?.__onchildrender? this
 
-  __onchildrender: (cell)->
+  __onchildrender: (c)->
     if @_renderQ
-      @_renderQ[cell._cid] = cell
+      @_renderQ[c._cid] = c
     else
-      delete cell._ie_hack_innerHTML
-      @$("##{cell._cid}").replaceWith cell.el
-
-  __onrender: ->
-    @__delegateEvents()
-    @_parent?.__onchildrender? this
-    try @_onrender? this
-
+      delete c._ie_hack_innerHTML
+      @$("##{c._cid}").replaceWith c.el
 
 # cell AMD Module
 if typeof window.define == 'function' and typeof window.require == 'function'

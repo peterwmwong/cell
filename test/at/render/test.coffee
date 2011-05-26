@@ -17,4 +17,7 @@ define -> (done)->
 
   equal html('#anotherCellId.AnotherCell.anotherCellClass'),
     "id:anotherCellId class:anotherCellClass options.foo:bar collection:collection_val model:model_val"
+
+  equal html('.RenderCell > .afterRender'), 'afterRender'
+
   done()
