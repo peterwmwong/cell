@@ -142,12 +142,12 @@
     eventsNameRegex = /bind( (.+))?/;
     eventSelRegex = /^(\w+)(\s(.*))?$/;
     return function(protoProps, name) {
-      var bindProp, binds, child, css, cssref, desc, el, handler, match, p, prop, propName, selmatch, tag, _ref2, _ref3;
-      protoProps.__eventBindings = [];
+      var bindProp, binds, child, css, cssref, desc, el, handler, match, p, prop, propName, selmatch, tag, _ref2, _ref3, _ref4;
+      protoProps.__eventBindings = ((_ref2 = this.prototype.__eventBindings) != null ? _ref2.slice(0) : void 0) || [];
       for (propName in protoProps) {
         prop = protoProps[propName];
         if ((match = eventsNameRegex.exec(propName)) && typeof prop === 'object') {
-          bindProp = (_ref2 = match[2]) != null ? _ref2 : 'el';
+          bindProp = (_ref3 = match[2]) != null ? _ref3 : 'el';
           binds = [];
           for (desc in prop) {
             handler = prop[desc];
@@ -171,7 +171,7 @@
             return;
           }
           tag = protoProps.__renderTagName = match[2] !== "" && match[2] || 'div';
-          protoProps.__renderOuterHTML = "<" + tag + ((_ref3 = match[3]) != null ? _ref3 : "") + "></" + tag + ">";
+          protoProps.__renderOuterHTML = "<" + tag + ((_ref4 = match[3]) != null ? _ref4 : "") + "></" + tag + ">";
         }
       }
       if (typeof name === 'string') {
@@ -228,7 +228,7 @@
         delete this._unbinds;
       }
       this._unbinds = [];
-      _ref3 = this.cell.prototype.__eventBindings;
+      _ref3 = this.__eventBindings;
       _fn = __bind(function(obj) {
         var handler, name, sel, _k, _len3, _ref4, _results;
         if (isElement(obj)) {

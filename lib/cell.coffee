@@ -113,7 +113,7 @@ cell.extend = do->
   eventSelRegex = /^(\w+)(\s(.*))?$/
 
   (protoProps, name)->
-    protoProps.__eventBindings = []
+    protoProps.__eventBindings = @::__eventBindings?.slice(0) or []
 
     # Find and process Event Bindings and Render Function specified in
     # the cell's definition
@@ -192,8 +192,7 @@ cell.prototype =
       for ub in @_unbinds then try ub()
       delete @_unbinds
     @_unbinds = []
-
-    for {prop,binds} in @cell::__eventBindings
+    for {prop,binds} in @__eventBindings
       obj = @[prop]
       do(obj)=>
         if isElement obj
