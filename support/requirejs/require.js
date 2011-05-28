@@ -791,7 +791,7 @@ var require, define;
             if (stillLoading || context.scriptCount) {
                 //Something is still waiting to load. Wait for it.
                 if (isBrowser || isWebWorker) {
-                    setTimeout(checkLoaded, 50);
+                    setTimeout(checkLoaded, 0);
                 }
                 return undefined;
             }

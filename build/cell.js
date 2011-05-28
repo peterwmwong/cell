@@ -1,9 +1,9 @@
 (function() {
-  var E, bind, cell, document, extendObj, inherits, isElement, uniqueId, window, _ref;
+  var E, bind, cell, document, exports, extendObj, inherits, isElement, uniqueId, window, _ref;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-  E = typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function' ? function(msg) {
+  E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
     return console.error(msg);
-  } : function() {};
+  }) || function() {};
   window = this;
   document = window.document || {
     createElement: function() {}
@@ -132,7 +132,7 @@
             return renderHelper_nocheck(a, cellOpts);
           }
         }, this);
-        return this.update();
+        this.update();
       };
     })();
   };
@@ -211,7 +211,7 @@
           this.init(this.options);
         }
         if (typeof (innerHTML = this.__render(this._renderHelper, bind(this.__renderinnerHTML, this))) === 'string') {
-          return this.__renderinnerHTML(innerHTML);
+          this.__renderinnerHTML(innerHTML);
         }
       }
     },
@@ -230,33 +230,32 @@
       this._unbinds = [];
       _ref3 = this.__eventBindings;
       _fn = __bind(function(obj) {
-        var handler, name, sel, _k, _len3, _ref4, _results;
+        var handler, name, sel, _fn2, _k, _len3, _ref4;
         if (isElement(obj)) {
           obj = this.$(obj);
-          _results = [];
+          _fn2 = __bind(function(name, sel, handler) {
+            if (typeof handler === 'string') {
+              handler = this[handler];
+            }
+            if (typeof handler === 'function') {
+              handler = bind(handler, this);
+              if (sel) {
+                obj.delegate(sel, name, handler);
+                this._unbinds.push(function() {
+                  obj.undelegate(sel, name, handler);
+                });
+              } else {
+                obj.bind(name, handler);
+                this._unbinds.push(function() {
+                  obj.unbind(name, handler);
+                });
+              }
+            }
+          }, this);
           for (_k = 0, _len3 = binds.length; _k < _len3; _k++) {
             _ref4 = binds[_k], name = _ref4.name, sel = _ref4.sel, handler = _ref4.handler;
-            _results.push(__bind(function(name, sel, handler) {
-              if (typeof handler === 'string') {
-                handler = this[handler];
-              }
-              if (typeof handler === 'function') {
-                handler = bind(handler, this);
-                if (sel) {
-                  obj.delegate(sel, name, handler);
-                  return this._unbinds.push(function() {
-                    return obj.undelegate(sel, name, handler);
-                  });
-                } else {
-                  obj.bind(name, handler);
-                  return this._unbinds.push(function() {
-                    return obj.unbind(name, handler);
-                  });
-                }
-              }
-            }, this)(name, sel, handler));
+            _fn2(name, sel, handler);
           }
-          return _results;
         }
       }, this);
       for (_j = 0, _len2 = _ref3.length; _j < _len2; _j++) {
@@ -281,83 +280,79 @@
         delete this._renderQ;
         this.__delegateEvents();
         $(this.el).trigger('afterRender', this.el);
-        return (_ref3 = this._parent) != null ? typeof _ref3.__onchildrender === "function" ? _ref3.__onchildrender(this) : void 0 : void 0;
+        if ((_ref3 = this._parent) != null) {
+          if (typeof _ref3.__onchildrender === "function") {
+            _ref3.__onchildrender(this);
+          }
+        }
       }
     },
     __onchildrender: function(c) {
       if (this._renderQ) {
-        return this._renderQ[c._cid] = c;
+        this._renderQ[c._cid] = c;
       } else {
         delete c._ie_hack_innerHTML;
-        return this.$("#" + c._cid).replaceWith(c.el);
+        this.$("#" + c._cid).replaceWith(c.el);
       }
     }
   };
-  if (typeof window.define === 'function' && typeof window.require === 'function') {
-    window.define('cell', [], (function() {
-      var exports;
-      $(function() {
-        var cellname, node, _i, _len, _ref2;
-        _ref2 = $('[data-cell]');
-        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-          node = _ref2[_i];
-          if (cellname = node.getAttribute('data-cell')) {
-            (function(node) {
-              var baseurl, cachebust, cachebustAttr, opts;
-              opts = {};
-              cachebust = /(^\?cachebust)|(&cachebust)/.test(window.location.search);
-              if (((cachebustAttr = node.getAttribute('data-cell-cachebust')) !== null || cachebust) && cachebustAttr !== 'false') {
-                opts.urlArgs = "bust=" + (new Date().getTime());
-              }
-              if (baseurl = node.getAttribute('data-cell-baseurl')) {
-                opts.baseUrl = baseurl;
-              }
-              return require(opts, ["cell!" + cellname], function(CType) {
-                return $(node).append(new CType().el);
-              });
-            })(node);
-          }
-        }
-      });
-      /*
-          Module Exports
-          */
-      return exports = {
-        pluginBuilder: 'cell-pluginBuilder',
-        load: (function() {
-          var loadDef, moduleNameRegex;
-          moduleNameRegex = /(.*\/)?(.*)/;
-          loadDef = function(name, load, parentCell, def) {
-            return load(parentCell.extend(def, moduleNameRegex.exec(name)[2]));
-          };
-          return function(name, req, load, config) {
-            req([name], function(CDef) {
-              var _ref2, _ref3;
-              if (typeof CDef !== 'object') {
-                E("Couldn't load " + name + " cell. cell definitions should be objects, but instead was " + (typeof CDef));
-              } else {
-                if (typeof ((_ref2 = exports.__preinstalledCells__) != null ? _ref2[name] : void 0) === 'undefined') {
-                                    if ((_ref3 = CDef.css_href) != null) {
-                    _ref3;
-                  } else {
-                    CDef.css_href = req.toUrl("" + name + ".css");
-                  };
-                }
-                if (typeof CDef["extends"] === 'string') {
-                  req(["cell!" + CDef["extends"]], function(parentCell) {
-                    if (parentCell.prototype.name) {
-                      CDef["class"] = "" + parentCell.prototype.name + (CDef["class"] || "");
-                    }
-                    return loadDef(name, load, parentCell, CDef);
-                  });
+  if (typeof define === 'function' && typeof require === 'function') {
+    define('cell', [], exports = {
+      pluginBuilder: 'cell-pluginBuilder',
+      load: (function() {
+        var loadDef, moduleNameRegex;
+        moduleNameRegex = /(.*\/)?(.*)/;
+        loadDef = function(name, load, parentCell, def) {
+          return load(parentCell.extend(def, moduleNameRegex.exec(name)[2]));
+        };
+        return function(name, req, load, config) {
+          req([name], function(CDef) {
+            var _ref2, _ref3;
+            if (typeof CDef !== 'object') {
+              E("Couldn't load " + name + " cell. cell definitions should be objects, but instead was " + (typeof CDef));
+            } else {
+              if (typeof ((_ref2 = exports.__preinstalledCells__) != null ? _ref2[name] : void 0) === 'undefined') {
+                                if ((_ref3 = CDef.css_href) != null) {
+                  _ref3;
                 } else {
-                  loadDef(name, load, cell, CDef);
-                }
+                  CDef.css_href = req.toUrl("" + name + ".css");
+                };
               }
+              if (typeof CDef["extends"] === 'string') {
+                req(["cell!" + CDef["extends"]], function(parentCell) {
+                  if (parentCell.prototype.name) {
+                    CDef["class"] = "" + parentCell.prototype.name + (CDef["class"] || "");
+                  }
+                  loadDef(name, load, parentCell, CDef);
+                });
+              } else {
+                loadDef(name, load, cell, CDef);
+              }
+            }
+          });
+        };
+      })()
+    });
+    require(['cell'], function(cell) {
+      require.ready(function() {
+        $('[data-cell]').each(function() {
+          var baseurl, cachebust, cachebustAttr, cellname, node, opts;
+          node = this;
+          if (cellname = node.getAttribute('data-cell')) {
+            opts = {};
+            cachebust = /(^\?cachebust)|(&cachebust)/.test(window.location.search);
+            if (((cachebustAttr = node.getAttribute('data-cell-cachebust')) !== null || cachebust) && cachebustAttr !== 'false') {
+              opts.urlArgs = "bust=" + (new Date().getTime());
+            }
+            if (baseurl = node.getAttribute('data-cell-baseurl')) {
+              opts.baseUrl = baseurl;
+            }
+            require(opts, ["cell!" + cellname], function(CType) {
+              $(node).append(new CType().el);
             });
-          };
-        })()
-      };
-    })());
+          }
+        });
+      });
+    });
   }
 }).call(this);

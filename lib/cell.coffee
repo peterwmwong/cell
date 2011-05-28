@@ -1,7 +1,6 @@
 # Error logging
 E =
-  if typeof console?.error == 'function' then (msg)-> console.error msg
-  else ->
+  (typeof console?.error == 'function') and ((msg)-> console.error msg) or ->
 
 # When running in require.js optimizer, window & document do not exist
 window = this
@@ -106,6 +105,7 @@ window.cell ?= cell = do->
       else renderHelper_nocheck a, cellOpts
 
     @update()
+    return
 
 cell.extend = do->
   renderFuncNameRegex = /render([ ]+<(\w+)([ ]+.*)*>[ ]*)?$/
@@ -185,6 +185,7 @@ cell.prototype =
       @init? @options
       if typeof (innerHTML = @__render @_renderHelper, bind @__renderinnerHTML, this) == 'string'
         @__renderinnerHTML innerHTML
+    return
 
   __delegateEvents: ->
     # Unbind any previous event bindings
@@ -205,10 +206,16 @@ cell.prototype =
               handler = bind handler, this
               if sel
                 obj.delegate sel, name, handler
-                @_unbinds.push -> obj.undelegate sel, name, handler
+                @_unbinds.push ->
+                  obj.undelegate sel, name, handler
+                  return
               else
                 obj.bind name, handler
-                @_unbinds.push -> obj.unbind name, handler
+                @_unbinds.push ->
+                  obj.unbind name, handler
+                  return
+            return
+        return
     return
       
   __renderinnerHTML: (innerHTML)->
@@ -223,6 +230,7 @@ cell.prototype =
       @__delegateEvents()
       $(@el).trigger 'afterRender', @el
       @_parent?.__onchildrender? this
+    return
 
   __onchildrender: (c)->
     if @_renderQ
@@ -230,49 +238,50 @@ cell.prototype =
     else
       delete c._ie_hack_innerHTML
       @$("##{c._cid}").replaceWith c.el
+    return
 
 # cell AMD Module
-if typeof window.define == 'function' and typeof window.require == 'function'
-  window.define 'cell', [], do->
+if typeof define == 'function' and typeof require == 'function'
+  define 'cell', [], exports =
+    pluginBuilder: 'cell-pluginBuilder'
 
+    load: do->
+      moduleNameRegex = /(.*\/)?(.*)/
+      loadDef = (name, load, parentCell, def)-> load parentCell.extend def, moduleNameRegex.exec(name)[2]
+      (name, req, load, config)->
+        req [name], (CDef)->
+          if typeof CDef != 'object'
+            E "Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
+          else
+            if typeof exports.__preinstalledCells__?[name] == 'undefined'
+              CDef.css_href ?= req.toUrl "#{name}.css"
+
+            if typeof CDef.extends == 'string'
+              req ["cell!#{CDef.extends}"], (parentCell)->
+                if parentCell::name
+                  CDef.class = "#{parentCell::name}#{CDef.class or ""}"
+                loadDef name, load, parentCell, CDef
+                return
+            else
+              loadDef name, load, cell, CDef
+          return
+        return
+
+  require ['cell'], (cell)->
     # Load/render cells specified in DOM node data-cell attributes
-    $ ->
-      for node in $('[data-cell]') when cellname=node.getAttribute('data-cell')
-        do(node)->
+    require.ready ->
+      $('[data-cell]').each ->
+        node = this
+        if cellname=node.getAttribute('data-cell')
           opts = {}
           cachebust = /(^\?cachebust)|(&cachebust)/.test window.location.search
           if ((cachebustAttr = node.getAttribute('data-cell-cachebust')) != null or cachebust) and cachebustAttr != 'false'
             opts.urlArgs = "bust=#{new Date().getTime()}"
           if baseurl = node.getAttribute 'data-cell-baseurl'
             opts.baseUrl = baseurl
-          require opts, ["cell!#{cellname}"], (CType)-> $(node).append(new CType().el)
-      return
-
-    ###
-    Module Exports
-    ###
-    exports =
-      pluginBuilder: 'cell-pluginBuilder'
-
-      load: do->
-        moduleNameRegex = /(.*\/)?(.*)/
-        loadDef = (name, load, parentCell, def)-> load parentCell.extend def, moduleNameRegex.exec(name)[2]
-        (name, req, load, config)->
-          req [name], (CDef)->
-            if typeof CDef != 'object'
-              E "Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
-            else
-              if typeof exports.__preinstalledCells__?[name] == 'undefined'
-                CDef.css_href ?= req.toUrl "#{name}.css"
-
-              if typeof CDef.extends == 'string'
-                req ["cell!#{CDef.extends}"], (parentCell)->
-                  if parentCell::name
-                    CDef.class = "#{parentCell::name}#{CDef.class or ""}"
-                  loadDef name, load, parentCell, CDef
-              else
-                loadDef name, load, cell, CDef
+          require opts, ["cell!#{cellname}"], (CType)->
+            $(node).append(new CType().el)
             return
-          return
-
-
+        return
+      return
+    return
