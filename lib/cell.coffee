@@ -59,12 +59,10 @@ window.cell ?= cell = do->
     for p in optsToProps when (val = @options[p])
       @[p] = val
 
-    # Parent cell
-    @_parent = @options.parent
-
     # Create DOM node
     tmpNode.innerHTML = @__renderOuterHTML
     @el = tmpNode.children[0]
+    @$el = $(@el)
 
     # Add the cell's class
     className = ""
@@ -75,34 +73,6 @@ window.cell ?= cell = do->
       @el.className = className
 
     (typeof @id == 'string') and @el.id = @id
-
-    # Rendering helper function passed to the cell.render function to make
-    # the following easier:
-    #  - asynchronous and synchronous rendering
-    #  - rendering other cells and DOM nodes
-    #  - rendering strings, numbers, and potentially null/undefined values
-    renderHelper_nocheck = (a, b)=>
-      if a is undefined or a is null or a==false then ""
-      else if (type = typeof a) == 'string' or type == 'number' then a
-      else if a.prototype?.cell == a
-        acell = new a extendObj b ? {}, parent: this
-        "<#{acell.__renderTagName} id='#{acell._cid}'></#{acell.__renderTagName}>"
-      else if isElement a
-        @_renderQ[uid = uniqueId '__cell_render_node_'] = a
-        "<#{a.tagName} id='#{uid}'></#{a.tagName}>"
-      else if a instanceof Array
-        i=0
-        res = ""
-        if typeof b != 'function' then b = (a)->a
-        for e in a then res += renderHelper_nocheck b e,i++,a
-        res
-      else
-        E 'render({CType,HTMLElement,string,number},[cellOptions])'
-        ""
-
-    @_renderHelper = (a, cellOpts)=>
-      unless @_renderQ? then ""
-      else renderHelper_nocheck a, cellOpts
 
     @update()
     return
@@ -164,6 +134,7 @@ cell.extend = do->
       if typeof (css = protoProps.css) == 'string'
         el = document.createElement 'style'
         el.innerHTML = css
+
       # Attach CSS <link>
       else if typeof (cssref = protoProps.css_href) == 'string'
         el = document.createElement 'link'
@@ -180,12 +151,47 @@ cell.prototype =
   $: (selector)-> $ selector, @el
 
   update: ->
-    if not @_renderQ
-      @_renderQ = {}
-      @init? @options
-      if typeof (innerHTML = @__render @_renderHelper, bind @__renderinnerHTML, this) == 'string'
-        @__renderinnerHTML innerHTML
+    @init? @options
+    if typeof (innerHTML = @__render bind(@renderHelper,this), bind(@__renderinnerHTML,this)) == 'string'
+      @__renderinnerHTML innerHTML
     return
+
+  # Rendering helper function passed to the cell.render function to make
+  # the following easier:
+  #  - asynchronous and synchronous rendering
+  #  - rendering other cells and DOM nodes
+  #  - rendering strings, numbers, and potentially null/undefined values
+  renderHelper: (a, b)->
+    # undefined, null, false -> ""
+    if a is undefined or a is null or a==false then ""
+
+    # string, number
+    else if (type = typeof a) == 'string' or type == 'number' then a
+
+    # cell
+    else if a.prototype?.cell == a
+      acell = new a extendObj b ? {}
+      @$el.one 'beforeDelegateEvents', => try @$("##{acell._cid}").replaceWith acell.el
+      "<#{acell.__renderTagName} id='#{acell._cid}'></#{acell.__renderTagName}>"
+
+    # node
+    else if isElement a
+      uid = uniqueId '__cell_render_node_'
+      @$el.one 'beforeDelegateEvents', => try @$("##{uid}").replaceWith a
+      "<#{a.tagName} id='#{uid}'></#{a.tagName}>"
+
+    # array
+    else if a instanceof Array
+      i=0
+      res = ""
+      if typeof b != 'function' then b = (a)->a
+      for e in a then res += @renderHelper b e,i++,a
+      res
+
+    # not supported
+    else
+      E 'render({CType,HTMLElement,string,number},[cellOptions])'
+      ""
 
   __delegateEvents: ->
     # Unbind any previous event bindings
@@ -193,51 +199,34 @@ cell.prototype =
       for ub in @_unbinds then try ub()
       delete @_unbinds
     @_unbinds = []
-    for {prop,binds} in @__eventBindings
-      obj = @[prop]
-      do(obj)=>
-        if isElement obj
-          obj = @$(obj)
-          for {name,sel,handler} in binds then do(name,sel,handler)=>
-            if typeof handler is 'string'
-              handler = @[handler]
+    for {prop,binds} in @__eventBindings when isElement(obj = @[prop])
+      obj = @$(obj)
+      for {name,sel,handler} in binds then do(obj,name,sel,handler)=>
+        if typeof handler is 'string'
+          handler = @[handler]
 
-            if typeof handler is 'function'
-              handler = bind handler, this
-              if sel
-                obj.delegate sel, name, handler
-                @_unbinds.push ->
-                  obj.undelegate sel, name, handler
-                  return
-              else
-                obj.bind name, handler
-                @_unbinds.push ->
-                  obj.unbind name, handler
-                  return
-            return
+        if typeof handler is 'function'
+          handler = bind handler, this
+          @_unbinds.push(
+            if sel
+              obj.delegate sel, name, handler
+              ->
+                obj.undelegate sel, name, handler
+                return
+            else
+              obj.bind name, handler
+              ->
+                obj.unbind name, handler
+                return
+          )
         return
     return
       
   __renderinnerHTML: (innerHTML)->
-    if @_renderQ
-      @el.innerHTML = @_ie_hack_innerHTML = innerHTML
-      for pcid,child of @_renderQ
-        if child.el and not child.el.innerHTML
-          child.el.innerHTML = child._ie_hack_innerHTML
-        @$("##{pcid}").replaceWith isElement(child) and child or child.el
-        delete child._ie_hack_innerHTML
-      delete @_renderQ
-      @__delegateEvents()
-      $(@el).trigger 'afterRender', @el
-      @_parent?.__onchildrender? this
-    return
-
-  __onchildrender: (c)->
-    if @_renderQ
-      @_renderQ[c._cid] = c
-    else
-      delete c._ie_hack_innerHTML
-      @$("##{c._cid}").replaceWith c.el
+    @$el.html(innerHTML)
+        .trigger 'beforeDelegateEvents', this
+    @__delegateEvents()
+    @$el.trigger 'afterRender'
     return
 
 # cell AMD Module
