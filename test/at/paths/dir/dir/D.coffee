@@ -1,3 +1,3 @@
-define ['cell!../../E'], (E)->
+define ->
   id = 0
-  render: (R)-> "<p>D(#{id++})</p>#{R E}"
+  render: (R)-> "<p>D(#{id++})</p>#{R.cell '../../E'}"

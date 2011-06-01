@@ -1,10 +1,10 @@
 (function() {
-  define(['cell!../../E'], function(E) {
+  define(function() {
     var id;
     id = 0;
     return {
       render: function(R) {
-        return "<p>D(" + (id++) + ")</p>" + (R(E));
+        return "<p>D(" + (id++) + ")</p>" + (R.cell('../../E'));
       }
     };
   });

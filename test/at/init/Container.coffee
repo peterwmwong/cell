@@ -1,6 +1,6 @@
-define ['cell!./CellWithInit'], (CellWithInit)->
+define
   render: (R)->
     """
-    #{R CellWithInit, id:'oneid', class:'one', foo:'bar'}
-    #{R CellWithInit, id:'twoid', class:'two', foo:'blarg'}
+    #{R.cell './CellWithInit', id:'oneid', class:'one', foo:'bar'}
+    #{R.cell './CellWithInit', id:'twoid', class:'two', foo:'blarg'}
     """

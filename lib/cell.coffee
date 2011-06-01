@@ -53,8 +53,6 @@ window.cell ?= cell = do->
   optsToProps = ['id','class','model','collection']
 
   (@options = {})->
-    @_cid = uniqueId '__cell_instance_'
-      
     # Copy over class and id properties for convenience
     for p in optsToProps when (val = @options[p])
       @[p] = val
@@ -63,6 +61,55 @@ window.cell ?= cell = do->
     tmpNode.innerHTML = @__renderOuterHTML
     @el = tmpNode.children[0]
     @$el = $(@el)
+
+    # Rendering helper function passed to the cell.render function to make
+    # the following easier:
+    #  - asynchronous and synchronous rendering
+    #  - rendering other cells and DOM nodes
+    #  - rendering strings, numbers, and potentially null/undefined values
+    @renderHelper = (a, b)=>
+      # undefined, null, false -> ""
+      if a is undefined or a is null or a==false then ""
+
+      # string, number
+      else if (type = typeof a) == 'string' or type == 'number' then a
+
+      # node
+      else if isElement a
+        uid = uniqueId '_rhNode'
+        @$el.one 'beforeDelegateEvents', => try @$("##{uid}").replaceWith a
+        "<#{a.tagName} id='#{uid}'></#{a.tagName}>"
+
+      # array
+      else if a instanceof Array
+        i=0
+        res = ""
+        if typeof b != 'function' then b = (a)->a
+        for e in a then res += @renderHelper b e,i++,a
+        res
+
+      # not supported
+      else
+        E 'renderHelper( {HTMLElement,String,Number,Array}, [Array forEach function] )'
+        ""
+          
+    @renderHelper.cell = (a,b)=>
+      ruid = uniqueId '_rhCell'
+      handleCell = (acell)=>
+        acell = new acell b or {}
+        if @_isRendering
+          @$el.one 'beforeDelegateEvents', => @$("##{ruid}").replaceWith acell.el
+        else
+          @$("##{ruid}").replaceWith acell.el
+        return
+
+      if a.prototype?.cell == a
+        handleCell a
+      else if typeof a == 'string'
+        @_require a, handleCell
+      else
+        E 'renderHelper.cell( {cell,string}, [cell options] )'
+      "<div id='#{ruid}'></div>"
 
     # Add the cell's class
     className = ""
@@ -152,46 +199,10 @@ cell.prototype =
 
   update: ->
     @init? @options
-    if typeof (innerHTML = @__render bind(@renderHelper,this), bind(@__renderinnerHTML,this)) == 'string'
+    @_isRendering = true
+    if typeof (innerHTML = @__render @renderHelper, bind(@__renderinnerHTML,this)) == 'string'
       @__renderinnerHTML innerHTML
     return
-
-  # Rendering helper function passed to the cell.render function to make
-  # the following easier:
-  #  - asynchronous and synchronous rendering
-  #  - rendering other cells and DOM nodes
-  #  - rendering strings, numbers, and potentially null/undefined values
-  renderHelper: (a, b)->
-    # undefined, null, false -> ""
-    if a is undefined or a is null or a==false then ""
-
-    # string, number
-    else if (type = typeof a) == 'string' or type == 'number' then a
-
-    # cell
-    else if a.prototype?.cell == a
-      acell = new a extendObj b ? {}
-      @$el.one 'beforeDelegateEvents', => try @$("##{acell._cid}").replaceWith acell.el
-      "<#{acell.__renderTagName} id='#{acell._cid}'></#{acell.__renderTagName}>"
-
-    # node
-    else if isElement a
-      uid = uniqueId '__cell_render_node_'
-      @$el.one 'beforeDelegateEvents', => try @$("##{uid}").replaceWith a
-      "<#{a.tagName} id='#{uid}'></#{a.tagName}>"
-
-    # array
-    else if a instanceof Array
-      i=0
-      res = ""
-      if typeof b != 'function' then b = (a)->a
-      for e in a then res += @renderHelper b e,i++,a
-      res
-
-    # not supported
-    else
-      E 'render({CType,HTMLElement,string,number},[cellOptions])'
-      ""
 
   __delegateEvents: ->
     # Unbind any previous event bindings
@@ -225,6 +236,7 @@ cell.prototype =
   __renderinnerHTML: (innerHTML)->
     @$el.html(innerHTML)
         .trigger 'beforeDelegateEvents', this
+    @_isRendering = false
     @__delegateEvents()
     @$el.trigger 'afterRender'
     return
@@ -236,23 +248,31 @@ if typeof define == 'function' and typeof require == 'function'
 
     load: do->
       moduleNameRegex = /(.*\/)?(.*)/
-      loadDef = (name, load, parentCell, def)-> load parentCell.extend def, moduleNameRegex.exec(name)[2]
+      relUrlRegex = /^(\.+\/)/
+      midRelUrlRegex = /(\/\.\/)/g
       (name, req, load, config)->
         req [name], (CDef)->
           if typeof CDef != 'object'
             E "Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
           else
+            [baseUrl,cellName] = moduleNameRegex.exec(name)[1..]
+
+            # Helper function for renderHelper.cell.
+            # Properly normalize dep url
+            CDef._require = (dep,cb)->
+              req ["cell!#{relUrlRegex.test(dep) and baseUrl or ''}#{dep}".replace midRelUrlRegex, '/'], cb
+
             if typeof exports.__preinstalledCells__?[name] == 'undefined'
               CDef.css_href ?= req.toUrl "#{name}.css"
 
             if typeof CDef.extends == 'string'
               req ["cell!#{CDef.extends}"], (parentCell)->
                 if parentCell::name
-                  CDef.class = "#{parentCell::name}#{CDef.class or ""}"
-                loadDef name, load, parentCell, CDef
+                  CDef.class = parentCell::name + " #{CDef.class}" or ""
+                load parentCell.extend CDef, cellName
                 return
             else
-              loadDef name, load, cell, CDef
+              load cell.extend CDef, cellName
           return
         return
 

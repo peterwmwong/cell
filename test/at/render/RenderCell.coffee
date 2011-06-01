@@ -12,12 +12,18 @@ define ['cell!AnotherCell'], (AnotherCell)->
       }
     </ol>
     <div class='node'>#{R $('<a href="www.google.com">blargo</div>')[0]}</div>
-    #{R AnotherCell,
+    #{R.cell AnotherCell,
         id: 'anotherCellId'
         class: 'anotherCellClass'
         foo: 'bar'
         collection: 'collection_val'
         model: 'model_val'}
+    #{R.cell 'AnotherCellByName',
+        id: 'anotherCellByNameId'
+        class: 'anotherCellByNameClass'
+        foo: 'bar2'
+        collection: 'collection_val2'
+        model: 'model_val2'}
     """
 
   bind:
