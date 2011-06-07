@@ -2102,8 +2102,19 @@ var require, define;
     $: function(selector) {
       return $(selector, this.el);
     },
+    ready: function(f) {
+      var _ref2;
+      if (this._isReady) {
+        try {
+          return f(this);
+        } catch (_e) {}
+      } else {
+        return ((_ref2 = this._readys) != null ? _ref2 : this._readys = []).push(f);
+      }
+    },
     update: function() {
       var innerHTML;
+      this._isReady = false;
       if (typeof this.init === "function") {
         this.init(this.options);
       }
@@ -2151,10 +2162,22 @@ var require, define;
       }
     },
     __renderinnerHTML: function(innerHTML) {
+      var r, _i, _len, _ref2;
       this.$el.html(innerHTML).trigger('beforeDelegateEvents', this);
       this._isRendering = false;
       this.__delegateEvents();
       this.$el.trigger('afterRender');
+      this._isReady = true;
+      if (this._readys) {
+        _ref2 = this._readys;
+        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+          r = _ref2[_i];
+          try {
+            r(this);
+          } catch (_e) {}
+        }
+        delete this._readys;
+      }
     }
   };
   if (typeof define === 'function' && typeof require === 'function') {

@@ -197,7 +197,13 @@ cell.extend = do->
 cell.prototype =
   $: (selector)-> $ selector, @el
 
+  ready: (f)->
+    if @_isReady then try f this
+    else
+      (@_readys ?= []).push f
+
   update: ->
+    @_isReady = false
     @init? @options
     @_isRendering = true
     if typeof (innerHTML = @__render @renderHelper, bind(@__renderinnerHTML,this)) == 'string'
@@ -239,6 +245,11 @@ cell.prototype =
     @_isRendering = false
     @__delegateEvents()
     @$el.trigger 'afterRender'
+    @_isReady = true
+    if @_readys
+      for r in @_readys
+        try r this
+      delete @_readys
     return
 
 # cell AMD Module
