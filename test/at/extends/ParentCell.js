@@ -1,7 +1,7 @@
 (function() {
   define({
     render: function(R) {
-      return "<div class='childOption'>" + this.childOption + "</div>\n<div class='renderChild'>" + (this.renderChild()) + "</div>";
+      return [R('.childOption', this.childOption), R('.renderChild', this.renderChild())];
     },
     bind: {
       afterRender: function() {

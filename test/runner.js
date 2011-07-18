@@ -28,7 +28,7 @@
         } else {
           checkDoDone = function() {
             if (idoc.readyState === 'complete') {
-              defer(100, function() {
+              defer(10, function() {
                 return done(void 0, idoc, iframe);
               });
               return true;

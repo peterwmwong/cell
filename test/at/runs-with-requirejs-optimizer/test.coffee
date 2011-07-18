@@ -1,6 +1,6 @@
 define -> (done)->
   equal @$('body').html().trim(),
-    '<div class=" Mock">Mock: <div class=" MockNested">MockNested</div> </div>'
+    '<div class=" Mock">Mock: <div class=" MockNested">MockNested</div></div>'
     "Should render Mock and MockNested Cells"
 
   equal @$('.Mock').css('color'),

@@ -87,7 +87,7 @@ window.cell ?= cell = do->
 renderHelper = (a,b,children...)->
   if a and (l = arguments.length) > 0
     if l > 1 and b?.constructor isnt Object
-      children.push b
+      children.unshift b
       b = undefined
 
     if parent = renderParent a,b
@@ -102,6 +102,10 @@ renderParent = (a,b)->
       parent.id = m[2].slice 1
     if m[3]
       parent.className = m[3].replace /\./g, ' '
+
+    for k,v of b
+      parent[k] = v
+
     parent
   
   else if a.prototype?.cell == a

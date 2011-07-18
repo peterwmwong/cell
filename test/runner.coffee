@@ -20,7 +20,7 @@ define ['require','./util/qunit-result-handler'],(req)->
       else
         checkDoDone = ->
           if idoc.readyState == 'complete'
-            defer 100, -> done undefined, idoc, iframe
+            defer 10, -> done undefined, idoc, iframe
             true
 
         if not checkDoDone()

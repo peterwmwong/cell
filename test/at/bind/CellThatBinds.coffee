@@ -2,16 +2,14 @@ define
   init: ->
     @clickcount = 0
 
-  render: (R)->
-    """
-    Click Count: <span id='clickcount'>#{@clickcount}</span>
-    <div class='foo'>
-      <div id='bar'>
-        <button type="button" class='add'>Add</button>
-        <button type="button" class='remove'>Remove</button>
-      </div>
-    </div>
-    """
+  render: (R)-> [
+    'Click Count: '
+    R '#clickcount', @clickcount
+    R '.foo',
+      R '#bar',
+        R 'input.add', type: 'button', value: 'Add'
+        R 'input.remove', type: 'button', value: 'Remove'
+  ]
   
   bind:
     'click .foo > #bar > .add': ->

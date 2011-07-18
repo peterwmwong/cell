@@ -6,7 +6,13 @@
     <script src='../../../build/cell.js'></script>
     <script>
       $(function(){
-        var a = cell.extend({render:function(){return "hello world";}});
+        var a = cell.extend({
+          render:function(){
+            return [
+              "hello world"
+            ];
+          }
+        });
         $('body').prepend(new a().el);
       });
     </script>

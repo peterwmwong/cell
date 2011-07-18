@@ -107,7 +107,7 @@
     a = arguments[0], b = arguments[1], children = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
     if (a && (l = arguments.length) > 0) {
       if (l > 1 && (b != null ? b.constructor : void 0) !== Object) {
-        children.push(b);
+        children.unshift(b);
         b = void 0;
       }
       if (parent = renderParent(a, b)) {
@@ -118,7 +118,7 @@
   };
   selRegex = /^([A-z]+)?(#[A-z0-9\-]+)?(\.[A-z0-9\.\-]+)?$/;
   renderParent = function(a, b) {
-    var m, parent, _ref2;
+    var k, m, parent, v, _ref2;
     if (typeof a === 'string' && (m = selRegex.exec(a)) && m[0]) {
       parent = document.createElement(m[1] || 'div');
       if (m[2]) {
@@ -126,6 +126,10 @@
       }
       if (m[3]) {
         parent.className = m[3].replace(/\./g, ' ');
+      }
+      for (k in b) {
+        v = b[k];
+        parent[k] = v;
       }
       return parent;
     } else if (((_ref2 = a.prototype) != null ? _ref2.cell : void 0) === a) {

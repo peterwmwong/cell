@@ -1,9 +1,8 @@
 define
-  render: (R)->
-    """
-    <div class='childOption'>#{@childOption}</div>
-    <div class='renderChild'>#{@renderChild()}</div>
-    """
+  render: (R)-> [
+  	R '.childOption', @childOption
+  	R '.renderChild', @renderChild()
+  ]
 
   bind:
     afterRender: ->

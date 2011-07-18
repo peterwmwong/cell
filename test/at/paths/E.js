@@ -3,8 +3,8 @@
     var id;
     id = 0;
     return {
-      render: function() {
-        return "<p>E(" + (id++) + ")</p>";
+      render: function(R) {
+        return [R('p', "E(" + (id++) + ")")];
       }
     };
   });

@@ -1,7 +1,7 @@
 (function() {
   define({
     render: function() {
-      return "Sync";
+      return ['Sync'];
     }
   });
 }).call(this);

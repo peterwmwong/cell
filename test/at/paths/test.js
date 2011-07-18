@@ -17,7 +17,7 @@
       equal(this.$('body > .A > .B > .D > .E > p').html(), "E(0)");
       equal(this.$('body > .A > .C > .D > p').html(), "D(1)");
       equal(this.$('body > .A > .C > .D > .E > p').html(), "E(1)");
-      hasOneOfEach(['head > link[href="./A.css"]', 'head > link[href="./dir/B.css"]', 'head > link[href="./dir/C.css"]', 'head > link[href="./dir/dir/D.css"]', 'head > link[href="./dir/dir/../../E.css"]']);
+      hasOneOfEach(['head > link[href="./A.css"]', 'head > link[href="./dir/B.css"]', 'head > link[href="./dir/C.css"]', 'head > link[href="./dir/dir/D.css"]', 'head > link[href="./E.css"]']);
       return done();
     };
   });

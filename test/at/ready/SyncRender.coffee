@@ -1,2 +1,2 @@
 define
-  render: -> "Sync"
+  render: -> ['Sync']

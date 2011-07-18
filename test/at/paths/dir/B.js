@@ -1,7 +1,9 @@
 (function() {
-  define({
-    render: function(R) {
-      return "<p>B</p>" + (R.cell('./dir/D'));
-    }
+  define(['cell!./dir/D'], function(D) {
+    return {
+      render: function(R) {
+        return [R('p', 'B'), R(D)];
+      }
+    };
   });
 }).call(this);

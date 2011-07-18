@@ -1,5 +1,4 @@
 define
-  render: ->
-    """
-    MockNested
-    """
+  render: -> [
+  	"MockNested"
+  ]

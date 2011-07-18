@@ -1,6 +1,6 @@
-define
-  render: (R)->
-    """
-    #{R.cell './CellWithInit', id:'oneid', class:'one', foo:'bar'}
-    #{R.cell './CellWithInit', id:'twoid', class:'two', foo:'blarg'}
-    """
+define ['cell!./CellWithInit'], (CellWithInit)->
+  render: (R)-> [
+    R CellWithInit, id:'oneid', class:'one', foo:'bar'
+    R CellWithInit, id:'twoid', class:'two', foo:'blarg'
+  ]
+  

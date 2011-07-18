@@ -1,7 +1,7 @@
 (function() {
   define({
     render: function() {
-      return "MockNested";
+      return ["MockNested"];
     }
   });
 }).call(this);

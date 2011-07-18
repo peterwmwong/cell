@@ -1,2 +1,5 @@
-define
-  render: (R)-> "<p>B</p>#{R.cell './dir/D'}"
+define ['cell!./dir/D'], (D)->
+  render: (R)-> [
+  	R 'p', 'B'
+  	R D
+  ]

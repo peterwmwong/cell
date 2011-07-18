@@ -23,7 +23,7 @@ define -> (done)->
     'head > link[href="./dir/B.css"]'
     'head > link[href="./dir/C.css"]'
     'head > link[href="./dir/dir/D.css"]'
-    'head > link[href="./dir/dir/../../E.css"]'
+    'head > link[href="./E.css"]'
   ]
 
   done()

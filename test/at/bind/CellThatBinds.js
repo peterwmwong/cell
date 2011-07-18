@@ -4,7 +4,15 @@
       return this.clickcount = 0;
     },
     render: function(R) {
-      return "Click Count: <span id='clickcount'>" + this.clickcount + "</span>\n<div class='foo'>\n  <div id='bar'>\n    <button type=\"button\" class='add'>Add</button>\n    <button type=\"button\" class='remove'>Remove</button>\n  </div>\n</div>";
+      return [
+        'Click Count: ', R('#clickcount', this.clickcount), R('.foo', R('#bar', R('input.add', {
+          type: 'button',
+          value: 'Add'
+        }), R('input.remove', {
+          type: 'button',
+          value: 'Remove'
+        })))
+      ];
     },
     bind: {
       'click .foo > #bar > .add': function() {
