@@ -2,22 +2,25 @@
   define(['cell!AnotherCell'], function(AnotherCell) {
     return {
       render: function(R, A) {
-        var inputList;
-        return "<div class='booleanFalse'>" + (R(false)) + "</div>\n<div class='undefined'>" + (R(void 0 && "Shouldn't be rendered")) + "</div>\n<div class='null'>" + (R(null && "Shouldn't be rendered")) + "</div>\n<div class='number'>" + (R(5)) + "</div>\n<div class='numberZero'>" + (R(0)) + "</div>\n<ol class='list'>\n  " + (R(inputList = [10, 20, 30], function(el, pos, list) {
-          return "<li class='li" + pos + "'>" + el + ", Passed input list: " + (list === inputList) + "</li>";
-        })) + "\n</ol>\n<div class='node'>" + (R($('<a href="www.google.com">blargo</div>')[0])) + "</div>\n" + (R.cell(AnotherCell, {
-          id: 'anotherCellId',
-          "class": 'anotherCellClass',
-          foo: 'bar',
-          collection: 'collection_val',
-          model: 'model_val'
-        })) + "\n" + (R.cell('AnotherCellByName', {
-          id: 'anotherCellByNameId',
-          "class": 'anotherCellByNameClass',
-          foo: 'bar2',
-          collection: 'collection_val2',
-          model: 'model_val2'
-        }));
+        var el, pos;
+        return [
+          R('.booleanFalse', false), R('.undefined', void 0), R('.null', null), R('.number', 5), R('.numberZero', 0), R('ol.list', (function() {
+            var _len, _ref, _results;
+            _ref = [10, 20, 30];
+            _results = [];
+            for (pos = 0, _len = _ref.length; pos < _len; pos++) {
+              el = _ref[pos];
+              _results.push(R("li.li" + pos, el));
+            }
+            return _results;
+          })()), R('.node', $('<a href="www.google.com">blargo</div>')[0]), R(AnotherCell, {
+            id: 'anotherCellId',
+            "class": 'anotherCellClass',
+            foo: 'bar',
+            collection: 'collection_val',
+            model: 'model_val'
+          })
+        ];
       },
       bind: {
         afterRender: function() {

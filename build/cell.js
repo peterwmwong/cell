@@ -1,12 +1,17 @@
 (function() {
-  var E, bind, cell, document, exports, extendObj, inherits, isElement, isNode, renderChild, renderChildren, renderHelper, renderParent, selRegex, uniqueId, window, _ref;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice;
+  var E, bind, cell, document, exports, extendObj, inherits, isElement, isNode, renderChildren, renderHelper, renderParent, selRegex, uniqueId, window, _ref;
+  var __slice = Array.prototype.slice, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
     return console.error(msg);
   }) || function() {};
   window = this;
   document = window.document || {
     createElement: function() {}
+  };
+  isNode = typeof Node === 'object' ? function(o) {
+    return o instanceof Node;
+  } : function(o) {
+    return typeof o === 'object' && typeof o.nodeType === 'number' && typeof o.nodeName === 'string';
   };
   isElement = typeof HTMLElement === "object" ? function(o) {
     return o instanceof HTMLElement;
@@ -71,6 +76,7 @@
       return function(options) {
         var className, n, p, val, _i, _j, _len, _len2, _ref2;
         this.options = options != null ? options : {};
+        this._renderNodes = bind(cell.prototype.__renderNodes, this);
         for (_i = 0, _len = optsToProps.length; _i < _len; _i++) {
           p = optsToProps[_i];
           if ((val = this.options[p])) {
@@ -80,60 +86,6 @@
         tmpNode.innerHTML = this.__renderOuterHTML;
         this.el = tmpNode.children[0];
         this.$el = $(this.el);
-        this.renderHelper = __bind(function(a, b) {
-          var e, i, res, type, uid, _j, _len2;
-          if (a === void 0 || a === null || a === false) {
-            return "";
-          } else if ((type = typeof a) === 'string' || type === 'number') {
-            return a;
-          } else if (isElement(a)) {
-            uid = uniqueId('_rhNode');
-            this.$el.one('beforeDelegateEvents', __bind(function() {
-              try {
-                return this.$("#" + uid).replaceWith(a);
-              } catch (_e) {}
-            }, this));
-            return "<" + a.tagName + " id='" + uid + "'></" + a.tagName + ">";
-          } else if (a instanceof Array) {
-            i = 0;
-            res = "";
-            if (typeof b !== 'function') {
-              b = function(a) {
-                return a;
-              };
-            }
-            for (_j = 0, _len2 = a.length; _j < _len2; _j++) {
-              e = a[_j];
-              res += this.renderHelper(b(e, i++, a));
-            }
-            return res;
-          } else {
-            E('renderHelper( {HTMLElement,String,Number,Array}, [Array forEach function] )');
-            return "";
-          }
-        }, this);
-        this.renderHelper.cell = __bind(function(a, b) {
-          var handleCell, ruid, _ref2;
-          ruid = uniqueId('_rhCell');
-          handleCell = __bind(function(acell) {
-            acell = new acell(b || {});
-            if (this._isRendering) {
-              this.$el.one('beforeDelegateEvents', __bind(function() {
-                return this.$("#" + ruid).replaceWith(acell.el);
-              }, this));
-            } else {
-              this.$("#" + ruid).replaceWith(acell.el);
-            }
-          }, this);
-          if (((_ref2 = a.prototype) != null ? _ref2.cell : void 0) === a) {
-            handleCell(a);
-          } else if (typeof a === 'string') {
-            this._require(a, handleCell);
-          } else {
-            E('renderHelper.cell( {cell,string}, [cell options] )');
-          }
-          return "<div id='" + ruid + "'></div>";
-        }, this);
         className = "";
         _ref2 = [this.cell.prototype.name, this.el.className, this["class"]];
         for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
@@ -150,30 +102,18 @@
       };
     })();
   };
-  isNode = typeof Node === 'object' ? function(o) {
-    return o instanceof Node;
-  } : function(o) {};
-  renderChildren = function(parent, children) {
-    var c, cnode, _i, _len, _results;
-    _results = [];
-    for (_i = 0, _len = children.length; _i < _len; _i++) {
-      c = children[_i];
-      if (cnode = renderChild(c)) {
-        _results.push(parent.appendChild(cnode));
+  renderHelper = function() {
+    var a, b, children, l, parent;
+    a = arguments[0], b = arguments[1], children = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+    if (a && (l = arguments.length) > 0) {
+      if (l > 1 && (b != null ? b.constructor : void 0) !== Object) {
+        children.push(b);
+        b = void 0;
       }
-    }
-    return _results;
-  };
-  renderChild = function(a) {
-    var _ref2;
-    if (a === void 0 || a === null || a === true || a === false) {
-      return;
-    } else if ((_ref2 = typeof a) === 'string' || _ref2 === 'number') {
-      return document.createTextNode(a);
-    } else if (isNode(a)) {
-      return a;
-    } else {
-      return E('renderChild: unsupported child type = ' + a);
+      if (parent = renderParent(a, b)) {
+        renderChildren(parent, children);
+        return parent;
+      }
     }
   };
   selRegex = /^([A-z]+)?(#[A-z0-9\-]+)?(\.[A-z0-9\.\-]+)?$/;
@@ -196,19 +136,15 @@
       return E('renderParent: unsupported parent type = ' + a);
     }
   };
-  renderHelper = function() {
-    var a, b, children, l, parent;
-    a = arguments[0], b = arguments[1], children = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-    if (a && (l = arguments.length > 0)) {
-      if (l > 1 && (b != null ? b.constructor : void 0) !== Object) {
-        children.push(b);
-        b = void 0;
-      }
-      if (parent = renderParent(a, b)) {
-        renderChildren(parent);
-        return parent;
+  renderChildren = function(parent, children) {
+    var c, type, _ref2, _results;
+    _results = [];
+    while (children.length > 0) {
+      if ((c = children.shift()) != null) {
+        _results.push(c instanceof Array ? Array.prototype.unshift.apply(children, c) : (_ref2 = (type = typeof c)) === 'string' || _ref2 === 'number' ? parent.appendChild(document.createTextNode(c)) : isNode(c) ? parent.appendChild(c) : !((c === void 0 || c === null) || type === 'boolean') ? E('renderChild: unsupported child type = ' + c) : void 0);
       }
     }
+    return _results;
   };
   cell.extend = (function() {
     var eventSelRegex, eventsNameRegex, renderFuncNameRegex;
@@ -288,14 +224,14 @@
       }
     },
     update: function() {
-      var innerHTML;
+      var nodes;
       this._isReady = false;
       if (typeof this.init === "function") {
         this.init(this.options);
       }
       this._isRendering = true;
-      if (typeof (innerHTML = this.__render(this.renderHelper, bind(this.__renderinnerHTML, this))) === 'string') {
-        this.__renderinnerHTML(innerHTML);
+      if ((nodes = this.__render(renderHelper, this._renderNodes)) instanceof Array) {
+        this._renderNodes(nodes);
       }
     },
     __delegateEvents: function() {
@@ -336,9 +272,10 @@
         }
       }
     },
-    __renderinnerHTML: function(innerHTML) {
+    __renderNodes: function(nodes) {
       var r, _i, _len, _ref2;
-      this.$el.html(innerHTML).trigger('beforeDelegateEvents', this);
+      renderChildren(this.el, nodes);
+      this.$el.trigger('beforeDelegateEvents', this);
       this._isRendering = false;
       this.__delegateEvents();
       this.$el.trigger('afterRender');

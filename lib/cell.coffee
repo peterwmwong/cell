@@ -6,6 +6,13 @@ E =
 window = this
 document = window.document or {createElement:->}
 
+# is-Node check for all browsers
+isNode =
+  if typeof Node is 'object'
+    (o)-> o instanceof Node
+  else
+    (o)-> typeof o is 'object' and typeof o.nodeType is 'number' and typeof o.nodeName is 'string'
+
 # is-HTMLElement check for all browsers
 isElement =
   if typeof HTMLElement == "object" then (o)-> o instanceof HTMLElement
@@ -53,6 +60,8 @@ window.cell ?= cell = do->
   optsToProps = ['id','class','model','collection']
 
   (@options = {})->
+    @_renderNodes = bind cell::__renderNodes, this
+
     # Copy over class and id properties for convenience
     for p in optsToProps when (val = @options[p])
       @[p] = val
@@ -61,55 +70,6 @@ window.cell ?= cell = do->
     tmpNode.innerHTML = @__renderOuterHTML
     @el = tmpNode.children[0]
     @$el = $(@el)
-
-    # Rendering helper function passed to the cell.render function to make
-    # the following easier:
-    #  - asynchronous and synchronous rendering
-    #  - rendering other cells and DOM nodes
-    #  - rendering strings, numbers, and potentially null/undefined values
-    @renderHelper = (a, b)=>
-      # undefined, null, false -> ""
-      if a is undefined or a is null or a==false then ""
-
-      # string, number
-      else if (type = typeof a) == 'string' or type == 'number' then a
-
-      # node
-      else if isElement a
-        uid = uniqueId '_rhNode'
-        @$el.one 'beforeDelegateEvents', => try @$("##{uid}").replaceWith a
-        "<#{a.tagName} id='#{uid}'></#{a.tagName}>"
-
-      # array
-      else if a instanceof Array
-        i=0
-        res = ""
-        if typeof b != 'function' then b = (a)->a
-        for e in a then res += @renderHelper b e,i++,a
-        res
-
-      # not supported
-      else
-        E 'renderHelper( {HTMLElement,String,Number,Array}, [Array forEach function] )'
-        ""
-          
-    @renderHelper.cell = (a,b)=>
-      ruid = uniqueId '_rhCell'
-      handleCell = (acell)=>
-        acell = new acell b or {}
-        if @_isRendering
-          @$el.one 'beforeDelegateEvents', => @$("##{ruid}").replaceWith acell.el
-        else
-          @$("##{ruid}").replaceWith acell.el
-        return
-
-      if a.prototype?.cell == a
-        handleCell a
-      else if typeof a == 'string'
-        @_require a, handleCell
-      else
-        E 'renderHelper.cell( {cell,string}, [cell options] )'
-      "<div id='#{ruid}'></div>"
 
     # Add the cell's class
     className = ""
@@ -124,28 +84,15 @@ window.cell ?= cell = do->
     @update()
     return
 
-isNode =
-  if typeof Node is 'object'
-    (o)-> o instanceof Node
-  else
-    (o)-> # TODO
+renderHelper = (a,b,children...)->
+  if a and (l = arguments.length) > 0
+    if l > 1 and b?.constructor isnt Object
+      children.push b
+      b = undefined
 
-renderChildren = (parent,children)->
-  for c in children when cnode = renderChild c
-    parent.appendChild cnode
-
-renderChild = (a)->
-  if a in [undefined,null,true,false]
-    undefined
-
-  else if typeof(a) in ['string','number']
-    document.createTextNode a
-
-  else if isNode a
-    a
-
-  else
-    E 'renderChild: unsupported child type = '+a
+    if parent = renderParent a,b
+      renderChildren parent, children
+      return parent
 
 selRegex = /^([A-z]+)?(#[A-z0-9\-]+)?(\.[A-z0-9\.\-]+)?$/
 renderParent = (a,b)->
@@ -165,17 +112,17 @@ renderParent = (a,b)->
 
   else
     E 'renderParent: unsupported parent type = '+a
-  
 
-renderHelper = (a,b,children...)->
-  if a and l = arguments.length > 0
-    if l > 1 and b?.constructor isnt Object
-      children.push b
-      b = undefined
-
-    if parent = renderParent a,b
-      renderChildren parent
-      return parent
+renderChildren = (parent,children)->
+  while children.length > 0 when (c = children.shift())?
+    if c instanceof Array
+      Array::unshift.apply children, c
+    else if (type = typeof c) in ['string','number']
+      parent.appendChild document.createTextNode c
+    else if isNode c
+      parent.appendChild c
+    else if not (c in [undefined,null] or type is 'boolean')
+      E 'renderChild: unsupported child type = '+c
 
 cell.extend = do->
   renderFuncNameRegex = /render([ ]+<(\w+)([ ]+.*)*>[ ]*)?$/
@@ -259,8 +206,8 @@ cell.prototype =
     @_isReady = false
     @init? @options
     @_isRendering = true
-    if typeof (innerHTML = @__render @renderHelper, bind(@__renderinnerHTML,this)) == 'string'
-      @__renderinnerHTML innerHTML
+    if (nodes = @__render renderHelper, @_renderNodes) instanceof Array
+      @_renderNodes nodes
     return
 
   __delegateEvents: ->
@@ -292,9 +239,9 @@ cell.prototype =
         return
     return
       
-  __renderinnerHTML: (innerHTML)->
-    @$el.html(innerHTML)
-        .trigger 'beforeDelegateEvents', this
+  __renderNodes: (nodes)->
+    renderChildren @el, nodes
+    @$el.trigger 'beforeDelegateEvents', this
     @_isRendering = false
     @__delegateEvents()
     @$el.trigger 'afterRender'
