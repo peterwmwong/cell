@@ -1,6 +1,6 @@
 (function() {
-  var E, bind, cell, document, exports, extendObj, inherits, isElement, uniqueId, window, _ref;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var E, bind, cell, document, exports, extendObj, inherits, isElement, isNode, renderChild, renderChildren, renderHelper, renderParent, selRegex, uniqueId, window, _ref;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice;
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
     return console.error(msg);
   }) || function() {};
@@ -149,6 +149,66 @@
         this.update();
       };
     })();
+  };
+  isNode = typeof Node === 'object' ? function(o) {
+    return o instanceof Node;
+  } : function(o) {};
+  renderChildren = function(parent, children) {
+    var c, cnode, _i, _len, _results;
+    _results = [];
+    for (_i = 0, _len = children.length; _i < _len; _i++) {
+      c = children[_i];
+      if (cnode = renderChild(c)) {
+        _results.push(parent.appendChild(cnode));
+      }
+    }
+    return _results;
+  };
+  renderChild = function(a) {
+    var _ref2;
+    if (a === void 0 || a === null || a === true || a === false) {
+      return;
+    } else if ((_ref2 = typeof a) === 'string' || _ref2 === 'number') {
+      return document.createTextNode(a);
+    } else if (isNode(a)) {
+      return a;
+    } else {
+      return E('renderChild: unsupported child type = ' + a);
+    }
+  };
+  selRegex = /^([A-z]+)?(#[A-z0-9\-]+)?(\.[A-z0-9\.\-]+)?$/;
+  renderParent = function(a, b) {
+    var m, parent, _ref2;
+    if (typeof a === 'string' && (m = selRegex.exec(a)) && m[0]) {
+      parent = document.createElement(m[1] || 'div');
+      if (m[2]) {
+        parent.id = m[2].slice(1);
+      }
+      if (m[3]) {
+        parent.className = m[3].replace(/\./g, ' ');
+      }
+      return parent;
+    } else if (((_ref2 = a.prototype) != null ? _ref2.cell : void 0) === a) {
+      return (new a(b)).el;
+    } else if (isElement(a)) {
+      return a;
+    } else {
+      return E('renderParent: unsupported parent type = ' + a);
+    }
+  };
+  renderHelper = function() {
+    var a, b, children, l, parent;
+    a = arguments[0], b = arguments[1], children = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+    if (a && (l = arguments.length > 0)) {
+      if (l > 1 && (b != null ? b.constructor : void 0) !== Object) {
+        children.push(b);
+        b = void 0;
+      }
+      if (parent = renderParent(a, b)) {
+        renderChildren(parent);
+        return parent;
+      }
+    }
   };
   cell.extend = (function() {
     var eventSelRegex, eventsNameRegex, renderFuncNameRegex;

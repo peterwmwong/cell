@@ -124,6 +124,59 @@ window.cell ?= cell = do->
     @update()
     return
 
+isNode =
+  if typeof Node is 'object'
+    (o)-> o instanceof Node
+  else
+    (o)-> # TODO
+
+renderChildren = (parent,children)->
+  for c in children when cnode = renderChild c
+    parent.appendChild cnode
+
+renderChild = (a)->
+  if a in [undefined,null,true,false]
+    undefined
+
+  else if typeof(a) in ['string','number']
+    document.createTextNode a
+
+  else if isNode a
+    a
+
+  else
+    E 'renderChild: unsupported child type = '+a
+
+selRegex = /^([A-z]+)?(#[A-z0-9\-]+)?(\.[A-z0-9\.\-]+)?$/
+renderParent = (a,b)->
+  if typeof a is 'string' and (m = selRegex.exec a) and m[0]
+    parent = document.createElement m[1] or 'div'
+    if m[2]
+      parent.id = m[2].slice 1
+    if m[3]
+      parent.className = m[3].replace /\./g, ' '
+    parent
+  
+  else if a.prototype?.cell == a
+    (new a b).el
+
+  else if isElement a
+    a
+
+  else
+    E 'renderParent: unsupported parent type = '+a
+  
+
+renderHelper = (a,b,children...)->
+  if a and l = arguments.length > 0
+    if l > 1 and b?.constructor isnt Object
+      children.push b
+      b = undefined
+
+    if parent = renderParent a,b
+      renderChildren parent
+      return parent
+
 cell.extend = do->
   renderFuncNameRegex = /render([ ]+<(\w+)([ ]+.*)*>[ ]*)?$/
   eventsNameRegex = /bind( (.+))?/
