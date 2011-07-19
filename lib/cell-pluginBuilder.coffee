@@ -38,8 +38,9 @@ define ->
   
   load: do->
     moduleNameRegex = /(.*\/)?(.*)/
-    (name, req, load, config)->
+    (name, req, onLoad, config)->
       if not outcssfile? and (match = /(.*)\.\w*/.exec config?.out) and match[1]
         outcssfile = match[1]+'.css'
       Cstack.push name: name, cssurl: req.toUrl "#{name}.css"
-      req [name], load
+      onLoad()
+      req [name]

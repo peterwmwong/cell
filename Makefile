@@ -8,11 +8,7 @@ express = node_modules/express/package.json
 #-------------------------------------------------------------------
 # BUILD
 #------------------------------------------------------------------- 
-ifneq (,$(findstring CYGWIN,$(shell uname -s)))
-	requirejsBuild = ./support/requirejs/build/build.bat
-else
-	requirejsBuild = ./support/requirejs/build/build.sh
-endif
+requirejsBuild = ./support/requirejs/r.js
 
 #-------------------------------------------------------------------
 # TEST
@@ -67,12 +63,6 @@ build/cell-pluginBuilder.js: lib/cell-pluginBuilder.coffee $(coffee)
 	mkdir -p build/
 	$(coffee) -o build/ -c lib/cell-pluginBuilder.coffee
 
-build/require-cell.js: build/cell.js
-	$(requirejsBuild) name=cell out=build/require-cell.js baseUrl=build/ includeRequire=true optimize=none
-
-build/require-cell.min.js: build/cell.js
-	$(requirejsBuild) name=cell out=build/require-cell.min.js baseUrl=build/ includeRequire=true
-
 #-------------------------------------------------------------------
 # Dependencies 
 #------------------------------------------------------------------- 
@@ -90,7 +80,7 @@ $(express):
 # 	- Tests cell can be properly used by requirejs build script
 test-runs-with-requirejs-optimizer: build/cell.js build/cell-pluginBuilder.js
 	cp build/cell.js build/cell-pluginBuilder.js test/at/runs-with-requirejs-optimizer
-	$(requirejsBuild) includeRequire=true name="cell!Mock" out=test/at/runs-with-requirejs-optimizer/all.js baseUrl=test/at/runs-with-requirejs-optimizer/
+	node $(requirejsBuild) -o paths.requireLib=../../../support/requirejs/require include=requireLib name="cell!Mock" out=test/at/runs-with-requirejs-optimizer/all.js baseUrl=test/at/runs-with-requirejs-optimizer/
 	rm test/at/runs-with-requirejs-optimizer/cell.js test/at/runs-with-requirejs-optimizer/cell-pluginBuilder.js
 
 test: $(coffee)

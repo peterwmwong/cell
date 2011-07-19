@@ -42,7 +42,7 @@
       load: (function() {
         var moduleNameRegex;
         moduleNameRegex = /(.*\/)?(.*)/;
-        return function(name, req, load, config) {
+        return function(name, req, onLoad, config) {
           var match;
           if (!(outcssfile != null) && (match = /(.*)\.\w*/.exec(config != null ? config.out : void 0)) && match[1]) {
             outcssfile = match[1] + '.css';
@@ -51,7 +51,8 @@
             name: name,
             cssurl: req.toUrl("" + name + ".css")
           });
-          return req([name], load);
+          onLoad();
+          return req([name]);
         };
       })()
     };
