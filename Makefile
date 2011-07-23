@@ -36,7 +36,7 @@ endif
 #===================================================================
 .PHONY : clean test
 
-all: build/require-cell.js build/require-cell.min.js build/cell-pluginBuilder.js
+all: build/cell.js build/cell-pluginBuilder.js build/require.js
 
 #-------------------------------------------------------------------
 # DEV 
@@ -62,6 +62,10 @@ build/cell.js: lib/cell.coffee $(coffee)
 build/cell-pluginBuilder.js: lib/cell-pluginBuilder.coffee $(coffee)
 	mkdir -p build/
 	$(coffee) -o build/ -c lib/cell-pluginBuilder.coffee
+
+build/require.js:
+	mkdir -p build/
+	cp support/requirejs/require.js build/
 
 #-------------------------------------------------------------------
 # Dependencies 

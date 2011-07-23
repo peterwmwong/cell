@@ -1,6 +1,6 @@
 (function() {
   var E, bind, cell, document, exports, extendObj, inherits, isElement, isNode, renderChildren, renderHelper, renderParent, selRegex, uniqueId, window, _ref;
-  var __slice = Array.prototype.slice, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice;
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
     return console.error(msg);
   }) || function() {};
@@ -76,7 +76,24 @@
       return function(options) {
         var className, n, p, val, _i, _j, _len, _len2, _ref2;
         this.options = options != null ? options : {};
-        this._renderNodes = bind(cell.prototype.__renderNodes, this);
+        this._renderNodes = __bind(function(nodes) {
+          var r, _i, _len, _ref2;
+          renderChildren(this.el, nodes);
+          this._isRendering = false;
+          this.__delegateEvents();
+          this.$el.trigger('afterRender');
+          this._isReady = true;
+          if (this._readys) {
+            _ref2 = this._readys;
+            for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+              r = _ref2[_i];
+              try {
+                r(this);
+              } catch (_e) {}
+            }
+            delete this._readys;
+          }
+        }, this);
         for (_i = 0, _len = optsToProps.length; _i < _len; _i++) {
           p = optsToProps[_i];
           if ((val = this.options[p])) {
@@ -274,25 +291,6 @@
             _fn(obj, name, sel, handler);
           }
         }
-      }
-    },
-    __renderNodes: function(nodes) {
-      var r, _i, _len, _ref2;
-      renderChildren(this.el, nodes);
-      this.$el.trigger('beforeDelegateEvents', this);
-      this._isRendering = false;
-      this.__delegateEvents();
-      this.$el.trigger('afterRender');
-      this._isReady = true;
-      if (this._readys) {
-        _ref2 = this._readys;
-        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-          r = _ref2[_i];
-          try {
-            r(this);
-          } catch (_e) {}
-        }
-        delete this._readys;
       }
     }
   };

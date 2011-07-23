@@ -60,7 +60,17 @@ window.cell ?= cell = do->
   optsToProps = ['id','class','model','collection']
 
   (@options = {})->
-    @_renderNodes = bind cell::__renderNodes, this
+    @_renderNodes = (nodes)=>
+      renderChildren @el, nodes
+      @_isRendering = false
+      @__delegateEvents()
+      @$el.trigger 'afterRender'
+      @_isReady = true
+      if @_readys
+        for r in @_readys
+          try r this
+        delete @_readys
+      return
 
     # Copy over class and id properties for convenience
     for p in optsToProps when (val = @options[p])
@@ -241,19 +251,6 @@ cell.prototype =
                 return
           )
         return
-    return
-      
-  __renderNodes: (nodes)->
-    renderChildren @el, nodes
-    @$el.trigger 'beforeDelegateEvents', this
-    @_isRendering = false
-    @__delegateEvents()
-    @$el.trigger 'afterRender'
-    @_isReady = true
-    if @_readys
-      for r in @_readys
-        try r this
-      delete @_readys
     return
 
 # cell AMD Module
