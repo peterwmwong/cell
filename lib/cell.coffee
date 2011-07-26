@@ -287,22 +287,24 @@ if typeof define == 'function' and typeof require == 'function'
               load cell.extend CDef, cellName
           return
         return
+  
+  # Replace not-so-helpful-for-webkit require.js load module error handling
+  require.onError = (e)-> E e.originalError.stack
 
-  require ['cell'], (cell)->
-    # Load/render cells specified in DOM node data-cell attributes
-    require.ready ->
-      $('[data-cell]').each ->
-        node = this
-        if cellname=node.getAttribute('data-cell')
-          opts = {}
-          cachebust = /(^\?cachebust)|(&cachebust)/.test window.location.search
-          if ((cachebustAttr = node.getAttribute('data-cell-cachebust')) != null or cachebust) and cachebustAttr != 'false'
-            opts.urlArgs = "bust=#{new Date().getTime()}"
-          if baseurl = node.getAttribute 'data-cell-baseurl'
-            opts.baseUrl = baseurl
-          require opts, ["cell!#{cellname}"], (CType)->
-            $(node).append(new CType().el)
-            return
-        return
+  # Load/render cells specified in DOM node data-cell attributes
+  require.ready ->
+    $('[data-cell]').each ->
+      node = this
+      if cellname=node.getAttribute('data-cell')
+        opts = {}
+        cachebust = /(^\?cachebust)|(&cachebust)/.test window.location.search
+        if ((cachebustAttr = node.getAttribute('data-cell-cachebust')) != null or cachebust) and cachebustAttr != 'false'
+          opts.urlArgs = "bust=#{new Date().getTime()}"
+        if baseurl = node.getAttribute 'data-cell-baseurl'
+          opts.baseUrl = baseurl
+        require opts, ["cell!#{cellname}"], (CType)->
+          $(node).append(new CType().el)
+          return
       return
     return
+  return

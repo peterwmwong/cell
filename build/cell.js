@@ -334,26 +334,28 @@
         };
       })()
     });
-    require(['cell'], function(cell) {
-      require.ready(function() {
-        $('[data-cell]').each(function() {
-          var baseurl, cachebust, cachebustAttr, cellname, node, opts;
-          node = this;
-          if (cellname = node.getAttribute('data-cell')) {
-            opts = {};
-            cachebust = /(^\?cachebust)|(&cachebust)/.test(window.location.search);
-            if (((cachebustAttr = node.getAttribute('data-cell-cachebust')) !== null || cachebust) && cachebustAttr !== 'false') {
-              opts.urlArgs = "bust=" + (new Date().getTime());
-            }
-            if (baseurl = node.getAttribute('data-cell-baseurl')) {
-              opts.baseUrl = baseurl;
-            }
-            require(opts, ["cell!" + cellname], function(CType) {
-              $(node).append(new CType().el);
-            });
+    require.onError = function(e) {
+      return E(e.originalError.stack);
+    };
+    require.ready(function() {
+      $('[data-cell]').each(function() {
+        var baseurl, cachebust, cachebustAttr, cellname, node, opts;
+        node = this;
+        if (cellname = node.getAttribute('data-cell')) {
+          opts = {};
+          cachebust = /(^\?cachebust)|(&cachebust)/.test(window.location.search);
+          if (((cachebustAttr = node.getAttribute('data-cell-cachebust')) !== null || cachebust) && cachebustAttr !== 'false') {
+            opts.urlArgs = "bust=" + (new Date().getTime());
           }
-        });
+          if (baseurl = node.getAttribute('data-cell-baseurl')) {
+            opts.baseUrl = baseurl;
+          }
+          require(opts, ["cell!" + cellname], function(CType) {
+            $(node).append(new CType().el);
+          });
+        }
       });
     });
+    return;
   }
 }).call(this);
