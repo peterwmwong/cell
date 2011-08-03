@@ -13,7 +13,9 @@
               _results.push(R("li.li" + pos, el));
             }
             return _results;
-          })()), R('.node', $('<a href="www.google.com">blargo</div>')[0]), R(AnotherCell, {
+          })()), R("<div class='htmlNode anotherClass' style='color:#F00;'>", R('a', {
+            href: 'http://www.yahoo.com'
+          }, 'foobar')), R('.node', $('<a href="http://www.google.com">blargo</a>')[0]), R(AnotherCell, {
             id: 'anotherCellId',
             "class": 'anotherCellClass',
             foo: 'bar',

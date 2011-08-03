@@ -1,5 +1,5 @@
 (function() {
-  var E, bind, cell, document, exports, extendObj, inherits, isElement, isNode, renderChildren, renderHelper, renderParent, selRegex, uniqueId, window, _ref;
+  var E, bind, cell, document, exports, extendObj, inherits, isElement, isNode, renderChildren, renderHelper, renderParent, selRegex, window, _ctor, _ref;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice;
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
     return console.error(msg);
@@ -42,30 +42,20 @@
     }
     return destObj;
   };
-  uniqueId = (function() {
-    var postfix;
-    postfix = 0;
-    return function(prefix) {
-      return prefix + (postfix++);
+  _ctor = function() {};
+  inherits = function(parent, protoProps) {
+    var child;
+    child = protoProps && protoProps.hasOwnProperty('constructor') ? protoProps.constructor : function() {
+      return parent.apply(this, arguments);
     };
-  })();
-  inherits = (function() {
-    var ctor;
-    ctor = function() {};
-    return function(parent, protoProps) {
-      var child;
-      child = protoProps && protoProps.hasOwnProperty('constructor') ? protoProps.constructor : function() {
-        return parent.apply(this, arguments);
-      };
-      extendObj(child, parent);
-      ctor.prototype = parent.prototype;
-      child.prototype = new ctor();
-      extendObj(child.prototype, protoProps);
-      child.prototype.constructor = child;
-      child.__super__ = parent.prototype;
-      return child;
-    };
-  })();
+    extendObj(child, parent);
+    _ctor.prototype = parent.prototype;
+    child.prototype = new _ctor();
+    extendObj(child.prototype, protoProps);
+    child.prototype.constructor = child;
+    child.__super__ = parent.prototype;
+    return child;
+  };
     if ((_ref = window.cell) != null) {
     _ref;
   } else {
@@ -135,20 +125,26 @@
   };
   selRegex = /^([A-z]+)?(#[A-z0-9\-]+)?(\.[A-z0-9\.\-]+)?$/;
   renderParent = function(a, b) {
-    var k, m, parent, v, _ref2;
-    if (typeof a === 'string' && (m = selRegex.exec(a)) && m[0]) {
-      parent = document.createElement(m[1] || 'div');
-      if (m[2]) {
-        parent.id = m[2].slice(1);
+    var html, k, m, t, v, _ref2;
+    if (typeof a === 'string') {
+      if (a[0] === '<') {
+        return $(a)[0];
+      } else if ((m = selRegex.exec(a)) && m[0]) {
+        html = "<" + (m[1] || 'div');
+        for (k in b) {
+          v = b[k];
+          html += " " + k + "='" + v + "'";
+        }
+        if (t = m[2]) {
+          html += " id='" + (t.slice(1)) + "'";
+        }
+        if (t = m[3]) {
+          html += " class='" + (t.slice(1).replace(/\./g, ' ')) + "'";
+        }
+        return $(html + ">")[0];
+      } else {
+        return E("renderParent: unsupported parent string = '" + a + "'");
       }
-      if (m[3]) {
-        parent.className = m[3].replace(/\./g, ' ');
-      }
-      for (k in b) {
-        v = b[k];
-        parent[k] = v;
-      }
-      return parent;
     } else if (((_ref2 = a.prototype) != null ? _ref2.cell : void 0) === a) {
       return (new a(b)).el;
     } else if (isElement(a)) {

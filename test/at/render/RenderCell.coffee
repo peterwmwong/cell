@@ -19,8 +19,12 @@ define ['cell!AnotherCell'], (AnotherCell)->
       for el,pos in [10,20,30]
         R "li.li#{pos}", el
 
+    R "<div class='htmlNode anotherClass' style='color:#F00;'>",
+      R 'a', href: 'http://www.yahoo.com',
+        'foobar'
+
     R '.node',
-      $('<a href="www.google.com">blargo</div>')[0]
+      $('<a href="http://www.google.com">blargo</a>')[0]
 
     R AnotherCell,
       id: 'anotherCellId'

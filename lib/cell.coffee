@@ -35,25 +35,19 @@ extendObj = (destObj, srcObj)->
   destObj[p] = srcObj[p] for p of srcObj
   destObj
 
-# Generates unique identifiers, given a prefix
-uniqueId = do->
-  postfix = 0
-  (prefix)-> prefix+(postfix++)
-
 # Setup up prototypical inheritance (inspired by goog.inherits and Backbone.js inherits() implementations)
-inherits = do->
-  ctor = ->
-  (parent, protoProps)->
-    child =
-      if protoProps and protoProps.hasOwnProperty 'constructor' then protoProps.constructor
-      else -> return parent.apply this, arguments
-    extendObj child, parent
-    ctor.prototype = parent.prototype
-    child.prototype = new ctor()
-    extendObj child.prototype, protoProps
-    child::constructor = child
-    child.__super__ = parent.prototype
-    child
+_ctor = ->
+inherits = (parent, protoProps)->
+  child =
+    if protoProps and protoProps.hasOwnProperty 'constructor' then protoProps.constructor
+    else -> return parent.apply this, arguments
+  extendObj child, parent
+  _ctor.prototype = parent.prototype
+  child.prototype = new _ctor()
+  extendObj child.prototype, protoProps
+  child::constructor = child
+  child.__super__ = parent.prototype
+  child
 
 window.cell ?= cell = do->
   tmpNode = document.createElement 'div'
@@ -106,18 +100,28 @@ renderHelper = (a,b,children...)->
 
 selRegex = /^([A-z]+)?(#[A-z0-9\-]+)?(\.[A-z0-9\.\-]+)?$/
 renderParent = (a,b)->
-  if typeof a is 'string' and (m = selRegex.exec a) and m[0]
-    parent = document.createElement m[1] or 'div'
-    if m[2]
-      parent.id = m[2].slice 1
-    if m[3]
-      parent.className = m[3].replace /\./g, ' '
+  if typeof a is 'string'
+    # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
+    if a[0] is '<'
+      $(a)[0]
 
-    for k,v of b
-      parent[k] = v
+    # HAML-like selector, ex. div#myID.myClass
+    else if (m = selRegex.exec a) and m[0]
+      html = "<#{m[1] or 'div'}"
 
-    parent
-  
+      for k,v of b
+        html += " #{k}='#{v}'"
+
+      if t = m[2]
+        html += " id='#{t.slice 1}'"
+      if t = m[3]
+        html += " class='#{t[1..].replace /\./g, ' '}'"
+
+      $(html + ">")[0]
+
+    else
+      E "renderParent: unsupported parent string = '#{a}'"
+
   else if a.prototype?.cell == a
     (new a b).el
 
