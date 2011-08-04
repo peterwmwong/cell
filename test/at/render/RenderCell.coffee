@@ -1,32 +1,35 @@
 define ['cell!AnotherCell'], (AnotherCell)->
-  render: (R,A)-> [
-    R '.booleanFalse',
+  render: (_,A)-> [
+    _ '.booleanFalse',
       false
 
-    R '.undefined',
+    _ '.undefined',
       undefined
 
-    R '.null',
+    _ '.null',
       null
 
-    R '.number',
+    _ '.number',
       5
 
-    R '.numberZero',
+    _ '.numberZero',
       0
 
-    R 'ol.list',
+    _ 'ol.list',
       for el,pos in [10,20,30]
-        R "li.li#{pos}", el
+        _ "li.li#{pos}", el
 
-    R "<div class='htmlNode anotherClass' style='color:#F00;'>",
-      R 'a', href: 'http://www.yahoo.com',
+    _ "<div class='htmlNode anotherClass' style='color:#F00;'>",
+      _ 'a', href: 'http://www.yahoo.com',
         'foobar'
 
-    R '.node',
+    _ '.node', class: 'anotherClass',
       $('<a href="http://www.google.com">blargo</a>')[0]
 
-    R AnotherCell,
+    _ '#idnode', class: 'anotherClass',
+      $('<a href="http://www.bing.com">pwn</a>')[0]
+
+    _ AnotherCell,
       id: 'anotherCellId'
       class: 'anotherCellClass'
       foo: 'bar'

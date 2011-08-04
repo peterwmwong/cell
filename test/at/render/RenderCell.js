@@ -1,21 +1,25 @@
 (function() {
   define(['cell!AnotherCell'], function(AnotherCell) {
     return {
-      render: function(R, A) {
+      render: function(_, A) {
         var el, pos;
         return [
-          R('.booleanFalse', false), R('.undefined', void 0), R('.null', null), R('.number', 5), R('.numberZero', 0), R('ol.list', (function() {
+          _('.booleanFalse', false), _('.undefined', void 0), _('.null', null), _('.number', 5), _('.numberZero', 0), _('ol.list', (function() {
             var _len, _ref, _results;
             _ref = [10, 20, 30];
             _results = [];
             for (pos = 0, _len = _ref.length; pos < _len; pos++) {
               el = _ref[pos];
-              _results.push(R("li.li" + pos, el));
+              _results.push(_("li.li" + pos, el));
             }
             return _results;
-          })()), R("<div class='htmlNode anotherClass' style='color:#F00;'>", R('a', {
+          })()), _("<div class='htmlNode anotherClass' style='color:#F00;'>", _('a', {
             href: 'http://www.yahoo.com'
-          }, 'foobar')), R('.node', $('<a href="http://www.google.com">blargo</a>')[0]), R(AnotherCell, {
+          }, 'foobar')), _('.node', {
+            "class": 'anotherClass'
+          }, $('<a href="http://www.google.com">blargo</a>')[0]), _('#idnode', {
+            "class": 'anotherClass'
+          }, $('<a href="http://www.bing.com">pwn</a>')[0]), _(AnotherCell, {
             id: 'anotherCellId',
             "class": 'anotherCellClass',
             foo: 'bar',

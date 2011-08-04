@@ -20,15 +20,15 @@ isElement =
   else
     (o)-> typeof o == "object" and o.nodeType == 1 and typeof o.nodeName == "string"
 
+_slice = Array.prototype.slice
 # ES5 Function.bind
-bind = do->
-  slice = Array.prototype.slice
+bind =
   if fbind = Function.prototype.bind
-    (func,obj)-> fbind.apply func, [obj].concat slice.call arguments, 2
+    (func,obj)-> fbind.apply func, [obj].concat _slice.call arguments, 2
   else
     (func,obj)->
-      args = slice.call arguments, 2
-      -> func.apply obj, args.concat(slice.call(arguments))
+      args = _slice.call arguments, 2
+      -> func.apply obj, args.concat _slice.call arguments
 
 # Copies properties from src obj to dest obj
 extendObj = (destObj, srcObj)->
@@ -49,44 +49,42 @@ inherits = (parent, protoProps)->
   child.__super__ = parent.prototype
   child
 
-window.cell ?= cell = do->
-  tmpNode = document.createElement 'div'
-  optsToProps = ['id','class','model','collection']
-
-  (@options = {})->
-    @_renderNodes = (nodes)=>
-      renderChildren @el, nodes
-      @_isRendering = false
-      @__delegateEvents()
-      @$el.trigger 'afterRender'
-      @_isReady = true
-      if @_readys
-        for r in @_readys
-          try r this
-        delete @_readys
-      return
-
-    # Copy over class and id properties for convenience
-    for p in optsToProps when (val = @options[p])
-      @[p] = val
-
-    # Create DOM node
-    tmpNode.innerHTML = @__renderOuterHTML
-    @el = tmpNode.children[0]
-    @$el = $(@el)
-
-    # Add the cell's class
-    className = ""
-    for n in [@cell::name,@el.className,@class] when n
-      className += ' '+n
-    if className != ""
-
-      @el.className = className
-
-    (typeof @id == 'string') and @el.id = @id
-
-    @update()
+_tmpNode = document.createElement 'div'
+_optsToProps = ['id','class','model','collection']
+window.cell ?= cell = (@options = {})->
+  @_renderNodes = (nodes)=>
+    renderChildren @el, nodes
+    @_isRendering = false
+    @__delegateEvents()
+    @$el.trigger 'afterRender'
+    @_isReady = true
+    if @_readys
+      for r in @_readys
+        try r this
+      delete @_readys
     return
+
+  # Copy over class and id properties for convenience
+  for p in _optsToProps when (val = @options[p])
+    @[p] = val
+
+  # Create DOM node
+  _tmpNode.innerHTML = @__renderOuterHTML
+  @el = _tmpNode.children[0]
+  @$el = $(@el)
+
+  # Add the cell's class
+  className = ""
+  for n in [@cell::name,@el.className,@class] when n
+    className += ' '+n
+  if className != ""
+
+    @el.className = className
+
+  (typeof @id == 'string') and @el.id = @id
+
+  @update()
+  return
 
 renderHelper = (a,b,children...)->
   if a and (l = arguments.length) > 0
@@ -98,24 +96,27 @@ renderHelper = (a,b,children...)->
       renderChildren parent, children
       return parent
 
-selRegex = /^([A-z]+)?(#[A-z0-9\-]+)?(\.[A-z0-9\.\-]+)?$/
+selRegex = /^([A-z]+)?(#([A-z0-9\-]+))?(\.[A-z0-9\.\-]+)?$/
 renderParent = (a,b)->
   if typeof a is 'string'
     # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
-    if a[0] is '<'
-      $(a)[0]
+    if a[0] is '<' then $(a)[0]
 
     # HAML-like selector, ex. div#myID.myClass
     else if (m = selRegex.exec a) and m[0]
       html = "<#{m[1] or 'div'}"
 
-      for k,v of b
+      for k,v of b when not (k in ['class','id'])
         html += " #{k}='#{v}'"
 
-      if t = m[2]
-        html += " id='#{t.slice 1}'"
-      if t = m[3]
-        html += " class='#{t[1..].replace /\./g, ' '}'"
+      if v = (m[3] or b?['id'])
+        html += " id='#{v}'"
+
+      v = (v=m[4]) and (v.replace(/\./g, ' ')+' ')
+      if bclass = b?['class']
+        v += " #{bclass}"
+      if v
+        html += " class='#{v}'"
 
       $(html + ">")[0]
 
@@ -142,75 +143,73 @@ renderChildren = (parent,children)->
     else if not (c in [undefined,null] or type is 'boolean')
       E 'renderChild: unsupported child type = '+c
 
-cell.extend = do->
-  renderFuncNameRegex = /render([ ]+<(\w+)([ ]+.*)*>[ ]*)?$/
-  eventsNameRegex = /bind( (.+))?/
-  eventSelRegex = /^(\w+)(\s(.*))?$/
+_renderFuncNameRx = /render([ ]+<(\w+)([ ]+.*)*>[ ]*)?$/
+_evNameRx = /bind( (.+))?/
+_evSelRx = /^(\w+)(\s(.*))?$/
+cell.extend = (protoProps, name)->
+  protoProps.__eventBindings = @::__eventBindings?.slice(0) or []
 
-  (protoProps, name)->
-    protoProps.__eventBindings = @::__eventBindings?.slice(0) or []
+  # Find and process Event Bindings and Render Function specified in
+  # the cell's definition
+  for propName,prop of protoProps
 
-    # Find and process Event Bindings and Render Function specified in
-    # the cell's definition
-    for propName,prop of protoProps
+    # Parse Event Bindings
+    # Syntax: bind [property name]?
+    #   [property name] name of property to observe
+    #     If not specified, 'el' (view) is used.
+    if (match = _evNameRx.exec propName) and typeof prop == 'object'
+      bindProp = match[2] ? 'el'
+      binds = []
 
-      # Parse Event Bindings
-      # Syntax: bind [property name]?
-      #   [property name] name of property to observe
-      #     If not specified, 'el' (view) is used.
-      if (match = eventsNameRegex.exec propName) and typeof prop == 'object'
-        bindProp = match[2] ? 'el'
-        binds = []
+      # Parse each Event Binding
+      # Syntax: [event name] [CSS selector]?
+      #   [event name]    Event to observe
+      #   [CSS selector]  If property being observed is an HTMLElement,
+      #     the CSS selector will be used to only target selected nodes.
+      for desc,handler of prop when (selmatch = _evSelRx.exec desc)
+        binds.push
+          name: selmatch[1]
+          sel: selmatch[3]
+          handler: handler
 
-        # Parse each Event Binding
-        # Syntax: [event name] [CSS selector]?
-        #   [event name]    Event to observe
-        #   [CSS selector]  If property being observed is an HTMLElement,
-        #     the CSS selector will be used to only target selected nodes.
-        for desc,handler of prop when (selmatch = eventSelRegex.exec desc)
-          binds.push
-            name: selmatch[1]
-            sel: selmatch[3]
-            handler: handler
-
-        if binds.length
-          protoProps.__eventBindings.push prop: bindProp, binds: binds
-          
-      # Find and add render function (if not already found)
-      else if not protoProps.__renderTagName and match = renderFuncNameRegex.exec propName
-        if typeof (protoProps.__render=prop) != 'function'
-          E "cell.extend expects '#{propName}' to be a function"
-          return
-        tag = protoProps.__renderTagName = match[2] != "" and match[2] or 'div'
-        protoProps.__renderOuterHTML = "<#{tag}#{match[3] ? ""}></#{tag}>"
-
-    if typeof name == 'string'
-      protoProps.name = name
-    child = inherits this, protoProps
-
-    # Must find a render function 
-    if not (p = child.prototype).__renderTagName
-      E 'cell.extend([constructor:Function],prototypeMembers:Object): could not find a render function in prototypeMembers'
-    else
-      child.extend = cell.extend
-      p.cell = child
-
-      # Render CSS in <style>
-      if typeof (css = protoProps.css) == 'string'
-        el = document.createElement 'style'
-        el.innerHTML = css
-
-      # Attach CSS <link>
-      else if typeof (cssref = protoProps.css_href) == 'string'
-        el = document.createElement 'link'
-        el.href = cssref
-        el.rel = 'stylesheet'
-
-      if el
-        el.type = 'text/css'
-        $('head')[0].appendChild el
+      if binds.length
+        protoProps.__eventBindings.push prop: bindProp, binds: binds
         
-      child
+    # Find and add render function (if not already found)
+    else if not protoProps.__renderTagName and match = _renderFuncNameRx.exec propName
+      if typeof (protoProps.__render=prop) != 'function'
+        E "cell.extend expects '#{propName}' to be a function"
+        return
+      tag = protoProps.__renderTagName = match[2] != "" and match[2] or 'div'
+      protoProps.__renderOuterHTML = "<#{tag}#{match[3] ? ""}></#{tag}>"
+
+  if typeof name == 'string'
+    protoProps.name = name
+  child = inherits this, protoProps
+
+  # Must find a render function 
+  if not (p = child.prototype).__renderTagName
+    E 'cell.extend([constructor:Function],prototypeMembers:Object): could not find a render function in prototypeMembers'
+  else
+    child.extend = cell.extend
+    p.cell = child
+
+    # Render CSS in <style>
+    if typeof (css = protoProps.css) == 'string'
+      el = document.createElement 'style'
+      el.innerHTML = css
+
+    # Attach CSS <link>
+    else if typeof (cssref = protoProps.css_href) == 'string'
+      el = document.createElement 'link'
+      el.href = cssref
+      el.rel = 'stylesheet'
+
+    if el
+      el.type = 'text/css'
+      $('head')[0].appendChild el
+      
+    child
 
 cell.prototype =
   $: (selector)-> $ selector, @el
@@ -259,38 +258,37 @@ cell.prototype =
 
 # cell AMD Module
 if typeof define == 'function' and typeof require == 'function'
+  _modNameRx = /(.*\/)?(.*)/
+  _relUrlRx = /^(\.+\/)/
+  _midRelUrlRx = /(\/\.\/)/g
+
   define 'cell', [], exports =
     pluginBuilder: 'cell-pluginBuilder'
+    load: (name, req, load, config)->
+      req [name], (CDef)->
+        if typeof CDef != 'object'
+          E "Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
+        else
+          [baseUrl,cellName] = _modNameRx.exec(name)[1..]
 
-    load: do->
-      moduleNameRegex = /(.*\/)?(.*)/
-      relUrlRegex = /^(\.+\/)/
-      midRelUrlRegex = /(\/\.\/)/g
-      (name, req, load, config)->
-        req [name], (CDef)->
-          if typeof CDef != 'object'
-            E "Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
+          # Helper function for renderHelper.cell.
+          # Properly normalize dep url
+          CDef._require = (dep,cb)->
+            req ["cell!#{_relUrlex.test(dep) and baseUrl or ''}#{dep}".replace _midRelUrlex, '/'], cb
+
+          if typeof exports.__preinstalledCells__?[name] == 'undefined'
+            CDef.css_href ?= req.toUrl "#{name}.css"
+
+          if typeof CDef.extends == 'string'
+            req ["cell!#{CDef.extends}"], (parentCell)->
+              if parentCell::name
+                CDef.class = parentCell::name + " #{CDef.class}" or ""
+              load parentCell.extend CDef, cellName
+              return
           else
-            [baseUrl,cellName] = moduleNameRegex.exec(name)[1..]
-
-            # Helper function for renderHelper.cell.
-            # Properly normalize dep url
-            CDef._require = (dep,cb)->
-              req ["cell!#{relUrlRegex.test(dep) and baseUrl or ''}#{dep}".replace midRelUrlRegex, '/'], cb
-
-            if typeof exports.__preinstalledCells__?[name] == 'undefined'
-              CDef.css_href ?= req.toUrl "#{name}.css"
-
-            if typeof CDef.extends == 'string'
-              req ["cell!#{CDef.extends}"], (parentCell)->
-                if parentCell::name
-                  CDef.class = parentCell::name + " #{CDef.class}" or ""
-                load parentCell.extend CDef, cellName
-                return
-            else
-              load cell.extend CDef, cellName
-          return
+            load cell.extend CDef, cellName
         return
+      return
   
   # Replace not-so-helpful-for-webkit require.js load module error handling
   require.onError = (e)-> E e.originalError.stack
