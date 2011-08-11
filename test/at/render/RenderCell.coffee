@@ -19,7 +19,7 @@ define ['cell!AnotherCell'], (AnotherCell)->
       for el,pos in [10,20,30]
         _ "li.li#{pos}", el
 
-    _ "<div class='htmlNode anotherClass' style='color:#F00;'>",
+    _ "<div class='htmlNode anotherClass' style='background-color:#F00;' data-custom='something'>",
       _ 'a', href: 'http://www.yahoo.com',
         'foobar'
 

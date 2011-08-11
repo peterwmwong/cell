@@ -99,32 +99,27 @@ window.cell.renderHelper = renderHelper= (a,b,children...)->
 
 selRegex = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/
 tagNameRegex = /^<(\w+)/
-dotRegex = /\./g
 renderParent = (a,b)->
   if typeof a is 'string'
-    # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
-    if (m = tagNameRegex.exec(a))
-      _tmpNode.innerHTML = "#{a}</#{m[1]}>"
-      _tmpNode.children[0]
-
     # HAML-like selector, ex. div#myID.myClass
-    else if (m = selRegex.exec a) and m[0]
-      tagname = m[1] or 'div'
-      html = "<#{tagname}"
+    if (m = selRegex.exec a) and m[0]
+      el = document.createElement(m[1] or 'div')
+    
+      bclass = ''
+      for k,v of b
+        if k is 'class'
+          bclass += v
+        else 
+          el.setAttribute k, v
 
-      for k,v of b when not (k in ['class','id'])
-        html += " #{k}='#{v}'"
+      bclass += ((v=m[4]) and (v.replace(/\./g, ' '))) or ''
+      bclass and el.setAttribute 'class', bclass
 
-      if v = (m[3] or b?['id'])
-        html += " id='#{v}'"
+      el
 
-      v = (v=m[4]) and (v.replace(dotRegex, ' ')+' ')
-      if bclass = b?['class']
-        v += " #{bclass}"
-      if v
-        html += " class='#{v}'"
-
-      _tmpNode.innerHTML = "#{html}></#{tagname}>"
+    # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
+    else if (m = tagNameRegex.exec(a))
+      _tmpNode.innerHTML = "#{a}</#{m[1]}>"
       _tmpNode.children[0]
 
     else

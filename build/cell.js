@@ -1,5 +1,5 @@
 (function() {
-  var E, bind, cell, document, dotRegex, exports, extendObj, fbind, inherits, isElement, isNode, renderChildren, renderHelper, renderParent, selRegex, tagNameRegex, window, _ctor, _evNameRx, _evSelRx, _midRelUrlRx, _modNameRx, _optsToProps, _ref, _relUrlRx, _renderFuncNameRx, _slice, _tmpNode;
+  var E, bind, cell, document, exports, extendObj, fbind, inherits, isElement, isNode, renderChildren, renderHelper, renderParent, selRegex, tagNameRegex, window, _ctor, _evNameRx, _evSelRx, _midRelUrlRx, _modNameRx, _optsToProps, _ref, _relUrlRx, _renderFuncNameRx, _slice, _tmpNode;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice;
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
     return console.error(msg);
@@ -115,33 +115,25 @@
   };
   selRegex = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/;
   tagNameRegex = /^<(\w+)/;
-  dotRegex = /\./g;
   renderParent = function(a, b) {
-    var bclass, html, k, m, tagname, v, _ref2;
+    var bclass, el, k, m, v, _ref2;
     if (typeof a === 'string') {
-      if ((m = tagNameRegex.exec(a))) {
-        _tmpNode.innerHTML = "" + a + "</" + m[1] + ">";
-        return _tmpNode.children[0];
-      } else if ((m = selRegex.exec(a)) && m[0]) {
-        tagname = m[1] || 'div';
-        html = "<" + tagname;
+      if ((m = selRegex.exec(a)) && m[0]) {
+        el = document.createElement(m[1] || 'div');
+        bclass = '';
         for (k in b) {
           v = b[k];
-          if (!(k === 'class' || k === 'id')) {
-            html += " " + k + "='" + v + "'";
+          if (k === 'class') {
+            bclass += v;
+          } else {
+            el.setAttribute(k, v);
           }
         }
-        if (v = m[3] || (b != null ? b['id'] : void 0)) {
-          html += " id='" + v + "'";
-        }
-        v = (v = m[4]) && (v.replace(dotRegex, ' ') + ' ');
-        if (bclass = b != null ? b['class'] : void 0) {
-          v += " " + bclass;
-        }
-        if (v) {
-          html += " class='" + v + "'";
-        }
-        _tmpNode.innerHTML = "" + html + "></" + tagname + ">";
+        bclass += ((v = m[4]) && (v.replace(/\./g, ' '))) || '';
+        bclass && el.setAttribute('class', bclass);
+        return el;
+      } else if ((m = tagNameRegex.exec(a))) {
+        _tmpNode.innerHTML = "" + a + "</" + m[1] + ">";
         return _tmpNode.children[0];
       } else {
         return E("renderParent: unsupported parent string = '" + a + "'");

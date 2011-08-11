@@ -13,7 +13,7 @@
               _results.push(_("li.li" + pos, el));
             }
             return _results;
-          })()), _("<div class='htmlNode anotherClass' style='color:#F00;'>", _('a', {
+          })()), _("<div class='htmlNode anotherClass' style='background-color:#F00;' data-custom='something'>", _('a', {
             href: 'http://www.yahoo.com'
           }, 'foobar')), _('.node', {
             "class": 'anotherClass'
