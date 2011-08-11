@@ -1,5 +1,5 @@
 (function() {
-  var E, bind, cell, document, exports, extendObj, fbind, inherits, isElement, isNode, renderChildren, renderHelper, renderParent, selRegex, window, _ctor, _evNameRx, _evSelRx, _midRelUrlRx, _modNameRx, _optsToProps, _ref, _relUrlRx, _renderFuncNameRx, _slice, _tmpNode;
+  var E, bind, cell, document, dotRegex, exports, extendObj, fbind, inherits, isElement, isNode, renderChildren, renderHelper, renderParent, selRegex, tagNameRegex, window, _ctor, _evNameRx, _evSelRx, _midRelUrlRx, _modNameRx, _optsToProps, _ref, _relUrlRx, _renderFuncNameRx, _slice, _tmpNode;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice;
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
     return console.error(msg);
@@ -99,11 +99,11 @@
       this.update();
     };
   };
-  renderHelper = function() {
-    var a, b, children, l, parent;
+  window.cell.renderHelper = renderHelper = function() {
+    var a, b, children, parent;
     a = arguments[0], b = arguments[1], children = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-    if (a && (l = arguments.length) > 0) {
-      if (l > 1 && (b != null ? b.constructor : void 0) !== Object) {
+    if (a) {
+      if ((b != null ? b.constructor : void 0) !== Object) {
         children.unshift(b);
         b = void 0;
       }
@@ -113,14 +113,18 @@
       }
     }
   };
-  selRegex = /^([A-z]+)?(#([A-z0-9\-]+))?(\.[A-z0-9\.\-]+)?$/;
+  selRegex = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/;
+  tagNameRegex = /^<(\w+)/;
+  dotRegex = /\./g;
   renderParent = function(a, b) {
-    var bclass, html, k, m, v, _ref2;
+    var bclass, html, k, m, tagname, v, _ref2;
     if (typeof a === 'string') {
-      if (a[0] === '<') {
-        return $(a)[0];
+      if ((m = tagNameRegex.exec(a))) {
+        _tmpNode.innerHTML = "" + a + "</" + m[1] + ">";
+        return _tmpNode.children[0];
       } else if ((m = selRegex.exec(a)) && m[0]) {
-        html = "<" + (m[1] || 'div');
+        tagname = m[1] || 'div';
+        html = "<" + tagname;
         for (k in b) {
           v = b[k];
           if (!(k === 'class' || k === 'id')) {
@@ -130,14 +134,15 @@
         if (v = m[3] || (b != null ? b['id'] : void 0)) {
           html += " id='" + v + "'";
         }
-        v = (v = m[4]) && (v.replace(/\./g, ' ') + ' ');
+        v = (v = m[4]) && (v.replace(dotRegex, ' ') + ' ');
         if (bclass = b != null ? b['class'] : void 0) {
           v += " " + bclass;
         }
         if (v) {
           html += " class='" + v + "'";
         }
-        return $(html + ">")[0];
+        _tmpNode.innerHTML = "" + html + "></" + tagname + ">";
+        return _tmpNode.children[0];
       } else {
         return E("renderParent: unsupported parent string = '" + a + "'");
       }
@@ -149,12 +154,12 @@
       return E('renderParent: unsupported parent type = ' + a);
     }
   };
-  renderChildren = function(parent, children) {
+  window.cell.renderChildren = renderChildren = function(parent, children) {
     var c, type, _ref2, _results;
     _results = [];
     while (children.length > 0) {
       if ((c = children.shift()) != null) {
-        _results.push(c instanceof Array ? Array.prototype.unshift.apply(children, c) : (_ref2 = (type = typeof c)) === 'string' || _ref2 === 'number' ? parent.appendChild(document.createTextNode(c)) : isNode(c) ? parent.appendChild(c) : !((c === void 0 || c === null) || type === 'boolean') ? E('renderChild: unsupported child type = ' + c) : void 0);
+        _results.push(isNode(c) ? parent.appendChild(c) : (_ref2 = (type = typeof c)) === 'string' || _ref2 === 'number' ? parent.appendChild(document.createTextNode(c)) : c instanceof Array ? Array.prototype.unshift.apply(children, c) : !((c === void 0 || c === null) || type === 'boolean') ? E('renderChild: unsupported child type = ' + c) : void 0);
       }
     }
     return _results;

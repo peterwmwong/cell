@@ -86,25 +86,31 @@ window.cell ?= cell = (@options = {})->
   @update()
   return
 
-renderHelper = (a,b,children...)->
-  if a and (l = arguments.length) > 0
-    if l > 1 and b?.constructor isnt Object
+window.cell.renderHelper = renderHelper= (a,b,children...)->
+  if a
+    if b?.constructor isnt Object
       children.unshift b
       b = undefined
 
     if parent = renderParent a,b
       renderChildren parent, children
       return parent
+  return
 
-selRegex = /^([A-z]+)?(#([A-z0-9\-]+))?(\.[A-z0-9\.\-]+)?$/
+selRegex = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/
+tagNameRegex = /^<(\w+)/
+dotRegex = /\./g
 renderParent = (a,b)->
   if typeof a is 'string'
     # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
-    if a[0] is '<' then $(a)[0]
+    if (m = tagNameRegex.exec(a))
+      _tmpNode.innerHTML = "#{a}</#{m[1]}>"
+      _tmpNode.children[0]
 
     # HAML-like selector, ex. div#myID.myClass
     else if (m = selRegex.exec a) and m[0]
-      html = "<#{m[1] or 'div'}"
+      tagname = m[1] or 'div'
+      html = "<#{tagname}"
 
       for k,v of b when not (k in ['class','id'])
         html += " #{k}='#{v}'"
@@ -112,13 +118,14 @@ renderParent = (a,b)->
       if v = (m[3] or b?['id'])
         html += " id='#{v}'"
 
-      v = (v=m[4]) and (v.replace(/\./g, ' ')+' ')
+      v = (v=m[4]) and (v.replace(dotRegex, ' ')+' ')
       if bclass = b?['class']
         v += " #{bclass}"
       if v
         html += " class='#{v}'"
 
-      $(html + ">")[0]
+      _tmpNode.innerHTML = "#{html}></#{tagname}>"
+      _tmpNode.children[0]
 
     else
       E "renderParent: unsupported parent string = '#{a}'"
@@ -132,14 +139,14 @@ renderParent = (a,b)->
   else
     E 'renderParent: unsupported parent type = '+a
 
-renderChildren = (parent,children)->
+window.cell.renderChildren = renderChildren = (parent,children)->
   while children.length > 0 when (c = children.shift())?
-    if c instanceof Array
-      Array::unshift.apply children, c
+    if isNode c
+      parent.appendChild c
     else if (type = typeof c) in ['string','number']
       parent.appendChild document.createTextNode c
-    else if isNode c
-      parent.appendChild c
+    else if c instanceof Array
+      Array::unshift.apply children, c
     else if not (c in [undefined,null] or type is 'boolean')
       E 'renderChild: unsupported child type = '+c
 

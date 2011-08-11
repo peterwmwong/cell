@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>bench-render-jquery</title>
+<script src='../../support/jquery/jquery.js'></script>
+<script src='../../build/cell.js'></script>
+</head>
+
+<script>
+$(function(){
+	var container = $('#container')[0];
+	container.innerHTML = '<div class="triangle"><div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div></div>';
+	var i2 = 1;
+	$('.node', container).each(function() {
+	  this.innerHTML = ""+(i2++);
+	});
+});
+</script>
+<body>
+	<div id="container"></div>
+</body>
+</html>
