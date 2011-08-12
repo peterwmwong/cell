@@ -18,16 +18,22 @@ define ['cell!AnotherCell'], (AnotherCell)->
     _ 'ol.list',
       for el,pos in [10,20,30]
         _ "li.li#{pos}", el
-
+    
+    _ '.node',
+      _ document.createElement 'table'
+      
     _ "<div class='htmlNode anotherClass' style='background-color:#F00;' data-custom='something'>",
       _ 'a', href: 'http://www.yahoo.com',
         'foobar'
 
-    _ '.node', class: 'anotherClass',
+    _ '.selClass', class: 'optionClass',
       $('<a href="http://www.google.com">blargo</a>')[0]
 
-    _ '#idnode', class: 'anotherClass',
-      $('<a href="http://www.bing.com">pwn</a>')[0]
+    _ '#selID',
+      'id'
+
+    _ '#selID.selClass1.selClass2', class: 'optionClass',
+      'id with multiple classes'
 
     _ AnotherCell,
       id: 'anotherCellId'

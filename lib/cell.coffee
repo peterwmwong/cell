@@ -1,6 +1,6 @@
 # Error logging
 E =
-  (typeof console?.error == 'function') and ((msg)-> console.error msg) or ->
+  (typeof console?.error is 'function') and ((msg)-> console.error msg) or ->
 
 # When running in require.js optimizer, window & document do not exist
 window = this
@@ -13,14 +13,7 @@ isNode =
   else
     (o)-> typeof o is 'object' and typeof o.nodeType is 'number' and typeof o.nodeName is 'string'
 
-# is-HTMLElement check for all browsers
-isElement =
-  if typeof HTMLElement == "object" then (o)-> o instanceof HTMLElement
-  # For Mr. IE8-can't-handle-DOM2
-  else
-    (o)-> typeof o == "object" and o.nodeType == 1 and typeof o.nodeName == "string"
-
-_slice = Array.prototype.slice
+_slice = Array::slice
 # ES5 Function.bind
 bind =
   if fbind = Function.prototype.bind
@@ -97,28 +90,35 @@ window.cell.renderHelper = renderHelper= (a,b,children...)->
       return parent
   return
 
-selRegex = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/
-tagNameRegex = /^<(\w+)/
+selRx = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/
+tagnameRx = /^<(\w+)/
 renderParent = (a,b)->
   if typeof a is 'string'
     # HAML-like selector, ex. div#myID.myClass
-    if (m = selRegex.exec a) and m[0]
-      el = document.createElement(m[1] or 'div')
-    
-      bclass = ''
-      for k,v of b
-        if k is 'class'
-          bclass += v
-        else 
+    if m = selRx.exec a
+      el = document.createElement m[1] or 'div'
+      
+      if v = m[3]
+        el.setAttribute 'id', v
+      
+      classes = ''
+      if b
+        if class in b
+          classes += b.class
+          delete b.class
+        for k,v of b
           el.setAttribute k, v
 
-      bclass += ((v=m[4]) and (v.replace(/\./g, ' '))) or ''
-      bclass and el.setAttribute 'class', bclass
+      if v = m[4]
+        classes += v.replace /\./g, ' '
+      
+      if classes
+        el.setAttribute 'class', classes
 
       el
 
     # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
-    else if (m = tagNameRegex.exec(a))
+    else if m = tagnameRx.exec(a)
       _tmpNode.innerHTML = "#{a}</#{m[1]}>"
       _tmpNode.children[0]
 
@@ -128,17 +128,17 @@ renderParent = (a,b)->
   else if a.prototype?.cell == a
     (new a b).el
 
-  else if isElement a
+  else if isNode a
     a
 
   else
-    E 'renderParent: unsupported parent type = '+a
+    E "renderParent: unsupported parent type = #{a}"
 
 window.cell.renderChildren = renderChildren = (parent,children)->
   while children.length > 0 when (c = children.shift())?
     if isNode c
       parent.appendChild c
-    else if (type = typeof c) in ['string','number']
+    else if (typeof c) in ['string','number']
       parent.appendChild document.createTextNode c
     else if c instanceof Array
       Array::unshift.apply children, c
@@ -160,7 +160,7 @@ cell.extend = (protoProps, name)->
     #   [property name] name of property to observe
     #     If not specified, 'el' (view) is used.
     if (match = _evNameRx.exec propName) and typeof prop == 'object'
-      bindProp = match[2] ? 'el'
+      bindProp = match[2] or 'el'
       binds = []
 
       # Parse each Event Binding
@@ -182,8 +182,8 @@ cell.extend = (protoProps, name)->
       if typeof (protoProps.__render=prop) != 'function'
         E "cell.extend expects '#{propName}' to be a function"
         return
-      tag = protoProps.__renderTagName = match[2] != "" and match[2] or 'div'
-      protoProps.__renderOuterHTML = "<#{tag}#{match[3] ? ""}></#{tag}>"
+      tag = protoProps.__renderTagName = match[2] or 'div'
+      protoProps.__renderOuterHTML = "<#{tag}#{match[3] or ""}></#{tag}>"
 
   if typeof name == 'string'
     protoProps.name = name
@@ -235,7 +235,7 @@ cell.prototype =
       for ub in @_unbinds then try ub()
       delete @_unbinds
     @_unbinds = []
-    for {prop,binds} in @__eventBindings when isElement(obj = @[prop])
+    for {prop,binds} in @__eventBindings when isNode(obj = @[prop])
       obj = @$(obj)
       for {name,sel,handler} in binds then do(obj,name,sel,handler)=>
         if typeof handler is 'string'

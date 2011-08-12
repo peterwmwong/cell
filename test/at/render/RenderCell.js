@@ -13,13 +13,13 @@
               _results.push(_("li.li" + pos, el));
             }
             return _results;
-          })()), _("<div class='htmlNode anotherClass' style='background-color:#F00;' data-custom='something'>", _('a', {
+          })()), _('.node', _(document.createElement('table'))), _("<div class='htmlNode anotherClass' style='background-color:#F00;' data-custom='something'>", _('a', {
             href: 'http://www.yahoo.com'
-          }, 'foobar')), _('.node', {
-            "class": 'anotherClass'
-          }, $('<a href="http://www.google.com">blargo</a>')[0]), _('#idnode', {
-            "class": 'anotherClass'
-          }, $('<a href="http://www.bing.com">pwn</a>')[0]), _(AnotherCell, {
+          }, 'foobar')), _('.selClass', {
+            "class": 'optionClass'
+          }, $('<a href="http://www.google.com">blargo</a>')[0]), _('#selID', 'id'), _('#selID.selClass1.selClass2', {
+            "class": 'optionClass'
+          }, 'id with multiple classes'), _(AnotherCell, {
             id: 'anotherCellId',
             "class": 'anotherCellClass',
             foo: 'bar',
