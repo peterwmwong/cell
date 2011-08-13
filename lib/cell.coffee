@@ -70,11 +70,11 @@ window.cell ?= cell = (@options = {})->
   className = ""
   for n in [@cell::name,@el.className,@class] when n
     className += ' '+n
-  if className != ""
+  if className isnt ""
 
     @el.className = className
 
-  (typeof @id == 'string') and @el.id = @id
+  (typeof @id is 'string') and @el.id = @id
 
   @update()
   return
@@ -90,7 +90,7 @@ window.cell.renderHelper = renderHelper= (a,b,children...)->
       return parent
   return
 
-selRx = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/
+selRx = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/
 tagnameRx = /^<(\w+)/
 renderParent = (a,b)->
   if typeof a is 'string'
@@ -103,7 +103,7 @@ renderParent = (a,b)->
       
       classes = ''
       if b
-        if class in b
+        if 'class' of b
           classes += b.class
           delete b.class
         for k,v of b
@@ -125,7 +125,7 @@ renderParent = (a,b)->
     else
       E "renderParent: unsupported parent string = '#{a}'"
 
-  else if a.prototype?.cell == a
+  else if a.prototype?.cell is a
     (new a b).el
 
   else if isNode a
@@ -138,7 +138,7 @@ window.cell.renderChildren = renderChildren = (parent,children)->
   while children.length > 0 when (c = children.shift())?
     if isNode c
       parent.appendChild c
-    else if (typeof c) in ['string','number']
+    else if (type = typeof c) in ['string','number']
       parent.appendChild document.createTextNode c
     else if c instanceof Array
       Array::unshift.apply children, c
@@ -159,7 +159,7 @@ cell.extend = (protoProps, name)->
     # Syntax: bind [property name]?
     #   [property name] name of property to observe
     #     If not specified, 'el' (view) is used.
-    if (match = _evNameRx.exec propName) and typeof prop == 'object'
+    if (match = _evNameRx.exec propName) and typeof prop is 'object'
       bindProp = match[2] or 'el'
       binds = []
 
@@ -179,13 +179,13 @@ cell.extend = (protoProps, name)->
         
     # Find and add render function (if not already found)
     else if not protoProps.__renderTagName and match = _renderFuncNameRx.exec propName
-      if typeof (protoProps.__render=prop) != 'function'
+      if typeof (protoProps.__render=prop) isnt 'function'
         E "cell.extend expects '#{propName}' to be a function"
         return
       tag = protoProps.__renderTagName = match[2] or 'div'
       protoProps.__renderOuterHTML = "<#{tag}#{match[3] or ""}></#{tag}>"
 
-  if typeof name == 'string'
+  if typeof name is 'string'
     protoProps.name = name
   child = inherits this, protoProps
 
@@ -197,12 +197,12 @@ cell.extend = (protoProps, name)->
     p.cell = child
 
     # Render CSS in <style>
-    if typeof (css = protoProps.css) == 'string'
+    if typeof (css = protoProps.css) is 'string'
       el = document.createElement 'style'
       el.innerHTML = css
 
     # Attach CSS <link>
-    else if typeof (cssref = protoProps.css_href) == 'string'
+    else if typeof (cssref = protoProps.css_href) is 'string'
       el = document.createElement 'link'
       el.href = cssref
       el.rel = 'stylesheet'
@@ -259,7 +259,7 @@ cell.prototype =
     return
 
 # cell AMD Module
-if typeof define == 'function' and typeof require == 'function'
+if typeof define is 'function' and typeof require is 'function'
   _modNameRx = /(.*\/)?(.*)/
   _relUrlRx = /^(\.+\/)/
   _midRelUrlRx = /(\/\.\/)/g
@@ -268,7 +268,7 @@ if typeof define == 'function' and typeof require == 'function'
     pluginBuilder: 'cell-pluginBuilder'
     load: (name, req, load, config)->
       req [name], (CDef)->
-        if typeof CDef != 'object'
+        if typeof CDef isnt 'object'
           E "Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
         else
           [baseUrl,cellName] = _modNameRx.exec(name)[1..]
@@ -278,10 +278,10 @@ if typeof define == 'function' and typeof require == 'function'
           CDef._require = (dep,cb)->
             req ["cell!#{_relUrlex.test(dep) and baseUrl or ''}#{dep}".replace _midRelUrlex, '/'], cb
 
-          if typeof exports.__preinstalledCells__?[name] == 'undefined'
+          if typeof exports.__preinstalledCells__?[name] is 'undefined'
             CDef.css_href ?= req.toUrl "#{name}.css"
 
-          if typeof CDef.extends == 'string'
+          if typeof CDef.extends is 'string'
             req ["cell!#{CDef.extends}"], (parentCell)->
               if parentCell::name
                 CDef.class = parentCell::name + " #{CDef.class}" or ""
@@ -302,7 +302,7 @@ if typeof define == 'function' and typeof require == 'function'
       if cellname=node.getAttribute('data-cell')
         opts = {}
         cachebust = /(^\?cachebust)|(&cachebust)/.test window.location.search
-        if ((cachebustAttr = node.getAttribute('data-cell-cachebust')) != null or cachebust) and cachebustAttr != 'false'
+        if ((cachebustAttr = node.getAttribute('data-cell-cachebust')) isnt null or cachebust) and cachebustAttr isnt 'false'
           opts.urlArgs = "bust=#{new Date().getTime()}"
         if baseurl = node.getAttribute 'data-cell-baseurl'
           opts.baseUrl = baseurl

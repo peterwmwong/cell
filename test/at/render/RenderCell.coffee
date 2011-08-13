@@ -26,14 +26,20 @@ define ['cell!AnotherCell'], (AnotherCell)->
       _ 'a', href: 'http://www.yahoo.com',
         'foobar'
 
-    _ '.selClass', class: 'optionClass',
-      $('<a href="http://www.google.com">blargo</a>')[0]
+    _ '#selID1',
+      'Selector id'
 
-    _ '#selID',
-      'id'
+    _ '#ignoredID1', id:'optionID1', class: 'optionClass1', 'data-custom':'customValue',
+      'Selector id, option id, option class, option data-custom attribute'
 
-    _ '#selID.selClass1.selClass2', class: 'optionClass',
-      'id with multiple classes'
+    _ '#ignoredID2#selID2',
+      'Multiple Selector ids'
+
+    _ '.selClass1.selClass2',
+      'Multiple Selector classes'
+
+    _ '.selClass3', id:'optionID2', class: 'optionClass2', 'data-custom':'customValue',
+      'Selector class, option id, option class, option data-custom attribute'
 
     _ AnotherCell,
       id: 'anotherCellId'

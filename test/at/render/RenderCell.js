@@ -15,11 +15,15 @@
             return _results;
           })()), _('.node', _(document.createElement('table'))), _("<div class='htmlNode anotherClass' style='background-color:#F00;' data-custom='something'>", _('a', {
             href: 'http://www.yahoo.com'
-          }, 'foobar')), _('.selClass', {
-            "class": 'optionClass'
-          }, $('<a href="http://www.google.com">blargo</a>')[0]), _('#selID', 'id'), _('#selID.selClass1.selClass2', {
-            "class": 'optionClass'
-          }, 'id with multiple classes'), _(AnotherCell, {
+          }, 'foobar')), _('#selID1', 'Selector id'), _('#ignoredID1', {
+            id: 'optionID1',
+            "class": 'optionClass1',
+            'data-custom': 'customValue'
+          }, 'Selector id, option id, option class, option data-custom attribute'), _('#ignoredID2#selID2', 'Multiple Selector ids'), _('.selClass1.selClass2', 'Multiple Selector classes'), _('.selClass3', {
+            id: 'optionID2',
+            "class": 'optionClass2',
+            'data-custom': 'customValue'
+          }, 'Selector class, option id, option class, option data-custom attribute'), _(AnotherCell, {
             id: 'anotherCellId',
             "class": 'anotherCellClass',
             foo: 'bar',

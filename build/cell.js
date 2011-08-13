@@ -1,11 +1,6 @@
 (function() {
   var E, bind, cell, document, exports, extendObj, fbind, inherits, isNode, renderChildren, renderHelper, renderParent, selRx, tagnameRx, window, _ctor, _evNameRx, _evSelRx, _midRelUrlRx, _modNameRx, _optsToProps, _ref, _relUrlRx, _renderFuncNameRx, _slice, _tmpNode;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice, __indexOf = Array.prototype.indexOf || function(item) {
-    for (var i = 0, l = this.length; i < l; i++) {
-      if (this[i] === item) return i;
-    }
-    return -1;
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice;
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
     return console.error(msg);
   }) || function() {};
@@ -51,9 +46,7 @@
   };
   _tmpNode = document.createElement('div');
   _optsToProps = ['id', 'class', 'model', 'collection'];
-    if ((_ref = window.cell) != null) {
-    _ref;
-  } else {
+  if ((_ref = window.cell) == null) {
     window.cell = cell = function(options) {
       var className, n, p, val, _i, _j, _len, _len2, _ref2;
       this.options = options != null ? options : {};
@@ -98,7 +91,7 @@
       (typeof this.id === 'string') && (this.el.id = this.id);
       this.update();
     };
-  };
+  }
   window.cell.renderHelper = renderHelper = function() {
     var a, b, children, parent;
     a = arguments[0], b = arguments[1], children = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
@@ -113,10 +106,10 @@
       }
     }
   };
-  selRx = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/;
+  selRx = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/;
   tagnameRx = /^<(\w+)/;
   renderParent = function(a, b) {
-    var classes, el, k, m, v, _ref2, _ref3;
+    var classes, el, k, m, v, _ref2;
     if (typeof a === 'string') {
       if (m = selRx.exec(a)) {
         el = document.createElement(m[1] || 'div');
@@ -125,10 +118,7 @@
         }
         classes = '';
         if (b) {
-          if (_ref2 = (function() {
-            function _Class() {}
-            return _Class;
-          })(), __indexOf.call(b, _ref2) >= 0) {
+          if ('class' in b) {
             classes += b["class"];
             delete b["class"];
           }
@@ -150,7 +140,7 @@
       } else {
         return E("renderParent: unsupported parent string = '" + a + "'");
       }
-    } else if (((_ref3 = a.prototype) != null ? _ref3.cell : void 0) === a) {
+    } else if (((_ref2 = a.prototype) != null ? _ref2.cell : void 0) === a) {
       return (new a(b)).el;
     } else if (isNode(a)) {
       return a;
@@ -159,11 +149,11 @@
     }
   };
   window.cell.renderChildren = renderChildren = function(parent, children) {
-    var c, _ref2, _results;
+    var c, type, _ref2, _results;
     _results = [];
     while (children.length > 0) {
       if ((c = children.shift()) != null) {
-        _results.push(isNode(c) ? parent.appendChild(c) : (_ref2 = typeof c) === 'string' || _ref2 === 'number' ? parent.appendChild(document.createTextNode(c)) : c instanceof Array ? Array.prototype.unshift.apply(children, c) : !((c === void 0 || c === null) || type === 'boolean') ? E('renderChild: unsupported child type = ' + c) : void 0);
+        _results.push(isNode(c) ? parent.appendChild(c) : (_ref2 = (type = typeof c)) === 'string' || _ref2 === 'number' ? parent.appendChild(document.createTextNode(c)) : c instanceof Array ? Array.prototype.unshift.apply(children, c) : !((c === void 0 || c === null) || type === 'boolean') ? E('renderChild: unsupported child type = ' + c) : void 0);
       }
     }
     return _results;
@@ -309,11 +299,9 @@
               return req([("cell!" + (_relUrlex.test(dep) && baseUrl || '') + dep).replace(_midRelUrlex, '/')], cb);
             };
             if (typeof ((_ref3 = exports.__preinstalledCells__) != null ? _ref3[name] : void 0) === 'undefined') {
-                            if ((_ref4 = CDef.css_href) != null) {
-                _ref4;
-              } else {
+              if ((_ref4 = CDef.css_href) == null) {
                 CDef.css_href = req.toUrl("" + name + ".css");
-              };
+              }
             }
             if (typeof CDef["extends"] === 'string') {
               req(["cell!" + CDef["extends"]], function(parentCell) {

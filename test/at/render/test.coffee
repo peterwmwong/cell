@@ -17,8 +17,16 @@ define -> (done)->
   equal @$('.RenderCell > .htmlNode.anotherClass').css('background-color'), 'rgb(255, 0, 0)'
   equal @$('.RenderCell > .htmlNode.anotherClass').attr('data-custom'), 'something'
   
-  equal html('.node.anotherClass'), '<a href="http://www.google.com">blargo</a>'
-  equal html('#idnode.anotherClass'), '<a href="http://www.bing.com">pwn</a>'
+  equal html('#selID1'), 'Selector id'
+
+  equal @$('#ignoredID1')[0], undefined
+  equal html('#optionID1.optionClass1'), 'Selector id, option id, option class, option data-custom attribute'
+
+  equal @$('#ignoredID2')[0], undefined
+  equal html('#selID2'), 'Multiple Selector ids'
+
+  equal html('.selClass1.selClass2'), 'Multiple Selector classes'
+  equal html('#optionID2.selClass3.optionClass2'), 'Selector class, option id, option class, option data-custom attribute'
 
   equal html('#anotherCellId.AnotherCell.anotherCellClass'),
     "id:anotherCellId class:anotherCellClass options.foo:bar collection:collection_val model:model_val"
