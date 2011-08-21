@@ -14,7 +14,7 @@
         })))
       ];
     },
-    bind: {
+    on: {
       'click .foo > #bar > .add': function() {
         return this.$('#clickcount').html(++this.clickcount);
       },

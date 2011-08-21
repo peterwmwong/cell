@@ -1,12 +1,10 @@
 (function() {
   define({
-    render: function(R) {
-      return [R('.childOption', this.childOption), R('.renderChild', this.renderChild())];
+    render: function(_) {
+      return [_('.childOption', this.childOption), _('.renderChild', this.renderChild())];
     },
-    bind: {
-      afterRender: function() {
-        return $(this.el).append("<div class='parentAfterRender'>from parent afterRender</div>");
-      }
+    afterRender: function() {
+      return this.$el.append("<div class='parentAfterRender'>from parent afterRender</div>");
     }
   });
 }).call(this);

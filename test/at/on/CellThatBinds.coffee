@@ -11,7 +11,7 @@ define
         R 'input.remove', type: 'button', value: 'Remove'
   ]
   
-  bind:
+  on:
     'click .foo > #bar > .add': ->
       @$('#clickcount').html ++@clickcount
 

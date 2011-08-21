@@ -1,7 +1,7 @@
 (function() {
   define(['cell!AnotherCell'], function(AnotherCell) {
     return {
-      render: function(_, A) {
+      render: function(_) {
         var el, pos;
         return [
           _('.booleanFalse', false), _('.undefined', void 0), _('.null', null), _('.number', 5), _('.numberZero', 0), _('ol.list', (function() {
@@ -32,10 +32,8 @@
           })
         ];
       },
-      bind: {
-        afterRender: function() {
-          return $(this.el).append("<div class='afterRender'>afterRender</div>");
-        }
+      afterRender: function(e) {
+        return this.$el.append("<div class='afterRender'>afterRender</div>");
       }
     };
   });

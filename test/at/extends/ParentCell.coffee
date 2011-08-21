@@ -1,9 +1,8 @@
 define
-  render: (R)-> [
-  	R '.childOption', @childOption
-  	R '.renderChild', @renderChild()
+  render: (_)-> [
+    _ '.childOption', @childOption
+    _ '.renderChild', @renderChild()
   ]
 
-  bind:
-    afterRender: ->
-      $(@el).append "<div class='parentAfterRender'>from parent afterRender</div>"
+  afterRender: ->
+    @$el.append "<div class='parentAfterRender'>from parent afterRender</div>"

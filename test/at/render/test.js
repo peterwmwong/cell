@@ -25,7 +25,7 @@
       equal(html('#selID2'), 'Multiple Selector ids');
       equal(html('.selClass1.selClass2'), 'Multiple Selector classes');
       equal(html('#optionID2.selClass3.optionClass2'), 'Selector class, option id, option class, option data-custom attribute');
-      equal(html('#anotherCellId.AnotherCell.anotherCellClass'), "id:anotherCellId class:anotherCellClass options.foo:bar collection:collection_val model:model_val");
+      equal(html('#anotherCellId.AnotherCell.anotherCellClass'), 'options.foo:bar');
       equal(html('.afterRender'), 'afterRender');
       return done();
     };

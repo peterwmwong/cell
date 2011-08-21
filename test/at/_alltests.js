@@ -1,1 +1,1 @@
-define({tests:["bind","error","extends","init","paths","ready","render-async-simple","render","runs-with-requirejs-optimizer","sansAMD"]});
+define({tests:["dollarR_renderHelper","error","extends","init","on","paths","ready","render-async-simple","render","runs-with-requirejs-optimizer","sansAMD","tag"]});

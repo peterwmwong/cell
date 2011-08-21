@@ -1,5 +1,5 @@
 define ['cell!AnotherCell'], (AnotherCell)->
-  render: (_,A)-> [
+  render: (_)-> [
     _ '.booleanFalse',
       false
 
@@ -49,6 +49,5 @@ define ['cell!AnotherCell'], (AnotherCell)->
       model: 'model_val'
   ]
 
-  bind:
-    afterRender: ->
-      $(@el).append "<div class='afterRender'>afterRender</div>"
+  afterRender: (e)->
+    @$el.append "<div class='afterRender'>afterRender</div>"
