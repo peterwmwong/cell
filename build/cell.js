@@ -243,9 +243,6 @@
         });
       }
     });
-    require.onError = function(e) {
-      return E(e.originalError.stack);
-    };
     require.ready(function() {
       $('[data-cell]').each(function() {
         var baseurl, cachebust, cachebustAttr, cellname, node, opts;

@@ -217,9 +217,6 @@ if typeof define is 'function' and typeof require is 'function'
         return
       return
   
-  # Replace not-so-helpful-for-webkit require.js load module error handling
-  require.onError = (e)-> E e.originalError.stack
-
   # Load/render cells specified in DOM node data-cell attributes
   require.ready ->
     $('[data-cell]').each ->
