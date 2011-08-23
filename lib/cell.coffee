@@ -99,6 +99,9 @@ _renderParent = (a,b)->
     E "renderParent: unsupported parent type = #{a}"
     
 window.cell = cell = (@options = {})->
+  if @options.model?
+    @model = @options.model
+    
   @init? @options
 
   # Create DOM node and cache jQuery for node

@@ -4,6 +4,7 @@ define -> (done)->
     """
     id: oneid
     class: one
+    model: oneModel
     foo: bar
     opts === initArgs: true
     this.cell.prototype.name: CellWithInit
@@ -13,6 +14,7 @@ define -> (done)->
     """
     id: twoid
     class: two
+    model: twoModel
     foo: blarg
     opts === initArgs: true
     this.cell.prototype.name: CellWithInit

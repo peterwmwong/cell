@@ -104,6 +104,9 @@
   window.cell = cell = function(options) {
     var id, n, nodes, t, _i, _len, _ref;
     this.options = options != null ? options : {};
+    if (this.options.model != null) {
+      this.model = this.options.model;
+    }
     if (typeof this.init === "function") {
       this.init(this.options);
     }
