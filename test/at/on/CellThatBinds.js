@@ -1,4 +1,4 @@
-(function() {
+
   define({
     init: function() {
       return this.clickcount = 0;
@@ -23,4 +23,3 @@
       }
     }
   });
-}).call(this);

@@ -1,4 +1,4 @@
-(function() {
+
   define({
     render: function(_) {
       return [
@@ -18,4 +18,3 @@
       ];
     }
   });
-}).call(this);

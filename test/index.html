@@ -3,9 +3,24 @@
   <head>
     <title>cell Tests</title>
     <script src='../support/jquery/jquery.js'></script>
-    <script src='support/qunit/qunit.js'></script>
-    <script>stop();</script>
-    <script data-main="./runner" src='../support/requirejs/require.js'></script>
+    <script type="text/javascript" src="support/qunit/qunit.js"></script>
+    <link rel="stylesheet" href="support/qunit/qunit.css" type="text/css" media="screen" />
+    <script src='../support/requirejs/require.js'></script>
+    <script src='../build/cell.js'></script>
+    <script>
+      require.config({
+        context: 'testRunner',
+        baseUrl: '/test/'
+      })(['_alltests']);
+    </script>
+    <script src='/test/support/live.js'></script>
   </head>
-  <body style="padding:0; margin:0; width:100%; height:100%;"></body>
+  <body style="padding:0; margin:0; width:100%; height:100%;">
+    <h1 id="qunit-header">QUnit example</h1>
+    <h2 id="qunit-banner"></h2>
+    <div id="qunit-testrunner-toolbar"></div>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+    <div id="qunit-fixture">test markup, will be hidden</div>
+  </body>
 </html>

@@ -13,17 +13,6 @@ requirejsBuild = ./support/requirejs/r.js
 #-------------------------------------------------------------------
 # TEST
 #------------------------------------------------------------------- 
-ifndef TEST_BROWSER
-	TEST_BROWSER := google-chrome
-endif
-
-ifndef TESTS
-	TESTS := "**"
-endif
-
-ifdef TEST_DEBUG
-	TEST_DEBUG_ = -d
-endif
 
 
 #===================================================================
@@ -91,8 +80,16 @@ test-runs-with-requirejs-optimizer: build/cell.js build/cell-pluginBuilder.js
 	node $(requirejsBuild) -o paths.requireLib=../../../support/requirejs/require include=requireLib name="cell!Mock" out=test/at/runs-with-requirejs-optimizer/all.js baseUrl=test/at/runs-with-requirejs-optimizer/
 	rm test/at/runs-with-requirejs-optimizer/cell.js test/at/runs-with-requirejs-optimizer/cell-pluginBuilder.js
 
+
+define MAKE_ALL_TESTS_COFFEE
+tests = process.argv[4..].map (e)-> "test!#{/(.*?\.test)\.js/.exec(e)[1]}"
+console.log "define(#{JSON.stringify tests});"
+endef
+export MAKE_ALL_TESTS_COFFEE
+
 test: $(coffee)
-	cd test/at; ls */test.js | xargs coffee -e 'console.log "define({tests:#{JSON.stringify process.argv[4..].map (e)->/(.*?)\/test.js/.exec(e)[1]}});"' > _alltests.js
+	find test/ -name '*.coffee' | xargs $(coffee) -c
+	cd test/; find -name "*.test.js" -type f | xargs coffee -e "$$MAKE_ALL_TESTS_COFFEE" > _alltests.js
 
 clean: 
 	@@rm -rf build

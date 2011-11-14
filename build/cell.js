@@ -1,19 +1,25 @@
 (function() {
   var E, cell, document, exports, fbind, window, _bind, _ctor, _evSelRx, _extendObj, _inherits, _isNode, _modNameRx, _renderNodes, _renderParent, _selRx, _slice, _tagnameRx, _tmpNode;
   var __slice = Array.prototype.slice;
+
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
     return console.error(msg);
   }) || function() {};
+
   window = this;
+
   document = window.document || {
     createElement: function() {}
   };
+
   _isNode = typeof Node === 'object' ? function(o) {
     return o instanceof Node;
   } : function(o) {
     return typeof o === 'object' && typeof o.nodeType === 'number' && typeof o.nodeName === 'string';
   };
+
   _slice = Array.prototype.slice;
+
   _bind = (fbind = Function.prototype.bind) ? function(func, obj) {
     return fbind.apply(func, [obj].concat(_slice.call(arguments, 2)));
   } : function(func, obj) {
@@ -23,6 +29,7 @@
       return func.apply(obj, args.concat(_slice.call(arguments)));
     };
   };
+
   _extendObj = function(destObj, srcObj) {
     var p;
     for (p in srcObj) {
@@ -30,7 +37,9 @@
     }
     return destObj;
   };
+
   _ctor = function() {};
+
   _inherits = function(parent, protoProps) {
     var child;
     child = protoProps && protoProps.hasOwnProperty('constructor') ? protoProps.constructor : function() {
@@ -44,7 +53,9 @@
     child.__super__ = parent.prototype;
     return child;
   };
+
   _tmpNode = document.createElement('div');
+
   _renderNodes = function(parent, nodes) {
     var c, _ref;
     while (nodes.length > 0) {
@@ -62,17 +73,19 @@
     }
     return parent;
   };
+
   _selRx = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/;
+
   _tagnameRx = /^<[A-z]/;
+
   _evSelRx = /^([A-z]+)(\s(.*))?$/;
+
   _renderParent = function(a, b) {
     var el, k, m, v, _ref;
     if (typeof a === 'string') {
       if (m = _selRx.exec(a)) {
         el = document.createElement(m[1] || 'div');
-        if (v = m[3]) {
-          el.id = v;
-        }
+        if (v = m[3]) el.id = v;
         if (b) {
           if ('class' in b) {
             el.className += b["class"];
@@ -83,9 +96,7 @@
             el.setAttribute(k, v);
           }
         }
-        if (v = m[4]) {
-          el.className += v.replace(/\./g, ' ');
-        }
+        if (v = m[4]) el.className += v.replace(/\./g, ' ');
         return el;
       } else if (_tagnameRx.test(a)) {
         _tmpNode.innerHTML = a;
@@ -101,26 +112,19 @@
       return E("renderParent: unsupported parent type = " + a);
     }
   };
+
   window.cell = cell = function(options) {
     var id, n, nodes, t, _i, _len, _ref;
     this.options = options != null ? options : {};
-    if (this.options.model != null) {
-      this.model = this.options.model;
-    }
-    if (typeof this.init === "function") {
-      this.init(this.options);
-    }
+    if (this.options.model != null) this.model = this.options.model;
+    if (typeof this.init === "function") this.init(this.options);
     _tmpNode.innerHTML = (t = typeof this.tag) === 'string' ? this.tag : t === 'function' ? this.tag() : '<div>';
     this.$el = $(this.el = _tmpNode.children[0]);
-    if (id = this.options.id) {
-      this.el.id = id;
-    }
+    if (id = this.options.id) this.el.id = id;
     _ref = [this.cell.prototype.name, this["class"], this.options["class"]];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       n = _ref[_i];
-      if (n) {
-        this.el.className += ' ' + n;
-      }
+      if (n) this.el.className += ' ' + n;
     }
     if (this.render) {
       if ((nodes = this.render(this.$R, _bind(this._renderChildren, this))) instanceof Array) {
@@ -130,6 +134,7 @@
       this._renderChildren([]);
     }
   };
+
   cell.prototype = {
     $R: function() {
       var a, b, children, parent;
@@ -139,9 +144,7 @@
           children.unshift(b);
           b = void 0;
         }
-        if (parent = _renderParent(a, b)) {
-          return _renderNodes(parent, children);
-        }
+        if (parent = _renderParent(a, b)) return _renderNodes(parent, children);
       }
     },
     $: function(selector) {
@@ -152,7 +155,7 @@
       if (this._isReady) {
         try {
           return f(this);
-        } catch (_e) {}
+        } catch (_error) {}
       } else {
         return ((_ref = this._readys) != null ? _ref : this._readys = []).push(f);
       }
@@ -161,9 +164,7 @@
       var r, _i, _len, _ref;
       _renderNodes(this.el, nodes);
       this._delegateEvents();
-      if (typeof this.afterRender === "function") {
-        this.afterRender();
-      }
+      if (typeof this.afterRender === "function") this.afterRender();
       this._isReady = true;
       if (this._readys) {
         _ref = this._readys;
@@ -171,7 +172,7 @@
           r = _ref[_i];
           try {
             r(this);
-          } catch (_e) {}
+          } catch (_error) {}
         }
         delete this._readys;
       }
@@ -181,24 +182,25 @@
       _ref = this.on;
       for (evSel in _ref) {
         handler = _ref[evSel];
-        if ((typeof handler === 'function') && (m = _evSelRx.exec(evSel))) {
-          handler = _bind(handler, this);
-          if (event = m[1]) {
-            if (sel = m[3]) {
-              this.$el.delegate(sel, event, handler);
-            } else {
-              this.$el.bind(event, handler);
-            }
+        if (!((typeof handler === 'function') && (m = _evSelRx.exec(evSel)))) {
+          continue;
+        }
+        handler = _bind(handler, this);
+        if (event = m[1]) {
+          if (sel = m[3]) {
+            this.$el.delegate(sel, event, handler);
+          } else {
+            this.$el.bind(event, handler);
           }
         }
       }
     }
   };
+
   cell.extend = function(protoProps, name) {
     var child, css, cssref, el;
-    if (typeof name === 'string') {
-      protoProps.name = name;
-    }
+    if (protoProps == null) protoProps = {};
+    if (typeof name === 'string') protoProps.name = name;
     child = _inherits(this, protoProps);
     child.extend = cell.extend;
     child.prototype.cell = child;
@@ -216,6 +218,7 @@
     }
     return child;
   };
+
   if (typeof define === 'function' && typeof require === 'function') {
     _modNameRx = /(.*\/)?(.*)/;
     define('cell', [], exports = {
@@ -267,4 +270,5 @@
     });
     return;
   }
+
 }).call(this);

@@ -1,11 +1,11 @@
-(function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   define(function() {
     return function(done) {
       var exists;
-      exists = __bind(function(sel) {
-        return ok(this.$(".RenderCell > " + sel).length === 1);
-      }, this);
+      var _this = this;
+      exists = function(sel) {
+        return ok(_this.$(".RenderCell > " + sel).length === 1);
+      };
       exists('span.TagString');
       exists('p.class.TagStringWithAttrs[data-custom="customValue"]');
       exists('span.TagFunc');
@@ -13,4 +13,3 @@
       return done();
     };
   });
-}).call(this);

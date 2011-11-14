@@ -1,4 +1,4 @@
-(function() {
+
   define(function() {
     return function(done) {
       equal(this.$('.Container > .CellWithInit.one').html(), "id: oneid\nclass: one\nmodel: oneModel\nfoo: bar\nopts === initArgs: true\nthis.cell.prototype.name: CellWithInit");
@@ -6,4 +6,3 @@
       return done();
     };
   });
-}).call(this);

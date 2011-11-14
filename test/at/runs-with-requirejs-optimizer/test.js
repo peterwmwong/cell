@@ -1,4 +1,4 @@
-(function() {
+
   define(function() {
     return function(done) {
       equal(this.$('body').html().trim(), '<div class=" Mock">Mock: <div class=" MockNested">MockNested</div></div>', "Should render Mock and MockNested Cells");
@@ -9,4 +9,3 @@
       return done();
     };
   });
-}).call(this);

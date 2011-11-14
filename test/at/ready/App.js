@@ -1,24 +1,23 @@
-(function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   define(['cell!./AsyncRender', 'cell!./SyncRender'], function(Async, Sync) {
     return {
       render: function(R, A) {
         var a, s;
+        var _this = this;
         s = new Sync();
-        s.ready(__bind(function() {
-          return this.$el.append(s.el);
-        }, this));
-        s.ready(__bind(function() {
-          return this.$el.append("<a class='one'>one</a>");
-        }, this));
+        s.ready(function() {
+          return _this.$el.append(s.el);
+        });
+        s.ready(function() {
+          return _this.$el.append("<a class='one'>one</a>");
+        });
         a = new Async();
-        a.ready(__bind(function() {
-          return this.$el.append(a.el);
-        }, this));
-        a.ready(__bind(function() {
-          return this.$el.append("<a class='two'>two</a>");
-        }, this));
+        a.ready(function() {
+          return _this.$el.append(a.el);
+        });
+        a.ready(function() {
+          return _this.$el.append("<a class='two'>two</a>");
+        });
       }
     };
   });
-}).call(this);

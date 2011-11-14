@@ -1,4 +1,4 @@
-(function() {
+
   define(function() {
     return function(done) {
       equal(this.$('.ChildCell.ParentCell > .childOption').html(), "from childOption");
@@ -7,4 +7,3 @@
       return done();
     };
   });
-}).call(this);

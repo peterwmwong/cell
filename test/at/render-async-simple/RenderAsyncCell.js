@@ -1,4 +1,4 @@
-(function() {
+
   define({
     render: function(R, A) {
       return setTimeout((function() {
@@ -6,4 +6,3 @@
       }), 100);
     }
   });
-}).call(this);

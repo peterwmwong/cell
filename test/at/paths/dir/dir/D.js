@@ -1,4 +1,4 @@
-(function() {
+
   define(['cell!../../E'], function(E) {
     var id;
     id = 0;
@@ -8,4 +8,3 @@
       }
     };
   });
-}).call(this);

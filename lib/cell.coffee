@@ -167,7 +167,7 @@ cell.prototype =
           @$el.bind event, handler
     return
 
-cell.extend = (protoProps, name)->
+cell.extend = (protoProps = {}, name)->
         
   if typeof name is 'string'
     protoProps.name = name

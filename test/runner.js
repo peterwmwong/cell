@@ -1,4 +1,4 @@
-(function() {
+
   define(['require', './util/qunit-result-handler'], function(req) {
     var E, L, defer, item, kv, load_testdoc, runTests, tests;
     L = function(msg) {
@@ -34,9 +34,7 @@
               return true;
             }
           };
-          if (!checkDoDone()) {
-            return idoc.onreadystatechange = checkDoDone;
-          }
+          if (!checkDoDone()) return idoc.onreadystatechange = checkDoDone;
         }
       };
       return parentNode.appendChild(iframe);
@@ -65,9 +63,7 @@
                           return $(sel, testdoc);
                         })
                       }, function() {
-                        if (tests.length > 1) {
-                          $(iframe).remove();
-                        }
+                        if (tests.length > 1) $(iframe).remove();
                         return start();
                       });
                     } catch (e) {
@@ -102,4 +98,3 @@
       });
     }
   });
-}).call(this);

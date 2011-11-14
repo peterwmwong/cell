@@ -1,4 +1,4 @@
-(function() {
+
   define(['cell!./CellWithInit'], function(CellWithInit) {
     return {
       render: function(R) {
@@ -18,4 +18,3 @@
       }
     };
   });
-}).call(this);

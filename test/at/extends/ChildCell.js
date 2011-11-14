@@ -1,4 +1,4 @@
-(function() {
+
   define({
     "extends": './ParentCell',
     childOption: "from childOption",
@@ -6,4 +6,3 @@
       return "from renderChild";
     }
   });
-}).call(this);

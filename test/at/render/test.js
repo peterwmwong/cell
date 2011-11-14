@@ -1,11 +1,11 @@
-(function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   define(function() {
     return function(done) {
       var html;
-      html = __bind(function(sel) {
-        return this.$(".RenderCell > " + sel).html();
-      }, this);
+      var _this = this;
+      html = function(sel) {
+        return _this.$(".RenderCell > " + sel).html();
+      };
       equal(html('.booleanFalse'), "");
       equal(html('.undefined'), "");
       equal(html('.null'), "");
@@ -30,4 +30,3 @@
       return done();
     };
   });
-}).call(this);

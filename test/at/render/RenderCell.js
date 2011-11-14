@@ -1,4 +1,4 @@
-(function() {
+
   define(['cell!AnotherCell'], function(AnotherCell) {
     return {
       render: function(_) {
@@ -37,4 +37,3 @@
       }
     };
   });
-}).call(this);

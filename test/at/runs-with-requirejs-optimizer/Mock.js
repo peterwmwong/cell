@@ -1,4 +1,4 @@
-(function() {
+
   define(['cell!./dir/MockNested'], function(MockNested) {
     return {
       render: function(_) {
@@ -6,4 +6,3 @@
       }
     };
   });
-}).call(this);

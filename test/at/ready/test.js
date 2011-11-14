@@ -1,11 +1,11 @@
-(function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   define(function() {
     return function(done) {
       var html;
-      html = __bind(function(sel) {
-        return this.$(sel).html();
-      }, this);
+      var _this = this;
+      html = function(sel) {
+        return _this.$(sel).html();
+      };
       return setTimeout(function() {
         equal(html('.App > .AsyncRender'), "Async");
         equal(html('.App > .SyncRender'), "Sync");
@@ -15,4 +15,3 @@
       }, 100);
     };
   });
-}).call(this);

@@ -1,4 +1,4 @@
-(function() {
+
   define(function() {
     var Cstack, fs, get, outcssfile, path, put, writeCount;
     if (!(typeof process !== "undefined" && process.versions && !!process.versions.node)) {
@@ -57,4 +57,3 @@
       })()
     };
   });
-}).call(this);

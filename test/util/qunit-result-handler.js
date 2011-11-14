@@ -1,24 +1,31 @@
-(function() {
+
   define(['./qunit-event-formatters.js'], function(eventFormatters) {
     var Count, curSuite, curSuiteCount, curTest, overallCount, sendTestEvent;
     Count = (function() {
+
       function Count() {
         this.counts = {};
         this.reset();
       }
+
       Count.prototype.passed = function() {
         return this.counts[true];
       };
+
       Count.prototype.failed = function() {
         return this.counts[false];
       };
+
       Count.prototype.count = function(isPass) {
         return ++this.counts[isPass];
       };
+
       Count.prototype.reset = function() {
         return this.counts[true] = this.counts[false] = 0;
       };
+
       return Count;
+
     })();
     overallCount = new Count();
     curSuiteCount = new Count();
@@ -37,7 +44,7 @@
                   console.log "Could not send test event event #{JSON.stringify(event)}"
             req.setRequestHeader 'Content-Type','application/json'
             req.send(JSON.stringify event)
-            */
+      */
     };
     QUnit.begin = function() {
       return sendTestEvent({
@@ -91,7 +98,7 @@
       if (!result) {
         try {
           throw new Error();
-        } catch (_e) {}
+        } catch (_error) {}
       }
       return sendTestEvent({
         type: 'test.assert',
@@ -104,4 +111,3 @@
       });
     };
   });
-}).call(this);

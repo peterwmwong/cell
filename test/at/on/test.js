@@ -1,4 +1,4 @@
-(function() {
+
   define(function() {
     return function(done) {
       this.$('.CellThatBinds .add').click().click();
@@ -11,4 +11,3 @@
       return done();
     };
   });
-}).call(this);
