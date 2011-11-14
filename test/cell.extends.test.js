@@ -13,16 +13,14 @@
         return this.testCell = cell.extend;
       },
       'cell.extend()': function() {
-        ok(cell.extend().prototype instanceof cell, 'prototype is an instanceof cell');
-        return start();
+        return ok(cell.extend().prototype instanceof cell, 'prototype is an instanceof cell');
       },
       'cell constructor() creates instance of cell': function() {
         var instance, newCell;
         newCell = cell.extend();
         instance = new newCell();
         isCellInstance(instance);
-        deepEqual(instance.options, {}, 'instance.options is empty object (not specified in constructor)');
-        return start();
+        return deepEqual(instance.options, {}, 'instance.options is empty object (not specified in constructor)');
       },
       'cell constructor(options:&lt;object&gt;) creates instance of cell with options': function() {
         var instance, newCell, options;
@@ -36,10 +34,9 @@
         };
         instance = new newCell(options);
         isCellInstance(instance);
-        deepEqual(instance.options, options, 'instance.options is empty object (not specified in constructor)');
-        return start();
+        return deepEqual(instance.options, options, 'instance.options the object passed into constructor');
       },
-      'cell.extend({init:<function>,render:<function>})': function() {
+      'cell.extend({init:&lt;function&gt;,render:&gt;function>})': function() {
         var NewCell, callOrder, order;
         order = 0;
         callOrder = {};
@@ -49,8 +46,7 @@
           })
         });
         ok(NewCell.prototype instanceof cell, 'prototype is an instanceof cell');
-        ok(new NewCell() instanceof cell, 'instance is an instanceof cell');
-        return start();
+        return ok(new NewCell() instanceof cell, 'instance is an instanceof cell');
       }
     };
   });

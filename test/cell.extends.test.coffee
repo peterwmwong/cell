@@ -12,7 +12,6 @@ define ->
 
   'cell.extend()': ->
     ok (cell.extend().prototype instanceof cell), 'prototype is an instanceof cell'
-    start()
 
   'cell constructor() creates instance of cell': ->
     newCell = cell.extend()
@@ -20,7 +19,6 @@ define ->
 
     isCellInstance instance
     deepEqual instance.options, {}, 'instance.options is empty object (not specified in constructor)'
-    start()
 
   'cell constructor(options:&lt;object&gt;) creates instance of cell with options': ->
     newCell = cell.extend()
@@ -28,10 +26,9 @@ define ->
     instance = new newCell options
 
     isCellInstance instance
-    deepEqual instance.options, options, 'instance.options is empty object (not specified in constructor)'
-    start()
+    deepEqual instance.options, options, 'instance.options the object passed into constructor'
 
-  'cell.extend({init:<function>,render:<function>})': ->
+  'cell.extend({init:&lt;function&gt;,render:&gt;function>})': ->
     order = 0
     callOrder = {}
     NewCell = cell.extend
@@ -39,5 +36,3 @@ define ->
 
     ok (NewCell.prototype instanceof cell), 'prototype is an instanceof cell'
     ok (new NewCell() instanceof cell), 'instance is an instanceof cell'
-    start()
-

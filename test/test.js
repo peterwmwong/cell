@@ -10,7 +10,15 @@
         for (specName in specs) {
           spec = specs[specName];
           if (specName !== '$beforeEach' && specName !== '$afterEach') {
-            asyncTest(specName, spec);
+            if (typeof spec === 'function') {
+              test(specName, spec);
+            } else if (typeof (spec != null ? spec.async : void 0) === 'function') {
+              asyncTest(specName, spec.async);
+            } else {
+              test(specName, function() {
+                return fail("Could not run test! Test is not sync (<function>) or async ({async:<function>})");
+              });
+            }
           }
         }
         return load(true);
