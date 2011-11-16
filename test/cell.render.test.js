@@ -9,19 +9,23 @@
       return equal(new NewCell().el.innerHTML, expectedInnerHTML, "@el.innerHTML");
     };
     return {
+      "cell.render = -> <NOT AN ARRAY>": function() {
+        var invalid, _i, _len, _ref, _results;
+        _ref = [void 0, null, (function() {}), 5, 'testString', document.createElement('a')];
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          invalid = _ref[_i];
+          _results.push((function(invalid) {
+            return testRender((function() {
+              return invalid;
+            }), "");
+          })(invalid));
+        }
+        return _results;
+      },
       "cell.render = -> []": function() {
         return testRender((function() {
           return [];
-        }), "");
-      },
-      "cell.render = -> undefined": function() {
-        return testRender((function() {
-          return;
-        }), "");
-      },
-      "cell.render = -> null": function() {
-        return testRender((function() {
-          return null;
         }), "");
       },
       "cell.render = -> [ undefined, null, (->) ]": function() {
@@ -38,6 +42,11 @@
         return testRender((function() {
           return [document.createElement('a')];
         }), "<a></a>");
+      },
+      "cell.render = -> [ <DOM NODE>, <string>, <number> ]": function() {
+        return testRender((function() {
+          return [document.createElement('a'), 'testString', 7];
+        }), "<a></a>testString7");
       }
     };
   });

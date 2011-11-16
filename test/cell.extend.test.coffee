@@ -9,7 +9,6 @@ define
       catch e
         equal e, "cell.extend(): expects an object {render,init,name}", whenStr
     
-
   'cell.extend({tagName:<string>,init:<function>,render:<function>,name:String}): init, render, name are optional': ->
     for tagName in [undefined,null,"span"]
       for name in [undefined,null,"exampleName"]
