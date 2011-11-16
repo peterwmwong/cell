@@ -35,7 +35,6 @@
     for (p in srcObj) {
       destObj[p] = srcObj[p];
     }
-    return destObj;
   };
 
   _ctor = function() {};
@@ -197,26 +196,31 @@
     }
   };
 
-  cell.extend = function(protoProps, name) {
+  cell.extend = function(protoProps) {
     var child, css, cssref, el;
     if (protoProps == null) protoProps = {};
-    if (typeof name === 'string') protoProps.name = name;
-    child = _inherits(this, protoProps);
-    child.extend = cell.extend;
-    child.prototype.cell = child;
-    if (typeof (css = protoProps.css) === 'string') {
-      el = document.createElement('style');
-      el.innerHTML = css;
-    } else if (typeof (cssref = protoProps.css_href) === 'string') {
-      el = document.createElement('link');
-      el.href = cssref;
-      el.rel = 'stylesheet';
+    if (typeof protoProps !== 'object') {
+      throw "cell.extend(): expects an object {render,init,name}";
+    } else if ((protoProps.init && typeof protoProps.init !== 'function') || (protoProps.render && typeof protoProps.render !== 'function')) {
+      throw "cell.extend(): expects {render,init} to be functions";
+    } else {
+      child = _inherits(this, protoProps);
+      child.extend = cell.extend;
+      child.prototype.cell = child;
+      if (typeof (css = protoProps.css) === 'string') {
+        el = document.createElement('style');
+        el.innerHTML = css;
+      } else if (typeof (cssref = protoProps.css_href) === 'string') {
+        el = document.createElement('link');
+        el.href = cssref;
+        el.rel = 'stylesheet';
+      }
+      if (el) {
+        el.type = 'text/css';
+        $('head')[0].appendChild(el);
+      }
+      return child;
     }
-    if (el) {
-      el.type = 'text/css';
-      $('head')[0].appendChild(el);
-    }
-    return child;
   };
 
   if (typeof define === 'function' && typeof require === 'function') {

@@ -26,7 +26,7 @@ _bind =
 # Copies properties from src obj to dest obj
 _extendObj = (destObj, srcObj)->
   destObj[p] = srcObj[p] for p of srcObj
-  destObj
+  return
 
 # Setup up prototypical inheritance (inspired by goog.inherits and Backbone.js inherits() implementations)
 _ctor = ->
@@ -167,31 +167,38 @@ cell.prototype =
           @$el.bind event, handler
     return
 
-cell.extend = (protoProps = {}, name)->
-        
-  if typeof name is 'string'
-    protoProps.name = name
-  child = _inherits this, protoProps
 
-  child.extend = cell.extend
-  child::cell = child
+cell.extend = (protoProps = {})->
 
-  # Render CSS in <style>
-  if typeof (css = protoProps.css) is 'string'
-    el = document.createElement 'style'
-    el.innerHTML = css
+  if typeof protoProps isnt 'object'
+    throw "cell.extend(): expects an object {render,init,name}"
 
-  # Attach CSS <link>
-  else if typeof (cssref = protoProps.css_href) is 'string'
-    el = document.createElement 'link'
-    el.href = cssref
-    el.rel = 'stylesheet'
+  else if (protoProps.init and typeof protoProps.init isnt 'function') or
+      (protoProps.render and typeof protoProps.render isnt 'function')
+    throw "cell.extend(): expects {render,init} to be functions"
 
-  if el
-    el.type = 'text/css'
-    $('head')[0].appendChild el
-    
-  child
+  else
+    child = _inherits this, protoProps
+
+    child.extend = cell.extend
+    child::cell = child
+
+    # Render CSS in <style>
+    if typeof (css = protoProps.css) is 'string'
+      el = document.createElement 'style'
+      el.innerHTML = css
+
+    # Attach CSS <link>
+    else if typeof (cssref = protoProps.css_href) is 'string'
+      el = document.createElement 'link'
+      el.href = cssref
+      el.rel = 'stylesheet'
+
+    if el
+      el.type = 'text/css'
+      $('head')[0].appendChild el
+      
+    child
 
 # cell AMD Module
 if typeof define is 'function' and typeof require is 'function'

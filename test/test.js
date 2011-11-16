@@ -1,15 +1,29 @@
 
-  define({
-    load: function(name, req, load, config) {
-      return req([name], function(specs) {
-        var spec, specName;
-        module(name, {
-          before: specs.$beforeEach,
-          after: specs.$afterEach
-        });
-        for (specName in specs) {
-          spec = specs[specName];
-          if (specName !== '$beforeEach' && specName !== '$afterEach') {
+  define(function() {
+    var escapeHTML;
+    escapeHTML = (function() {
+      var div;
+      div = document.createElement('div');
+      return function(str) {
+        div.innerHTML = '';
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+      };
+    })();
+    return {
+      load: function(name, req, load, config) {
+        return req([name], function(specs) {
+          var spec, specName;
+          module(name, {
+            before: specs.$beforeEach,
+            after: specs.$afterEach
+          });
+          for (specName in specs) {
+            spec = specs[specName];
+            if (!(specName !== '$beforeEach' && specName !== '$afterEach')) {
+              continue;
+            }
+            specName = escapeHTML(specName);
             if (typeof spec === 'function') {
               test(specName, spec);
             } else if (typeof (spec != null ? spec.async : void 0) === 'function') {
@@ -20,8 +34,8 @@
               });
             }
           }
-        }
-        return load(true);
-      });
-    }
+          return load(true);
+        });
+      }
+    };
   });
