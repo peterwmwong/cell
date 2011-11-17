@@ -1,6 +1,6 @@
 define [
   './util/helpers'
-], ({nodeToHTML})->
+], ({nodeToHTML,normalizeNode})->
 
   $R = cell::$R
 
@@ -16,7 +16,7 @@ define [
   "$R(htmlTagString:<string>) HTML tag with attributes": ->
     nodeHTMLEquals (
       $R '<p id="myid" class="myclass" data-custom="myattr">'
-    ), '<p id="myid" class="myclass" data-custom="myattr"></p>'
+    ), '<p class="myclass" data-custom="myattr" id="myid"></p>'
 
   "$R(htmlTagString:<string>, children...:<DOM Nodes, strings, numbers, or arrays>) with children": ->
     nodeHTMLEquals (
@@ -32,7 +32,7 @@ define [
   "$R(HAMLString:<string>) tag name, id, multiple classes": ->
     nodeHTMLEquals (
       $R 'p#myid.myclass.myclass2'
-    ), '<p id="myid" class=" myclass myclass2"></p>'
+    ), '<p class=" myclass myclass2" id="myid"></p>'
 
   "$R(HAMLString:<string>, children...:<DOM Nodes, strings, numbers, or arrays>) with children": ->
     nodeHTMLEquals (
@@ -43,7 +43,7 @@ define [
           child
         0
         NODE 'a'
-    ), '<p id="myid" class=" myclass myclass2"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
+    ), '<p class=" myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
 
   "$R(HAMLString:<string>, children...:<NOT DOM NODES, STRINGS, NUMBERS, or ARRAYS>)": ->
     nodeHTMLEquals (
@@ -51,14 +51,14 @@ define [
         undefined
         null
         (->)
-    ), '<p id="myid" class=" myclass myclass2"></p>'
+    ), '<p class=" myclass myclass2" id="myid"></p>'
 
   "$R(HAMLString:<string>, attrMap:<object>) with attribute map": ->
     nodeHTMLEquals (
       $R 'p#myid.myclass.myclass2', 'data-custom':'myattr', 'data-custom2':'myattr2'
-    ), '<p id="myid" data-custom="myattr" data-custom2="myattr2" class=" myclass myclass2"></p>'
+    ), '<p class=" myclass myclass2" data-custom="myattr" data-custom2="myattr2" id="myid"></p>'
 
-  "$R(HAMLString:<string>, attrMap:<object>, children...:<DOM Nodes, strings, numbers, arrays>) with attribute map and children": ->
+  "$R(HAMLString:<string>, attrMap:<object>, children...:<DOM Nodes, strings, numbers, or arrays>) with attribute map and children": ->
     nodeHTMLEquals (
       $R 'p', 'data-custom':'myattr', 'data-custom2':'myattr2',
         NODE 'span'

@@ -1,11 +1,25 @@
-define do->
-  div = document.createElement 'div'
+define
 
-  normalizeHTML: (html)->
-    div.innerHTML = html
-    div.innerHTML
+  nodeToHTML: nodeToHTML = (node)->
 
-  nodeToHTML: (node)->
-    div.innerHTML = ''
-    div.appendChild node
-    div.innerHTML
+    if node.tagName
+      html = "<#{node.tagName.toLowerCase()}"
+
+      if (node.attributes.length > 1)
+        list = (attr for attr in node.attributes)
+        list.sort (a,b)->
+          if a.name is b.name then 0
+          else if a.name < b.name then -1
+          else 1
+        for {name,value} in list
+          html += " #{name}=\"#{value}\""
+
+      html += ">"
+          
+      for child in $(node).contents()
+        html += nodeToHTML child
+        
+      html += "</#{node.tagName.toLowerCase()}>"
+
+    else
+      $(node).text()
