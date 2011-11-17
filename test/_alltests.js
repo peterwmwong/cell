@@ -1,1 +1,1 @@
-define(["test!./cell.constructor.test","test!./cell.render.test","test!./cell.extend.test"]);
+define(["test!./cell.render.test","test!./cell.renderHelper.test","test!./cell.constructor.test","test!./cell.extend.test"]);

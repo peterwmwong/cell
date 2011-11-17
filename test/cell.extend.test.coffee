@@ -1,6 +1,6 @@
 define
 
-  'cell.extend(<NOT AN OBJECT>) throws an error': ->
+  'extend(<NOT AN OBJECT>) throws an error': ->
     for invalid in [7,"string",(->)]
       whenStr = "expected error thrown, when argument is #{invalid}"
       try
@@ -9,7 +9,7 @@ define
       catch e
         equal e, "cell.extend(): expects an object {render,init,name}", whenStr
     
-  'cell.extend({tagName:<string>,init:<function>,render:<function>,name:String}): init, render, name are optional': ->
+  'extend({tagName:<string>,init:<function>,render:<function>,name:String}): init, render, name are optional': ->
     for tagName in [undefined,null,"span"]
       for name in [undefined,null,"exampleName"]
         for init in [undefined,null,(->)]
@@ -24,7 +24,7 @@ define
             equal NewCell::render, render, "prototype.render is the render function passed in cell.extend(#{whenStr})"
             ok ((new NewCell()) instanceof cell), "instance is an instanceof newly created cell, when cell.extend(#{whenStr})"
 
-  'cell.extend({init:<NOT A FUNCTION>, render:<NOT A FUNCTION>}), throws an error': ->
+  'extend({init:<NOT A FUNCTION>, render:<NOT A FUNCTION>}), throws an error': ->
     vals = [5,"string",[],{},(->),undefined,null]
     for init in vals
       for render in vals when not ((typeof init is 'function' or init in [null,undefined]) and (typeof render is 'function' or render in [null,undefined]))

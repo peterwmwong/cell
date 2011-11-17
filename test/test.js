@@ -14,6 +14,7 @@
       load: function(name, req, load, config) {
         return req([name], function(specs) {
           var spec, specName;
+          name = name.replace(/\.test$/, '');
           module(name, {
             before: specs.$beforeEach,
             after: specs.$afterEach

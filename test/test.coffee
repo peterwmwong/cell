@@ -8,6 +8,7 @@ define ->
 
   load: (name, req, load, config)->
     req [name], (specs)->
+      name = name.replace /\.test$/, ''
       module name, before:specs.$beforeEach, after:specs.$afterEach
       for specName, spec of specs when specName not in ['$beforeEach', '$afterEach']
         specName = escapeHTML specName

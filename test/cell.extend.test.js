@@ -1,6 +1,6 @@
 
   define({
-    'cell.extend(<NOT AN OBJECT>) throws an error': function() {
+    'extend(<NOT AN OBJECT>) throws an error': function() {
       var invalid, whenStr, _i, _len, _ref, _results;
       _ref = [7, "string", (function() {})];
       _results = [];
@@ -16,7 +16,7 @@
       }
       return _results;
     },
-    'cell.extend({tagName:<string>,init:<function>,render:<function>,name:String}): init, render, name are optional': function() {
+    'extend({tagName:<string>,init:<function>,render:<function>,name:String}): init, render, name are optional': function() {
       var NewCell, init, name, render, tagName, whenStr, _i, _len, _ref, _results;
       _ref = [void 0, null, "span"];
       _results = [];
@@ -69,7 +69,7 @@
       }
       return _results;
     },
-    'cell.extend({init:<NOT A FUNCTION>, render:<NOT A FUNCTION>}), throws an error': function() {
+    'extend({init:<NOT A FUNCTION>, render:<NOT A FUNCTION>}), throws an error': function() {
       var init, render, vals, whenStr, _i, _len, _results;
       vals = [5, "string", [], {}, (function() {}), void 0, null];
       _results = [];

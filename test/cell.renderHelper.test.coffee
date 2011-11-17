@@ -1,29 +1,79 @@
-define ->
+define [
+  './util/helpers'
+], ({nodeToHTML})->
 
-  testRender = (render, expectedInnerHTML)->
-    NewCell = cell.extend {render}
-    equal new NewCell().el.innerHTML, expectedInnerHTML, "@el.innerHTML"
+  $R = cell::$R
 
-  "cell.render = -> <NOT AN ARRAY>": ->
-    for invalid in [undefined, null, (->), 5, 'testString', document.createElement('a')] then do(invalid)->
-      testRender (-> invalid), ""
+  NODE = (tag)-> document.createElement tag
+  nodeHTMLEquals = (node, expectedHTML)->
+    ok node instanceof HTMLElement, "expected HTMLElement"
+    equal nodeToHTML(node), expectedHTML, "expected #{expectedHTML}"
 
-  "cell.render = -> []": ->
-    testRender (-> []), ""
+  "$R(<empty string, undefined, null, or function>)": ->
+    for invalid in ['',undefined,null,(->)]
+      equal $R(invalid), undefined, "#{invalid is '' and '""' or invalid} results to undefined"
 
-  "cell.render = -> [ undefined, null, (->) ]": ->
-    testRender (-> [ undefined, null, (->) ]), ""
-    
-  "cell.render = -> [ <number>, <string> ]": ->
-    testRender (-> [ 5, 'testString' ]), "5testString"
+  "$R(htmlTagString:<string>) HTML tag with attributes": ->
+    nodeHTMLEquals (
+      $R '<p id="myid" class="myclass" data-custom="myattr">'
+    ), '<p id="myid" class="myclass" data-custom="myattr"></p>'
 
-  "cell.render = -> [ <DOM NODE> ]": ->
-    testRender (-> [ document.createElement 'a' ]), "<a></a>"
+  "$R(htmlTagString:<string>, children...:<DOM Nodes, strings, numbers, or arrays>) with children": ->
+    nodeHTMLEquals (
+      $R '<div>',
+        NODE 'span'
+        'hello'
+        for child in [NODE('table'), 'world', 5, [NODE('div')]]
+          child
+        0
+        NODE 'a'
+      ), "<div><span></span>hello<table></table>world5<div></div>0<a></a></div>"
 
-  "cell.render = -> [ <DOM NODE>, <string>, <number> ]": ->
-    testRender (-> [
-      document.createElement 'a'
-      'testString'
-      7
-    ]), "<a></a>testString7"
+  "$R(HAMLString:<string>) tag name, id, multiple classes": ->
+    nodeHTMLEquals (
+      $R 'p#myid.myclass.myclass2'
+    ), '<p id="myid" class=" myclass myclass2"></p>'
+
+  "$R(HAMLString:<string>, children...:<DOM Nodes, strings, numbers, or arrays>) with children": ->
+    nodeHTMLEquals (
+      $R 'p#myid.myclass.myclass2',
+        NODE 'span'
+        'hello'
+        for child in [NODE('table'), 'world', 5, [NODE('div')]]
+          child
+        0
+        NODE 'a'
+    ), '<p id="myid" class=" myclass myclass2"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
+
+  "$R(HAMLString:<string>, children...:<NOT DOM NODES, STRINGS, NUMBERS, or ARRAYS>)": ->
+    nodeHTMLEquals (
+      $R 'p#myid.myclass.myclass2',
+        undefined
+        null
+        (->)
+    ), '<p id="myid" class=" myclass myclass2"></p>'
+
+  "$R(HAMLString:<string>, attrMap:<object>) with attribute map": ->
+    nodeHTMLEquals (
+      $R 'p#myid.myclass.myclass2', 'data-custom':'myattr', 'data-custom2':'myattr2'
+    ), '<p id="myid" data-custom="myattr" data-custom2="myattr2" class=" myclass myclass2"></p>'
+
+  "$R(HAMLString:<string>, attrMap:<object>, children...:<DOM Nodes, strings, numbers, arrays>) with attribute map and children": ->
+    nodeHTMLEquals (
+      $R 'p', 'data-custom':'myattr', 'data-custom2':'myattr2',
+        NODE 'span'
+        'hello'
+        for child in [NODE('table'), 'world', 5, [NODE('div')]]
+          child
+        0
+        NODE 'a'
+    ), '<p data-custom="myattr" data-custom2="myattr2"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
+
+  "$R(HAMLString:<string>, attrMap:<object>, children...:<NOT DOM NODES, STRINGS, NUMBERS, or ARRAYS>)": ->
+    nodeHTMLEquals (
+      $R 'p', 'data-custom':'myattr', 'data-custom2':'myattr2',
+        undefined
+        null
+        (->)
+    ), '<p data-custom="myattr" data-custom2="myattr2"></p>'
 

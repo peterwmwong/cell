@@ -14,29 +14,29 @@ define ->
     equal instance.el.innerHTML, '', 'instance.el is an empty <div>'
     ok instance.$el instanceof jQuery, 'instance.$el is jQuery object'
 
-  'cell constructor() creates instance of cell': ->
+  'constructor() creates instance of cell': ->
     NewCell = cell.extend()
     instance = new NewCell()
 
     isCellInstance instance
     deepEqual instance.options, {}, 'instance.options is empty object (not specified in constructor)'
 
-  'cell constructor() when cell::tag is "<p>"': ->
+  'constructor() when cell::tag is "<p>"': ->
     NewCell = cell.extend tag: '<p>'
     testHTML new NewCell().el, "<p></p>"
 
-  'cell constructor() when cell::tag is "<p id=\'testId\' class=\'testClass\' data-customattr=\'testAttr\'>"': ->
+  'constructor() when cell::tag is "<p id=\'testId\' class=\'testClass\' data-customattr=\'testAttr\'>"': ->
     NewCell = cell.extend tag: "<p id=\'testId\' class=\'testClass\' data-customattr=\'testAttr\'>"
     testHTML new NewCell().el, '<p id="testId" class="testClass" data-customattr="testAttr"></p>'
 
-  'cell constructor({id:<string>,class:<string>}) when cell::tag is "<p id=\'testId\' class=\'testClass\' data-customattr=\'testAttr\'>"': ->
+  'constructor({id:<string>,class:<string>}) when cell::tag is "<p id=\'testId\' class=\'testClass\' data-customattr=\'testAttr\'>"': ->
     NewCell = cell.extend
       tag: "<p id=\'testId\' class=\'testClass\' data-customattr=\'testAttr\'>"
 
     testHTML new NewCell(id:'overrideID', class:'extraClass extraClass2').el,
       '<p id="overrideID" class="testClass extraClass extraClass2" data-customattr="testAttr"></p>'
 
-  'cell constructor(options:<object>) creates instance of cell with options': ->
+  'constructor(options:<object>) creates instance of cell with options': ->
     NewCell = cell.extend()
     options = {a:1,b:'2',c:(->3)} 
     instance = new NewCell options
@@ -44,7 +44,7 @@ define ->
     isCellInstance instance
     deepEqual instance.options, options, 'instance.options the object passed into constructor'
   
-  'cell constructor(options:<object>) calls init() then render()': ->
+  'constructor(options:<object>) calls init() then render()': ->
     NewCell = cell.extend
       init: init = sinon.spy()
       render: render = sinon.spy()
