@@ -1,13 +1,9 @@
 define [
   './util/helpers'
-], ({nodeToHTML,normalizeNode})->
-
-  $R = cell::$R
+], ({nodeHTMLEquals})->
 
   NODE = (tag)-> document.createElement tag
-  nodeHTMLEquals = (node, expectedHTML)->
-    ok node instanceof HTMLElement, "expected HTMLElement"
-    equal nodeToHTML(node), expectedHTML, "expected #{expectedHTML}"
+  $R = cell::$R
 
   "$R(<empty string, undefined, null, or function>)": ->
     for invalid in ['',undefined,null,(->)]
@@ -18,7 +14,7 @@ define [
       $R '<p id="myid" class="myclass" data-custom="myattr">'
     ), '<p class="myclass" data-custom="myattr" id="myid"></p>'
 
-  "$R(htmlTagString:<string>, children...:<DOM Nodes, strings, numbers, or arrays>) with children": ->
+  "$R(htmlTagString:<string>, children...:<DOM Nodes, cell, strings, numbers, or arrays>) with children": ->
     nodeHTMLEquals (
       $R '<div>',
         NODE 'span'
@@ -77,3 +73,8 @@ define [
         (->)
     ), '<p data-custom="myattr" data-custom2="myattr2"></p>'
 
+  "$R(cell:<cell>, options:<object>)": ->
+    NewCell = cell.extend render: -> [NODE @options.tagName]
+    nodeHTMLEquals (
+      $R NewCell, tagName: 'span'
+    ), '<div><span></span></div>'

@@ -9,16 +9,16 @@ define
       catch e
         equal e, "cell.extend(): expects an object {render,init,name}", whenStr
     
-  'extend({tagName:<string>,init:<function>,render:<function>,name:String}): init, render, name are optional': ->
-    for tagName in [undefined,null,"span"]
+  'extend({tag:<string>,init:<function>,render:<function>,name:String}): init, render, name are optional': ->
+    for tag in [undefined,null,"<span>"]
       for name in [undefined,null,"exampleName"]
         for init in [undefined,null,(->)]
           for render in [undefined,null,(->)]
             whenStr = "when #{JSON.stringify {init,render,name}}"
 
-            NewCell = cell.extend {tagName, init, render, name}
+            NewCell = cell.extend {tag, init, render, name}
             ok (NewCell.prototype instanceof cell), "prototype is an instanceof cell, #{whenStr}"
-            equal NewCell::tagName, tagName, "prototype.tagName is the name passed in cell.extend(#{whenStr})"
+            equal NewCell::tag, tag, "prototype.tag is the name passed in cell.extend(#{whenStr})"
             equal NewCell::name, name, "prototype.name is the name passed in cell.extend(#{whenStr})"
             equal NewCell::init, init, "prototype.init is the init function passed in cell.extend(#{whenStr})"
             equal NewCell::render, render, "prototype.render is the render function passed in cell.extend(#{whenStr})"

@@ -113,17 +113,16 @@
   };
 
   window.cell = cell = function(options) {
-    var id, n, nodes, t, _i, _len, _ref;
+    var i, id, n, nodes, _len, _ref;
     this.options = options != null ? options : {};
     if (this.options.model != null) this.model = this.options.model;
     if (typeof this.init === "function") this.init(this.options);
-    _tmpNode.innerHTML = (t = typeof this.tag) === 'string' ? this.tag : t === 'function' ? this.tag() : '<div>';
-    this.$el = $(this.el = _tmpNode.children[0]);
+    this.$el = $(this.el = this._tag());
     if (id = this.options.id) this.el.id = id;
     _ref = [this.cell.prototype.name, this["class"], this.options["class"]];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      n = _ref[_i];
-      if (n) this.el.className += ' ' + n;
+    for (i = 0, _len = _ref.length; i < _len; i++) {
+      n = _ref[i];
+      if (n) this.el.className += (i ? ' ' + n : n);
     }
     if (this.render) {
       if ((nodes = this.render(this.$R, _bind(this._renderChildren, this))) instanceof Array) {
@@ -177,27 +176,19 @@
       }
     },
     _delegateEvents: function() {
-      var evSel, event, handler, m, sel, _ref;
+      var evSel, event, handler, m, _ref;
       _ref = this.on;
       for (evSel in _ref) {
         handler = _ref[evSel];
-        if (!((typeof handler === 'function') && (m = _evSelRx.exec(evSel)))) {
-          continue;
-        }
-        handler = _bind(handler, this);
-        if (event = m[1]) {
-          if (sel = m[3]) {
-            this.$el.delegate(sel, event, handler);
-          } else {
-            this.$el.bind(event, handler);
-          }
+        if ((typeof handler === 'function') && (m = _evSelRx.exec(evSel)) && (event = m[1])) {
+          this.$el.on(event, m[3], _bind(handler, this));
         }
       }
     }
   };
 
   cell.extend = function(protoProps) {
-    var child, css, cssref, el;
+    var child, css, cssref, el, t;
     if (protoProps == null) protoProps = {};
     if (typeof protoProps !== 'object') {
       throw "cell.extend(): expects an object {render,init,name}";
@@ -207,6 +198,15 @@
       child = _inherits(this, protoProps);
       child.extend = cell.extend;
       child.prototype.cell = child;
+      child.prototype._tag = (t = typeof protoProps.tag) === 'string' ? function() {
+        _tmpNode.innerHTML = protoProps.tag;
+        return _tmpNode.children[0] || document.createElement('div');
+      } : t === 'function' ? function() {
+        _tmpNode.innerHTML = protoProps.tag();
+        return _tmpNode.children[0] || document.createElement('div');
+      } : function() {
+        return document.createElement('div');
+      };
       if (typeof (css = protoProps.css) === 'string') {
         el = document.createElement('style');
         el.innerHTML = css;

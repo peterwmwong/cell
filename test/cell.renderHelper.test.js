@@ -1,15 +1,11 @@
 
   define(['./util/helpers'], function(_arg) {
-    var $R, NODE, nodeHTMLEquals, nodeToHTML, normalizeNode;
-    nodeToHTML = _arg.nodeToHTML, normalizeNode = _arg.normalizeNode;
-    $R = cell.prototype.$R;
+    var $R, NODE, nodeHTMLEquals;
+    nodeHTMLEquals = _arg.nodeHTMLEquals;
     NODE = function(tag) {
       return document.createElement(tag);
     };
-    nodeHTMLEquals = function(node, expectedHTML) {
-      ok(node instanceof HTMLElement, "expected HTMLElement");
-      return equal(nodeToHTML(node), expectedHTML, "expected " + expectedHTML);
-    };
+    $R = cell.prototype.$R;
     return {
       "$R(<empty string, undefined, null, or function>)": function() {
         var invalid, _i, _len, _ref, _results;
@@ -24,7 +20,7 @@
       "$R(htmlTagString:<string>) HTML tag with attributes": function() {
         return nodeHTMLEquals($R('<p id="myid" class="myclass" data-custom="myattr">'), '<p class="myclass" data-custom="myattr" id="myid"></p>');
       },
-      "$R(htmlTagString:<string>, children...:<DOM Nodes, strings, numbers, or arrays>) with children": function() {
+      "$R(htmlTagString:<string>, children...:<DOM Nodes, cell, strings, numbers, or arrays>) with children": function() {
         var child;
         return nodeHTMLEquals($R('<div>', NODE('span'), 'hello', (function() {
           var _i, _len, _ref, _results;
@@ -83,6 +79,17 @@
           'data-custom': 'myattr',
           'data-custom2': 'myattr2'
         }, void 0, null, (function() {})), '<p data-custom="myattr" data-custom2="myattr2"></p>');
+      },
+      "$R(cell:<cell>, options:<object>)": function() {
+        var NewCell;
+        NewCell = cell.extend({
+          render: function() {
+            return [NODE(this.options.tagName)];
+          }
+        });
+        return nodeHTMLEquals($R(NewCell, {
+          tagName: 'span'
+        }), '<div><span></span></div>');
       }
     };
   });

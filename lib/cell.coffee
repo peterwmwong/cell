@@ -99,26 +99,18 @@ _renderParent = (a,b)->
     E "renderParent: unsupported parent type = #{a}"
     
 window.cell = cell = (@options = {})->
-  if @options.model?
-    @model = @options.model
-    
+  @model = @options.model if @options.model?
   @init? @options
 
   # Create DOM node and cache jQuery for node
-  _tmpNode.innerHTML =
-    if (t = typeof @tag) is 'string' then @tag
-    else if t is 'function' then @tag()
-    else '<div>'
-
-  @$el = $(@el = _tmpNode.children[0])
+  @$el = $(@el = @_tag())
 
   # Set id
-  if id = @options.id
-    @el.id = id
+  @el.id = id if id = @options.id
 
   # Add the cell's class
-  for n in [@cell::name,@class,@options.class] when n
-    @el.className += ' '+n
+  for n,i in [@cell::name,@class,@options.class] when n
+    @el.className += (if i then ' '+n else n)
 
   if @render
     if (nodes = @render @$R, _bind(@_renderChildren, this)) instanceof Array
@@ -158,13 +150,8 @@ cell.prototype =
     return
 
   _delegateEvents: ->
-    for evSel, handler of @on when (typeof handler is 'function') and (m = _evSelRx.exec evSel)
-      handler = _bind handler, this
-      if event = m[1]
-        if sel = m[3]
-          @$el.delegate sel, event, handler
-        else
-          @$el.bind event, handler
+    for evSel, handler of @on when (typeof handler is 'function') and (m = _evSelRx.exec evSel) and event = m[1]
+      @$el.on event, m[3], (_bind handler, this)
     return
 
 
@@ -182,6 +169,19 @@ cell.extend = (protoProps = {})->
 
     child.extend = cell.extend
     child::cell = child
+
+    # Normalize/fast-path tag
+    child::_tag =
+      if (t = typeof protoProps.tag) is 'string'
+        ->
+          _tmpNode.innerHTML = protoProps.tag
+          _tmpNode.children[0] or document.createElement 'div'
+      else if t is 'function'
+        ->
+          _tmpNode.innerHTML = protoProps.tag()
+          _tmpNode.children[0] or document.createElement 'div'
+      else
+        -> document.createElement 'div'
 
     # Render CSS in <style>
     if typeof (css = protoProps.css) is 'string'

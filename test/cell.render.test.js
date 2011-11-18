@@ -6,10 +6,20 @@
       NewCell = cell.extend({
         render: render
       });
-      return equal(new NewCell().el.innerHTML, expectedInnerHTML, "@el.innerHTML");
+      return strictEqual(new NewCell().el.innerHTML, expectedInnerHTML, "@el.innerHTML");
     };
     return {
-      "cell.render = -> <NOT AN ARRAY>": function() {
+      "called with cell renderHelper (cell::$R)": function() {
+        var NewCell, instance, render;
+        NewCell = cell.extend({
+          render: render = sinon.spy()
+        });
+        instance = new NewCell();
+        ok(render.calledOnce, 'render() called once');
+        deepEqual(render.getCall(0).args[0], cell.prototype.$R, 'render() was passed cell.prototype.$R (cell render helper)');
+        return ok(typeof render.getCall(0).args[1] === 'function', 'render() was passed a function (asynchronous render helpser)');
+      },
+      "-> <NOT AN ARRAY>": function() {
         var invalid, _i, _len, _ref, _results;
         _ref = [void 0, null, (function() {}), 5, 'testString', document.createElement('a')];
         _results = [];
@@ -23,27 +33,27 @@
         }
         return _results;
       },
-      "cell.render = -> []": function() {
+      "-> []": function() {
         return testRender((function() {
           return [];
         }), "");
       },
-      "cell.render = -> [ undefined, null, (->) ]": function() {
+      "-> [ undefined, null, (->) ]": function() {
         return testRender((function() {
           return [void 0, null, (function() {})];
         }), "");
       },
-      "cell.render = -> [ <number>, <string> ]": function() {
+      "-> [ <number>, <string> ]": function() {
         return testRender((function() {
           return [5, 'testString'];
         }), "5testString");
       },
-      "cell.render = -> [ <DOM NODE> ]": function() {
+      "-> [ <DOM NODE> ]": function() {
         return testRender((function() {
           return [document.createElement('a')];
         }), "<a></a>");
       },
-      "cell.render = -> [ <DOM NODE>, <string>, <number> ]": function() {
+      "-> [ <DOM NODE>, <string>, <number> ]": function() {
         return testRender((function() {
           return [document.createElement('a'), 'testString', 7];
         }), "<a></a>testString7");

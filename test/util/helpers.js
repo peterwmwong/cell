@@ -1,12 +1,16 @@
 (function() {
-  var nodeToHTML;
+  var nodeHTMLEquals, nodeToHTML;
 
   define({
+    nodeHTMLEquals: nodeHTMLEquals = function(node, expectedHTML) {
+      ok(node instanceof HTMLElement, "expected HTMLElement");
+      return strictEqual(nodeToHTML(node), expectedHTML, "expected " + expectedHTML);
+    },
     nodeToHTML: nodeToHTML = function(node) {
       var attr, child, html, list, name, value, _i, _j, _len, _len2, _ref, _ref2;
       if (node.tagName) {
         html = "<" + (node.tagName.toLowerCase());
-        if (node.attributes.length > 1) {
+        if (node.attributes.length > 0) {
           list = (function() {
             var _i, _len, _ref, _results;
             _ref = node.attributes;

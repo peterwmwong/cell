@@ -2,25 +2,33 @@ define ->
 
   testRender = (render, expectedInnerHTML)->
     NewCell = cell.extend {render}
-    equal new NewCell().el.innerHTML, expectedInnerHTML, "@el.innerHTML"
+    strictEqual new NewCell().el.innerHTML, expectedInnerHTML, "@el.innerHTML"
 
-  "cell.render = -> <NOT AN ARRAY>": ->
+
+  "called with cell renderHelper (cell::$R)": ->
+    NewCell = cell.extend render: render = sinon.spy()
+    instance = new NewCell()
+    ok render.calledOnce, 'render() called once'
+    deepEqual render.getCall(0).args[0], cell::$R, 'render() was passed cell.prototype.$R (cell render helper)'
+    ok (typeof render.getCall(0).args[1] is 'function'), 'render() was passed a function (asynchronous render helpser)'
+
+  "-> <NOT AN ARRAY>": ->
     for invalid in [undefined, null, (->), 5, 'testString', document.createElement('a')] then do(invalid)->
       testRender (-> invalid), ""
 
-  "cell.render = -> []": ->
+  "-> []": ->
     testRender (-> []), ""
 
-  "cell.render = -> [ undefined, null, (->) ]": ->
+  "-> [ undefined, null, (->) ]": ->
     testRender (-> [ undefined, null, (->) ]), ""
     
-  "cell.render = -> [ <number>, <string> ]": ->
+  "-> [ <number>, <string> ]": ->
     testRender (-> [ 5, 'testString' ]), "5testString"
 
-  "cell.render = -> [ <DOM NODE> ]": ->
+  "-> [ <DOM NODE> ]": ->
     testRender (-> [ document.createElement 'a' ]), "<a></a>"
 
-  "cell.render = -> [ <DOM NODE>, <string>, <number> ]": ->
+  "-> [ <DOM NODE>, <string>, <number> ]": ->
     testRender (-> [
       document.createElement 'a'
       'testString'

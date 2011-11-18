@@ -16,12 +16,12 @@
       }
       return _results;
     },
-    'extend({tagName:<string>,init:<function>,render:<function>,name:String}): init, render, name are optional': function() {
-      var NewCell, init, name, render, tagName, whenStr, _i, _len, _ref, _results;
-      _ref = [void 0, null, "span"];
+    'extend({tag:<string>,init:<function>,render:<function>,name:String}): init, render, name are optional': function() {
+      var NewCell, init, name, render, tag, whenStr, _i, _len, _ref, _results;
+      _ref = [void 0, null, "<span>"];
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        tagName = _ref[_i];
+        tag = _ref[_i];
         _results.push((function() {
           var _j, _len2, _ref2, _results2;
           _ref2 = [void 0, null, "exampleName"];
@@ -46,13 +46,13 @@
                       name: name
                     }));
                     NewCell = cell.extend({
-                      tagName: tagName,
+                      tag: tag,
                       init: init,
                       render: render,
                       name: name
                     });
                     ok(NewCell.prototype instanceof cell, "prototype is an instanceof cell, " + whenStr);
-                    equal(NewCell.prototype.tagName, tagName, "prototype.tagName is the name passed in cell.extend(" + whenStr + ")");
+                    equal(NewCell.prototype.tag, tag, "prototype.tag is the name passed in cell.extend(" + whenStr + ")");
                     equal(NewCell.prototype.name, name, "prototype.name is the name passed in cell.extend(" + whenStr + ")");
                     equal(NewCell.prototype.init, init, "prototype.init is the init function passed in cell.extend(" + whenStr + ")");
                     equal(NewCell.prototype.render, render, "prototype.render is the render function passed in cell.extend(" + whenStr + ")");
