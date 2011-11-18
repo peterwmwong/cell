@@ -42,7 +42,8 @@ _inherits = (parent, protoProps)->
   child.__super__ = parent.prototype
   child
 
-_tmpNode = document.createElement 'div'
+_createDiv = -> document.createElement 'div'
+_tmpNode = _createDiv()
 
 _renderNodes = (parent,nodes)->
   while nodes.length > 0 when (c = nodes.shift())?
@@ -181,7 +182,7 @@ cell.extend = (protoProps = {})->
           _tmpNode.innerHTML = protoProps.tag()
           _tmpNode.children[0] or document.createElement 'div'
       else
-        -> document.createElement 'div'
+        _createDiv
 
     # Render CSS in <style>
     if typeof (css = protoProps.css) is 'string'

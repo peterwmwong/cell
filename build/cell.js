@@ -1,5 +1,5 @@
 (function() {
-  var E, cell, document, exports, fbind, window, _bind, _ctor, _evSelRx, _extendObj, _inherits, _isNode, _modNameRx, _renderNodes, _renderParent, _selRx, _slice, _tagnameRx, _tmpNode;
+  var E, cell, document, exports, fbind, window, _bind, _createDiv, _ctor, _evSelRx, _extendObj, _inherits, _isNode, _modNameRx, _renderNodes, _renderParent, _selRx, _slice, _tagnameRx, _tmpNode;
   var __slice = Array.prototype.slice;
 
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
@@ -53,7 +53,11 @@
     return child;
   };
 
-  _tmpNode = document.createElement('div');
+  _createDiv = function() {
+    return document.createElement('div');
+  };
+
+  _tmpNode = _createDiv();
 
   _renderNodes = function(parent, nodes) {
     var c, _ref;
@@ -204,9 +208,7 @@
       } : t === 'function' ? function() {
         _tmpNode.innerHTML = protoProps.tag();
         return _tmpNode.children[0] || document.createElement('div');
-      } : function() {
-        return document.createElement('div');
-      };
+      } : _createDiv;
       if (typeof (css = protoProps.css) === 'string') {
         el = document.createElement('style');
         el.innerHTML = css;
