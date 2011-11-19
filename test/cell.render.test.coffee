@@ -9,8 +9,7 @@ define ->
     NewCell = cell.extend render: render = sinon.spy()
     instance = new NewCell()
     ok render.calledOnce, 'render() called once'
-    deepEqual render.getCall(0).args[0], cell::$R, 'render() was passed cell.prototype.$R (cell render helper)'
-    ok (typeof render.getCall(0).args[1] is 'function'), 'render() was passed a function (asynchronous render helpser)'
+    ok render.getCall(0).calledWith(cell::$R), 'render() was passed cell.prototype.$R (cell render helper)'
 
   "-> <NOT AN ARRAY>": ->
     for invalid in [undefined, null, (->), 5, 'testString', document.createElement('a')] then do(invalid)->

@@ -16,8 +16,7 @@
         });
         instance = new NewCell();
         ok(render.calledOnce, 'render() called once');
-        deepEqual(render.getCall(0).args[0], cell.prototype.$R, 'render() was passed cell.prototype.$R (cell render helper)');
-        return ok(typeof render.getCall(0).args[1] === 'function', 'render() was passed a function (asynchronous render helpser)');
+        return ok(render.getCall(0).calledWith(cell.prototype.$R), 'render() was passed cell.prototype.$R (cell render helper)');
       },
       "-> <NOT AN ARRAY>": function() {
         var invalid, _i, _len, _ref, _results;

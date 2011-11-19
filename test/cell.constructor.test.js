@@ -69,8 +69,7 @@
         deepEqual(init.getCall(0).args, [options], 'init() was passed options');
         ok(tag.calledOnce, 'tag() called once');
         ok(render.calledOnce, 'render() called once');
-        deepEqual(render.getCall(0).args[0], cell.prototype.$R, 'render() was passed cell.prototype.$R (cell render helper)');
-        ok(typeof render.getCall(0).args[1] === 'function', 'render() was passed a function (asynchronous render helper)');
+        ok(render.getCall(0).calledWith(cell.prototype.$R), 'render() was passed cell.prototype.$R (cell render helper)');
         ok(init.calledBefore(tag), 'init() called before tag()');
         return ok(tag.calledBefore(render), 'tag() called before render()');
       }

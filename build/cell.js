@@ -1,5 +1,5 @@
 (function() {
-  var E, cell, document, exports, fbind, window, _bind, _createDiv, _ctor, _evSelRx, _extendObj, _inherits, _isNode, _modNameRx, _renderNodes, _renderParent, _selRx, _slice, _tagnameRx, _tmpNode;
+  var E, cell, document, exports, fbind, window, _bind, _createDiv, _ctor, _evSelRx, _extendObj, _inherits, _isNode, _modNameRx, _renderNodes, _selRx, _slice, _tagnameRx, _tmpNode;
   var __slice = Array.prototype.slice;
 
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
@@ -83,110 +83,74 @@
 
   _evSelRx = /^([A-z]+)(\s(.*))?$/;
 
-  _renderParent = function(a, b) {
-    var el, k, m, v, _ref;
-    if (typeof a === 'string') {
-      if (m = _selRx.exec(a)) {
-        el = document.createElement(m[1] || 'div');
-        if (v = m[3]) el.id = v;
-        if (b) {
-          if ('class' in b) {
-            el.className += b["class"];
-            delete b["class"];
-          }
-          for (k in b) {
-            v = b[k];
-            el.setAttribute(k, v);
-          }
-        }
-        if (v = m[4]) el.className += v.replace(/\./g, ' ');
-        return el;
-      } else if (_tagnameRx.test(a)) {
-        _tmpNode.innerHTML = a;
-        return _tmpNode.children[0];
-      } else {
-        return E("renderParent: unsupported parent string = '" + a + "'");
-      }
-    } else if (((_ref = a.prototype) != null ? _ref.cell : void 0) === a) {
-      return (new a(b)).el;
-    } else if (_isNode(a)) {
-      return a;
-    } else {
-      return E("renderParent: unsupported parent type = " + a);
-    }
-  };
-
   window.cell = cell = function(options) {
-    var i, id, n, nodes, _len, _ref;
+    var evSel, event, handler, i, id, m, n, nodes, _len, _ref, _ref2;
     this.options = options != null ? options : {};
     if (this.options.model != null) this.model = this.options.model;
     if (typeof this.init === "function") this.init(this.options);
-    this.$el = $(this.el = this._tag());
+    this.$el = jQuery(this.el = this._tag());
     if (id = this.options.id) this.el.id = id;
     _ref = [this.cell.prototype.name, this["class"], this.options["class"]];
     for (i = 0, _len = _ref.length; i < _len; i++) {
       n = _ref[i];
-      if (n) this.el.className += (i ? ' ' + n : n);
+      if (n) this.el.className += i && (" " + n) || n;
     }
-    if (this.render) {
-      if ((nodes = this.render(this.$R, _bind(this._renderChildren, this))) instanceof Array) {
-        this._renderChildren(nodes);
+    _renderNodes(this.el, ((nodes = typeof this.render === "function" ? this.render(this.$R) : void 0) instanceof Array) && nodes || []);
+    _ref2 = this.on;
+    for (evSel in _ref2) {
+      handler = _ref2[evSel];
+      if ((typeof handler === 'function') && (m = _evSelRx.exec(evSel)) && (event = m[1])) {
+        this.$el.on(event, m[3], _bind(handler, this));
       }
-    } else {
-      this._renderChildren([]);
     }
+    if (typeof this.afterRender === "function") this.afterRender();
   };
 
   cell.prototype = {
+    $: function(selector) {
+      return jQuery(selector, this.el);
+    },
     $R: function() {
-      var a, b, children, parent;
+      var a, b, children, el, k, m, parent, v;
       a = arguments[0], b = arguments[1], children = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
       if (a) {
         if ((b != null ? b.constructor : void 0) !== Object) {
           children.unshift(b);
           b = void 0;
         }
-        if (parent = _renderParent(a, b)) return _renderNodes(parent, children);
-      }
-    },
-    $: function(selector) {
-      return $(selector, this.el);
-    },
-    ready: function(f) {
-      var _ref;
-      if (this._isReady) {
-        try {
-          return f(this);
-        } catch (_error) {}
-      } else {
-        return ((_ref = this._readys) != null ? _ref : this._readys = []).push(f);
-      }
-    },
-    _renderChildren: function(nodes) {
-      var r, _i, _len, _ref;
-      _renderNodes(this.el, nodes);
-      this._delegateEvents();
-      if (typeof this.afterRender === "function") this.afterRender();
-      this._isReady = true;
-      if (this._readys) {
-        _ref = this._readys;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          r = _ref[_i];
-          try {
-            r(this);
-          } catch (_error) {}
-        }
-        delete this._readys;
-      }
-    },
-    _delegateEvents: function() {
-      var evSel, event, handler, m, _ref;
-      _ref = this.on;
-      for (evSel in _ref) {
-        handler = _ref[evSel];
-        if ((typeof handler === 'function') && (m = _evSelRx.exec(evSel)) && (event = m[1])) {
-          this.$el.on(event, m[3], _bind(handler, this));
-        }
+        parent = (function() {
+          var _ref;
+          if (typeof a === 'string') {
+            if (m = _selRx.exec(a)) {
+              el = document.createElement(m[1] || 'div');
+              if (v = m[3]) el.id = v;
+              if (b) {
+                if ('class' in b) {
+                  el.className += b["class"];
+                  delete b["class"];
+                }
+                for (k in b) {
+                  v = b[k];
+                  el.setAttribute(k, v);
+                }
+              }
+              if (v = m[4]) el.className += v.replace(/\./g, ' ');
+              return el;
+            } else if (_tagnameRx.test(a)) {
+              _tmpNode.innerHTML = a;
+              return _tmpNode.children[0];
+            } else {
+              return E("renderParent: unsupported parent string = '" + a + "'");
+            }
+          } else if (((_ref = a.prototype) != null ? _ref.cell : void 0) === a) {
+            return (new a(b)).el;
+          } else if (_isNode(a)) {
+            return a;
+          } else {
+            return E("renderParent: unsupported parent type = " + a);
+          }
+        })();
+        return parent && _renderNodes(parent, children);
       }
     }
   };
@@ -256,7 +220,7 @@
       }
     });
     require.ready(function() {
-      $('[data-cell]').each(function() {
+      jQuery('[data-cell]').each(function() {
         var baseurl, cachebust, cachebustAttr, cellname, node, opts;
         node = this;
         if (cellname = node.getAttribute('data-cell')) {
@@ -269,7 +233,7 @@
             opts.baseUrl = baseurl;
           }
           require(opts, ["cell!" + cellname], function(CType) {
-            $(node).append(new CType().el);
+            jQuery(node).append(new CType().el);
           });
         }
       });

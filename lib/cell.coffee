@@ -1,6 +1,5 @@
 # Error logging
-E =
-  (typeof console?.error is 'function') and ((msg)-> console.error msg) or ->
+E = (typeof console?.error is 'function') and ((msg)-> console.error msg) or ->
 
 # When running in require.js optimizer, window & document do not exist
 window = this
@@ -14,6 +13,7 @@ _isNode =
     (o)-> typeof o is 'object' and typeof o.nodeType is 'number' and typeof o.nodeName is 'string'
 
 _slice = Array::slice
+
 # ES5 Function.bind
 _bind =
   if fbind = Function.prototype.bind
@@ -61,100 +61,69 @@ _selRx = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/
 _tagnameRx = /^<[A-z]/
 _evSelRx = /^([A-z]+)(\s(.*))?$/
 
-_renderParent = (a,b)->
-  if typeof a is 'string'
-    # HAML-like selector, ex. div#myID.myClass
-    if m = _selRx.exec a
-      el = document.createElement m[1] or 'div'
-      
-      if v = m[3]
-        el.id = v
-      
-      if b
-        if 'class' of b
-          el.className += b.class
-          delete b.class
-        for k,v of b
-          el.setAttribute k, v
-
-      if v = m[4]
-        el.className += v.replace /\./g, ' '
-      
-      el
-
-    # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
-    else if _tagnameRx.test a
-      _tmpNode.innerHTML = a
-      _tmpNode.children[0]
-
-    else
-      E "renderParent: unsupported parent string = '#{a}'"
-
-  else if a.prototype?.cell is a
-    (new a b).el
-
-  else if _isNode a
-    a
-
-  else
-    E "renderParent: unsupported parent type = #{a}"
-    
 window.cell = cell = (@options = {})->
   @model = @options.model if @options.model?
   @init? @options
 
   # Create DOM node and cache jQuery for node
-  @$el = $(@el = @_tag())
+  @$el = jQuery(@el = @_tag())
 
   # Set id
   @el.id = id if id = @options.id
 
   # Add the cell's class
   for n,i in [@cell::name,@class,@options.class] when n
-    @el.className += (if i then ' '+n else n)
+    @el.className += (i and " #{n}" or n)
 
-  if @render
-    if (nodes = @render @$R, _bind(@_renderChildren, this)) instanceof Array
-      @_renderChildren nodes
-  else
-    @_renderChildren []
+  _renderNodes @el, ((nodes = @render? @$R) instanceof Array) and nodes or []
+  for evSel, handler of @on
+    if (typeof handler is 'function') and (m = _evSelRx.exec evSel) and (event = m[1])
+      @$el.on event, m[3], (_bind handler, this)
+  @afterRender?()
 
   return
 
 cell.prototype =
+  $: (selector)-> jQuery selector, @el
   $R: (a,b,children...)->
     if a
       if b?.constructor isnt Object
         children.unshift b
         b = undefined
 
-      if parent = _renderParent a,b
-        return _renderNodes parent, children
+      parent =
+        if typeof a is 'string'
+          # HAML-like selector, ex. div#myID.myClass
+          if m = _selRx.exec a
+            el = document.createElement m[1] or 'div'
+            
+            if v = m[3] then el.id = v
+            if b
+              if 'class' of b
+                el.className += b.class
+                delete b.class
+              for k,v of b
+                el.setAttribute k, v
+
+            if v = m[4]
+              el.className += v.replace /\./g, ' '
+            
+            el
+
+          # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
+          else if _tagnameRx.test a
+            _tmpNode.innerHTML = a
+            _tmpNode.children[0]
+
+          else
+            E "renderParent: unsupported parent string = '#{a}'"
+
+        else if a.prototype?.cell is a then (new a b).el
+        else if _isNode a then a
+        else E "renderParent: unsupported parent type = #{a}"
+
+      return parent and _renderNodes parent, children
     return
-
-  $: (selector)-> $ selector, @el
-
-  ready: (f)->
-    if @_isReady then try f this
-    else
-      (@_readys ?= []).push f
-
-  _renderChildren: (nodes)->
-    _renderNodes @el, nodes
-    @_delegateEvents()
-    @afterRender?()
-    @_isReady = true
-    if @_readys
-      for r in @_readys
-        try r this
-      delete @_readys
-    return
-
-  _delegateEvents: ->
-    for evSel, handler of @on when (typeof handler is 'function') and (m = _evSelRx.exec evSel) and event = m[1]
-      @$el.on event, m[3], (_bind handler, this)
-    return
-
 
 cell.extend = (protoProps = {})->
 
@@ -167,7 +136,6 @@ cell.extend = (protoProps = {})->
 
   else
     child = _inherits this, protoProps
-
     child.extend = cell.extend
     child::cell = child
 
@@ -230,7 +198,7 @@ if typeof define is 'function' and typeof require is 'function'
   
   # Load/render cells specified in DOM node data-cell attributes
   require.ready ->
-    $('[data-cell]').each ->
+    jQuery('[data-cell]').each ->
       node = this
       if cellname=node.getAttribute('data-cell')
         opts = {}
@@ -240,7 +208,7 @@ if typeof define is 'function' and typeof require is 'function'
         if baseurl = node.getAttribute 'data-cell-baseurl'
           opts.baseUrl = baseurl
         require opts, ["cell!#{cellname}"], (CType)->
-          $(node).append(new CType().el)
+          jQuery(node).append(new CType().el)
           return
       return
     return

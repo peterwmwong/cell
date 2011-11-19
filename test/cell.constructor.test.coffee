@@ -53,8 +53,7 @@ define [
 
     # render()
     ok render.calledOnce, 'render() called once'
-    deepEqual render.getCall(0).args[0], cell::$R, 'render() was passed cell.prototype.$R (cell render helper)'
-    ok (typeof render.getCall(0).args[1] is 'function'), 'render() was passed a function (asynchronous render helper)'
+    ok render.getCall(0).calledWith(cell::$R), 'render() was passed cell.prototype.$R (cell render helper)'
 
     # Call Order
     ok init.calledBefore(tag), 'init() called before tag()'

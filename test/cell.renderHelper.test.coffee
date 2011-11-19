@@ -5,8 +5,8 @@ define [
   NODE = (tag)-> document.createElement tag
   $R = cell::$R
 
-  "$R(<empty string, undefined, null, or function>)": ->
-    for invalid in ['',undefined,null,(->)]
+  "$R(<empty string, undefined, null, false, or function>)": ->
+    for invalid in ['',undefined,null, (->)]
       equal $R(invalid), undefined, "#{invalid is '' and '""' or invalid} results to undefined"
 
   "$R(htmlTagString:<string>) HTML tag with attributes": ->
@@ -19,8 +19,7 @@ define [
       $R '<div>',
         NODE 'span'
         'hello'
-        for child in [NODE('table'), 'world', 5, [NODE('div')]]
-          child
+        [NODE('table'), 'world', 5, [NODE('div')]]
         0
         NODE 'a'
       ), "<div><span></span>hello<table></table>world5<div></div>0<a></a></div>"
@@ -35,8 +34,7 @@ define [
       $R 'p#myid.myclass.myclass2',
         NODE 'span'
         'hello'
-        for child in [NODE('table'), 'world', 5, [NODE('div')]]
-          child
+        [NODE('table'), 'world', 5, [NODE('div')]]
         0
         NODE 'a'
     ), '<p class=" myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
@@ -59,8 +57,7 @@ define [
       $R 'p', 'data-custom':'myattr', 'data-custom2':'myattr2',
         NODE 'span'
         'hello'
-        for child in [NODE('table'), 'world', 5, [NODE('div')]]
-          child
+        [NODE('table'), 'world', 5, [NODE('div')]]
         0
         NODE 'a'
     ), '<p data-custom="myattr" data-custom2="myattr2"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
