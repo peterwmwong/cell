@@ -22,7 +22,6 @@
         NewCell = cell.extend({
           tag: "<p id=\'testId\'>"
         });
-        debugger;
         return nodeHTMLEquals(new NewCell({
           id: 'overrideID'
         }).el, '<p id="overrideID"></p>');

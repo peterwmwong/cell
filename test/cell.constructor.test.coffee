@@ -19,7 +19,6 @@ define [
 
   'constructor({id:<string>}) id overrides cell::tag': ->
       NewCell = cell.extend tag: "<p id=\'testId\'>"
-      debugger
       nodeHTMLEquals new NewCell(id:'overrideID').el, '<p id="overrideID"></p>'
 
   'constructor({class:<string>}) class is used IN ADDITION to classes specified by cell::tag': ->

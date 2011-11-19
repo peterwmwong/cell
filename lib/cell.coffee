@@ -12,35 +12,10 @@ _isNode =
   else
     (o)-> typeof o is 'object' and typeof o.nodeType is 'number' and typeof o.nodeName is 'string'
 
-_slice = Array::slice
-
 # ES5 Function.bind
 _bind =
-  if fbind = Function.prototype.bind
-    (func,obj)-> fbind.apply func, [obj].concat _slice.call arguments, 2
-  else
-    (func,obj)->
-      args = _slice.call arguments, 2
-      -> func.apply obj, args.concat _slice.call arguments
-
-# Copies properties from src obj to dest obj
-_extendObj = (destObj, srcObj)->
-  destObj[p] = srcObj[p] for p of srcObj
-  return
-
-# Setup up prototypical inheritance (inspired by goog.inherits and Backbone.js inherits() implementations)
-_ctor = ->
-_inherits = (parent, protoProps)->
-  child =
-    if protoProps and protoProps.hasOwnProperty 'constructor' then protoProps.constructor
-    else -> return parent.apply this, arguments
-  _extendObj child, parent
-  _ctor.prototype = parent.prototype
-  child.prototype = new _ctor()
-  _extendObj child.prototype, protoProps
-  child::constructor = child
-  child.__super__ = parent.prototype
-  child
+  if Function::bind then (func,obj)-> func.bind obj
+  else (func,obj)-> ()-> func.apply obj
 
 _createDiv = -> document.createElement 'div'
 _tmpNode = _createDiv()
@@ -61,30 +36,31 @@ _selRx = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/
 _tagnameRx = /^<[A-z]/
 _evSelRx = /^([A-z]+)(\s(.*))?$/
 
-window.cell = cell = (@options = {})->
-  @model = @options.model if @options.model?
-  @init? @options
+window.cell = class cell
+  constructor: (@options = {})->
+    @model = @options.model if @options.model?
+    @init? @options
 
-  # Create DOM node and cache jQuery for node
-  @$el = jQuery(@el = @_tag())
+    # Create DOM node and cache jQuery for node
+    @$el = jQuery(@el = @_tag())
 
-  # Set id
-  @el.id = id if id = @options.id
+    # Set id
+    @el.id = id if id = @options.id
 
-  # Add the cell's class
-  for n,i in [@cell::name,@class,@options.class] when n
-    @el.className += (i and " #{n}" or n)
+    # Add the cell's class
+    for n,i in [@cell::name,@class,@options.class] when n
+      @el.className += (i and " #{n}" or n)
 
-  _renderNodes @el, ((nodes = @render? @$R) instanceof Array) and nodes or []
-  for evSel, handler of @on
-    if (typeof handler is 'function') and (m = _evSelRx.exec evSel) and (event = m[1])
-      @$el.on event, m[3], (_bind handler, this)
-  @afterRender?()
+    _renderNodes @el, ((nodes = @render? @$R) instanceof Array) and nodes or []
+    for evSel, handler of @on
+      if (typeof handler is 'function') and (m = _evSelRx.exec evSel) and (event = m[1])
+        @$el.on event, m[3], (_bind handler, this)
+    @afterRender?()
 
-  return
+    return
 
-cell.prototype =
   $: (selector)-> jQuery selector, @el
+  
   $R: (a,b,children...)->
     if a
       if b?.constructor isnt Object
@@ -96,8 +72,8 @@ cell.prototype =
           # HAML-like selector, ex. div#myID.myClass
           if m = _selRx.exec a
             el = document.createElement m[1] or 'div'
-            
-            if v = m[3] then el.id = v
+            el.id = v if v = m[3]
+
             if b
               if 'class' of b
                 el.className += b.class
@@ -107,7 +83,6 @@ cell.prototype =
 
             if v = m[4]
               el.className += v.replace /\./g, ' '
-            
             el
 
           # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
@@ -118,7 +93,7 @@ cell.prototype =
           else
             E "renderParent: unsupported parent string = '#{a}'"
 
-        else if a.prototype?.cell is a then (new a b).el
+        else if a::cell is a then (new a b).el
         else if _isNode a then a
         else E "renderParent: unsupported parent type = #{a}"
 
@@ -135,8 +110,8 @@ cell.extend = (protoProps = {})->
     throw "cell.extend(): expects {render,init} to be functions"
 
   else
-    child = _inherits this, protoProps
-    child.extend = cell.extend
+    child = class extends cell
+    child::[k] = v for k,v of protoProps
     child::cell = child
 
     # Normalize/fast-path tag
