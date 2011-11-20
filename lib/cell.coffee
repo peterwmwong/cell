@@ -39,10 +39,6 @@ _renderNodes = (parent,nodes)->
       E 'renderNodes: unsupported child type = '+c
   parent
 
-_selRx = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/
-_tagnameRx = /^<[A-z]/
-_evSelRx = /^([A-z]+)(\s(.*))?$/
-
 window.cell = class cell
   constructor: (@options = {})->
     @model = @options.model if @options.model?
@@ -60,7 +56,7 @@ window.cell = class cell
 
     _renderNodes @el, (_isArray nodes = @render? @$R) and nodes or []
     for evSel, handler of @on
-      if (typeof handler is 'function') and (m = _evSelRx.exec evSel) and (event = m[1])
+      if (typeof handler is 'function') and (m = /^([A-z]+)(\s(.*))?$/.exec evSel) and (event = m[1])
         @$el.on event, m[3], (_bind handler, this)
     @afterRender?()
 
@@ -77,7 +73,7 @@ window.cell = class cell
       parent =
         if typeof a is 'string'
           # HAML-like selector, ex. div#myID.myClass
-          if m = _selRx.exec a
+          if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec a
             el = document.createElement m[1] or 'div'
             el.id = v if v = m[3]
 
@@ -93,7 +89,7 @@ window.cell = class cell
             el
 
           # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
-          else if _tagnameRx.test a
+          else if /^<[A-z]/.test a
             _tmpNode.innerHTML = a
             _tmpNode.children[0]
 

@@ -1,5 +1,5 @@
 (function() {
-  var E, cell, document, exports, window, _bind, _createDiv, _evSelRx, _isArray, _isNode, _modNameRx, _renderNodes, _selRx, _tagnameRx, _tmpNode;
+  var E, cell, document, exports, window, _bind, _createDiv, _isArray, _isNode, _modNameRx, _renderNodes, _tmpNode;
   var __slice = Array.prototype.slice, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
@@ -58,12 +58,6 @@
     return parent;
   };
 
-  _selRx = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/;
-
-  _tagnameRx = /^<[A-z]/;
-
-  _evSelRx = /^([A-z]+)(\s(.*))?$/;
-
   window.cell = cell = (function() {
 
     function cell(options) {
@@ -82,7 +76,7 @@
       _ref2 = this.on;
       for (evSel in _ref2) {
         handler = _ref2[evSel];
-        if ((typeof handler === 'function') && (m = _evSelRx.exec(evSel)) && (event = m[1])) {
+        if ((typeof handler === 'function') && (m = /^([A-z]+)(\s(.*))?$/.exec(evSel)) && (event = m[1])) {
           this.$el.on(event, m[3], _bind(handler, this));
         }
       }
@@ -104,7 +98,7 @@
         }
         parent = (function() {
           if (typeof a === 'string') {
-            if (m = _selRx.exec(a)) {
+            if (m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec(a)) {
               el = document.createElement(m[1] || 'div');
               if (v = m[3]) el.id = v;
               if (b) {
@@ -119,7 +113,7 @@
               }
               if (v = m[4]) el.className += v.replace(/\./g, ' ');
               return el;
-            } else if (_tagnameRx.test(a)) {
+            } else if (/^<[A-z]/.test(a)) {
               _tmpNode.innerHTML = a;
               return _tmpNode.children[0];
             } else {
