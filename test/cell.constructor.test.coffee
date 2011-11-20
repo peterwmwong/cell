@@ -46,6 +46,7 @@ define [
     # init()
     ok init.calledOnce, 'init() called once'
     deepEqual init.getCall(0).args, [options], 'init() was passed options'
+    ok init.calledOn(instance), 'init() called with "this" set to cell instance'
 
     # tag()
     ok tag.calledOnce, 'tag() called once'

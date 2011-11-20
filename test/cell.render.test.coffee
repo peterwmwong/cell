@@ -1,8 +1,12 @@
 define ->
 
   testRender = (render, expectedInnerHTML)->
-    NewCell = cell.extend {render}
-    strictEqual new NewCell().el.innerHTML, expectedInnerHTML, "@el.innerHTML"
+    render_spy = sinon.spy render
+    NewCell = cell.extend {render: render_spy}
+    instance = new NewCell()
+    strictEqual instance.el.innerHTML, expectedInnerHTML, "@el.innerHTML"
+    ok render_spy.calledOnce, 'called once'
+    ok render_spy.calledOn(instance) , 'called with "this" set to cell instance'
 
 
   "called with cell renderHelper (cell::$R)": ->

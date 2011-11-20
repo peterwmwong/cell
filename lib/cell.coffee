@@ -121,11 +121,11 @@ cell.extend = (protoProps = {})->
       if (t = typeof protoProps.tag) is 'string'
         ->
           _tmpNode.innerHTML = protoProps.tag
-          _tmpNode.children[0] or document.createElement 'div'
+          _tmpNode.children[0] or _createDiv()
       else if t is 'function'
         ->
-          _tmpNode.innerHTML = protoProps.tag()
-          _tmpNode.children[0] or document.createElement 'div'
+          _tmpNode.innerHTML = @tag()
+          _tmpNode.children[0] or _createDiv()
       else
         _createDiv
 

@@ -161,10 +161,10 @@
       child.prototype.cell = child;
       child.prototype._tag = (t = typeof protoProps.tag) === 'string' ? function() {
         _tmpNode.innerHTML = protoProps.tag;
-        return _tmpNode.children[0] || document.createElement('div');
+        return _tmpNode.children[0] || _createDiv();
       } : t === 'function' ? function() {
-        _tmpNode.innerHTML = protoProps.tag();
-        return _tmpNode.children[0] || document.createElement('div');
+        _tmpNode.innerHTML = this.tag();
+        return _tmpNode.children[0] || _createDiv();
       } : _createDiv;
       if (typeof (css = protoProps.css) === 'string') {
         el = document.createElement('style');

@@ -66,6 +66,7 @@
         instance = new NewCell(options);
         ok(init.calledOnce, 'init() called once');
         deepEqual(init.getCall(0).args, [options], 'init() was passed options');
+        ok(init.calledOn(instance), 'init() called with "this" set to cell instance');
         ok(tag.calledOnce, 'tag() called once');
         ok(render.calledOnce, 'render() called once');
         ok(render.getCall(0).calledWith(cell.prototype.$R), 'render() was passed cell.prototype.$R (cell render helper)');

@@ -35,12 +35,14 @@ define ->
     target = instance.el
     $(target).trigger event = $.Event('click')
     ok handler.calledOnce, 'called once'
+    ok handler.alwaysCalledOn(instance), 'called with "this" set to cell instance'
     ok handler.getCall(0).calledWith(event), 'called with click event'
     strictEqual event.target, target, 'called with correct click event target'
     
     # Events bubble up as you would expect
     $(target).trigger event = $.Event('click')
     ok handler.calledTwice, 'called twice'
+    ok handler.alwaysCalledOn(instance), 'called with "this" set to cell instance'
     ok handler.getCall(1).calledWith(event), 'called with click event'
     strictEqual event.target, target, 'called with correct click event target'
 
@@ -64,9 +66,11 @@ define ->
 
     ok clickHandler.calledOnce, 'clickHandler called once'
     ok clickHandler.calledWith(clickEvent), 'clickHandler called with click event'
+    ok clickHandler.alwaysCalledOn(instance), 'called with "this" set to cell instance'
     strictEqual clickEvent.target, clickTarget, 'clickHandler called with correct click event target'
     
     ok mouseoverHandler.calledOnce, 'mouseoverHandler called once'
     ok mouseoverHandler.calledWith(mouseoverEvent), 'mouseoverHandler called with click event'
+    ok mouseoverHandler.alwaysCalledOn(instance), 'called with "this" set to cell instance'
     strictEqual mouseoverEvent.target, instance.el, 'mouseoverHandler called with correct click event target'
 

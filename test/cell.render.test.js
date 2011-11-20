@@ -2,11 +2,15 @@
   define(function() {
     var testRender;
     testRender = function(render, expectedInnerHTML) {
-      var NewCell;
+      var NewCell, instance, render_spy;
+      render_spy = sinon.spy(render);
       NewCell = cell.extend({
-        render: render
+        render: render_spy
       });
-      return strictEqual(new NewCell().el.innerHTML, expectedInnerHTML, "@el.innerHTML");
+      instance = new NewCell();
+      strictEqual(instance.el.innerHTML, expectedInnerHTML, "@el.innerHTML");
+      ok(render_spy.calledOnce, 'called once');
+      return ok(render_spy.calledOn(instance), 'called with "this" set to cell instance');
     };
     return {
       "called with cell renderHelper (cell::$R)": function() {
