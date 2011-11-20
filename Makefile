@@ -2,8 +2,7 @@
 #--------------------------- VARIABLES -----------------------------
 #===================================================================
 coffee = node_modules/.bin/coffee
-express = node_modules/express/package.json
-requirejsBuild = ./support/requirejs/r.js
+requirejsBuild = node_modules/.bin/r.js
 
 
 #===================================================================
@@ -11,7 +10,7 @@ requirejsBuild = ./support/requirejs/r.js
 #===================================================================
 .PHONY : clean test
 
-all: build/require.js build/require-min.js test
+all: build/require.js test
 
 #-------------------------------------------------------------------
 # DEV 
@@ -38,13 +37,9 @@ build/cell-builder-plugin.js: deps lib/cell-builder-plugin.coffee $(coffee)
 	mkdir -p build/
 	$(coffee) -o build/ -c lib/cell-builder-plugin.coffee
 
-build/require.js: support/requirejs/require.js
+build/require.js: deps
 	mkdir -p build/
-	cp support/requirejs/require.js build/
-
-build/require-min.js: support/requirejs/require-min.js
-	mkdir -p build/
-	cp support/requirejs/require-min.js build/
+	cp node_modules/requirejs/require.js build/
 
 #-------------------------------------------------------------------
 # Dependencies 
@@ -60,7 +55,7 @@ deps:
 # 	- Tests cell can be properly used by requirejs optimizer build script
 test-cell-builder-plugin: build/cell.js build/cell-builder-plugin.js
 	cp build/cell.js build/cell-builder-plugin.js test/fixtures/cell-builder-plugin
-	node $(requirejsBuild) -o paths.requireLib=../../../support/requirejs/require include=requireLib name="cell!Mock" out=test/fixtures/cell-builder-plugin/all.js baseUrl=test/fixtures/cell-builder-plugin/
+	node $(requirejsBuild) -o paths.requireLib=../../../node_modules/requirejs/require include=requireLib name="cell!Mock" out=test/fixtures/cell-builder-plugin/all.js baseUrl=test/fixtures/cell-builder-plugin/
 	rm test/fixtures/cell-builder-plugin/cell.js test/fixtures/cell-builder-plugin/cell-builder-plugin.js
 
 define MAKE_ALL_TESTS_COFFEE
