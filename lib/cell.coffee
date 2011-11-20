@@ -101,7 +101,6 @@ window.cell = class cell
     return
 
 cell.extend = (protoProps = {})->
-
   if typeof protoProps isnt 'object'
     throw "cell.extend(): expects an object {render,init,name}"
 
@@ -127,6 +126,7 @@ cell.extend = (protoProps = {})->
       else
         _createDiv
 
+
     # Render CSS in <style>
     if typeof (css = protoProps.css) is 'string'
       el = document.createElement 'style'
@@ -146,44 +146,43 @@ cell.extend = (protoProps = {})->
 
 # cell AMD Module
 if typeof define is 'function' and typeof require is 'function'
-  _modNameRx = /(.*\/)?(.*)/
+  _modNameRx = /(.*\/)?(.*)$/
 
   define 'cell', [], exports =
-    pluginBuilder: 'cell-pluginBuilder'
+    pluginBuilder: 'cell-builder-plugin'
     load: (name, req, load, config)->
       req [name], (CDef)->
         if typeof CDef isnt 'object'
           E "Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
         else
-          m = _modNameRx.exec(name)[1..]
+          CDef.name = _modNameRx.exec(name)[2]
 
-          if typeof exports.__preinstalledCells__?[name] is 'undefined'
+          if not exports.__preinstalledCells__?[name]?
             CDef.css_href ?= req.toUrl "#{name}.css"
 
           if typeof CDef.extends is 'string'
             req ["cell!#{CDef.extends}"], (parentCell)->
               if parentCell::name
                 CDef.class = parentCell::name + " #{CDef.class}" or ""
-              load parentCell.extend CDef, m[1]
+              load parentCell.extend CDef
               return
           else
-            load cell.extend CDef, m[1]
+            load cell.extend CDef
         return
       return
   
   # Load/render cells specified in DOM node data-cell attributes
-  require.ready ->
+  jQuery(document).ready ->
     jQuery('[data-cell]').each ->
-      node = this
-      if cellname=node.getAttribute('data-cell')
+      if cellname = @getAttribute 'data-cell'
         opts = {}
         cachebust = /(^\?cachebust)|(&cachebust)/.test window.location.search
-        if ((cachebustAttr = node.getAttribute('data-cell-cachebust')) isnt null or cachebust) and cachebustAttr isnt 'false'
+        if ((cachebustAttr = @getAttribute 'data-cell-cachebust') isnt null or cachebust) and cachebustAttr isnt 'false'
           opts.urlArgs = "bust=#{new Date().getTime()}"
-        if baseurl = node.getAttribute 'data-cell-baseurl'
+        if baseurl = @getAttribute 'data-cell-baseurl'
           opts.baseUrl = baseurl
-        require opts, ["cell!#{cellname}"], (CType)->
-          jQuery(node).append(new CType().el)
+        require opts, ["cell!#{cellname}"], (CType)=>
+          jQuery(@).append(new CType().el)
           return
       return
     return

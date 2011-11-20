@@ -181,17 +181,17 @@
   };
 
   if (typeof define === 'function' && typeof require === 'function') {
-    _modNameRx = /(.*\/)?(.*)/;
+    _modNameRx = /(.*\/)?(.*)$/;
     define('cell', [], exports = {
-      pluginBuilder: 'cell-pluginBuilder',
+      pluginBuilder: 'cell-builder-plugin',
       load: function(name, req, load, config) {
         req([name], function(CDef) {
-          var m, _ref, _ref2;
+          var _ref, _ref2;
           if (typeof CDef !== 'object') {
             E("Couldn't load " + name + " cell. cell definitions should be objects, but instead was " + (typeof CDef));
           } else {
-            m = _modNameRx.exec(name).slice(1);
-            if (typeof ((_ref = exports.__preinstalledCells__) != null ? _ref[name] : void 0) === 'undefined') {
+            CDef.name = _modNameRx.exec(name)[2];
+            if (!(((_ref = exports.__preinstalledCells__) != null ? _ref[name] : void 0) != null)) {
               if ((_ref2 = CDef.css_href) == null) {
                 CDef.css_href = req.toUrl("" + name + ".css");
               }
@@ -201,30 +201,30 @@
                 if (parentCell.prototype.name) {
                   CDef["class"] = parentCell.prototype.name + (" " + CDef["class"]) || "";
                 }
-                load(parentCell.extend(CDef, m[1]));
+                load(parentCell.extend(CDef));
               });
             } else {
-              load(cell.extend(CDef, m[1]));
+              load(cell.extend(CDef));
             }
           }
         });
       }
     });
-    require.ready(function() {
+    jQuery(document).ready(function() {
       jQuery('[data-cell]').each(function() {
-        var baseurl, cachebust, cachebustAttr, cellname, node, opts;
-        node = this;
-        if (cellname = node.getAttribute('data-cell')) {
+        var baseurl, cachebust, cachebustAttr, cellname, opts;
+        var _this = this;
+        if (cellname = this.getAttribute('data-cell')) {
           opts = {};
           cachebust = /(^\?cachebust)|(&cachebust)/.test(window.location.search);
-          if (((cachebustAttr = node.getAttribute('data-cell-cachebust')) !== null || cachebust) && cachebustAttr !== 'false') {
+          if (((cachebustAttr = this.getAttribute('data-cell-cachebust')) !== null || cachebust) && cachebustAttr !== 'false') {
             opts.urlArgs = "bust=" + (new Date().getTime());
           }
-          if (baseurl = node.getAttribute('data-cell-baseurl')) {
+          if (baseurl = this.getAttribute('data-cell-baseurl')) {
             opts.baseUrl = baseurl;
           }
           require(opts, ["cell!" + cellname], function(CType) {
-            jQuery(node).append(new CType().el);
+            jQuery(_this).append(new CType().el);
           });
         }
       });
