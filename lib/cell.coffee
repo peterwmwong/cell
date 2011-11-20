@@ -22,7 +22,7 @@ _isArray =
 # ES5 Function.bind
 _bind =
   if Function::bind then (func,obj)-> func.bind obj
-  else (func,obj)-> ()-> func.apply obj
+  else (func,obj)-> -> func.apply obj, arguments
 
 _createDiv = -> document.createElement 'div'
 _tmpNode = _createDiv()
