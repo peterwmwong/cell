@@ -1,12 +1,26 @@
 (function() {
-  var app, dir, express;
+  var connect, path, resolve, server, use, _i, _len, _ref;
 
-  app = (express = require('express')).createServer();
+  resolve = require('path').resolve;
 
-  app.use('/', express.static(dir = "" + __dirname + "/../../"));
+  server = (connect = require('connect'))();
 
-  console.log("Test Server: " + dir);
-
-  app.listen(8080);
+  if (process.argv.length !== 3) {
+    console.log("[dir]");
+  } else {
+    path = resolve(process.argv[2]);
+    _ref = [
+      connect.favicon(), connect.static(path, {
+        maxAge: 1,
+        hidden: true
+      })
+    ];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      use = _ref[_i];
+      server.use(use);
+    }
+    server.listen(8080);
+    console.log("'serving " + path + " on " + (server.address().port));
+  }
 
 }).call(this);

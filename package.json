@@ -1,0 +1,16 @@
+{
+  "author": "Peter Wong <peter.wm.wong@gmail.com>",
+  "name": "cell",
+  "version": "0.0.0",
+  "repository": {
+    "url": "https://github.com/peterwmwong/cell"
+  },
+  "main": "lib/index.js",
+  "engines": {
+    "node": ">=0.6.0"
+  },
+  "dependencies": {
+    "connect": "~1.8.0",
+    "coffee-script": "~1.1.3"
+  }
+}
