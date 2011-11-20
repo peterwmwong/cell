@@ -1,5 +1,5 @@
 (function() {
-  var E, cell, document, exports, window, _bind, _createDiv, _evSelRx, _isNode, _modNameRx, _renderNodes, _selRx, _tagnameRx, _tmpNode;
+  var E, cell, document, exports, window, _bind, _createDiv, _evSelRx, _isArray, _isNode, _modNameRx, _renderNodes, _selRx, _tagnameRx, _tmpNode;
   var __slice = Array.prototype.slice, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
@@ -17,6 +17,14 @@
   } : function(o) {
     return typeof o === 'object' && typeof o.nodeType === 'number' && typeof o.nodeName === 'string';
   };
+
+  _isArray = Array.isArray ? Array.isArray : (function() {
+    var _push;
+    _push = Array.prototype.push;
+    return function(obj) {
+      return obj.push === push && (obj.length != null);
+    };
+  })();
 
   _bind = Function.prototype.bind ? function(func, obj) {
     return func.bind(obj);
@@ -40,7 +48,7 @@
           parent.appendChild(c);
         } else if ((_ref = typeof c) === 'string' || _ref === 'number') {
           parent.appendChild(document.createTextNode(c));
-        } else if (c instanceof Array) {
+        } else if (_isArray(c)) {
           Array.prototype.unshift.apply(nodes, c);
         } else {
           E('renderNodes: unsupported child type = ' + c);
@@ -70,7 +78,7 @@
         n = _ref[i];
         if (n) this.el.className += i && (" " + n) || n;
       }
-      _renderNodes(this.el, ((nodes = typeof this.render === "function" ? this.render(this.$R) : void 0) instanceof Array) && nodes || []);
+      _renderNodes(this.el, (_isArray(nodes = typeof this.render === "function" ? this.render(this.$R) : void 0)) && nodes || []);
       _ref2 = this.on;
       for (evSel in _ref2) {
         handler = _ref2[evSel];

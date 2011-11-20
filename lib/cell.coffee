@@ -12,6 +12,13 @@ _isNode =
   else
     (o)-> typeof o is 'object' and typeof o.nodeType is 'number' and typeof o.nodeName is 'string'
 
+# ES5 Array.isArray
+_isArray =
+  if Array.isArray then Array.isArray
+  else do->
+    _push = Array::push
+    (obj)-> obj.push is push and obj.length?
+
 # ES5 Function.bind
 _bind =
   if Function::bind then (func,obj)-> func.bind obj
@@ -26,7 +33,7 @@ _renderNodes = (parent,nodes)->
       parent.appendChild c
     else if typeof c in ['string','number']
       parent.appendChild document.createTextNode c
-    else if c instanceof Array
+    else if _isArray c
       Array::unshift.apply nodes, c
     else
       E 'renderNodes: unsupported child type = '+c
@@ -51,7 +58,7 @@ window.cell = class cell
     for n,i in [@cell::name,@class,@options.class] when n
       @el.className += (i and " #{n}" or n)
 
-    _renderNodes @el, ((nodes = @render? @$R) instanceof Array) and nodes or []
+    _renderNodes @el, (_isArray nodes = @render? @$R) and nodes or []
     for evSel, handler of @on
       if (typeof handler is 'function') and (m = _evSelRx.exec evSel) and (event = m[1])
         @$el.on event, m[3], (_bind handler, this)
