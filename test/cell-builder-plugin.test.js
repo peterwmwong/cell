@@ -26,7 +26,7 @@
       'verifies a single JS and single CSS is created correctly': {
         async: function() {
           expect(5);
-          return load_fixture('<iframe src="/test/fixtures/cell-builder-plugin/index.html"></iframe>', function($f) {
+          return load_fixture('<iframe src="fixtures/cell-builder-plugin/index.html"></iframe>', function($f) {
             equal($f('body').html().trim(), '<div class="Mock">Mock: <div class="MockNested">MockNested</div></div>', "Should render Mock and MockNested Cells");
             equal($f('.Mock').css('color'), 'rgb(0, 0, 255)', "Should apply Mock css from all.css");
             equal($f('.MockNested').css('color'), 'rgb(255, 0, 0)', "Should apply MockNested css from all.css");

@@ -16,7 +16,7 @@ define ->
   'verifies a single JS and single CSS is created correctly':
     async: ->
       expect 5
-      load_fixture '<iframe src="/test/fixtures/cell-builder-plugin/index.html"></iframe>', ($f)->
+      load_fixture '<iframe src="fixtures/cell-builder-plugin/index.html"></iframe>', ($f)->
 
         equal $f('body').html().trim(),
           '<div class="Mock">Mock: <div class="MockNested">MockNested</div></div>'
