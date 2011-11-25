@@ -26,6 +26,9 @@ _bind =
 
 _createDiv = -> document.createElement 'div'
 _range = document.createRange()
+_fnode = (html)->
+  node = _range.createContextualFragment(html).childNodes[0]
+  node.nodeType is 1 and node
 
 _renderNodes = (parent,nodes)->
   while nodes.length > 0 when (c = nodes.shift())?
@@ -88,9 +91,7 @@ window.cell = class cell
             el
 
           # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
-          else if /^<[A-z]/.test a
-            _range.createContextualFragment(a).childNodes[0]
-
+          else if /^<[A-z]/.test a then _fnode a
           else
             E "renderParent: unsupported parent string = '#{a}'"
 
@@ -117,13 +118,9 @@ cell.extend = (protoProps = {})->
     # Normalize/fast-path tag
     child::_tag =
       if (t = typeof protoProps.tag) is 'string'
-        ->
-          node = _range.createContextualFragment(protoProps.tag).childNodes[0]
-          (node.nodeType is 1 and node) or _createDiv()
+        -> _fnode(protoProps.tag) or _createDiv()
       else if t is 'function'
-        ->
-          node = _range.createContextualFragment(@tag()).childNodes[0]
-          (node.nodeType is 1 and node) or _createDiv()
+        -> _fnode(@tag()) or _createDiv()
       else
         _createDiv
 
