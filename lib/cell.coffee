@@ -25,7 +25,7 @@ _bind =
   else (func,obj)-> -> func.apply obj, arguments
 
 _createDiv = -> document.createElement 'div'
-_tmpNode = _createDiv()
+_range = document.createRange()
 
 _renderNodes = (parent,nodes)->
   while nodes.length > 0 when (c = nodes.shift())?
@@ -75,23 +75,21 @@ window.cell = class cell
           # HAML-like selector, ex. div#myID.myClass
           if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec a
             el = document.createElement m[1] or 'div'
-            el.id = v if v = m[3]
+            el.setAttribute 'id', v if v = m[3]
 
             if b
               if 'class' of b
                 el.className += b.class
-                delete b.class
+                b.class = undefined
               for k,v of b
                 el.setAttribute k, v
 
-            if v = m[4]
-              el.className += v.replace /\./g, ' '
+            el.className += v.replace /\./g, ' ' if v = m[4]
             el
 
           # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
           else if /^<[A-z]/.test a
-            _tmpNode.innerHTML = a
-            _tmpNode.children[0]
+            _range.createContextualFragment(a).childNodes[0]
 
           else
             E "renderParent: unsupported parent string = '#{a}'"
@@ -120,12 +118,12 @@ cell.extend = (protoProps = {})->
     child::_tag =
       if (t = typeof protoProps.tag) is 'string'
         ->
-          _tmpNode.innerHTML = protoProps.tag
-          _tmpNode.children[0] or _createDiv()
+          node = _range.createContextualFragment(protoProps.tag).childNodes[0]
+          (node.nodeType is 1 and node) or _createDiv()
       else if t is 'function'
         ->
-          _tmpNode.innerHTML = @tag()
-          _tmpNode.children[0] or _createDiv()
+          node = _range.createContextualFragment(@tag()).childNodes[0]
+          (node.nodeType is 1 and node) or _createDiv()
       else
         _createDiv
 
@@ -176,6 +174,7 @@ if typeof define is 'function' and typeof require is 'function'
   
   # Load/render cells specified in DOM node data-cell attributes
   jQuery(document).ready ->
+    _range.selectNode document.body
     jQuery('[data-cell]').each ->
       if cellname = @getAttribute 'data-cell'
         opts = {}

@@ -1,5 +1,5 @@
 (function() {
-  var E, cell, document, exports, window, _bind, _createDiv, _isArray, _isNode, _modNameRx, _renderNodes, _tmpNode;
+  var E, cell, document, exports, window, _bind, _createDiv, _isArray, _isNode, _modNameRx, _range, _renderNodes;
   var __slice = Array.prototype.slice, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   E = (typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function') && (function(msg) {
@@ -38,7 +38,7 @@
     return document.createElement('div');
   };
 
-  _tmpNode = _createDiv();
+  _range = document.createRange();
 
   _renderNodes = function(parent, nodes) {
     var c, _ref;
@@ -100,11 +100,11 @@
           if (typeof a === 'string') {
             if (m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec(a)) {
               el = document.createElement(m[1] || 'div');
-              if (v = m[3]) el.id = v;
+              if (v = m[3]) el.setAttribute('id', v);
               if (b) {
                 if ('class' in b) {
                   el.className += b["class"];
-                  delete b["class"];
+                  b["class"] = void 0;
                 }
                 for (k in b) {
                   v = b[k];
@@ -114,8 +114,7 @@
               if (v = m[4]) el.className += v.replace(/\./g, ' ');
               return el;
             } else if (/^<[A-z]/.test(a)) {
-              _tmpNode.innerHTML = a;
-              return _tmpNode.children[0];
+              return _range.createContextualFragment(a).childNodes[0];
             } else {
               return E("renderParent: unsupported parent string = '" + a + "'");
             }
@@ -160,11 +159,13 @@
       }
       child.prototype.cell = child;
       child.prototype._tag = (t = typeof protoProps.tag) === 'string' ? function() {
-        _tmpNode.innerHTML = protoProps.tag;
-        return _tmpNode.children[0] || _createDiv();
+        var node;
+        node = _range.createContextualFragment(protoProps.tag).childNodes[0];
+        return (node.nodeType === 1 && node) || _createDiv();
       } : t === 'function' ? function() {
-        _tmpNode.innerHTML = this.tag();
-        return _tmpNode.children[0] || _createDiv();
+        var node;
+        node = _range.createContextualFragment(this.tag()).childNodes[0];
+        return (node.nodeType === 1 && node) || _createDiv();
       } : _createDiv;
       if (typeof (css = protoProps.css) === 'string') {
         el = document.createElement('style');
@@ -213,6 +214,7 @@
       }
     });
     jQuery(document).ready(function() {
+      _range.selectNode(document.body);
       jQuery('[data-cell]').each(function() {
         var baseurl, cachebust, cachebustAttr, cellname, opts;
         var _this = this;
