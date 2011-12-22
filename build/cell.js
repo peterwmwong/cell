@@ -150,7 +150,7 @@
     } else {
       child = (function() {
 
-        __extends(_Class, cell);
+        __extends(_Class, this);
 
         function _Class() {
           _Class.__super__.constructor.apply(this, arguments);
@@ -158,7 +158,7 @@
 
         return _Class;
 
-      })();
+      }).call(this);
       for (k in protoProps) {
         v = protoProps[k];
         child.prototype[k] = v;

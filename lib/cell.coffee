@@ -111,7 +111,7 @@ cell.extend = (protoProps = {})->
     throw "cell.extend(): expects {render,init} to be functions"
 
   else
-    child = class extends cell
+    child = class extends this
     child::[k] = v for k,v of protoProps
     child::cell = child
 

@@ -98,5 +98,30 @@
         })());
       }
       return _results;
+    },
+    'extend({}), inherits parent cell attributes': function() {
+      var JuniorBlargo, SeniorBlargo;
+      SeniorBlargo = cell.extend({
+        name: 'SeniorBlargo',
+        key1: 'val1',
+        key2: 'val2'
+      });
+      JuniorBlargo = SeniorBlargo.extend();
+      equal(SeniorBlargo.prototype.name, JuniorBlargo.prototype.name, 'Same name');
+      equal(SeniorBlargo.prototype.key1, JuniorBlargo.prototype.key1, 'Same attribute key1');
+      return equal(SeniorBlargo.prototype.key2, JuniorBlargo.prototype.key2, 'Same attribute key2');
+    },
+    'extend({}), inherits parent cell attributes are overrideable': function() {
+      var JuniorBlargo, SeniorBlargo;
+      SeniorBlargo = cell.extend({
+        name: 'SeniorBlargo',
+        toBeOverriden: 'val'
+      });
+      JuniorBlargo = SeniorBlargo.extend({
+        name: 'JuniorBlargo',
+        toBeOverriden: 'val2'
+      });
+      equal(JuniorBlargo.prototype.name, 'JuniorBlargo', 'Same name');
+      return equal(JuniorBlargo.prototype.toBeOverriden, 'val2', 'Same attribute key1');
     }
   });

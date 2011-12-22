@@ -10,5 +10,5 @@ else
     connect.static path, maxAge: 1, hidden: true
   ]
 
-  server.listen 8080
-  console.log "'serving #{path} on #{server.address().port}"
+  server.listen 8080, ->
+  	console.log "'serving #{path} on #{server.address().port}"

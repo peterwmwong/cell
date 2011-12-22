@@ -19,8 +19,9 @@
       use = _ref[_i];
       server.use(use);
     }
-    server.listen(8080);
-    console.log("'serving " + path + " on " + (server.address().port));
+    server.listen(8080, function() {
+      return console.log("'serving " + path + " on " + (server.address().port));
+    });
   }
 
 }).call(this);

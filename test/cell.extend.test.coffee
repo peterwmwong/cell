@@ -35,3 +35,22 @@ define
         catch e
           equal e, "cell.extend(): expects {render,init} to be functions", whenStr
 
+  'extend({}), inherits parent cell attributes': ->
+    SeniorBlargo = cell.extend
+      name:'SeniorBlargo'
+      key1:'val1'
+      key2:'val2'
+    JuniorBlargo = SeniorBlargo.extend()
+    equal SeniorBlargo::name, JuniorBlargo::name, 'Same name'
+    equal SeniorBlargo::key1, JuniorBlargo::key1, 'Same attribute key1'
+    equal SeniorBlargo::key2, JuniorBlargo::key2, 'Same attribute key2'
+
+  'extend({}), inherits parent cell attributes are overrideable': ->
+    SeniorBlargo = cell.extend
+      name:'SeniorBlargo'
+      toBeOverriden:'val'
+    JuniorBlargo = SeniorBlargo.extend
+      name:'JuniorBlargo'
+      toBeOverriden:'val2'
+    equal JuniorBlargo::name, 'JuniorBlargo', 'Same name'
+    equal JuniorBlargo::toBeOverriden, 'val2', 'Same attribute key1'
