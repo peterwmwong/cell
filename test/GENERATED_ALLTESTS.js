@@ -1,1 +1,1 @@
-define(["test!./cell.tag.test","test!./cell.constructor.test","test!./cell-builder-plugin.test","test!./cell.render.test","test!./cell.on.test","test!./cell.extend.test","test!./cell.renderHelper.test"]);
+define(["test!./cell-builder-plugin.test","test!./cell.constructor.test","test!./cell.extend.test","test!./cell.on.test","test!./cell.render.test","test!./cell.renderHelper.test","test!./cell.tag.test"]);

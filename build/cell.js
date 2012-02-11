@@ -110,7 +110,7 @@
               if (b) {
                 if ('class' in b) {
                   el.className += b["class"];
-                  b["class"] = void 0;
+                  delete b["class"];
                 }
                 for (k in b) {
                   v = b[k];

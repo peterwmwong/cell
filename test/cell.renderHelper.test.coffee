@@ -49,8 +49,8 @@ define [
 
   "$R(HAMLString:<string>, attrMap:<object>) with attribute map": ->
     nodeHTMLEquals (
-      $R 'p#myid.myclass.myclass2', 'data-custom':'myattr', 'data-custom2':'myattr2'
-    ), '<p class=" myclass myclass2" data-custom="myattr" data-custom2="myattr2" id="myid"></p>'
+      $R 'p#myid.myclass.myclass2', class:'myclass3', 'data-custom':'myattr', 'data-custom2':'myattr2'
+    ), '<p class="myclass3 myclass myclass2" data-custom="myattr" data-custom2="myattr2" id="myid"></p>'
 
   "$R(HAMLString:<string>, attrMap:<object>, children...:<DOM Nodes, strings, numbers, or arrays>) with attribute map and children": ->
     nodeHTMLEquals (

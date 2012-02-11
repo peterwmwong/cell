@@ -66,7 +66,7 @@ export MAKE_ALL_TESTS_COFFEE
 
 test: deps test-cell-builder-plugin
 	find test/ -name '*.coffee' | xargs $(coffee) -c
-	cd test/; find -name "*.test.js" -type f | xargs coffee -e "$$MAKE_ALL_TESTS_COFFEE" > GENERATED_ALLTESTS.js
+	cd test/; find . -name "*.test.js" -type f | xargs coffee -e "$$MAKE_ALL_TESTS_COFFEE" > GENERATED_ALLTESTS.js
 
 clean: 
 	@@rm -rf build

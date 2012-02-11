@@ -83,7 +83,7 @@ window.cell = class cell
             if b
               if 'class' of b
                 el.className += b.class
-                b.class = undefined
+                delete b.class
               for k,v of b
                 el.setAttribute k, v
 
