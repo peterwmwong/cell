@@ -13,9 +13,7 @@ _isNode =
     (o)-> typeof o is 'object' and typeof o.nodeType is 'number' and typeof o.nodeName is 'string'
 
 # ES5 Array.isArray
-_isArray =
-  if Array.isArray then Array.isArray
-  else (obj)-> obj and obj.push is Array::push and obj.length?
+_isArray = Array.isArray or (obj)-> obj and obj.push is Array::push and obj.length?
 
 # ES5 Function.bind
 _bind =

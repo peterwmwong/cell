@@ -18,7 +18,7 @@
     return typeof o === 'object' && typeof o.nodeType === 'number' && typeof o.nodeName === 'string';
   };
 
-  _isArray = Array.isArray ? Array.isArray : function(obj) {
+  _isArray = Array.isArray || function(obj) {
     return obj && obj.push === Array.prototype.push && (obj.length != null);
   };
 
