@@ -15,9 +15,7 @@ _isNode =
 # ES5 Array.isArray
 _isArray =
   if Array.isArray then Array.isArray
-  else do->
-    _push = Array::push
-    (obj)-> obj.push is push and obj.length?
+  else (obj)-> obj and obj.push is Array::push and obj.length?
 
 # ES5 Function.bind
 _bind =

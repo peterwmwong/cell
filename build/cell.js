@@ -18,13 +18,9 @@
     return typeof o === 'object' && typeof o.nodeType === 'number' && typeof o.nodeName === 'string';
   };
 
-  _isArray = Array.isArray ? Array.isArray : (function() {
-    var _push;
-    _push = Array.prototype.push;
-    return function(obj) {
-      return obj.push === push && (obj.length != null);
-    };
-  })();
+  _isArray = Array.isArray ? Array.isArray : function(obj) {
+    return obj && obj.push === Array.prototype.push && (obj.length != null);
+  };
 
   _bind = Function.prototype.bind ? function(func, obj) {
     return func.bind(obj);
