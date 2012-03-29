@@ -13,14 +13,15 @@
       return ok(render_spy.calledOn(instance), 'called with "this" set to cell instance');
     };
     return {
-      "called with cell renderHelper (cell::$R)": function() {
+      "called with cell renderHelper (cell::_)": function() {
         var NewCell, instance, render;
         NewCell = cell.extend({
           render: render = sinon.spy()
         });
         instance = new NewCell();
+        debugger;
         ok(render.calledOnce, 'render() called once');
-        return ok(render.getCall(0).calledWith(cell.prototype.$R), 'render() was passed cell.prototype.$R (cell render helper)');
+        return ok(render.getCall(0).calledWith(cell.prototype._), 'render() was passed cell.prototype._ (cell render helper)');
       },
       "-> <NOT AN ARRAY>": function() {
         var invalid, _i, _len, _ref, _results;

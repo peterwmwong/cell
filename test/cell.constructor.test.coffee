@@ -53,7 +53,7 @@ define [
 
     # render()
     ok render.calledOnce, 'render() called once'
-    ok render.getCall(0).calledWith(cell::$R), 'render() was passed cell.prototype.$R (cell render helper)'
+    ok render.getCall(0).calledWith(cell::_), 'render() was passed cell.prototype._ (cell render helper)'
 
     # Call Order
     ok init.calledBefore(tag), 'init() called before tag()'

@@ -9,11 +9,12 @@ define ->
     ok render_spy.calledOn(instance) , 'called with "this" set to cell instance'
 
 
-  "called with cell renderHelper (cell::$R)": ->
+  "called with cell renderHelper (cell::_)": ->
     NewCell = cell.extend render: render = sinon.spy()
     instance = new NewCell()
+    debugger
     ok render.calledOnce, 'render() called once'
-    ok render.getCall(0).calledWith(cell::$R), 'render() was passed cell.prototype.$R (cell render helper)'
+    ok render.getCall(0).calledWith(cell::_), 'render() was passed cell.prototype._ (cell render helper)'
 
   "-> <NOT AN ARRAY>": ->
     for invalid in [undefined, null, (->), 5, 'testString', document.createElement('a')] then do(invalid)->

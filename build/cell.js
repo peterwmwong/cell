@@ -74,7 +74,7 @@
         n = _ref[i];
         if (n) this.el.className += i && (" " + n) || n;
       }
-      _renderNodes(this.el, (_isArray(nodes = typeof this.render === "function" ? this.render(this.$R) : void 0)) && nodes || []);
+      _renderNodes(this.el, (_isArray(nodes = typeof this.render === "function" ? this.render(this._) : void 0)) && nodes || []);
       _ref2 = this.on;
       for (evSel in _ref2) {
         handler = _ref2[evSel];
@@ -90,7 +90,7 @@
       return jQuery(selector, this.el);
     };
 
-    cell.prototype.$R = function() {
+    cell.prototype._ = function() {
       var a, b, children, el, k, m, parent, v;
       a = arguments[0], b = arguments[1], children = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
       if (a) {

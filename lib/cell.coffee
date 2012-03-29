@@ -53,7 +53,7 @@ window.cell = class cell
     for n,i in [@cell::name,@class,@options.class] when n
       @el.className += (i and " #{n}" or n)
 
-    _renderNodes @el, (_isArray nodes = @render? @$R) and nodes or []
+    _renderNodes @el, (_isArray nodes = @render? @_) and nodes or []
     for evSel, handler of @on
       if (typeof handler is 'function') and (m = /^([A-z]+)(\s(.*))?$/.exec evSel) and (event = m[1])
         @$el.on event, m[3], (_bind handler, this)
@@ -63,7 +63,7 @@ window.cell = class cell
 
   $: (selector)-> jQuery selector, @el
   
-  $R: (a,b,children...)->
+  _: (a,b,children...)->
     if a
       if b?.constructor isnt Object
         children.unshift b

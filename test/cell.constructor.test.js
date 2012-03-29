@@ -69,7 +69,7 @@
         ok(init.calledOn(instance), 'init() called with "this" set to cell instance');
         ok(tag.calledOnce, 'tag() called once');
         ok(render.calledOnce, 'render() called once');
-        ok(render.getCall(0).calledWith(cell.prototype.$R), 'render() was passed cell.prototype.$R (cell render helper)');
+        ok(render.getCall(0).calledWith(cell.prototype._), 'render() was passed cell.prototype._ (cell render helper)');
         ok(init.calledBefore(tag), 'init() called before tag()');
         return ok(tag.calledBefore(render), 'tag() called before render()');
       }
