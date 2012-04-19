@@ -13,7 +13,6 @@ define [
       testTag invalid, "<div></div>"
 
   'Bad Tag String defaults to <div>': ->
-    debugger
     testTag 'blarg', '<div></div>'
 
   'Tag String <p data-custom="myAttr" class="myClass" id="myId">': ->

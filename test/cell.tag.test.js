@@ -25,7 +25,7 @@
         return _results;
       },
       'Bad Tag String defaults to <div>': function() {
-        debugger;        return testTag('blarg', '<div></div>');
+        return testTag('blarg', '<div></div>');
       },
       'Tag String <p data-custom="myAttr" class="myClass" id="myId">': function() {
         return testTag('<p data-custom="myAttr" class="myClass" id="myId">', '<p class="myClass" data-custom="myAttr" id="myId"></p>');
