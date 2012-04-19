@@ -27,7 +27,27 @@ define [
   "_(HAMLString:<string>) tag name, id, multiple classes": ->
     nodeHTMLEquals (
       _ 'p#myid.myclass.myclass2'
-    ), '<p class=" myclass myclass2" id="myid"></p>'
+    ), '<p class="myclass myclass2" id="myid"></p>'
+
+  "_(HAMLString:<string>, text:<string>)": ->
+    nodeHTMLEquals (
+      _ 'p#myid.myclass.myclass2', 'blargo'
+    ), '<p class="myclass myclass2" id="myid">blargo</p>'
+
+  "_(HAMLString:<string>, num:<number>)": ->
+    nodeHTMLEquals (
+      _ 'p#myid.myclass.myclass2', 5
+    ), '<p class="myclass myclass2" id="myid">5</p>'
+
+  "_(HAMLString:<string>, node:<DOM Node>)": ->
+    nodeHTMLEquals (
+      _ 'p#myid.myclass.myclass2', NODE 'span'
+    ), '<p class="myclass myclass2" id="myid"><span></span></p>'
+
+  "_(HAMLString:<string>, children:<array of strings>)": ->
+    nodeHTMLEquals (
+      _ 'p#myid.myclass.myclass2', ['blargo']
+    ), '<p class="myclass myclass2" id="myid">blargo</p>'
 
   "_(HAMLString:<string>, children...:<DOM Nodes, strings, numbers, or arrays>) with children": ->
     nodeHTMLEquals (
@@ -37,7 +57,7 @@ define [
         [NODE('table'), 'world', 5, [NODE('div')]]
         0
         NODE 'a'
-    ), '<p class=" myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
+    ), '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
 
   "_(HAMLString:<string>, children...:<NOT DOM NODES, STRINGS, NUMBERS, or ARRAYS>)": ->
     nodeHTMLEquals (
@@ -45,7 +65,7 @@ define [
         undefined
         null
         (->)
-    ), '<p class=" myclass myclass2" id="myid"></p>'
+    ), '<p class="myclass myclass2" id="myid"></p>'
 
   "_(HAMLString:<string>, attrMap:<object>) with attribute map": ->
     nodeHTMLEquals (
@@ -71,7 +91,25 @@ define [
     ), '<p data-custom="myattr" data-custom2="myattr2"></p>'
 
   "_(cell:<cell>, options:<object>)": ->
-    NewCell = cell.extend render: -> [NODE @options.tagName]
+    TestCell = cell.extend render: -> [NODE @options.tagName]
     nodeHTMLEquals (
-      _ NewCell, tagName: 'span'
+      _ TestCell, tagName: 'span'
     ), '<div><span></span></div>'
+
+  "_(cell:<cell>)": ->
+    TestCell = cell.extend render: -> [NODE 'a']
+    nodeHTMLEquals (
+      _ TestCell
+    ), '<div><a></a></div>'
+
+  "_(cell:<cell>, HAMLString:<string>, options:<object>)": ->
+    TestCell = cell.extend render: -> [NODE @options.tagName]
+    nodeHTMLEquals (
+      _ TestCell, '#myid.myclass.myclass2', tagName: 'span'
+    ), '<div class="myclass myclass2" id="myid"><span></span></div>'
+
+  "_(cell:<cell>, HAMLString:<string>)": ->
+    TestCell = cell.extend render: -> [NODE 'a']
+    nodeHTMLEquals (
+      _ TestCell, '#myid.myclass.myclass2'
+    ), '<div class="myclass myclass2" id="myid"><a></a></div>'

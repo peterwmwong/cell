@@ -1,9 +1,11 @@
 # Error logging
-E = (typeof console?.error is 'function') and ((msg)-> console.error msg) or ->
+E = if (typeof console?.error is 'function') then ((msg)-> console.error msg) else ->
 
 # When running in require.js optimizer, window & document do not exist
 window = this
 document = window.document or {createElement:->}
+
+_isObj = (o)-> o?.constructor is Object
 
 # is-Node check for all browsers
 _isNode =
@@ -23,8 +25,7 @@ _bind =
 _createDiv = -> document.createElement 'div'
 _range = document.createRange()
 _fnode = (html)->
-  node = _range.createContextualFragment(html).childNodes[0]
-  node.nodeType is 1 and node
+  (node = _range.createContextualFragment(html).childNodes[0]).nodeType is 1 and node
 
 _renderNodes = (parent,nodes)->
   while nodes.length > 0 when (c = nodes.shift())?
@@ -38,6 +39,17 @@ _renderNodes = (parent,nodes)->
       E 'renderNodes: unsupported child type = '+c
   parent
 
+# HAML-like selector, ex. div#myID.myClass
+_parseHAML = (haml)->
+  if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec haml
+    result =
+      tag: m[1] or 'div'
+      id:  v = m[3]
+      className: if v = m[4] then v.slice(1).replace(/\./g, ' ') else ''
+
+if not String::trim
+  String::trim = -> $.trim this
+
 window.cell = class cell
   constructor: (@options = {})->
     @model = @options.model if @options.model?
@@ -50,13 +62,14 @@ window.cell = class cell
     @el.id = id if id = @options.id
 
     # Add the cell's class
+    className = @el.className
     for n,i in [@cell::name,@class,@options.class] when n
-      @el.className += (i and " #{n}" or n)
+      className += " #{n}"
+    @el.className = className if className = className.trim()
 
-    _renderNodes @el, (_isArray nodes = @render? @_) and nodes or []
-    for evSel, handler of @on
-      if (typeof handler is 'function') and (m = /^([A-z]+)(\s(.*))?$/.exec evSel) and (event = m[1])
-        @$el.on event, m[3], (_bind handler, this)
+    _renderNodes @el, if (_isArray nodes = @render? @_) then nodes else []
+    for evSel, handler of @on when (typeof handler is 'function') and (m = /^([A-z]+)(\s(.*))?$/.exec evSel) and (event = m[1])
+      @$el.on event, m[3], _bind(handler, this)
     @afterRender?()
 
     return
@@ -65,25 +78,26 @@ window.cell = class cell
   
   _: (a,b,children...)->
     if a
-      if b?.constructor isnt Object
+      if _isNode b
         children.unshift b
         b = undefined
 
       parent =
         if typeof a is 'string'
-          # HAML-like selector, ex. div#myID.myClass
-          if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec a
-            el = document.createElement m[1] or 'div'
-            el.setAttribute 'id', v if v = m[3]
+          if haml = _parseHAML a
+            el = document.createElement haml.tag
+            el.setAttribute 'id', haml.id if haml.id
 
             if b
-              if 'class' of b
-                el.className += b.class
-                delete b.class
-              for k,v of b
-                el.setAttribute k, v
+              if not _isObj b
+                children.unshift b
+              else
+                for k,v of b
+                  if k isnt 'class' then el.setAttribute k, v
+                  else el.className += v
 
-            el.className += v.replace /\./g, ' ' if v = m[4]
+            if haml.className
+              el.className += if el.className then " #{haml.className}" else haml.className
             el
 
           # HTML start tag, ex. "<div class='blah' style='color:#F00;'>"
@@ -91,12 +105,25 @@ window.cell = class cell
           else
             E "renderParent: unsupported parent string = '#{a}'"
 
-        else if a::cell is a then (new a b).el
+        else if a::cell is a
+          cell_options =
+            if typeof b is 'string' and (haml = _parseHAML b)
+              if _isObj children[0]
+                (c = children.shift()).id = haml.id
+                c.class = haml.className
+                c
+              else 
+                id: haml.id
+                class: haml.className
+
+            else if _isObj b
+              b
+          (new a cell_options).el
+
         else if _isNode a then a
         else E "renderParent: unsupported parent type = #{a}"
 
-      return parent and _renderNodes parent, children
-    return
+      parent and _renderNodes parent, children
 
 cell.extend = (protoProps = {})->
   if typeof protoProps isnt 'object'
@@ -120,7 +147,6 @@ cell.extend = (protoProps = {})->
       else
         _createDiv
 
-
     # Render CSS in <style>
     if typeof (css = protoProps.css) is 'string'
       el = document.createElement 'style'
@@ -140,8 +166,6 @@ cell.extend = (protoProps = {})->
 
 # cell AMD Module
 if typeof define is 'function' and typeof require is 'function'
-  _modNameRx = /(.*\/)?(.*)$/
-
   define 'cell', [], exports =
     pluginBuilder: 'cell-builder-plugin'
     load: (name, req, load, config)->
@@ -149,7 +173,7 @@ if typeof define is 'function' and typeof require is 'function'
         if typeof CDef isnt 'object'
           E "Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
         else
-          CDef.name = _modNameRx.exec(name)[2]
+          CDef.name = /(.*\/)?(.*)$/.exec(name)[2]
 
           if not exports.__preinstalledCells__?[name]?
             CDef.css_href ?= req.toUrl "#{name}.css"

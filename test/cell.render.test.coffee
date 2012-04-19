@@ -12,7 +12,6 @@ define ->
   "called with cell renderHelper (cell::_)": ->
     NewCell = cell.extend render: render = sinon.spy()
     instance = new NewCell()
-    debugger
     ok render.calledOnce, 'render() called once'
     ok render.getCall(0).calledWith(cell::_), 'render() was passed cell.prototype._ (cell render helper)'
 
