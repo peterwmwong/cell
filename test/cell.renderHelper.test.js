@@ -41,7 +41,7 @@
         return nodeHTMLEquals(_('p#myid.myclass.myclass2', ['blargo']), '<p class="myclass myclass2" id="myid">blargo</p>');
       },
       "_(HAMLString:<string>, children...:<DOM Nodes, strings, numbers, or arrays>) with children": function() {
-        return nodeHTMLEquals(_('p#myid.myclass.myclass2', NODE('span'), 'hello', [NODE('table'), 'world', 5, [NODE('div')]], 0, NODE('a')), '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a></p>');
+        return nodeHTMLEquals(_('p#myid.myclass.myclass2', NODE('span'), 'hello', [NODE('table'), 'world', 5, [NODE('div')]], 0, NODE('a'), jQuery('<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>')), '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></p>');
       },
       "_(HAMLString:<string>, children...:<NOT DOM NODES, STRINGS, NUMBERS, or ARRAYS>)": function() {
         return nodeHTMLEquals(_('p#myid.myclass.myclass2', void 0, null, (function() {})), '<p class="myclass myclass2" id="myid"></p>');

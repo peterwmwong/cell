@@ -57,7 +57,8 @@ define [
         [NODE('table'), 'world', 5, [NODE('div')]]
         0
         NODE 'a'
-    ), '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
+        jQuery('<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>')
+    ), '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></p>'
 
   "_(HAMLString:<string>, children...:<NOT DOM NODES, STRINGS, NUMBERS, or ARRAYS>)": ->
     nodeHTMLEquals (

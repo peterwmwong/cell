@@ -31,6 +31,8 @@ _renderNodes = (parent,nodes)->
   while nodes.length > 0 when (c = nodes.shift())?
     if _isNode c
       parent.appendChild c
+    else if c.jquery
+      c.appendTo parent
     else if typeof c in ['string','number']
       parent.appendChild document.createTextNode c
     else if _isArray c

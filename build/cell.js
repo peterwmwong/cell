@@ -54,6 +54,8 @@
       if ((c = nodes.shift()) != null) {
         if (_isNode(c)) {
           parent.appendChild(c);
+        } else if (c.jquery) {
+          c.appendTo(parent);
         } else if ((_ref = typeof c) === 'string' || _ref === 'number') {
           parent.appendChild(document.createTextNode(c));
         } else if (_isArray(c)) {
