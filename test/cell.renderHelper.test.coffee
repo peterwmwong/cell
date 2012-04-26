@@ -39,6 +39,11 @@ define [
       _ 'p#myid.myclass.myclass2', 5
     ), '<p class="myclass myclass2" id="myid">5</p>'
 
+  "_(HAMLString:<string>, num:<number == 0>)": ->
+    nodeHTMLEquals (
+      _ 'p#myid.myclass.myclass2', 0
+    ), '<p class="myclass myclass2" id="myid">0</p>'
+
   "_(HAMLString:<string>, node:<DOM Node>)": ->
     nodeHTMLEquals (
       _ 'p#myid.myclass.myclass2', NODE 'span'

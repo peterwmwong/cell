@@ -90,7 +90,7 @@ window.cell = class cell
             el = document.createElement haml.tag
             el.setAttribute 'id', haml.id if haml.id
 
-            if b
+            if b?
               if not _isObj b
                 children.unshift b
               else

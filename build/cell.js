@@ -146,7 +146,7 @@
               if (haml.id) {
                 el.setAttribute('id', haml.id);
               }
-              if (b) {
+              if (b != null) {
                 if (!_isObj(b)) {
                   children.unshift(b);
                 } else {
