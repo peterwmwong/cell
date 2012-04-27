@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>cell spec-runner</title>
+  <link rel="shortcut icon" type="image/png" href="/support/jasmine/jasmine_favicon.png">
+  <link rel="stylesheet" type="text/css" href="/support/jasmine/jasmine.css">
+  <link rel="stylesheet" type="text/css" href="./jasmine-override.css">
+  <script src="/support/jquery.js"></script>
+  <script src="/support/jasmine/jasmine.js"></script>
+  <script src="/support/jasmine/jasmine-html.js"></script>
+  <script src="/support/sinon.js"></script>
+  <script src="/support/underscore.js"></script>
+  <script src="/support/backbone.js"></script>
+  <script src="/node_modules/requirejs/require.js"></script>
+  <script>
+    require.config({
+      context: 'specRunner', // TODO rename spec-runner
+      baseUrl: '/specs/',
+      paths: {
+        'SpecHelpers': '../spec-runner/SpecHelpers',
+        'spec': '../spec-runner/spec',
+        'cell': '../build/cell'
+      }
+    })(['../spec-runner/SpecRunner']);
+  </script>
+</head>
+<body></body>
+<script>
+if(/[\?&]live/.exec(window.location.search)){
+  $('head').append($("<script src='/support/live.js'>"));
+}
+</script>
+</html>
