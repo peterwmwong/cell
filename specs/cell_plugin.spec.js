@@ -9,10 +9,11 @@
         this.TestCell1 = TestCell1;
         return this.testCell1 = new this.TestCell1;
       });
-      it('is an instanceof of cell', function() {
-        return expect(this.testCell1 instanceof cell).toBe(true);
+      it('attaches <link> for stylesheet', function() {
+        return expect($('link[href="/specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length).not.toBe(0);
       });
-      return it('is an instanceof of Backbone.View', function() {
+      return it('is an instanceof of Backbone.View and cell', function() {
+        expect(this.testCell1 instanceof cell).toBe(true);
         return expect(this.testCell1 instanceof Backbone.View).toBe(true);
       });
     };

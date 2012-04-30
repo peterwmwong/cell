@@ -2,7 +2,7 @@
 (function() {
 
   define({
-    render: function() {
+    render_el: function() {
       return ["MockNested"];
     }
   });

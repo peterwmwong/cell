@@ -2,11 +2,8 @@
 (function() {
 
   define(['./spec-utils'], function(_arg) {
-    var NODE, nodeHTMLEquals, nodeToHTML;
-    nodeHTMLEquals = _arg.nodeHTMLEquals, nodeToHTML = _arg.nodeToHTML;
-    NODE = function(tag) {
-      return document.createElement(tag);
-    };
+    var node, nodeHTMLEquals, nodeToHTML, stringify;
+    nodeHTMLEquals = _arg.nodeHTMLEquals, nodeToHTML = _arg.nodeToHTML, stringify = _arg.stringify, node = _arg.node;
     return function(_arg1) {
       var beforeEachRequire;
       beforeEachRequire = _arg1.beforeEachRequire;
@@ -18,7 +15,9 @@
         var it_renders;
         it_renders = function(desc, render_el_return, expected_html_output) {
           return describe(desc, function() {
-            return it("[" + (render_el_return.join(',')) + "] renders el === '" + expected_html_output + "'", function() {
+            var input_strings;
+            input_strings = stringify(render_el_return);
+            return it("[" + input_strings + "] renders el === '" + expected_html_output + "'", function() {
               this.testCell1.render_el = function() {
                 return render_el_return;
               };
@@ -27,14 +26,15 @@
           });
         };
         it('no render_el', function() {
-          return nodeHTMLEquals(this.testCell1.render().el, '<div class="TestCell1"></div>');
+          return nodeHTMLEquals(this.testCell1.render().el, '<div class="TestCell1">TestCell1 Contents</div>');
         });
         it('render_el is passed cell.__', function() {
           this.testCell1.render_el = sinon.stub();
           this.testCell1.render();
           return expect(this.testCell1.render_el.calledWithExactly(cell.prototype.__)).toBe(true);
         });
-        return it_renders('Array of nodes', [NODE('a'), NODE('span'), NODE('input')], '<div class="TestCell1"><a></a><span></span><input></input></div>');
+        it_renders('Array of nodes', [node('a'), node('span'), node('input')], '<div class="TestCell1"><a></a><span></span><input></input></div>');
+        return it_renders('Array of Nodes, Strings, Numbers, JQuery', [node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('a'), jQuery('<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>')], '<div class="TestCell1"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>');
       });
       return describe('after_render', function() {
         it('called after render_el', function() {
@@ -46,7 +46,7 @@
         return it('@el already created', function() {
           var el;
           this.testCell1.render_el = function() {
-            return [NODE('a'), NODE('span'), NODE('input')];
+            return [node('a'), node('span'), node('input')];
           };
           el = void 0;
           this.testCell1.after_render = function() {

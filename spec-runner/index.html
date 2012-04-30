@@ -24,7 +24,9 @@
     })(['../spec-runner/SpecRunner']);
   </script>
 </head>
-<body></body>
+<body>
+  <div id='spec-fixture' style='width:0px; height:0px; overflow:hidden'></div>
+</body>
 <script>
 if(/[\?&]live/.exec(window.location.search)){
   $('head').append($("<script src='/support/live.js'>"));

@@ -1,6 +1,4 @@
-define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML})->
-  NODE = (tag)-> document.createElement tag
-
+define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML,stringify,node})->
   TestCell1Name = 'fixtures/TestCell1'
 
   ({beforeEachRequire})->
@@ -19,13 +17,15 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML})->
 
       it_renders = (desc, input_args, expected_html_output, debug)->
         describe desc, ->
-          it "__(#{input_args.join ','}) === '#{expected_html_output}'", ->
+          input_strings = stringify input_args
+          it "__(#{input_strings}) === '#{expected_html_output}'", ->
             debugger if debug
             nodeHTMLEquals (@__ input_args...), expected_html_output
 
       it_renders_cell = (desc, input_args, expected_html_output, debug)->
         describe desc, ->
-          it "__(Cell, '#{input_args.join ','}') === '#{expected_html_output}'", ->
+          input_strings = stringify input_args
+          it "__(Cell, #{input_strings}) === '#{expected_html_output}'", ->
             debugger if debug
             nodeHTMLEquals (@__ @TestCell1, input_args...), expected_html_output
 
@@ -46,7 +46,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML})->
         '<p class="myclass myclass2" id="myid">0</p>'
 
       it_renders 'Selector:<String>, Child:<DOM Node>',
-        ['p#myid.myclass.myclass2', NODE 'span']
+        ['p#myid.myclass.myclass2', node 'span']
         '<p class="myclass myclass2" id="myid"><span></span></p>'
 
       it_renders 'Selector:<String>, Children:<Array of Strings>',
@@ -55,16 +55,16 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML})->
 
       it_renders 'Selector:<String>, Children...:<DOM Nodes, String, Number, Array, jQuery object>',
         [ 'p#myid.myclass.myclass2', [
-          NODE 'span'
+          node 'span'
           'hello'
           [
-            NODE 'table'
+            node 'table'
             'world'
             5
-            [ NODE 'div' ]
+            [ node 'div' ]
           ]
           0
-          NODE 'a'
+          node 'a'
           jQuery '<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>'
         ]]
         '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></p>'
@@ -83,11 +83,11 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML})->
 
       it_renders "Selector:<String>, Attribute Map:<Object>, Children...:<DOM Nodes, String, Number, Array, jQuery object>",
         [ 'p', 'data-custom':'myattr', 'data-custom2':'myattr2',
-          NODE 'span'
+          node 'span'
           'hello'
-          [NODE('table'), 'world', 5, [NODE('div')]]
+          [node('table'), 'world', 5, [node('div')]]
           0
-          NODE 'a'
+          node 'a'
         ]
         '<p data-custom="myattr" data-custom2="myattr2"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
 
@@ -101,16 +101,16 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML})->
 
       it_renders_cell "cell:<cell>",
         []
-        '<div class="TestCell1"></div>'
+        '<div class="TestCell1">TestCell1 Contents</div>'
 
       it_renders_cell "cell:<cell>, options:<Object>",
         [ tagName: 'span' ]
-        '<span class="TestCell1"></span>'
+        '<span class="TestCell1">TestCell1 Contents</span>'
 
       it_renders_cell "cell:<cell>, Selector String:<String>",
         [ '#myid.myclass.myclass2' ]
-        '<div class="TestCell1 myclass myclass2" id="myid"></div>'
+        '<div class="TestCell1 myclass myclass2" id="myid">TestCell1 Contents</div>'
 
       it_renders_cell "cell:<cell>, Selector String:<String>, options:<Object>",
         [ '#myid.myclass.myclass2', tagName: 'a' ]
-        '<a class="TestCell1 myclass myclass2" id="myid"></a>'
+        '<a class="TestCell1 myclass myclass2" id="myid">TestCell1 Contents</a>'

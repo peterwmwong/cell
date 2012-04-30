@@ -90,7 +90,7 @@
           } else {
             return E("__(): unsupported argument '" + a + "'");
           }
-        } else if (a.prototype instanceof window.cell) {
+        } else if (a.prototype instanceof cell) {
           cell_options = typeof b === 'string' && (haml = _parseHAML(b)) ? _isObj(children[0]) ? ((c = children.shift()).id = haml.id, c.className = haml.className, c) : {
             id: haml.id,
             className: haml.className
@@ -98,7 +98,7 @@
           if (cell_options) {
             cell_options.className = cell_options.className ? "" + a.prototype.className + " " + cell_options.className : a.prototype.className;
           }
-          return (new a(cell_options)).el;
+          return (new a(cell_options)).render().el;
         } else if (_.isElement(a)) {
           return a;
         } else {
@@ -112,13 +112,10 @@
   window.cell = cell = Backbone.View.extend({
     __: __,
     render: function() {
-      var child, children, _i, _len;
+      var children;
       this.el.innerHTML = '';
       if (_.isArray(children = this.render_el(__))) {
-        for (_i = 0, _len = children.length; _i < _len; _i++) {
-          child = children[_i];
-          this.el.appendChild(child);
-        }
+        _renderNodes(this.el, children);
       }
       this.after_render();
       return this;
@@ -127,6 +124,7 @@
 
   if (typeof define === 'function' && typeof require === 'function') {
     define('cell', [], exports = {
+      __: __,
       pluginBuilder: 'cell-builder-plugin',
       load: function(name, req, load, config) {
         req([name], function(CDef) {
@@ -134,22 +132,21 @@
           if (typeof CDef !== 'object') {
             E("cell!: Couldn't load " + name + " cell. cell definitions should be objects, but instead was " + (typeof CDef));
           } else {
-            CDef.name = /(.*\/)?(.*)$/.exec(name)[2];
             if (!(((_ref = exports.__preinstalledCells__) != null ? _ref[name] : void 0) != null)) {
+              (exports.__preinstalledCells__ || (exports.__preinstalledCells__ = {}))[name] = true;
               el = doc.createElement('link');
               el.href = req.toUrl("" + name + ".css");
               el.rel = 'stylesheet';
               el.type = 'text/css';
               $('head')[0].appendChild(el);
             }
-            CDef.className = CDef.name;
+            CDef.className = CDef.name = /(.*\/)?(.*)$/.exec(name)[2];
             CDef.render_el || (CDef.render_el = $.noop);
             CDef.after_render || (CDef.after_render = $.noop);
             load(cell.extend(CDef));
           }
         });
-      },
-      __: __
+      }
     });
     $(doc).ready(function() {
       _range.selectNode(doc.body);

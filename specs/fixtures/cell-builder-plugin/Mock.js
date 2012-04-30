@@ -3,8 +3,8 @@
 
   define(['cell!./dir/MockNested'], function(MockNested) {
     return {
-      render: function(_) {
-        return ["Mock: ", _(MockNested)];
+      render_el: function(__) {
+        return ["Mock: ", __(MockNested)];
       }
     };
   });

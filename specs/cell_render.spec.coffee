@@ -1,5 +1,4 @@
-define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML})->
-  NODE = (tag)-> document.createElement tag
+define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML,stringify,node})->
 
   ({beforeEachRequire})->
 
@@ -10,12 +9,13 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML})->
 
       it_renders = (desc, render_el_return, expected_html_output)->
         describe desc, ->
-          it "[#{render_el_return.join ','}] renders el === '#{expected_html_output}'", ->
+          input_strings = stringify render_el_return
+          it "[#{input_strings}] renders el === '#{expected_html_output}'", ->
             @testCell1.render_el = -> render_el_return
             nodeHTMLEquals @testCell1.render().el, expected_html_output
 
       it 'no render_el', ->
-        nodeHTMLEquals @testCell1.render().el, '<div class="TestCell1"></div>'
+        nodeHTMLEquals @testCell1.render().el, '<div class="TestCell1">TestCell1 Contents</div>'
 
       it 'render_el is passed cell.__', ->
         @testCell1.render_el = sinon.stub()
@@ -24,11 +24,27 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML})->
 
       it_renders 'Array of nodes',
         [
-          NODE 'a'
-          NODE 'span'
-          NODE 'input'
+          node 'a'
+          node 'span'
+          node 'input'
         ]
         '<div class="TestCell1"><a></a><span></span><input></input></div>'
+
+      it_renders 'Array of Nodes, Strings, Numbers, JQuery',
+        [
+          node 'span'
+          'hello'
+          [
+            node 'table'
+            'world'
+            5
+            [ node 'div' ]
+          ]
+          0
+          node 'a'
+          jQuery '<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>'
+        ]
+        '<div class="TestCell1"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>'
 
     describe 'after_render', ->
 
@@ -41,9 +57,9 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML})->
 
       it '@el already created', ->
         @testCell1.render_el = -> [
-          NODE 'a'
-          NODE 'span'
-          NODE 'input'
+          node 'a'
+          node 'span'
+          node 'input'
         ]
         el = undefined
         @testCell1.after_render = -> el = @el

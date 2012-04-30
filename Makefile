@@ -54,9 +54,9 @@ deps:
 # Build test/fixtures/cell-builder-plugin/
 # 	- Tests cell can be properly used by requirejs optimizer build script
 spec-cell-builder-plugin: build/cell.js build/cell-builder-plugin.js
-	cp build/cell.js build/cell-builder-plugin.js test/fixtures/cell-builder-plugin
-	$(requirejsBuild) -o paths.requireLib=../../../node_modules/requirejs/require include=requireLib name="cell!Mock" out=test/fixtures/cell-builder-plugin/all.js baseUrl=test/fixtures/cell-builder-plugin/
-	rm test/fixtures/cell-builder-plugin/cell.js test/fixtures/cell-builder-plugin/cell-builder-plugin.js
+	cp build/cell.js build/cell-builder-plugin.js specs/fixtures/cell-builder-plugin
+	$(requirejsBuild) -o paths.requireLib=../../../node_modules/requirejs/require include=requireLib name="cell!Mock" out=specs/fixtures/cell-builder-plugin/all.js baseUrl=specs/fixtures/cell-builder-plugin/
+	rm specs/fixtures/cell-builder-plugin/cell.js specs/fixtures/cell-builder-plugin/cell-builder-plugin.js
 
 define MAKE_ALL_TESTS_COFFEE
 specs = process.argv[4..].map (e)-> "spec!#{/(.*?\.spec)\.js/.exec(e)[1]}"

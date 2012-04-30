@@ -1,4 +1,4 @@
 define
-  render: -> [
+  render_el: -> [
   	"MockNested"
   ]

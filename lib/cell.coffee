@@ -59,7 +59,7 @@ __ = (a,b,children...)->
         else
           E "__(): unsupported argument '#{a}'"
 
-      else if a.prototype instanceof window.cell
+      else if a.prototype instanceof cell
         cell_options =
           if typeof b is 'string' and (haml = _parseHAML b)
             if _isObj children[0]
@@ -80,43 +80,43 @@ __ = (a,b,children...)->
             else
               a::className
 
-        (new a cell_options).el
+        (new a cell_options).render().el
 
       else if _.isElement a then a
       else E "__(): unsupported argument #{a}"
 
     parent and _renderNodes parent, children
 
+
 window.cell = cell = Backbone.View.extend
   __: __
   render: ->
     @el.innerHTML = ''
-    if _.isArray(children = @render_el __)
-      @el.appendChild child for child in children
+    if _.isArray( children = @render_el __ )
+      _renderNodes @el, children
     @after_render()
     @
+
 
 # cell AMD Module
 if typeof define is 'function' and typeof require is 'function'
   define 'cell', [], exports =
-  
+    __: __
     pluginBuilder: 'cell-builder-plugin'
-
     load: (name, req, load, config)->
       req [name], (CDef)->
         if typeof CDef isnt 'object'
           E "cell!: Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
         else
-          CDef.name = /(.*\/)?(.*)$/.exec(name)[2]
-
           if not exports.__preinstalledCells__?[name]?
+            (exports.__preinstalledCells__ or= {})[name] = true
             el = doc.createElement 'link'
             el.href = req.toUrl "#{name}.css"
             el.rel = 'stylesheet'
             el.type = 'text/css'
             $('head')[0].appendChild el
 
-          CDef.className = CDef.name
+          CDef.className = CDef.name = /(.*\/)?(.*)$/.exec(name)[2]
 
           # Normalize render_el and after_render
           CDef.render_el or= $.noop
@@ -125,8 +125,6 @@ if typeof define is 'function' and typeof require is 'function'
           load cell.extend CDef
         return
       return
-
-    __: __
       
   # Load/render cells specified in DOM node data-cell attributes
   $(doc).ready ->

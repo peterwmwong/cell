@@ -1,5 +1,5 @@
 define ['cell!./dir/MockNested'], (MockNested)->
-  render: (_)-> [
+  render_el: (__)-> [
     "Mock: "
-    _ MockNested
+    __ MockNested
   ]
