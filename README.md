@@ -1,24 +1,37 @@
-Cell is a convention over configuration framework for creating encapsulated HTML user interface widgets.
+Cell encapsulates your UI components (HTML, JS, and CSS).
 
-Installation
-============
 
-Copy build/cell.js into the root of the directory which contains your JavaScript files.  In the examples below we assume this directory is called "src".
+Getting Started
+===============
 
-In your HTML page add the following script tag to the head section:
-    <script src='src/cell.js'></script>
+### 1. Create your cell
 
-Now add the data-cell and data-cell-baseurl attributes to the body tag like this:
+```coffee
+# views/App.coffee
+define
+  render: (_)-> [
+    _ '.greeting', 'Hello World'
+  ]
+```
 
-    <body data-cell='views/App'data-cell-baseurl='src'>
+```css
+/* views/App.css */
+.App > .greeting{
+  color: #BADA55;
+}
+```
 
-Now create a cell file for your application in src/views/App.js.  App.js will serve as the top level cell for your application and will attach itself to the DOM.  The name of this top level cell is arbitrary.
+### 2. Attach cell.js (after `require.js`)
 
-FAQ
-===
+```html
+<script src='cell.js'></script>
+```
 
-*Q:* How can cell views set stuff up right after instantiation?
-*A:* Define a method called init which receives the parameters passed to new.
+### 3. Append your cell
 
-*Q:* Should my top level cell attach itself to the DOM?
-*A:* Cell takes care of this for your.
+```html
+<body data-cell='views/App'>
+```
+
+
+### 4. Sit back and relax
