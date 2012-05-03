@@ -4,14 +4,14 @@
   define(function() {
     var exports, nodeHTMLEquals, nodeToHTML;
     return exports = {
-      stringify: function(obj) {
-        var el, k, v;
+      stringify: function(obj, excludeArrayBrackets) {
+        var el, k, str, v;
         if (obj === void 0) {
           return "undefined";
         } else if (obj === null) {
           return "null";
         } else if ((obj.jquery != null) || _.isArray(obj)) {
-          return "[" + (((function() {
+          str = ((function() {
             var _i, _len, _results;
             _results = [];
             for (_i = 0, _len = obj.length; _i < _len; _i++) {
@@ -19,7 +19,12 @@
               _results.push(exports.stringify(el));
             }
             return _results;
-          })()).join(',')) + "]";
+          })()).join(', ');
+          if (excludeArrayBrackets) {
+            return str;
+          } else {
+            return "[" + str + "]";
+          }
         } else if (_.isElement(obj)) {
           return "<" + (obj.tagName.toLowerCase()) + "/>";
         } else if (_.isObject(obj)) {

@@ -9,8 +9,8 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML,stringify,node})->
 
       it_renders = (desc, render_el_return, expected_html_output)->
         describe desc, ->
-          input_strings = stringify render_el_return
-          it "[#{input_strings}] renders el === '#{expected_html_output}'", ->
+          input_strings = stringify render_el_return, true
+          it "[#{input_strings}] === #{expected_html_output}", ->
             @testCell1.render_el = -> render_el_return
             nodeHTMLEquals @testCell1.render().el, expected_html_output
 

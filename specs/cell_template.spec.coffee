@@ -12,20 +12,20 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML,stringify,node})->
 
       for invalid in ['',undefined,null, (->)] then do(invalid)->
         describe "#{invalid is '' and '""' or invalid}", ->
-          it "_(#{invalid is '' and '""' or invalid}) === undefined", ->
+          it "__ #{invalid is '' and '""' or invalid} === undefined", ->
             expect(@__ invalid).toBe(undefined)
 
       it_renders = (desc, input_args, expected_html_output, debug)->
         describe desc, ->
-          input_strings = stringify input_args
-          it "__(#{input_strings}) === '#{expected_html_output}'", ->
+          input_strings = stringify input_args, true
+          it "__ #{input_strings} === #{expected_html_output}", ->
             debugger if debug
             nodeHTMLEquals (@__ input_args...), expected_html_output
 
       it_renders_cell = (desc, input_args, expected_html_output, debug)->
         describe desc, ->
-          input_strings = stringify input_args
-          it "__(Cell, #{input_strings}) === '#{expected_html_output}'", ->
+          input_strings = stringify input_args, true
+          it "__ Cell, #{input_strings} === #{expected_html_output}", ->
             debugger if debug
             nodeHTMLEquals (@__ @TestCell1, input_args...), expected_html_output
 

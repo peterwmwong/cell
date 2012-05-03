@@ -16,8 +16,8 @@
         it_renders = function(desc, render_el_return, expected_html_output) {
           return describe(desc, function() {
             var input_strings;
-            input_strings = stringify(render_el_return);
-            return it("[" + input_strings + "] renders el === '" + expected_html_output + "'", function() {
+            input_strings = stringify(render_el_return, true);
+            return it("[" + input_strings + "] === " + expected_html_output, function() {
               this.testCell1.render_el = function() {
                 return render_el_return;
               };

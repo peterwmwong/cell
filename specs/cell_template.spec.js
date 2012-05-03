@@ -18,7 +18,7 @@
         _ref = ['', void 0, null, (function() {})];
         _fn = function(invalid) {
           return describe("" + (invalid === '' && '""' || invalid), function() {
-            return it("_(" + (invalid === '' && '""' || invalid) + ") === undefined", function() {
+            return it("__ " + (invalid === '' && '""' || invalid) + " === undefined", function() {
               return expect(this.__(invalid)).toBe(void 0);
             });
           });
@@ -30,8 +30,8 @@
         it_renders = function(desc, input_args, expected_html_output, debug) {
           return describe(desc, function() {
             var input_strings;
-            input_strings = stringify(input_args);
-            return it("__(" + input_strings + ") === '" + expected_html_output + "'", function() {
+            input_strings = stringify(input_args, true);
+            return it("__ " + input_strings + " === " + expected_html_output, function() {
               if (debug) {
                 debugger;
               }
@@ -42,8 +42,8 @@
         it_renders_cell = function(desc, input_args, expected_html_output, debug) {
           return describe(desc, function() {
             var input_strings;
-            input_strings = stringify(input_args);
-            return it("__(Cell, " + input_strings + ") === '" + expected_html_output + "'", function() {
+            input_strings = stringify(input_args, true);
+            return it("__ Cell, " + input_strings + " === " + expected_html_output, function() {
               if (debug) {
                 debugger;
               }

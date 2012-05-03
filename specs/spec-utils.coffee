@@ -1,13 +1,14 @@
 define ->
 
   exports =
-    stringify: (obj)->
+    stringify: (obj, excludeArrayBrackets)->
       if obj is undefined
         "undefined"
       else if obj is null
         "null"
       else if obj.jquery? or _.isArray obj
-        "[#{(exports.stringify el for el in obj).join ','}]"
+        str = (exports.stringify el for el in obj).join ', '
+        if excludeArrayBrackets then str else "[#{str}]"
       else if _.isElement obj
         "<#{obj.tagName.toLowerCase()}/>"
       else if _.isObject obj
