@@ -9,8 +9,8 @@ Getting Started
 ```coffee
 # views/App.coffee
 define
-  render: (_)-> [
-    _ '.greeting', 'Hello World'
+  render_el: (__)-> [
+    __ '.greeting', 'Hello World'
   ]
 ```
 
