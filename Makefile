@@ -15,15 +15,15 @@ all: build/require.js test
 #-------------------------------------------------------------------
 # DEV 
 #------------------------------------------------------------------- 
-dev: deps lib/cell.coffee
+coffee: deps lib/cell.coffee lib/cell-builder-plugin.coffee
 	mkdir -p build/
 	$(coffee) --watch -o build/ -c lib/cell.coffee lib/cell-builder-plugin.coffee
 
-dev-test-server: deps
-	$(coffee) test/util/test-server.coffee ./
+spec-server: deps
+	$(coffee) spec-runner/spec-runner-server.coffee ./
 
-dev-test: deps
-	find test/ -name '*.coffee' | xargs $(coffee) --watch -c
+coffee-specs: deps
+	find spec-runner/ specs/ -name '*.coffee' | xargs $(coffee) --watch -c
 
 
 #-------------------------------------------------------------------
@@ -53,20 +53,20 @@ deps:
 
 # Build test/fixtures/cell-builder-plugin/
 # 	- Tests cell can be properly used by requirejs optimizer build script
-test-cell-builder-plugin: build/cell.js build/cell-builder-plugin.js
-	cp build/cell.js build/cell-builder-plugin.js test/fixtures/cell-builder-plugin
-	$(requirejsBuild) -o paths.requireLib=../../../node_modules/requirejs/require include=requireLib name="cell!Mock" out=test/fixtures/cell-builder-plugin/all.js baseUrl=test/fixtures/cell-builder-plugin/
-	rm test/fixtures/cell-builder-plugin/cell.js test/fixtures/cell-builder-plugin/cell-builder-plugin.js
+spec-cell-builder-plugin: build/cell.js build/cell-builder-plugin.js
+	cp build/cell.js build/cell-builder-plugin.js specs/fixtures/cell-builder-plugin
+	$(requirejsBuild) -o paths.requireLib=../../../node_modules/requirejs/require include=requireLib name="cell!Mock" out=specs/fixtures/cell-builder-plugin/all.js baseUrl=specs/fixtures/cell-builder-plugin/
+	rm specs/fixtures/cell-builder-plugin/cell.js specs/fixtures/cell-builder-plugin/cell-builder-plugin.js
 
 define MAKE_ALL_TESTS_COFFEE
-tests = process.argv[4..].map (e)-> "test!#{/(.*?\.test)\.js/.exec(e)[1]}"
-console.log "define(#{JSON.stringify tests});"
+specs = process.argv[4..].map (e)-> "spec!#{/(.*?\.spec)\.js/.exec(e)[1]}"
+console.log "define(#{JSON.stringify specs},function(){return Array.prototype.slice.call(arguments)});"
 endef
 export MAKE_ALL_TESTS_COFFEE
 
-test: deps test-cell-builder-plugin
-	find test/ -name '*.coffee' | xargs $(coffee) -c
-	cd test/; find . -name "*.test.js" -type f | xargs coffee -e "$$MAKE_ALL_TESTS_COFFEE" > GENERATED_ALLTESTS.js
+specs: deps spec-cell-builder-plugin
+	find specs/ -name '*.coffee' | xargs $(coffee) -c
+	cd specs/; find . -name "*.spec.js" -type f | xargs coffee -e "$$MAKE_ALL_TESTS_COFFEE" > GENERATED_all-specs.js
 
 clean: 
 	@@rm -rf build

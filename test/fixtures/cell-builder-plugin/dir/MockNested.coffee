@@ -1,4 +1,0 @@
-define
-  render: -> [
-  	"MockNested"
-  ]
