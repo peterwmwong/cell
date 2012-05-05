@@ -3,12 +3,24 @@
   var __slice = [].slice;
 
   define(['./spec-utils'], function(_arg) {
-    var TestCell1Name, node, nodeHTMLEquals, nodeToHTML, stringify;
-    nodeHTMLEquals = _arg.nodeHTMLEquals, nodeToHTML = _arg.nodeToHTML, stringify = _arg.stringify, node = _arg.node;
+    var TestCell1Name, node, nodeHTMLEquals, stringify;
+    nodeHTMLEquals = _arg.nodeHTMLEquals, stringify = _arg.stringify, node = _arg.node;
     TestCell1Name = 'fixtures/TestCell1';
     return function(_arg1) {
       var beforeEachRequire;
       beforeEachRequire = _arg1.beforeEachRequire;
+      describe('cell.__.$()', function() {
+        beforeEachRequire(['cell'], function(cell) {
+          this.cell = cell;
+          return this.result = this.cell.__.$('p#myid.myclass.myclass2');
+        });
+        it('returns a jQuery object', function() {
+          return expect(this.result.jquery).toBeDefined();
+        });
+        return it('jQuery object wraps whatever is returned from __', function() {
+          return nodeHTMLEquals(this.result[0], '<p class="myclass myclass2" id="myid"></p>');
+        });
+      });
       return describe('cell.__()', function() {
         var invalid, it_renders, it_renders_cell, _fn, _i, _len, _ref;
         beforeEachRequire(["cell!" + TestCell1Name, 'cell'], function(TestCell1, _arg2) {
@@ -57,7 +69,7 @@
         it_renders('Selector:<String>, Child:<Number === 0>', ['p#myid.myclass.myclass2', 0], '<p class="myclass myclass2" id="myid">0</p>');
         it_renders('Selector:<String>, Child:<DOM Node>', ['p#myid.myclass.myclass2', node('span')], '<p class="myclass myclass2" id="myid"><span></span></p>');
         it_renders('Selector:<String>, Children:<Array of Strings>', ['p#myid.myclass.myclass2', ['one', 'two']], '<p class="myclass myclass2" id="myid">onetwo</p>');
-        it_renders('Selector:<String>, Children...:<DOM Nodes, String, Number, Array, jQuery object>', ['p#myid.myclass.myclass2', [node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('a'), jQuery('<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>')]], '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></p>');
+        it_renders('Selector:<String>, Children...:<DOM Nodes, String, Number, Array, jQuery object>', ['p#myid.myclass.myclass2', [node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('a'), jQuery('<span class="result"></span><span class="jQueryObjDeux"></span>')]], '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="result"></span><span class="jQueryObjDeux"></span></p>');
         it_renders('Selector:<String>, Children...:<undefined, null, Function>', ['p#myid.myclass.myclass2', [void 0, null, (function() {})]], '<p class="myclass myclass2" id="myid"></p>');
         it_renders("Selector:<String>, Attribute Map:<Object>", [
           'p#myid.myclass.myclass2', {

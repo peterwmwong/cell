@@ -2,13 +2,14 @@
 (function() {
 
   define(['./spec-utils'], function(_arg) {
-    var node, nodeHTMLEquals, nodeToHTML, stringify;
-    nodeHTMLEquals = _arg.nodeHTMLEquals, nodeToHTML = _arg.nodeToHTML, stringify = _arg.stringify, node = _arg.node;
+    var node, nodeHTMLEquals, stringify;
+    nodeHTMLEquals = _arg.nodeHTMLEquals, stringify = _arg.stringify, node = _arg.node;
     return function(_arg1) {
       var beforeEachRequire;
       beforeEachRequire = _arg1.beforeEachRequire;
-      beforeEachRequire(['cell!fixtures/TestCell1'], function(TestCell1) {
+      beforeEachRequire(['cell!fixtures/TestCell1', 'cell'], function(TestCell1, cell) {
         this.TestCell1 = TestCell1;
+        this.cell = cell;
         return this.testCell1 = new this.TestCell1;
       });
       describe('render_el', function() {
@@ -31,7 +32,7 @@
         it('render_el is passed cell.__', function() {
           this.testCell1.render_el = sinon.stub();
           this.testCell1.render();
-          return expect(this.testCell1.render_el.calledWithExactly(cell.prototype.__)).toBe(true);
+          return expect(this.testCell1.render_el.calledWithExactly(this.cell.__)).toBe(true);
         });
         it_renders('Array of nodes', [node('a'), node('span'), node('input')], '<div class="TestCell1"><a></a><span></span><input></input></div>');
         return it_renders('Array of Nodes, Strings, Numbers, JQuery', [node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('a'), jQuery('<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>')], '<div class="TestCell1"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>');

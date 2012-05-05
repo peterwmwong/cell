@@ -5,15 +5,16 @@
     return function(_arg) {
       var beforeEachRequire;
       beforeEachRequire = _arg.beforeEachRequire;
-      beforeEachRequire(['cell!fixtures/TestCell1'], function(TestCell1) {
+      beforeEachRequire(['cell!fixtures/TestCell1', 'cell'], function(TestCell1, cell) {
         this.TestCell1 = TestCell1;
+        this.cell = cell;
         return this.testCell1 = new this.TestCell1;
       });
       it('attaches <link> for stylesheet', function() {
         return expect($('link[href="/specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length).not.toBe(0);
       });
       return it('is an instanceof of Backbone.View and cell', function() {
-        expect(this.testCell1 instanceof cell).toBe(true);
+        expect(this.testCell1 instanceof this.cell.Cell).toBe(true);
         return expect(this.testCell1 instanceof Backbone.View).toBe(true);
       });
     };

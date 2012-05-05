@@ -1,8 +1,11 @@
-define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML,stringify,node})->
+define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
   ({beforeEachRequire})->
 
-    beforeEachRequire ['cell!fixtures/TestCell1'], (@TestCell1)->
+    beforeEachRequire [
+      'cell!fixtures/TestCell1'
+      'cell'
+    ], (@TestCell1, @cell)->
       @testCell1 = new @TestCell1
 
     describe 'render_el', ->
@@ -20,7 +23,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML,stringify,node})->
       it 'render_el is passed cell.__', ->
         @testCell1.render_el = sinon.stub()
         @testCell1.render()
-        expect(@testCell1.render_el.calledWithExactly cell::__).toBe true
+        expect(@testCell1.render_el.calledWithExactly @cell.__).toBe true
 
       it_renders 'Array of nodes',
         [

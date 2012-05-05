@@ -59,7 +59,7 @@ __ = (a,b,children...)->
         else
           E "__(): unsupported argument '#{a}'"
 
-      else if a.prototype instanceof cell
+      else if a.prototype instanceof Cell
         cell_options =
           if typeof b is 'string' and (haml = _parseHAML b)
             if _isObj children[0]
@@ -87,9 +87,9 @@ __ = (a,b,children...)->
 
     parent and _renderNodes parent, children
 
+__.$ = (args...)-> window.$ exports.__ args...
 
-window.cell = cell = Backbone.View.extend
-  __: __
+Cell = Backbone.View.extend
   render: ->
     @el.innerHTML = ''
     if _.isArray( children = @render_el __ )
@@ -102,6 +102,7 @@ window.cell = cell = Backbone.View.extend
 if typeof define is 'function' and typeof require is 'function'
   define 'cell', [], exports =
     __: __
+    Cell: Cell
     pluginBuilder: 'cell-builder-plugin'
     load: (name, req, load, config)->
       req [name], (CDef)->
@@ -122,7 +123,7 @@ if typeof define is 'function' and typeof require is 'function'
           CDef.render_el or= $.noop
           CDef.after_render or= $.noop
 
-          load cell.extend CDef
+          load Cell.extend CDef
         return
       return
       

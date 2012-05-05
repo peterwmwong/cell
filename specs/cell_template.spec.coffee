@@ -1,7 +1,19 @@
-define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML,stringify,node})->
+define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
   TestCell1Name = 'fixtures/TestCell1'
 
   ({beforeEachRequire})->
+
+    describe 'cell.__.$()', ->
+
+      beforeEachRequire ['cell'], (@cell)->
+        @result = @cell.__.$ 'p#myid.myclass.myclass2'
+
+      it 'returns a jQuery object', ->
+        expect(@result.jquery).toBeDefined()
+
+      it 'jQuery object wraps whatever is returned from __', ->
+        nodeHTMLEquals @result[0], '<p class="myclass myclass2" id="myid"></p>'
+
 
     describe 'cell.__()', ->
 
@@ -65,9 +77,9 @@ define ['./spec-utils'], ({nodeHTMLEquals,nodeToHTML,stringify,node})->
           ]
           0
           node 'a'
-          jQuery '<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>'
+          jQuery '<span class="result"></span><span class="jQueryObjDeux"></span>'
         ]]
-        '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></p>'
+        '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="result"></span><span class="jQueryObjDeux"></span></p>'
 
       it_renders 'Selector:<String>, Children...:<undefined, null, Function>',
         [ 'p#myid.myclass.myclass2', [
