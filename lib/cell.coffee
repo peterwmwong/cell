@@ -1,109 +1,49 @@
-# Error logging
-E = if (typeof console?.error is 'function') then ((msg...)-> console.error msg...) else ->
+define ->
+  # Error logging
+  E = if (typeof console?.error is 'function') then ((msg...)-> console.error msg...) else ->
 
-# When running in require.js optimizer, window & doc do not exist
-window = this
-$ = window.$
-doc = window.document or {createElement:->}
+  # When running in require.js optimizer, window & doc do not exist
+  $ = (window = this).$
+  doc = window.document or {createElement:->}
 
-_isObj = (o)-> o?.constructor is Object
-_range = doc.createRange()
+  _range = doc.createRange()
+  _renderNodes = (parent,nodes)->
+    while nodes.length > 0 when (c = nodes.shift())?
+      if _.isElement c
+        parent.appendChild c
+      else if c.jquery
+        c.appendTo parent
+      else if typeof c in ['string','number']
+        parent.appendChild doc.createTextNode c
+      else if _.isArray c
+        Array::unshift.apply nodes, c
+      else
+        E "render_el: unsupported render element", c
+    parent
 
-_renderNodes = (parent,nodes)->
-  while nodes.length > 0 when (c = nodes.shift())?
-    if _.isElement c
-      parent.appendChild c
-    else if c.jquery
-      c.appendTo parent
-    else if typeof c in ['string','number']
-      parent.appendChild doc.createTextNode c
-    else if _.isArray c
-      Array::unshift.apply nodes, c
-    else
-      E "__: unsupported render child #{c}"
-  parent
+  # Load/render cells specified in DOM node data-cell attributes
+  $(doc).ready ->
+    _range.selectNode doc.body
+    $('[data-cell]').each ->
+      if cellname = @getAttribute 'data-cell'
+        require ["cell!#{cellname}"], (CType)=>
+          @appendChild new CType().render().el
+          return
+      return
+    return
 
-# HAML-like selector, ex. div#myID.myClass
-_parseHAML = (haml)->
-  if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec haml
-    {
-      tag: m[1] or 'div'
-      id:  v = m[3]
-      className: if v = m[4] then v.slice(1).replace(/\./g, ' ') else ''
-    }
+  exports =
+    Cell: Cell = Backbone.View.extend
+      render: ->
+        @el.innerHTML = ''
+        children = @render_el()
+        if _.isArray children
+          _renderNodes @el, children
+        @after_render()
+        @
 
-__ = (a,b,children...)->
-  if a
-    if _.isElement b
-      children.unshift b
-      b = undefined
-
-    parent =
-      if typeof a is 'string'
-        if haml = _parseHAML a
-          el = doc.createElement haml.tag
-          el.setAttribute 'id', haml.id if haml.id
-
-          if b?
-            if not _isObj b
-              children.unshift b
-            else
-              for k,v of b
-                if k isnt 'class' then el.setAttribute k, v
-                else el.className += v
-
-          if haml.className
-            el.className += if el.className then " #{haml.className}" else haml.className
-          el
-
-        else
-          E "__(): unsupported argument '#{a}'"
-
-      else if a.prototype instanceof Cell
-        cell_options =
-          if typeof b is 'string' and (haml = _parseHAML b)
-            if _isObj children[0]
-              (c = children.shift()).id = haml.id
-              c.className = haml.className
-              c
-            else 
-              id: haml.id
-              className: haml.className
-
-          else if _isObj b
-            b
-
-        if cell_options
-          cell_options.className =
-            if cell_options.className
-              "#{a::className} #{cell_options.className}"
-            else
-              a::className
-
-        (new a cell_options).render().el
-
-      else if _.isElement a then a
-      else E "__(): unsupported argument #{a}"
-
-    parent and _renderNodes parent, children
-
-__.$ = (args...)-> window.$ exports.__ args...
-
-Cell = Backbone.View.extend
-  render: ->
-    @el.innerHTML = ''
-    if _.isArray( children = @render_el __ )
-      _renderNodes @el, children
-    @after_render()
-    @
-
-
-# cell AMD Module
-if typeof define is 'function' and typeof require is 'function'
-  define 'cell', [], exports =
-    __: __
-    Cell: Cell
     pluginBuilder: 'cell-builder-plugin'
+
     load: (name, req, load, config)->
       req [name], (CDef)->
         if typeof CDef isnt 'object'
@@ -126,15 +66,4 @@ if typeof define is 'function' and typeof require is 'function'
           load Cell.extend CDef
         return
       return
-      
-  # Load/render cells specified in DOM node data-cell attributes
-  $(doc).ready ->
-    _range.selectNode doc.body
-    $('[data-cell]').each ->
-      if cellname = @getAttribute 'data-cell'
-        require ["cell!#{cellname}"], (CType)=>
-          @.appendChild new CType().render().el
-          return
-      return
-    return
-  return
+

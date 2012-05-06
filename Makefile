@@ -17,7 +17,7 @@ all: build/require.js test
 #------------------------------------------------------------------- 
 coffee: deps lib/cell.coffee lib/cell-builder-plugin.coffee
 	mkdir -p build/
-	$(coffee) --watch -o build/ -c lib/cell.coffee lib/cell-builder-plugin.coffee
+	$(coffee) --watch -o build/ -b -c lib/__.coffee lib/cell.coffee lib/cell-builder-plugin.coffee
 
 spec-server: deps
 	$(coffee) spec-runner/spec-runner-server.coffee ./
@@ -31,7 +31,7 @@ coffee-specs: deps
 #------------------------------------------------------------------- 
 build/cell.js: deps lib/cell.coffee
 	mkdir -p build/
-	$(coffee) -o build/ -c lib/cell.coffee
+	$(coffee) -o build/ -b -c lib/cell.coffee
 
 build/cell-builder-plugin.js: deps lib/cell-builder-plugin.coffee $(coffee)
 	mkdir -p build/
@@ -55,7 +55,15 @@ deps:
 # 	- Tests cell can be properly used by requirejs optimizer build script
 spec-cell-builder-plugin: build/cell.js build/cell-builder-plugin.js
 	cp build/cell.js build/cell-builder-plugin.js specs/fixtures/cell-builder-plugin
-	$(requirejsBuild) -o paths.requireLib=../../../node_modules/requirejs/require include=requireLib name="cell!Mock" out=specs/fixtures/cell-builder-plugin/all.js baseUrl=specs/fixtures/cell-builder-plugin/
+	$(requirejsBuild) -o \
+		paths.requireLib=../../../node_modules/requirejs/require \
+		paths.cell=../../../build/cell \
+		paths.__=../../../build/__ \
+		paths.cell-builder-plugin=../../../build/cell-builder-plugin \
+		include=requireLib \
+		name="cell!Mock" \
+		baseUrl=specs/fixtures/cell-builder-plugin/ \
+		out=specs/fixtures/cell-builder-plugin/all.js
 	rm specs/fixtures/cell-builder-plugin/cell.js specs/fixtures/cell-builder-plugin/cell-builder-plugin.js
 
 define MAKE_ALL_TESTS_COFFEE

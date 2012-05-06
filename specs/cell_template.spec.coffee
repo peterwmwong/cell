@@ -3,10 +3,10 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
   ({beforeEachRequire})->
 
-    describe 'cell.__.$()', ->
+    describe '__.$()', ->
 
-      beforeEachRequire ['cell'], (@cell)->
-        @result = @cell.__.$ 'p#myid.myclass.myclass2'
+      beforeEachRequire ['__'], (__)->
+        @result = __.$ 'p#myid.myclass.myclass2'
 
       it 'returns a jQuery object', ->
         expect(@result.jquery).toBeDefined()
@@ -15,12 +15,12 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         nodeHTMLEquals @result[0], '<p class="myclass myclass2" id="myid"></p>'
 
 
-    describe 'cell.__()', ->
+    describe '__()', ->
 
       beforeEachRequire [
         "cell!#{TestCell1Name}"
-        'cell'
-      ], (@TestCell1,{@__})->
+        '__'
+      ], (@TestCell1,@__)->
 
       for invalid in ['',undefined,null, (->)] then do(invalid)->
         describe "#{invalid is '' and '""' or invalid}", ->

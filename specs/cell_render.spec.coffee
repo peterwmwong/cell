@@ -20,11 +20,6 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
       it 'no render_el', ->
         nodeHTMLEquals @testCell1.render().el, '<div class="TestCell1">TestCell1 Contents</div>'
 
-      it 'render_el is passed cell.__', ->
-        @testCell1.render_el = sinon.stub()
-        @testCell1.render()
-        expect(@testCell1.render_el.calledWithExactly @cell.__).toBe true
-
       it_renders 'Array of nodes',
         [
           node 'a'

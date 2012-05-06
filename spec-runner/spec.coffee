@@ -23,6 +23,7 @@ define
                 baseUrl: '/specs/'
                 paths:
                   cell: '../build/cell'
+                  __: '../build/__'
               ctx = window.require.s.contexts[ctxName]
               
               dep_modules = undefined

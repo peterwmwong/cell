@@ -23,7 +23,8 @@
                     context: ctxName = "specs" + (ctx_name_salt++),
                     baseUrl: '/specs/',
                     paths: {
-                      cell: '../build/cell'
+                      cell: '../build/cell',
+                      __: '../build/__'
                     }
                   });
                   ctx = window.require.s.contexts[ctxName];

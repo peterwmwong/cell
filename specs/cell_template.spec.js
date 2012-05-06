@@ -9,10 +9,9 @@
     return function(_arg1) {
       var beforeEachRequire;
       beforeEachRequire = _arg1.beforeEachRequire;
-      describe('cell.__.$()', function() {
-        beforeEachRequire(['cell'], function(cell) {
-          this.cell = cell;
-          return this.result = this.cell.__.$('p#myid.myclass.myclass2');
+      describe('__.$()', function() {
+        beforeEachRequire(['__'], function(__) {
+          return this.result = __.$('p#myid.myclass.myclass2');
         });
         it('returns a jQuery object', function() {
           return expect(this.result.jquery).toBeDefined();
@@ -21,11 +20,11 @@
           return nodeHTMLEquals(this.result[0], '<p class="myclass myclass2" id="myid"></p>');
         });
       });
-      return describe('cell.__()', function() {
+      return describe('__()', function() {
         var invalid, it_renders, it_renders_cell, _fn, _i, _len, _ref;
-        beforeEachRequire(["cell!" + TestCell1Name, 'cell'], function(TestCell1, _arg2) {
+        beforeEachRequire(["cell!" + TestCell1Name, '__'], function(TestCell1, __) {
           this.TestCell1 = TestCell1;
-          this.__ = _arg2.__;
+          this.__ = __;
         });
         _ref = ['', void 0, null, (function() {})];
         _fn = function(invalid) {
