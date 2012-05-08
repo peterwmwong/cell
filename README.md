@@ -9,7 +9,7 @@ Getting Started
 ```coffee
 # App.coffee
 define ['__'], (__)-> # import __ render helper
-  render_el: (__)-> [
+  render_el: -> [
     __ '.greeting', 'Hello World'
   ]
 ```
