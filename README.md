@@ -4,33 +4,37 @@ Cell encapsulates your UI components (HTML, JS, and CSS).
 Getting Started
 ===============
 
-### 1. Create your cell
+### 1. Create (and compile) your cell
 
 ```coffee
-# views/App.coffee
-define
+# App.coffee
+define ['__'], (__)-> # import __ render helper
   render_el: (__)-> [
     __ '.greeting', 'Hello World'
   ]
 ```
 
 ```css
-/* views/App.css */
-.App > .greeting{
+/* App.css */
+.App > .greeting {
   color: #BADA55;
 }
 ```
 
-### 2. Attach cell.js (after `require.js`)
+### 2. Add dependencies and load cell
 
 ```html
-<script src='cell.js'></script>
+<script src="vendor/jquery.js"></script>
+<script src='vendor/underscore.js'></script>
+<script src='vendor/backbone.js'></script>
+<!-- add require.js and load cell module -->
+<script data-main='cell' src='node_modules/requirejs/require.js'></script>
 ```
 
-### 3. Append your cell
+### 3. Add your cell
 
 ```html
-<body data-cell='views/App'>
+<body data-cell='App'></body>
 ```
 
 
