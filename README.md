@@ -24,7 +24,7 @@ define ['__'], (__)-> # import __ render helper
 ### 2. Add dependencies and load cell
 
 ```html
-<script src="vendor/jquery.js"></script>
+<script src='vendor/jquery.js'></script>
 <script src='vendor/underscore.js'></script>
 <script src='vendor/backbone.js'></script>
 <!-- add require.js and load cell module -->
