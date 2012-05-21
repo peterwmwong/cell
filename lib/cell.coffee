@@ -36,9 +36,7 @@ define ->
     Cell: Cell = Backbone.View.extend
       render: ->
         @el.innerHTML = ''
-        children = @render_el()
-        if _.isArray children
-          _renderNodes @el, children
+        _renderNodes @el, [@render_el()]
         @after_render()
         @
 

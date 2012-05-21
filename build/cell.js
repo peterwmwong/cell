@@ -47,12 +47,8 @@ define(function() {
   return exports = {
     Cell: Cell = Backbone.View.extend({
       render: function() {
-        var children;
         this.el.innerHTML = '';
-        children = this.render_el();
-        if (_.isArray(children)) {
-          _renderNodes(this.el, children);
-        }
+        _renderNodes(this.el, [this.render_el()]);
         this.after_render();
         return this;
       }

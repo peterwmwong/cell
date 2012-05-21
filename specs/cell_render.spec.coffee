@@ -28,7 +28,23 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         ]
         '<div class="TestCell1"><a></a><span></span><input></input></div>'
 
-      it_renders 'Array of Nodes, Strings, Numbers, JQuery',
+      it_renders 'Node',
+        node 'a'
+        '<div class="TestCell1"><a></a></div>'
+
+      it_renders 'String',
+        'hello world'
+        '<div class="TestCell1">hello world</div>'
+
+      it_renders 'Number',
+        777
+        '<div class="TestCell1">777</div>'
+
+      it_renders 'jQuery',
+        (jQuery '<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>')
+        '<div class="TestCell1"><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>'
+
+      it_renders 'Array of Nodes, Strings, Numbers, jQuery',
         [
           node 'span'
           'hello'

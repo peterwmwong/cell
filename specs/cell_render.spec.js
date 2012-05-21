@@ -30,7 +30,11 @@
           return nodeHTMLEquals(this.testCell1.render().el, '<div class="TestCell1">TestCell1 Contents</div>');
         });
         it_renders('Array of nodes', [node('a'), node('span'), node('input')], '<div class="TestCell1"><a></a><span></span><input></input></div>');
-        return it_renders('Array of Nodes, Strings, Numbers, JQuery', [node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('a'), jQuery('<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>')], '<div class="TestCell1"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>');
+        it_renders('Node', node('a'), '<div class="TestCell1"><a></a></div>');
+        it_renders('String', 'hello world', '<div class="TestCell1">hello world</div>');
+        it_renders('Number', 777, '<div class="TestCell1">777</div>');
+        it_renders('jQuery', jQuery('<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>'), '<div class="TestCell1"><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>');
+        return it_renders('Array of Nodes, Strings, Numbers, jQuery', [node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('a'), jQuery('<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>')], '<div class="TestCell1"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>');
       });
       return describe('after_render', function() {
         it('called after render_el', function() {
