@@ -40,11 +40,11 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         777
         '<div class="TestCell1">777</div>'
 
-      it_renders 'jQuery',
-        (jQuery '<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>')
+      it_renders 'jQuery-ish Object',
+        $ '<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>'
         '<div class="TestCell1"><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>'
 
-      it_renders 'Array of Nodes, Strings, Numbers, jQuery',
+      it_renders 'Array of Nodes, Strings, Numbers, jQuery-ish Object',
         [
           node 'span'
           'hello'
@@ -56,7 +56,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
           ]
           0
           node 'a'
-          jQuery '<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>'
+          $ '<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>'
         ]
         '<div class="TestCell1"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>'
 

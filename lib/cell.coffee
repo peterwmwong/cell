@@ -1,4 +1,5 @@
 define ->
+  noop = ->
   # Error logging
   E = if (typeof console?.error is 'function') then ((msg...)-> console.error msg...) else ->
 
@@ -58,8 +59,8 @@ define ->
           CDef.className = CDef.name = /(.*\/)?(.*)$/.exec(name)[2]
 
           # Normalize render_el and after_render
-          CDef.render_el or= $.noop
-          CDef.after_render or= $.noop
+          CDef.render_el or= noop
+          CDef.after_render or= noop
 
           load Cell.extend CDef
         return

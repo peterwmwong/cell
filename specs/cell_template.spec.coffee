@@ -1,5 +1,7 @@
 define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
   TestCell1Name = 'fixtures/TestCell1'
+  verify_is_jQueryish = (obj)->
+    expect(Object.getPrototypeOf obj).toBe $.fn
 
   ({beforeEachRequire})->
 
@@ -8,10 +10,10 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
       beforeEachRequire ['__'], (__)->
         @result = __.$ 'p#myid.myclass.myclass2'
 
-      it 'returns a jQuery object', ->
-        expect(@result.jquery).toBeDefined()
+      it 'returns a jQuery-ish object', ->
+        verify_is_jQueryish @result
 
-      it 'jQuery object wraps whatever is returned from __', ->
+      it 'jQuery-ish object wraps whatever is returned from __', ->
         nodeHTMLEquals @result[0], '<p class="myclass myclass2" id="myid"></p>'
 
 
@@ -65,7 +67,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         ['p#myid.myclass.myclass2', ['one','two']]
         '<p class="myclass myclass2" id="myid">onetwo</p>'
 
-      it_renders 'Selector:<String>, Children...:<DOM Nodes, String, Number, Array, jQuery object>',
+      it_renders 'Selector:<String>, Children...:<DOM Nodes, String, Number, Array, jQuery-ish object>',
         [ 'p#myid.myclass.myclass2', [
           node 'span'
           'hello'
@@ -77,7 +79,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
           ]
           0
           node 'a'
-          jQuery '<span class="result"></span><span class="jQueryObjDeux"></span>'
+          $ '<span class="result"></span><span class="jQueryObjDeux"></span>'
         ]]
         '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="result"></span><span class="jQueryObjDeux"></span></p>'
 
@@ -93,7 +95,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         [ 'p#myid.myclass.myclass2', class:'myclass3', 'data-custom':'myattr', 'data-custom2':'myattr2']
         '<p class="myclass3 myclass myclass2" data-custom="myattr" data-custom2="myattr2" id="myid"></p>'
 
-      it_renders "Selector:<String>, Attribute Map:<Object>, Children...:<DOM Nodes, String, Number, Array, jQuery object>",
+      it_renders "Selector:<String>, Attribute Map:<Object>, Children...:<DOM Nodes, String, Number, Array, jQuery-ish object>",
         [ 'p', 'data-custom':'myattr', 'data-custom2':'myattr2',
           node 'span'
           'hello'

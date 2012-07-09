@@ -2,7 +2,8 @@
 var __slice = [].slice;
 
 define(function() {
-  var $, Cell, E, doc, exports, window, _range, _renderNodes;
+  var $, Cell, E, doc, exports, noop, window, _range, _renderNodes;
+  noop = function() {};
   E = typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function' ? (function() {
     var msg;
     msg = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
@@ -69,8 +70,8 @@ define(function() {
             $('head')[0].appendChild(el);
           }
           CDef.className = CDef.name = /(.*\/)?(.*)$/.exec(name)[2];
-          CDef.render_el || (CDef.render_el = $.noop);
-          CDef.after_render || (CDef.after_render = $.noop);
+          CDef.render_el || (CDef.render_el = noop);
+          CDef.after_render || (CDef.after_render = noop);
           load(Cell.extend(CDef));
         }
       });
