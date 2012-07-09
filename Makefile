@@ -4,20 +4,24 @@
 coffee = node_modules/.bin/coffee
 requirejsBuild = node_modules/.bin/r.js
 
+define coffee-compile
+	$(coffee) $2 -o build/ -b -c $1 
+endef
+
 
 #===================================================================
 #­--------------------------- TARGETS ------------------------------
 #===================================================================
-.PHONY : clean test
+.PHONY : clean
 
-all: build/require.js test
+all: build/require.js build/cell.js build/cell-builder-plugin.js build/__.js
 
 #-------------------------------------------------------------------
 # DEV 
 #------------------------------------------------------------------- 
-coffee: deps lib/cell.coffee lib/cell-builder-plugin.coffee
+coffee: deps lib/cell.coffee lib/cell-builder-plugin.coffee lib/__.coffee
 	mkdir -p build/
-	$(coffee) --watch -o build/ -b -c lib/__.coffee lib/cell.coffee lib/cell-builder-plugin.coffee
+	$(call coffee-compile,lib/__.coffee lib/cell.coffee lib/cell-builder-plugin.coffee,--watch)
 
 spec-server: deps
 	$(coffee) spec-runner/spec-runner-server.coffee ./
@@ -31,11 +35,15 @@ coffee-specs: deps
 #------------------------------------------------------------------- 
 build/cell.js: deps lib/cell.coffee
 	mkdir -p build/
-	$(coffee) -o build/ -b -c lib/cell.coffee
+	$(call coffee-compile,lib/cell.coffee)
 
-build/cell-builder-plugin.js: deps lib/cell-builder-plugin.coffee $(coffee)
+build/cell-builder-plugin.js: deps lib/cell-builder-plugin.coffee
 	mkdir -p build/
-	$(coffee) -o build/ -c lib/cell-builder-plugin.coffee
+	$(call coffee-compile,lib/cell-builder-plugin.coffee)
+
+build/__.js: deps lib/__.coffee
+	mkdir -p build/
+	$(call coffee-compile,lib/__.coffee)
 
 build/require.js: deps
 	mkdir -p build/
