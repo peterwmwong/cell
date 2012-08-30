@@ -2,13 +2,18 @@
 var __slice = [].slice;
 
 define(['cell'], function(_arg) {
-  var Cell, E, __, _isObj, _parseHAML, _renderNodes;
+  var Cell, E, __, _isJQueryish, _isObj, _parseHAML, _renderNodes;
   Cell = _arg.Cell;
   E = typeof (typeof console !== "undefined" && console !== null ? console.error : void 0) === 'function' ? (function() {
     var msg;
     msg = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     return console.error.apply(console, msg);
   }) : function() {};
+  _isJQueryish = typeof window.Zepto === 'function' ? function(o) {
+    return $(o) === o;
+  } : function(o) {
+    return o.jquery != null;
+  };
   _isObj = function(o) {
     return (o != null ? o.constructor : void 0) === Object;
   };
@@ -18,7 +23,7 @@ define(['cell'], function(_arg) {
       if ((c = nodes.shift()) != null) {
         if (_.isElement(c)) {
           parent.appendChild(c);
-        } else if (c.jquery) {
+        } else if (_isJQueryish(c)) {
           c.appendTo(parent);
         } else if ((_ref = typeof c) === 'string' || _ref === 'number') {
           parent.appendChild(document.createTextNode(c));
@@ -57,7 +62,7 @@ define(['cell'], function(_arg) {
               el.setAttribute('id', haml.id);
             }
             if (b != null) {
-              if (!_isObj(b)) {
+              if ((!_isObj(b)) || (_isJQueryish(b))) {
                 children.unshift(b);
               } else {
                 for (k in b) {

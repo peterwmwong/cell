@@ -63,6 +63,11 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         ['p#myid.myclass.myclass2', node 'span']
         '<p class="myclass myclass2" id="myid"><span></span></p>'
 
+      it_renders 'Selector:<String>, Child:<jQuery-ish object>',
+        ['p#myid.myclass.myclass2', $('<span></span>')]
+        '<p class="myclass myclass2" id="myid"><span></span></p>'
+        true
+
       it_renders 'Selector:<String>, Children:<Array of Strings>',
         ['p#myid.myclass.myclass2', ['one','two']]
         '<p class="myclass myclass2" id="myid">onetwo</p>'

@@ -1,12 +1,18 @@
 define ['cell'], ({Cell})->
   E = if (typeof console?.error is 'function') then ((msg...)-> console.error msg...) else ->
+  _isJQueryish =
+    if typeof window.Zepto is 'function'
+      (o)-> $(o) is o
+    else
+      (o)-> o.jquery?
+
   _isObj = (o)-> o?.constructor is Object
 
   _renderNodes = (parent,nodes)->
     while nodes.length > 0 when (c = nodes.shift())?
       if _.isElement c
         parent.appendChild c
-      else if c.jquery
+      else if _isJQueryish c
         c.appendTo parent
       else if typeof c in ['string','number']
         parent.appendChild document.createTextNode c
@@ -38,7 +44,7 @@ define ['cell'], ({Cell})->
             el.setAttribute 'id', haml.id if haml.id
 
             if b?
-              if not _isObj b
+              if (not _isObj b) or (_isJQueryish b)
                 children.unshift b
               else
                 for k,v of b
