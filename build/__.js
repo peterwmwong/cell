@@ -9,9 +9,7 @@ define(['cell'], function(_arg) {
     msg = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     return console.error.apply(console, msg);
   }) : function() {};
-  _isJQueryish = typeof window.Zepto === 'function' ? function(o) {
-    return $(o) === o;
-  } : function(o) {
+  _isJQueryish = typeof window.Zepto === 'function' ? $.fn.isPrototypeOf.bind($.fn) : function(o) {
     return o.jquery != null;
   };
   _isObj = function(o) {

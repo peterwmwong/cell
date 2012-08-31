@@ -71,6 +71,10 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         ['p#myid.myclass.myclass2', $('<span></span>')]
         '<p class="myclass myclass2" id="myid"><span></span></p>'
 
+      it_renders 'Selector:<String>, Child:<Date> # REGRESSION',
+        ['p#myid.myclass.myclass2', new Date()]
+        '<p class="myclass myclass2" id="myid"></p>'
+
       it_renders 'Selector:<String>, Children:<Array of Strings>',
         ['p#myid.myclass.myclass2', ['one','two']]
         '<p class="myclass myclass2" id="myid">onetwo</p>'

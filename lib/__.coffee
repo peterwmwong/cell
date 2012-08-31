@@ -2,7 +2,7 @@ define ['cell'], ({Cell})->
   E = if (typeof console?.error is 'function') then ((msg...)-> console.error msg...) else ->
   _isJQueryish =
     if typeof window.Zepto is 'function'
-      (o)-> $(o) is o
+      $.fn.isPrototypeOf.bind $.fn
     else
       (o)-> o.jquery?
 
