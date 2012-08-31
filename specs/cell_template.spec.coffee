@@ -51,6 +51,10 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         ['p#myid.myclass.myclass2', 'blargo']
         '<p class="myclass myclass2" id="myid">blargo</p>'
 
+      it_renders 'Selector:<String>, Child:<String> # Zepto regression',
+        ['p#myid.myclass.myclass2', '<']
+        '<p class="myclass myclass2" id="myid"><</p>'
+
       it_renders 'Selector:<String>, Child:<Number>',
         ['p#myid.myclass.myclass2', 777]
         '<p class="myclass myclass2" id="myid">777</p>'
@@ -66,7 +70,6 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
       it_renders 'Selector:<String>, Child:<jQuery-ish object>',
         ['p#myid.myclass.myclass2', $('<span></span>')]
         '<p class="myclass myclass2" id="myid"><span></span></p>'
-        true
 
       it_renders 'Selector:<String>, Children:<Array of Strings>',
         ['p#myid.myclass.myclass2', ['one','two']]

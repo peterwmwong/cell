@@ -23,10 +23,10 @@ define(['cell'], function(_arg) {
       if ((c = nodes.shift()) != null) {
         if (_.isElement(c)) {
           parent.appendChild(c);
-        } else if (_isJQueryish(c)) {
-          c.appendTo(parent);
         } else if ((_ref = typeof c) === 'string' || _ref === 'number') {
           parent.appendChild(document.createTextNode(c));
+        } else if (_isJQueryish(c)) {
+          c.appendTo(parent);
         } else if (_.isArray(c)) {
           Array.prototype.unshift.apply(nodes, c);
         } else {

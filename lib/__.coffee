@@ -12,10 +12,10 @@ define ['cell'], ({Cell})->
     while nodes.length > 0 when (c = nodes.shift())?
       if _.isElement c
         parent.appendChild c
-      else if _isJQueryish c
-        c.appendTo parent
       else if typeof c in ['string','number']
         parent.appendChild document.createTextNode c
+      else if _isJQueryish c
+        c.appendTo parent
       else if _.isArray c
         Array::unshift.apply nodes, c
       else
