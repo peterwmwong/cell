@@ -25,7 +25,7 @@ define ->
       allcss = ''
       preinstalls = {}
       for {name,cssurl} in Cstack
-        preinstalls[name] = 0
+        preinstalls[name] = 1
         get cssurl, (err, contents)->
           if not err? and typeof contents == 'string'
             allcss += contents

@@ -1,68 +1,46 @@
 define ->
   noop = ->
-  # Error logging
-  E = if (typeof console?.error is 'function') then ((msg...)-> console.error msg...) else ->
-
-  # When running in require.js optimizer, window & doc do not exist
-  $ = (window = this).$
-  doc = window.document or {createElement:->}
-
-  _range = doc.createRange()
-  _renderNodes = (parent,nodes)->
-    while nodes.length > 0 when (c = nodes.shift())?
-      if _.isElement c
-        parent.appendChild c
-      else if c.jquery
-        c.appendTo parent
-      else if typeof c in ['string','number']
-        parent.appendChild doc.createTextNode c
-      else if _.isArray c
-        Array::unshift.apply nodes, c
-      else
-        E "render_el: unsupported render element", c
-    parent
 
   # Load/render cells specified in DOM node data-cell attributes
-  $(doc).ready ->
-    _range.selectNode doc.body
-    $('[data-cell]').each ->
+  $ ->
+    $('[data-cell]').each (i,el)->
       if cellname = @getAttribute 'data-cell'
-        require ["cell!#{cellname}"], (CType)=>
-          @appendChild new CType().render().el
+        require ["cell!#{cellname}"], (CType)->
+          el.appendChild new CType().render().el
           return
       return
     return
 
-  exports =
+  pic = undefined
+  exp =
     Cell: Cell = Backbone.View.extend
       render: ->
-        @el.innerHTML = ''
-        _renderNodes @el, [@render_el()]
+        @el.innerHTML = @render_el()
         @after_render()
         @
 
     pluginBuilder: 'cell-builder-plugin'
 
     load: (name, req, load, config)->
-      req [name], (CDef)->
-        if typeof CDef isnt 'object'
-          E "cell!: Couldn't load #{name} cell. cell definitions should be objects, but instead was #{typeof CDef}"
+      req [name], (def)->
+        if not _.isObject def
+          throw "Couldn't load #{name} cell"
         else
-          if not exports.__preinstalledCells__?[name]?
-            (exports.__preinstalledCells__ or= {})[name] = true
-            el = doc.createElement 'link'
+          pic or= (exp.__preinstalledCells__ or= {})
+          unless pic[name]
+            pic[name] = true
+            el = document.createElement 'link'
             el.href = req.toUrl "#{name}.css"
             el.rel = 'stylesheet'
             el.type = 'text/css'
-            $('head')[0].appendChild el
+            $('head').append el
 
-          CDef.className = CDef.name = /(.*\/)?(.*)$/.exec(name)[2]
+          def.className = def.name = /(.*\/)?(.*)$/.exec(name)[2]
 
           # Normalize render_el and after_render
-          CDef.render_el or= noop
-          CDef.after_render or= noop
+          def.render_el or= noop
+          def.after_render or= noop
 
-          load Cell.extend CDef
+          load Cell.extend def
         return
       return
-

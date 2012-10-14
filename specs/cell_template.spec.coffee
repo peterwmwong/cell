@@ -1,5 +1,4 @@
 define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
-  TestCell1Name = 'fixtures/TestCell1'
   verify_is_jQueryish = (obj)->
     expect(Object.getPrototypeOf obj).toBe $.fn
 
@@ -20,14 +19,21 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
     describe '__()', ->
 
       beforeEachRequire [
-        "cell!#{TestCell1Name}"
+        "cell!fixtures/TestCell1"
         '__'
       ], (@TestCell1,@__)->
 
-      for invalid in ['',undefined,null, (->)] then do(invalid)->
-        describe "#{invalid is '' and '""' or invalid}", ->
-          it "__ #{invalid is '' and '""' or invalid} === undefined", ->
-            expect(@__ invalid).toBe(undefined)
+      for invalid in [(->)] then do(invalid)->
+        invalid_str = "#{invalid is '' and '""' or invalid}"
+        describe invalid_str, ->
+          it "__ #{invalid_str} === undefined", ->
+            expect(=> @__ invalid).toThrow()
+
+      for empty in ['',undefined,null] then do(empty)->
+        empty_str = "#{empty is '' and '""' or empty}"
+        describe empty_str, ->
+          it "__ #{empty_str} === undefined", ->
+            expect(@__ empty).toBe undefined
 
       it_renders = (desc, input_args, expected_html_output, debug)->
         describe desc, ->
@@ -71,9 +77,11 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         ['p#myid.myclass.myclass2', $('<span></span>')]
         '<p class="myclass myclass2" id="myid"><span></span></p>'
 
-      it_renders 'Selector:<String>, Child:<Date> # REGRESSION',
-        ['p#myid.myclass.myclass2', new Date()]
-        '<p class="myclass myclass2" id="myid"></p>'
+      do->
+        mock_date = new Date()
+        it_renders 'Selector:<String>, Child:<Date> # REGRESSION',
+          ['p#myid.myclass.myclass2', mock_date]
+          '<p class="myclass myclass2" id="myid">'+mock_date.toString()+'</p>'
 
       it_renders 'Selector:<String>, Children:<Array of Strings>',
         ['p#myid.myclass.myclass2', ['one','two']]
@@ -95,11 +103,10 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         ]]
         '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="result"></span><span class="jQueryObjDeux"></span></p>'
 
-      it_renders 'Selector:<String>, Children...:<undefined, null, Function>',
+      it_renders 'Selector:<String>, Children...:<undefined, null>',
         [ 'p#myid.myclass.myclass2', [
           undefined
           null
-          (->)
         ]]
         '<p class="myclass myclass2" id="myid"></p>'
 
@@ -117,11 +124,10 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         ]
         '<p data-custom="myattr" data-custom2="myattr2"><span></span>hello<table></table>world5<div></div>0<a></a></p>'
 
-      it_renders 'Selector:<String>, Children...:<undefined, null, Function>',
+      it_renders 'Selector:<String>, Children...:<undefined, null>',
         [ 'p', 'data-custom':'myattr', 'data-custom2':'myattr2',
           undefined
           null
-          (->)
         ]
         '<p data-custom="myattr" data-custom2="myattr2"></p>'
 

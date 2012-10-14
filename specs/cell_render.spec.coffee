@@ -20,18 +20,6 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
       it 'no render_el', ->
         nodeHTMLEquals @testCell1.render().el, '<div class="TestCell1">TestCell1 Contents</div>'
 
-      it_renders 'Array of nodes',
-        [
-          node 'a'
-          node 'span'
-          node 'input'
-        ]
-        '<div class="TestCell1"><a></a><span></span><input></input></div>'
-
-      it_renders 'Node',
-        node 'a'
-        '<div class="TestCell1"><a></a></div>'
-
       it_renders 'String',
         'hello world'
         '<div class="TestCell1">hello world</div>'
@@ -39,26 +27,6 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
       it_renders 'Number',
         777
         '<div class="TestCell1">777</div>'
-
-      it_renders 'jQuery-ish Object',
-        $ '<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>'
-        '<div class="TestCell1"><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>'
-
-      it_renders 'Array of Nodes, Strings, Numbers, jQuery-ish Object',
-        [
-          node 'span'
-          'hello'
-          [
-            node 'table'
-            'world'
-            5
-            [ node 'div' ]
-          ]
-          0
-          node 'a'
-          $ '<span class="jQueryObj"></span><span class="jQueryObjDeux"></span>'
-        ]
-        '<div class="TestCell1"><span></span>hello<table></table>world5<div></div>0<a></a><span class="jQueryObj"></span><span class="jQueryObjDeux"></span></div>'
 
     describe 'after_render', ->
 
@@ -70,12 +38,8 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
 
       it '@el already created', ->
-        @testCell1.render_el = -> [
-          node 'a'
-          node 'span'
-          node 'input'
-        ]
+        @testCell1.render_el = -> 'hello world'
         el = undefined
         @testCell1.after_render = -> el = @el
         @testCell1.render()
-        nodeHTMLEquals el, '<div class="TestCell1"><a></a><span></span><input></input></div>'
+        nodeHTMLEquals el, '<div class="TestCell1">hello world</div>'

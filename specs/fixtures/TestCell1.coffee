@@ -1,4 +1,2 @@
 define ->
-  render_el: -> [
-    "TestCell1 Contents"
-  ]
+  render_el: -> "TestCell1 Contents"
