@@ -22,6 +22,111 @@
           return nodeHTMLEquals(this.result[0], '<p class="myclass myclass2" id="myid"></p>');
         });
       });
+      describe('__.bind(backbone_model, attrs, transform)', function() {
+        return describe('when passed as a Child for __()', function() {
+          describe("when attrs is an Array (multiple attribute names)", function() {
+            beforeEachRequire(['__'], function(__) {
+              this.model = new Backbone.Model().set({
+                attr1: 'initial value1',
+                attr2: 'initial value2'
+              });
+              return this.node = __('.bound', __.bind(this.model, ['attr1', 'attr2'], function(attr1, attr2, model) {
+                return "attr1: " + attr1 + ", attr2: " + attr2;
+              }));
+            });
+            it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
+              return expect(this.node.innerHTML).toBe("attr1: initial value1, attr2: initial value2");
+            });
+            return describe("backbone_model either attribute changes", function() {
+              beforeEach(function() {
+                return this.model.set({
+                  attr1: 'new1',
+                  attr2: 'new2'
+                });
+              });
+              return it("automatically sets value of the backbone_model's attribute (attrs) to innerHTML", function() {
+                return expect(this.node.innerHTML).toBe("attr1: new1, attr2: new2");
+              });
+            });
+          });
+          return describe("when attrs is a string (one attribute's name)", function() {
+            describe("automatically transforms undefined into ''", function() {
+              beforeEachRequire(['__'], function(__) {
+                this.model = new Backbone.Model();
+                return this.node = __('.bound', __.bind(this.model, 'attr'));
+              });
+              return it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
+                return expect(this.node.innerHTML).toBe("");
+              });
+            });
+            describe("and transform is a function, automatically transforms undefined into ''", function() {
+              beforeEachRequire(['__'], function(__) {
+                this.model = new Backbone.Model();
+                return this.node = __('.bound', __.bind(this.model, 'attr', function() {}));
+              });
+              return it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
+                return expect(this.node.innerHTML).toBe("");
+              });
+            });
+            describe("and transform is a function", function() {
+              beforeEachRequire(['__'], function(__) {
+                this.model = new Backbone.Model().set({
+                  attr: 'initial value'
+                });
+                return this.node = __('.bound', __.bind(this.model, 'attr'));
+              });
+              it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
+                return expect(this.node.innerHTML).toBe("initial value");
+              });
+              return describe("backbone_model attribute (attrs) changes", function() {
+                beforeEach(function() {
+                  return this.model.set('attr', 'new value');
+                });
+                return it("automatically sets value of the backbone_model's attribute (attrs) to innerHTML", function() {
+                  return expect(this.node.innerHTML).toBe("new value");
+                });
+              });
+            });
+            return describe("and transform is undefined", function() {
+              beforeEachRequire(['__'], function(__) {
+                this.model = new Backbone.Model().set({
+                  attr: 'initial value'
+                });
+                return this.node = __('.bound', __.bind(this.model, 'attr', function(attr, model) {
+                  return "attr: " + attr;
+                }));
+              });
+              it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
+                return expect(this.node.innerHTML).toBe("attr: initial value");
+              });
+              return describe("backbone_model attribute (attrs) changes", function() {
+                beforeEach(function() {
+                  return this.model.set('attr', 'new value');
+                });
+                return it("automatically sets value of the backbone_model's attribute (attrs) to innerHTML", function() {
+                  return expect(this.node.innerHTML).toBe("attr: new value");
+                });
+              });
+            });
+          });
+        });
+      });
+      describe('Cell.prototype.render is modified', function() {
+        beforeEachRequire(['cell', '__'], function(_arg2, __) {
+          var C, Cell;
+          Cell = _arg2.Cell;
+          this.__ = __;
+          this.cdef = {
+            render_el: function(__, bind) {}
+          };
+          spyOn(this.cdef, 'render_el').andCallThrough();
+          C = Cell.extend(this.cdef);
+          return new C().render();
+        });
+        return it('calls Cell.render_el(__,__.bind)', function() {
+          return expect(this.cdef.render_el).toHaveBeenCalledWith(this.__, this.__.bind);
+        });
+      });
       return describe('__()', function() {
         var empty, invalid, it_renders, it_renders_cell, _fn, _fn1, _i, _j, _len, _len1, _ref, _ref1;
         beforeEachRequire(["cell!fixtures/TestCell1", '__'], function(TestCell1, __) {

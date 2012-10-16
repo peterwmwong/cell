@@ -15,6 +15,95 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
       it 'jQuery-ish object wraps whatever is returned from __', ->
         nodeHTMLEquals @result[0], '<p class="myclass myclass2" id="myid"></p>'
 
+    describe '__.bind(backbone_model, attrs, transform)', ->
+
+      describe 'when passed as a Child for __()', ->
+
+        describe "when attrs is an Array (multiple attribute names)", ->
+          beforeEachRequire ['__'], (__)->
+            @model = new Backbone.Model().set
+              attr1: 'initial value1'
+              attr2: 'initial value2'
+
+            @node = __ '.bound',
+              __.bind @model, ['attr1','attr2'], (attr1, attr2, model)-> "attr1: #{attr1}, attr2: #{attr2}"
+
+          it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
+            expect(@node.innerHTML).toBe "attr1: initial value1, attr2: initial value2"
+
+          describe "backbone_model either attribute changes", ->
+            beforeEach ->
+              @model.set
+                attr1: 'new1'
+                attr2: 'new2'
+
+            it "automatically sets value of the backbone_model's attribute (attrs) to innerHTML", ->
+              expect(@node.innerHTML).toBe  "attr1: new1, attr2: new2"
+
+        describe "when attrs is a string (one attribute's name)", ->
+
+          describe "automatically transforms undefined into ''", ->
+            beforeEachRequire ['__'], (__)->
+              @model = new Backbone.Model()
+              @node = __ '.bound',
+                __.bind @model, 'attr'
+
+            it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
+              expect(@node.innerHTML).toBe ""
+
+          describe "and transform is a function, automatically transforms undefined into ''", ->
+            beforeEachRequire ['__'], (__)->
+              @model = new Backbone.Model()
+              @node = __ '.bound',
+                __.bind @model, 'attr', ->
+
+            it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
+              expect(@node.innerHTML).toBe ""
+
+          describe "and transform is a function", ->
+            beforeEachRequire ['__'], (__)->
+              @model = new Backbone.Model().set
+                attr: 'initial value'
+              @node = __ '.bound',
+                __.bind @model, 'attr'
+
+            it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
+              expect(@node.innerHTML).toBe "initial value"
+
+            describe "backbone_model attribute (attrs) changes", ->
+              beforeEach ->
+                @model.set 'attr', 'new value'
+
+              it "automatically sets value of the backbone_model's attribute (attrs) to innerHTML", ->
+                expect(@node.innerHTML).toBe "new value"
+
+          describe "and transform is undefined", ->
+            beforeEachRequire ['__'], (__)->
+              @model = new Backbone.Model().set
+                attr: 'initial value'
+              @node = __ '.bound',
+                __.bind @model, 'attr', (attr, model)-> "attr: #{attr}"
+
+            it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
+              expect(@node.innerHTML).toBe "attr: initial value"
+
+            describe "backbone_model attribute (attrs) changes", ->
+              beforeEach ->
+                @model.set 'attr', 'new value'
+
+              it "automatically sets value of the backbone_model's attribute (attrs) to innerHTML", ->
+                expect(@node.innerHTML).toBe "attr: new value"
+
+    describe 'Cell.prototype.render is modified', ->
+
+      beforeEachRequire ['cell','__'], ({Cell},@__)->
+        @cdef = render_el: (__,bind)->
+        spyOn(@cdef, 'render_el').andCallThrough()
+        C = Cell.extend(@cdef)
+        new C().render()
+          
+      it 'calls Cell.render_el(__,__.bind)', ->
+        expect(@cdef.render_el).toHaveBeenCalledWith(@__, @__.bind)
 
     describe '__()', ->
 

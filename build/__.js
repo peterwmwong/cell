@@ -2,7 +2,7 @@
 var __slice = [].slice;
 
 define(['cell'], function(_arg) {
-  var Cell, __, _isJQueryish, _isObj, _parseHAML, _renderNodes;
+  var Bind, Cell, __, _isJQueryish, _isObj, _parseHAML, _renderNodes;
   Cell = _arg.Cell;
   _isJQueryish = typeof window.Zepto === 'function' ? $.fn.isPrototypeOf.bind($.fn) : function(o) {
     return o.constructor === jQuery;
@@ -11,19 +11,23 @@ define(['cell'], function(_arg) {
     return o && o.constructor === Object;
   };
   _renderNodes = function(parent, nodes) {
-    var c, _ref;
-    while (nodes.length > 0) {
-      if ((c = nodes.shift()) != null) {
-        if (_.isElement(c)) {
-          parent.appendChild(c);
-        } else if (((_ref = typeof c) === 'string' || _ref === 'number') || _.isDate(c)) {
-          parent.appendChild(document.createTextNode(c));
-        } else if (_isJQueryish(c)) {
-          c.appendTo(parent);
-        } else if (_.isArray(c)) {
-          nodes.unshift.apply(nodes, c);
-        } else {
-          throw "__: unsupported render child";
+    var c, n, _ref;
+    if ((n = nodes[0]) instanceof Bind) {
+      n.bindTo(parent);
+    } else {
+      while (nodes.length > 0) {
+        if ((c = nodes.shift()) != null) {
+          if (_.isElement(c)) {
+            parent.appendChild(c);
+          } else if (((_ref = typeof c) === 'string' || _ref === 'number') || _.isDate(c)) {
+            parent.appendChild(document.createTextNode(c));
+          } else if (_isJQueryish(c)) {
+            c.appendTo(parent);
+          } else if (_.isArray(c)) {
+            nodes.unshift.apply(nodes, c);
+          } else {
+            throw "__: unsupported render child";
+          }
         }
       }
     }
@@ -55,15 +59,15 @@ define(['cell'], function(_arg) {
               el.setAttribute('id', haml.id);
             }
             if (b != null) {
-              if ((!_isObj(b)) || (_isJQueryish(b))) {
+              if ((!_isObj(b)) || (_isJQueryish(b)) || (b instanceof Bind)) {
                 children.unshift(b);
               } else {
                 for (k in b) {
                   v = b[k];
-                  if (k !== 'class') {
-                    el.setAttribute(k, v);
-                  } else {
+                  if (k === 'class') {
                     el.className += v;
+                  } else {
+                    el.setAttribute(k, v);
                   }
                 }
               }
@@ -93,6 +97,50 @@ define(['cell'], function(_arg) {
       return parent && _renderNodes(parent, children);
     }
   };
+  Bind = function(model, attrs, transform) {
+    this.model = model;
+    this.attrs = attrs;
+    this.transform = transform;
+    if (typeof this.attrs === 'string') {
+      this.attrs = [this.attrs];
+    }
+    this.args = new Array(this.attrs.length + 1);
+    this.args[this.attrs.length] = this.model;
+    this.estring = 'change:' + this.attrs.join(' change:');
+    this.els = [];
+    this.model.on(this.estring, this.onChange, this);
+    return this;
+  };
+  Bind.prototype = {
+    bindTo: function(el) {
+      this.els.push(el);
+      el.innerHTML = this.getResult();
+    },
+    getResult: function() {
+      var a, i, val, _i, _len, _ref;
+      _ref = this.attrs;
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        a = _ref[i];
+        this.args[i] = this.model.attributes[a];
+      }
+      val = this.transform && (this.transform.apply(this, this.args)) || this.args.slice(0, -1).join(' ');
+      return (val != null) && val || '';
+    },
+    onChange: function() {
+      var el, val, _i, _len, _ref;
+      if (this.els.length > 0) {
+        val = this.getResult();
+        _ref = this.els;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          el = _ref[_i];
+          el.innerHTML = val;
+        }
+      }
+    }
+  };
+  __.bind = function(model, attrs, transform) {
+    return new Bind(model, attrs, transform);
+  };
   __.$ = function() {
     var args;
     args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
@@ -100,8 +148,10 @@ define(['cell'], function(_arg) {
   };
   Cell.prototype.__ = __;
   Cell.prototype.render = function() {
-    _renderNodes(this.el, [this.render_el(__)]);
-    this.after_render();
+    this.render_el && _renderNodes(this.el, [this.render_el(__, __.bind)]);
+    if (typeof this.after_render === "function") {
+      this.after_render();
+    }
     return this;
   };
   return __;

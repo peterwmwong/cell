@@ -8,17 +8,20 @@ define ['cell'], ({Cell})->
   _isObj = (o)-> o and o.constructor is Object
 
   _renderNodes = (parent,nodes)->
-    while nodes.length > 0 when (c = nodes.shift())?
-      if _.isElement c
-        parent.appendChild c
-      else if typeof c in ['string','number'] or _.isDate c
-        parent.appendChild document.createTextNode c
-      else if _isJQueryish c
-        c.appendTo parent
-      else if _.isArray c
-        nodes.unshift.apply nodes, c
-      else
-        throw "__: unsupported render child"
+    if (n = nodes[0]) instanceof Bind
+      n.bindTo parent
+    else
+      while nodes.length > 0 when (c = nodes.shift())?
+        if _.isElement c
+          parent.appendChild c
+        else if typeof c in ['string','number'] or _.isDate c
+          parent.appendChild document.createTextNode c
+        else if _isJQueryish c
+          c.appendTo parent
+        else if _.isArray c
+          nodes.unshift.apply nodes, c
+        else
+          throw "__: unsupported render child"
     parent
 
   # HAML-like selector, ex. div#myID.myClass
@@ -41,12 +44,12 @@ define ['cell'], ({Cell})->
             el.setAttribute 'id', haml.id if haml.id
 
             if b?
-              if (not _isObj b) or (_isJQueryish b)
+              if (not _isObj b) or (_isJQueryish b) or (b instanceof Bind)
                 children.unshift b
               else
                 for k,v of b
-                  if k isnt 'class' then el.setAttribute k, v
-                  else el.className += v
+                  if k is 'class' then el.className += v
+                  else el.setAttribute k, v
 
             if haml.className
               el.className += if el.className then " #{haml.className}" else haml.className
@@ -83,12 +86,39 @@ define ['cell'], ({Cell})->
 
       parent and _renderNodes parent, children
 
+  Bind = (@model, @attrs, @transform)->
+    @attrs = [@attrs] if typeof @attrs is 'string'
+    @args = new Array @attrs.length+1
+    @args[@attrs.length] = @model
+    @estring = 'change:' + @attrs.join ' change:'
+    @els = []
+    @model.on @estring, @onChange, @
+    @
+
+  Bind.prototype =
+    bindTo: (el)->
+      @els.push el
+      el.innerHTML = @getResult()
+      return
+
+    getResult: -> 
+      @args[i] = @model.attributes[a] for a,i in @attrs
+      val = @transform and (@transform @args...) or @args.slice(0,-1).join ' '
+      val? and val or ''
+
+    onChange: ->
+      if @els.length > 0
+        val = @getResult()
+        el.innerHTML = val for el in @els
+      return
+
+  __.bind = (model, attrs, transform)-> new Bind model, attrs, transform
+
   __.$ = (args...)-> $ __ args...
 
   Cell::__ = __
   Cell::render = ->
-    _renderNodes @el, [@render_el(__)]
-    @after_render()
+    @render_el and _renderNodes @el, [@render_el(__,__.bind)]
+    @after_render?()
     @
-
   __

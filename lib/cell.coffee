@@ -13,10 +13,10 @@ define ->
 
   pic = undefined
   exp =
-    Cell: Cell = Backbone.View.extend
+    Cell: Backbone.View.extend
       render: ->
-        @el.innerHTML = @render_el()
-        @after_render()
+        @render_el and @el.innerHTML = @render_el()
+        @after_render?()
         @
 
     pluginBuilder: 'cell-builder-plugin'
@@ -41,6 +41,6 @@ define ->
           def.render_el or= noop
           def.after_render or= noop
 
-          load Cell.extend def
+          load exp.Cell.extend def
         return
       return
