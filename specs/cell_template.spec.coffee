@@ -60,7 +60,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
             it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
               expect(@node.innerHTML).toBe ""
 
-          describe "and transform is a function", ->
+          describe "and transform is undefined", ->
             beforeEachRequire ['__'], (__)->
               @model = new Backbone.Model().set
                 attr: 'initial value'
@@ -77,7 +77,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
               it "automatically sets value of the backbone_model's attribute (attrs) to innerHTML", ->
                 expect(@node.innerHTML).toBe "new value"
 
-          describe "and transform is undefined", ->
+          describe "and transform is a function", ->
             beforeEachRequire ['__'], (__)->
               @model = new Backbone.Model().set
                 attr: 'initial value'

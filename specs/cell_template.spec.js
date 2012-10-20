@@ -68,7 +68,7 @@
                 return expect(this.node.innerHTML).toBe("");
               });
             });
-            describe("and transform is a function", function() {
+            describe("and transform is undefined", function() {
               beforeEachRequire(['__'], function(__) {
                 this.model = new Backbone.Model().set({
                   attr: 'initial value'
@@ -87,7 +87,7 @@
                 });
               });
             });
-            return describe("and transform is undefined", function() {
+            return describe("and transform is a function", function() {
               beforeEachRequire(['__'], function(__) {
                 this.model = new Backbone.Model().set({
                   attr: 'initial value'
