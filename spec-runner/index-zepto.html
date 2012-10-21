@@ -5,12 +5,9 @@
   <link rel="shortcut icon" type="image/png" href="/support/jasmine/jasmine_favicon.png">
   <link rel="stylesheet" type="text/css" href="/support/jasmine/jasmine.css">
   <link rel="stylesheet" type="text/css" href="./jasmine-override.css">
-  <script src="/support/zepto.js"></script>
   <script src="/support/jasmine/jasmine.js"></script>
   <script src="/support/jasmine/jasmine-html.js"></script>
   <script src="/support/sinon.js"></script>
-  <script src="/support/underscore.js"></script>
-  <script src="/support/backbone.js"></script>
   <script src="/node_modules/requirejs/require.js"></script>
   <script>
     require.config({
@@ -20,7 +17,20 @@
         'SpecHelpers': '../spec-runner/SpecHelpers',
         'spec': '../spec-runner/spec',
         'cell': '../build/cell',
-        '__': '../build/__'
+        '__': '../build/__',
+        jquery: '../support/zepto',
+        underscore: '../node_modules/underscore/underscore',
+        backbone: '../node_modules/backbone/backbone'
+      },
+      shim: {
+        'underscore': {
+          "deps": ["jquery"],
+          "exports": '_'
+        },
+        'backbone': {
+          "deps": ["underscore", "jquery"],
+          "exports": "Backbone"  //attaches "Backbone" to the window object
+        }
       }
     })(['../spec-runner/SpecRunner']);
   </script>

@@ -1,4 +1,4 @@
-define ->
+define ['backbone'], ->
   noop = ->
 
   # Load/render cells specified in DOM node data-cell attributes
@@ -23,24 +23,22 @@ define ->
 
     load: (name, req, load, config)->
       req [name], (def)->
-        if not _.isObject def
-          throw "Couldn't load #{name} cell"
-        else
-          pic or= (exp.__preinstalledCells__ or= {})
-          unless pic[name]
-            pic[name] = true
-            el = document.createElement 'link'
-            el.href = req.toUrl "#{name}.css"
-            el.rel = 'stylesheet'
-            el.type = 'text/css'
-            $('head').append el
+        throw "Couldn't load #{name} cell" unless def is Object(def)
+        pic or= (exp.__preinstalledCells__ or= {})
+        unless pic[name]
+          pic[name] = true
+          el = document.createElement 'link'
+          el.href = req.toUrl "#{name}.css"
+          el.rel = 'stylesheet'
+          el.type = 'text/css'
+          $('head').append el
 
-          def.className = def.name = /(.*\/)?(.*)$/.exec(name)[2]
+        def.className = def.name = /(.*\/)?(.*)$/.exec(name)[2]
 
-          # Normalize render_el and after_render
-          def.render_el or= noop
-          def.after_render or= noop
+        # Normalize render_el and after_render
+        def.render_el or= noop
+        def.after_render or= noop
 
-          load exp.Cell.extend def
+        load exp.Cell.extend def
         return
       return

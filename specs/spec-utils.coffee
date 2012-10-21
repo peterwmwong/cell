@@ -1,4 +1,4 @@
-define ->
+define ['underscore'], ->
 
   exports =
     stringify: (obj, excludeArrayBrackets)->

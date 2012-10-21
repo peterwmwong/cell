@@ -24,6 +24,17 @@ define
                 paths:
                   cell: '../build/cell'
                   __: '../build/__'
+                  jquery: '../support/jquery'
+                  underscore: '../node_modules/underscore/underscore'
+                  backbone: '../node_modules/backbone/backbone'
+                shim:
+                  underscore:
+                    deps: ["jquery"]
+                    exports: '_'
+                  backbone:
+                    deps: ["underscore", "jquery"]
+                    exports: "Backbone" 
+
               ctx = window.require.s.contexts[ctxName]
               
               dep_modules = undefined

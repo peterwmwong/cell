@@ -1,9 +1,9 @@
-define ['cell'], ({Cell})->
+define ['cell','underscore'], ({Cell})->
   _isJQueryish =
-    if typeof window.Zepto is 'function'
-      $.fn.isPrototypeOf.bind $.fn
+    if typeof Zepto is 'function'
+      Zepto.fn.isPrototypeOf.bind Zepto.fn
     else
-      (o)-> o.constructor is jQuery
+      (o)-> o.jquery
 
   _isObj = (o)-> o and o.constructor is Object
 
@@ -33,7 +33,7 @@ define ['cell'], ({Cell})->
 
   __ = (a,b,children...)->
     if a
-      if _.isElement b
+      if _.isElement(b)
         children.unshift b
         b = undefined
 
@@ -47,9 +47,10 @@ define ['cell'], ({Cell})->
               if (not _isObj b) or (_isJQueryish b) or (b instanceof Bind)
                 children.unshift b
               else
-                for k,v of b
+                _.each b, (v,k)->
                   if k is 'class' then el.className += v
                   else el.setAttribute k, v
+                  return
 
             if haml.className
               el.className += if el.className then " #{haml.className}" else haml.className
@@ -88,11 +89,8 @@ define ['cell'], ({Cell})->
 
   Bind = (@model, @attrs, @transform)->
     @attrs = [@attrs] if typeof @attrs is 'string'
-    @args = new Array @attrs.length+1
-    @args[@attrs.length] = @model
-    @estring = 'change:' + @attrs.join ' change:'
     @els = []
-    @model.on @estring, @onChange, @
+    @model.on "change:#{@attrs.join ' change:'}", @onChange, @
     @
 
   Bind.prototype =
@@ -102,14 +100,15 @@ define ['cell'], ({Cell})->
       return
 
     getResult: -> 
-      @args[i] = @model.attributes[a] for a,i in @attrs
-      val = @transform and (@transform @args...) or @args.slice(0,-1).join ' '
-      val? and val or ''
+      args = _.map(@attrs, ((a)-> @[a]), @model.attributes).concat @model
+      (@transform and (@transform args...) or (args.slice(0,-1).join ' ')) or ''
 
     onChange: ->
       if @els.length > 0
         val = @getResult()
-        el.innerHTML = val for el in @els
+        _.each @els, (el)->
+          el.innerHTML = val
+          return
       return
 
   __.bind = (model, attrs, transform)-> new Bind model, attrs, transform

@@ -68,7 +68,11 @@ spec-cell-builder-plugin: build/cell.js build/cell-builder-plugin.js
 		paths.cell=../../../build/cell \
 		paths.__=../../../build/__ \
 		paths.cell-builder-plugin=../../../build/cell-builder-plugin \
-		include=requireLib \
+		paths.jquery=../../../support/jquery \
+		paths.underscore=../../../node_modules/underscore/underscore \
+		paths.backbone=../../../node_modules/backbone/backbone \
+		shim.backbone.deps=underscore,jquery \
+		include=requireLib,jquery,underscore,backbone \
 		name="cell!Mock" \
 		baseUrl=specs/fixtures/cell-builder-plugin/ \
 		out=specs/fixtures/cell-builder-plugin/all.js
