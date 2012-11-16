@@ -8,7 +8,9 @@ Getting Started
 
 ```coffee
 # App.coffee
-define ['__'], (__)-> # import __ render helper
+define ->
+  __ = require '__' # Optional, but very cool render helper
+
   render_el: -> [
     __ '.greeting', 'Hello World'
   ]

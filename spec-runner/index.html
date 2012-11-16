@@ -31,8 +31,11 @@
           "deps": ["underscore", "jquery"],
           "exports": "Backbone"  //attaches "Backbone" to the window object
         }
-      }
-    })(['../spec-runner/SpecRunner']);
+      },
+      deps: [
+        '../spec-runner/SpecRunner'
+      ]
+    });
   </script>
 </head>
 <body>

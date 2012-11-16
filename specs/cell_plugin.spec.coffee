@@ -11,7 +11,11 @@ define -> ({beforeEachRequire})->
       $('link[href="/specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length
     ).not.toBe 0
 
-  it 'is an instanceof of Backbone.View and cell', ->
+  it 'exposes @Cell', ->
     expect(@testCell1 instanceof @cell.Cell).toBe true
+
+  it 'Creates a Backbone.View from the definition of the module', ->
     expect(@testCell1 instanceof Backbone.View).toBe true
 
+  it 'overrides Backbone.View._ensureElement() to add a cell attribute', ->
+    expect(@testCell1.$el.attr 'cell').toBe 'TestCell1'

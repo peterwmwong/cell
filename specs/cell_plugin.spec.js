@@ -13,9 +13,14 @@
       it('attaches <link> for stylesheet', function() {
         return expect($('link[href="/specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length).not.toBe(0);
       });
-      return it('is an instanceof of Backbone.View and cell', function() {
-        expect(this.testCell1 instanceof this.cell.Cell).toBe(true);
+      it('exposes @Cell', function() {
+        return expect(this.testCell1 instanceof this.cell.Cell).toBe(true);
+      });
+      it('Creates a Backbone.View from the definition of the module', function() {
         return expect(this.testCell1 instanceof Backbone.View).toBe(true);
+      });
+      return it('overrides Backbone.View._ensureElement() to add a cell attribute', function() {
+        return expect(this.testCell1.$el.attr('cell')).toBe('TestCell1');
       });
     };
   });

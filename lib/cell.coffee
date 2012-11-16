@@ -1,5 +1,6 @@
-define ['backbone'], ->
-  noop = ->
+define (require)->
+  Backbone = require 'backbone'
+  $ = require 'jquery'
 
   # Load/render cells specified in DOM node data-cell attributes
   $ ->
@@ -13,7 +14,14 @@ define ['backbone'], ->
 
   pic = undefined
   exp =
+
     Cell: Backbone.View.extend
+
+      setElement: (element, delegate)->
+        Backbone.View::setElement.call this, element, delegate
+        @$el.attr 'cell', @name
+        @
+
       render: ->
         @render_el and @el.innerHTML = @render_el()
         @after_render?()
@@ -36,8 +44,8 @@ define ['backbone'], ->
         def.className = def.name = /(.*\/)?(.*)$/.exec(name)[2]
 
         # Normalize render_el and after_render
-        def.render_el or= noop
-        def.after_render or= noop
+        def.render_el or= $.noop
+        def.after_render or= $.noop
 
         load exp.Cell.extend def
         return

@@ -18,15 +18,15 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
             nodeHTMLEquals @testCell1.render().el, expected_html_output
 
       it 'no render_el', ->
-        nodeHTMLEquals @testCell1.render().el, '<div class="TestCell1">TestCell1 Contents</div>'
+        nodeHTMLEquals @testCell1.render().el, '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>'
 
       it_renders 'String',
         'hello world'
-        '<div class="TestCell1">hello world</div>'
+        '<div cell="TestCell1" class="TestCell1">hello world</div>'
 
       it_renders 'Number',
         777
-        '<div class="TestCell1">777</div>'
+        '<div cell="TestCell1" class="TestCell1">777</div>'
 
     describe 'after_render', ->
 
@@ -42,4 +42,4 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         el = undefined
         @testCell1.after_render = -> el = @el
         @testCell1.render()
-        nodeHTMLEquals el, '<div class="TestCell1">hello world</div>'
+        nodeHTMLEquals el, '<div cell="TestCell1" class="TestCell1">hello world</div>'

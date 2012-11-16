@@ -27,10 +27,10 @@
           });
         };
         it('no render_el', function() {
-          return nodeHTMLEquals(this.testCell1.render().el, '<div class="TestCell1">TestCell1 Contents</div>');
+          return nodeHTMLEquals(this.testCell1.render().el, '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>');
         });
-        it_renders('String', 'hello world', '<div class="TestCell1">hello world</div>');
-        return it_renders('Number', 777, '<div class="TestCell1">777</div>');
+        it_renders('String', 'hello world', '<div cell="TestCell1" class="TestCell1">hello world</div>');
+        return it_renders('Number', 777, '<div cell="TestCell1" class="TestCell1">777</div>');
       });
       return describe('after_render', function() {
         it('called after render_el', function() {
@@ -49,7 +49,7 @@
             return el = this.el;
           };
           this.testCell1.render();
-          return nodeHTMLEquals(el, '<div class="TestCell1">hello world</div>');
+          return nodeHTMLEquals(el, '<div cell="TestCell1" class="TestCell1">hello world</div>');
         });
       });
     };

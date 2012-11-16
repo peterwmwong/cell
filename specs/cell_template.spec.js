@@ -222,18 +222,18 @@
             'data-custom2': 'myattr2'
           }, void 0, null
         ], '<p data-custom="myattr" data-custom2="myattr2"></p>');
-        it_renders_cell("cell:<cell>", [], '<div class="TestCell1">TestCell1 Contents</div>');
+        it_renders_cell("cell:<cell>", [], '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>');
         it_renders_cell("cell:<cell>, options:<Object>", [
           {
             tagName: 'span'
           }
-        ], '<span class="TestCell1">TestCell1 Contents</span>');
-        it_renders_cell("cell:<cell>, Selector String:<String>", ['#myid.myclass.myclass2'], '<div class="TestCell1 myclass myclass2" id="myid">TestCell1 Contents</div>');
+        ], '<span cell="TestCell1" class="TestCell1">TestCell1 Contents</span>');
+        it_renders_cell("cell:<cell>, Selector String:<String>", ['#myid.myclass.myclass2'], '<div cell="TestCell1" class="TestCell1 myclass myclass2" id="myid">TestCell1 Contents</div>');
         return it_renders_cell("cell:<cell>, Selector String:<String>, options:<Object>", [
           '#myid.myclass.myclass2', {
             tagName: 'a'
           }
-        ], '<a class="TestCell1 myclass myclass2" id="myid">TestCell1 Contents</a>');
+        ], '<a cell="TestCell1" class="TestCell1 myclass myclass2" id="myid">TestCell1 Contents</a>');
       });
     };
   });
