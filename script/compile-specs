@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+npm install
+find spec-runner/ specs/ -name '*.coffee' | xargs node_modules/.bin/coffee --watch -c

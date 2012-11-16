@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+npm install
+node_modules/.bin/coffee spec-runner/spec-runner-server.coffee ./

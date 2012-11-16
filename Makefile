@@ -16,19 +16,6 @@ endef
 
 all: build/require.js build/cell.js build/cell-builder-plugin.js build/__.js
 
-#-------------------------------------------------------------------
-# DEV 
-#------------------------------------------------------------------- 
-coffee: deps lib/cell.coffee lib/cell-builder-plugin.coffee lib/__.coffee
-	mkdir -p build/
-	$(call coffee-compile,lib/__.coffee lib/cell.coffee lib/cell-builder-plugin.coffee,--watch)
-
-spec-server: deps
-	$(coffee) spec-runner/spec-runner-server.coffee ./
-
-coffee-specs: deps
-	find spec-runner/ specs/ -name '*.coffee' | xargs $(coffee) --watch -c
-
 
 #-------------------------------------------------------------------
 # BUILD
