@@ -12,14 +12,46 @@ define (require)->
       return
     return
 
+  # Override jquery.fn.remove
+  $.fn.remove = (selector, keepData)->
+    elem = undefined
+    i = 0
+
+    while (elem = @[i++])?
+      if !selector or jQuery.filter( selector, [ elem ] ).length
+
+        if !keepData and elem.nodeType == 1
+
+          # Cell's jQuery extension
+          # Triggering the 'cell-remove' event will notify the Cell
+          # and any descendant Cell's to @dispose().
+          $elem = $ elem
+          $elem.triggerHandler 'cell-remove' if $elem.attr 'cell'
+          $('[cell]', $elem).each -> $(@).triggerHandler 'cell-remove'
+
+          jQuery.cleanData elem.getElementsByTagName "*"
+          jQuery.cleanData [ elem ]
+
+        if elem.parentNode
+          elem.parentNode.removeChild elem
+
+    return @
+
   pic = undefined
   exp =
 
     Cell: Backbone.View.extend
 
       setElement: (element, delegate)->
-        Backbone.View::setElement.call this, element, delegate
-        @$el.attr 'cell', @name
+        Backbone.View::setElement.call @, element, delegate
+        @$el
+          .attr('cell', @name)
+          .on 'cell-remove', onCellRemove = =>
+            @$el.off 'cell-remove', onCellRemove
+            @model?.off null, null, @
+            @collection?.off null, null, @
+            @undelegateEvents()
+            @model = @collection = @el = @$el = @$ = undefined
         @
 
       render: ->

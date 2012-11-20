@@ -9,34 +9,7 @@
   <script src="/support/jasmine/jasmine-html.js"></script>
   <script src="/support/sinon.js"></script>
   <script src="/node_modules/requirejs/require.js"></script>
-  <script>
-    require.config({
-      context: 'specRunner', // TODO rename spec-runner
-      baseUrl: '/specs/',
-      paths: {
-        'SpecHelpers': '../spec-runner/SpecHelpers',
-        'spec': '../spec-runner/spec',
-        'cell': '../build/cell',
-        '__': '../build/__',
-        jquery: '../support/jquery',
-        underscore: '../node_modules/underscore/underscore',
-        backbone: '../node_modules/backbone/backbone'
-      },
-      shim: {
-        'underscore': {
-          "deps": ["jquery"],
-          "exports": '_'
-        },
-        'backbone': {
-          "deps": ["underscore", "jquery"],
-          "exports": "Backbone"  //attaches "Backbone" to the window object
-        }
-      },
-      deps: [
-        '../spec-runner/SpecRunner'
-      ]
-    });
-  </script>
+  <script src="./spec_modules_config.js"></script>
 </head>
 <body>
   <div id='spec-fixture' style='width:0px; height:0px; overflow:hidden'></div>

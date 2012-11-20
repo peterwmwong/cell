@@ -1,5 +1,5 @@
 /*!
- * jQuery JavaScript Library v1.8.3pre -deprecated,-ajax/jsonp,-ajax/script,-effects
+ * jQuery JavaScript Library v1.8.3
  * http://jquery.com/
  *
  * Includes Sizzle.js
@@ -9,7 +9,7 @@
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: Sat Oct 13 2012 21:55:31 GMT-0500 (CDT)
+ * Date: Tue Nov 13 2012 08:20:33 GMT-0500 (Eastern Standard Time)
  */
 (function( window, undefined ) {
 var
@@ -186,7 +186,7 @@ jQuery.fn = jQuery.prototype = {
 	selector: "",
 
 	// The current version of jQuery being used
-	jquery: "1.8.3pre -deprecated,-ajax/jsonp,-ajax/script,-effects",
+	jquery: "1.8.3",
 
 	// The default length of a jQuery object is 0
 	length: 0,
@@ -3720,7 +3720,8 @@ var cachedruns,
 				delete cache[ keys.shift() ];
 			}
 
-			return (cache[ key ] = value);
+			// Retrieve with (key + " ") to avoid collision with native Object.prototype properties (see Issue #157)
+			return (cache[ key + " " ] = value);
 		}, cache );
 	},
 
@@ -4254,13 +4255,13 @@ Expr = Sizzle.selectors = {
 		},
 
 		"CLASS": function( className ) {
-			var pattern = classCache[ expando ][ className ];
-			if ( !pattern ) {
-				pattern = classCache( className, new RegExp("(^|" + whitespace + ")" + className + "(" + whitespace + "|$)") );
-			}
-			return function( elem ) {
-				return pattern.test( elem.className || (typeof elem.getAttribute !== strundefined && elem.getAttribute("class")) || "" );
-			};
+			var pattern = classCache[ expando ][ className + " " ];
+
+			return pattern ||
+				(pattern = new RegExp( "(^|" + whitespace + ")" + className + "(" + whitespace + "|$)" )) &&
+				classCache( className, function( elem ) {
+					return pattern.test( elem.className || (typeof elem.getAttribute !== strundefined && elem.getAttribute("class")) || "" );
+				});
 		},
 
 		"ATTR": function( name, operator, check ) {
@@ -4506,7 +4507,7 @@ Expr = Sizzle.selectors = {
 
 		"focus": function( elem ) {
 			var doc = elem.ownerDocument;
-			return elem === doc.activeElement && (!doc.hasFocus || doc.hasFocus()) && !!(elem.type || elem.href);
+			return elem === doc.activeElement && (!doc.hasFocus || doc.hasFocus()) && !!(elem.type || elem.href || ~elem.tabIndex);
 		},
 
 		"active": function( elem ) {
@@ -4654,7 +4655,9 @@ baseHasDuplicate = !hasDuplicate;
 // Document sorting and removing duplicates
 Sizzle.uniqueSort = function( results ) {
 	var elem,
-		i = 1;
+		duplicates = [],
+		i = 1,
+		j = 0;
 
 	hasDuplicate = baseHasDuplicate;
 	results.sort( sortOrder );
@@ -4662,8 +4665,11 @@ Sizzle.uniqueSort = function( results ) {
 	if ( hasDuplicate ) {
 		for ( ; (elem = results[i]); i++ ) {
 			if ( elem === results[ i - 1 ] ) {
-				results.splice( i--, 1 );
+				j = duplicates.push( i );
 			}
+		}
+		while ( j-- ) {
+			results.splice( duplicates[ j ], 1 );
 		}
 	}
 
@@ -4675,8 +4681,9 @@ Sizzle.error = function( msg ) {
 };
 
 function tokenize( selector, parseOnly ) {
-	var matched, match, tokens, type, soFar, groups, preFilters,
-		cached = tokenCache[ expando ][ selector ];
+	var matched, match, tokens, type,
+		soFar, groups, preFilters,
+		cached = tokenCache[ expando ][ selector + " " ];
 
 	if ( cached ) {
 		return parseOnly ? 0 : cached.slice( 0 );
@@ -4831,18 +4838,13 @@ function setMatcher( preFilter, selector, matcher, postFilter, postFinder, postS
 		postFinder = setMatcher( postFinder, postSelector );
 	}
 	return markFunction(function( seed, results, context, xml ) {
-		// Positional selectors apply to seed elements, so it is invalid to follow them with relative ones
-		if ( seed && postFinder ) {
-			return;
-		}
-
-		var i, elem, postFilterIn,
+		var temp, i, elem,
 			preMap = [],
 			postMap = [],
 			preexisting = results.length,
 
 			// Get initial elements from seed or context
-			elems = seed || multipleContexts( selector || "*", context.nodeType ? [ context ] : context, [], seed ),
+			elems = seed || multipleContexts( selector || "*", context.nodeType ? [ context ] : context, [] ),
 
 			// Prefilter to get matcher input, preserving a map for seed-results synchronization
 			matcherIn = preFilter && ( seed || !selector ) ?
@@ -4867,27 +4869,45 @@ function setMatcher( preFilter, selector, matcher, postFilter, postFinder, postS
 
 		// Apply postFilter
 		if ( postFilter ) {
-			postFilterIn = condense( matcherOut, postMap );
-			postFilter( postFilterIn, [], context, xml );
+			temp = condense( matcherOut, postMap );
+			postFilter( temp, [], context, xml );
 
 			// Un-match failing elements by moving them back to matcherIn
-			i = postFilterIn.length;
+			i = temp.length;
 			while ( i-- ) {
-				if ( (elem = postFilterIn[i]) ) {
+				if ( (elem = temp[i]) ) {
 					matcherOut[ postMap[i] ] = !(matcherIn[ postMap[i] ] = elem);
 				}
 			}
 		}
 
-		// Keep seed and results synchronized
 		if ( seed ) {
-			// Ignore postFinder because it can't coexist with seed
-			i = preFilter && matcherOut.length;
-			while ( i-- ) {
-				if ( (elem = matcherOut[i]) ) {
-					seed[ preMap[i] ] = !(results[ preMap[i] ] = elem);
+			if ( postFinder || preFilter ) {
+				if ( postFinder ) {
+					// Get the final matcherOut by condensing this intermediate into postFinder contexts
+					temp = [];
+					i = matcherOut.length;
+					while ( i-- ) {
+						if ( (elem = matcherOut[i]) ) {
+							// Restore matcherIn since elem is not yet a final match
+							temp.push( (matcherIn[i] = elem) );
+						}
+					}
+					postFinder( null, (matcherOut = []), temp, xml );
+				}
+
+				// Move matched elements from seed to results to keep them synchronized
+				i = matcherOut.length;
+				while ( i-- ) {
+					if ( (elem = matcherOut[i]) &&
+						(temp = postFinder ? indexOf.call( seed, elem ) : preMap[i]) > -1 ) {
+
+						seed[temp] = !(results[temp] = elem);
+					}
 				}
 			}
+
+		// Add elements to results, through postFinder if defined
 		} else {
 			matcherOut = condense(
 				matcherOut === results ?
@@ -5056,7 +5076,7 @@ compile = Sizzle.compile = function( selector, group /* Internal Use Only */ ) {
 	var i,
 		setMatchers = [],
 		elementMatchers = [],
-		cached = compilerCache[ expando ][ selector ];
+		cached = compilerCache[ expando ][ selector + " " ];
 
 	if ( !cached ) {
 		// Generate a function of recursive functions that can be used to check each element
@@ -5079,11 +5099,11 @@ compile = Sizzle.compile = function( selector, group /* Internal Use Only */ ) {
 	return cached;
 };
 
-function multipleContexts( selector, contexts, results, seed ) {
+function multipleContexts( selector, contexts, results ) {
 	var i = 0,
 		len = contexts.length;
 	for ( ; i < len; i++ ) {
-		Sizzle( selector, contexts[i], results, seed );
+		Sizzle( selector, contexts[i], results );
 	}
 	return results;
 }
@@ -5161,15 +5181,14 @@ if ( document.querySelectorAll ) {
 			rescape = /'|\\/g,
 			rattributeQuotes = /\=[\x20\t\r\n\f]*([^'"\]]*)[\x20\t\r\n\f]*\]/g,
 
-			// qSa(:focus) reports false when true (Chrome 21),
+			// qSa(:focus) reports false when true (Chrome 21), no need to also add to buggyMatches since matches checks buggyQSA
 			// A support test would require too much code (would include document ready)
-			rbuggyQSA = [":focus"],
+			rbuggyQSA = [ ":focus" ],
 
-			// matchesSelector(:focus) reports false when true (Chrome 21),
 			// matchesSelector(:active) reports false when true (IE9/Opera 11.5)
 			// A support test would require too much code (would include document ready)
 			// just skip matchesSelector for :active
-			rbuggyMatches = [ ":active", ":focus" ],
+			rbuggyMatches = [ ":active" ],
 			matches = docElem.matchesSelector ||
 				docElem.mozMatchesSelector ||
 				docElem.webkitMatchesSelector ||
@@ -5223,7 +5242,7 @@ if ( document.querySelectorAll ) {
 			// Only use querySelectorAll when not filtering,
 			// when this is not xml,
 			// and when no QSA bugs apply
-			if ( !seed && !xml && (!rbuggyQSA || !rbuggyQSA.test( selector )) ) {
+			if ( !seed && !xml && !rbuggyQSA.test( selector ) ) {
 				var groups, i,
 					old = true,
 					nid = expando,
@@ -5292,7 +5311,7 @@ if ( document.querySelectorAll ) {
 				expr = expr.replace( rattributeQuotes, "='$1']" );
 
 				// rbuggyMatches always contains :active, so no need for an existence check
-				if ( !isXML( elem ) && !rbuggyMatches.test( expr ) && (!rbuggyQSA || !rbuggyQSA.test( expr )) ) {
+				if ( !isXML( elem ) && !rbuggyMatches.test( expr ) && !rbuggyQSA.test( expr ) ) {
 					try {
 						var ret = matches.call( elem, expr );
 
@@ -6453,6 +6472,69 @@ jQuery.extend({
 		}
 	}
 });
+// Limit scope pollution from any deprecated API
+(function() {
+
+var matched, browser;
+
+// Use of jQuery.browser is frowned upon.
+// More details: http://api.jquery.com/jQuery.browser
+// jQuery.uaMatch maintained for back-compat
+jQuery.uaMatch = function( ua ) {
+	ua = ua.toLowerCase();
+
+	var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+		/(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+		/(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+		/(msie) ([\w.]+)/.exec( ua ) ||
+		ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+		[];
+
+	return {
+		browser: match[ 1 ] || "",
+		version: match[ 2 ] || "0"
+	};
+};
+
+matched = jQuery.uaMatch( navigator.userAgent );
+browser = {};
+
+if ( matched.browser ) {
+	browser[ matched.browser ] = true;
+	browser.version = matched.version;
+}
+
+// Chrome is Webkit, but Webkit is also Safari.
+if ( browser.chrome ) {
+	browser.webkit = true;
+} else if ( browser.webkit ) {
+	browser.safari = true;
+}
+
+jQuery.browser = browser;
+
+jQuery.sub = function() {
+	function jQuerySub( selector, context ) {
+		return new jQuerySub.fn.init( selector, context );
+	}
+	jQuery.extend( true, jQuerySub, this );
+	jQuerySub.superclass = this;
+	jQuerySub.fn = jQuerySub.prototype = this();
+	jQuerySub.fn.constructor = jQuerySub;
+	jQuerySub.sub = this.sub;
+	jQuerySub.fn.init = function init( selector, context ) {
+		if ( context && context instanceof jQuery && !(context instanceof jQuerySub) ) {
+			context = jQuerySub( context );
+		}
+
+		return jQuery.fn.init.call( this, selector, context, rootjQuerySub );
+	};
+	jQuerySub.fn.init.prototype = jQuerySub.fn;
+	var rootjQuerySub = jQuerySub(document);
+	return jQuerySub;
+};
+
+})();
 var curCSS, iframe, iframeDoc,
 	ralpha = /alpha\([^)]*\)/i,
 	ropacity = /opacity=([^)]*)/,
@@ -8076,6 +8158,178 @@ function ajaxConvert( s, response ) {
 
 	return { state: "success", data: response };
 }
+var oldCallbacks = [],
+	rquestion = /\?/,
+	rjsonp = /(=)\?(?=&|$)|\?\?/,
+	nonce = jQuery.now();
+
+// Default jsonp settings
+jQuery.ajaxSetup({
+	jsonp: "callback",
+	jsonpCallback: function() {
+		var callback = oldCallbacks.pop() || ( jQuery.expando + "_" + ( nonce++ ) );
+		this[ callback ] = true;
+		return callback;
+	}
+});
+
+// Detect, normalize options and install callbacks for jsonp requests
+jQuery.ajaxPrefilter( "json jsonp", function( s, originalSettings, jqXHR ) {
+
+	var callbackName, overwritten, responseContainer,
+		data = s.data,
+		url = s.url,
+		hasCallback = s.jsonp !== false,
+		replaceInUrl = hasCallback && rjsonp.test( url ),
+		replaceInData = hasCallback && !replaceInUrl && typeof data === "string" &&
+			!( s.contentType || "" ).indexOf("application/x-www-form-urlencoded") &&
+			rjsonp.test( data );
+
+	// Handle iff the expected data type is "jsonp" or we have a parameter to set
+	if ( s.dataTypes[ 0 ] === "jsonp" || replaceInUrl || replaceInData ) {
+
+		// Get callback name, remembering preexisting value associated with it
+		callbackName = s.jsonpCallback = jQuery.isFunction( s.jsonpCallback ) ?
+			s.jsonpCallback() :
+			s.jsonpCallback;
+		overwritten = window[ callbackName ];
+
+		// Insert callback into url or form data
+		if ( replaceInUrl ) {
+			s.url = url.replace( rjsonp, "$1" + callbackName );
+		} else if ( replaceInData ) {
+			s.data = data.replace( rjsonp, "$1" + callbackName );
+		} else if ( hasCallback ) {
+			s.url += ( rquestion.test( url ) ? "&" : "?" ) + s.jsonp + "=" + callbackName;
+		}
+
+		// Use data converter to retrieve json after script execution
+		s.converters["script json"] = function() {
+			if ( !responseContainer ) {
+				jQuery.error( callbackName + " was not called" );
+			}
+			return responseContainer[ 0 ];
+		};
+
+		// force json dataType
+		s.dataTypes[ 0 ] = "json";
+
+		// Install callback
+		window[ callbackName ] = function() {
+			responseContainer = arguments;
+		};
+
+		// Clean-up function (fires after converters)
+		jqXHR.always(function() {
+			// Restore preexisting value
+			window[ callbackName ] = overwritten;
+
+			// Save back as free
+			if ( s[ callbackName ] ) {
+				// make sure that re-using the options doesn't screw things around
+				s.jsonpCallback = originalSettings.jsonpCallback;
+
+				// save the callback name for future use
+				oldCallbacks.push( callbackName );
+			}
+
+			// Call if it was a function and we have a response
+			if ( responseContainer && jQuery.isFunction( overwritten ) ) {
+				overwritten( responseContainer[ 0 ] );
+			}
+
+			responseContainer = overwritten = undefined;
+		});
+
+		// Delegate to script
+		return "script";
+	}
+});
+// Install script dataType
+jQuery.ajaxSetup({
+	accepts: {
+		script: "text/javascript, application/javascript, application/ecmascript, application/x-ecmascript"
+	},
+	contents: {
+		script: /javascript|ecmascript/
+	},
+	converters: {
+		"text script": function( text ) {
+			jQuery.globalEval( text );
+			return text;
+		}
+	}
+});
+
+// Handle cache's special case and global
+jQuery.ajaxPrefilter( "script", function( s ) {
+	if ( s.cache === undefined ) {
+		s.cache = false;
+	}
+	if ( s.crossDomain ) {
+		s.type = "GET";
+		s.global = false;
+	}
+});
+
+// Bind script tag hack transport
+jQuery.ajaxTransport( "script", function(s) {
+
+	// This transport only deals with cross domain requests
+	if ( s.crossDomain ) {
+
+		var script,
+			head = document.head || document.getElementsByTagName( "head" )[0] || document.documentElement;
+
+		return {
+
+			send: function( _, callback ) {
+
+				script = document.createElement( "script" );
+
+				script.async = "async";
+
+				if ( s.scriptCharset ) {
+					script.charset = s.scriptCharset;
+				}
+
+				script.src = s.url;
+
+				// Attach handlers for all browsers
+				script.onload = script.onreadystatechange = function( _, isAbort ) {
+
+					if ( isAbort || !script.readyState || /loaded|complete/.test( script.readyState ) ) {
+
+						// Handle memory leak in IE
+						script.onload = script.onreadystatechange = null;
+
+						// Remove the script
+						if ( head && script.parentNode ) {
+							head.removeChild( script );
+						}
+
+						// Dereference the script
+						script = undefined;
+
+						// Callback if not abort
+						if ( !isAbort ) {
+							callback( 200, "success" );
+						}
+					}
+				};
+				// Use insertBefore instead of appendChild  to circumvent an IE6 bug.
+				// This arises when a base node is used (#2709 and #4378).
+				head.insertBefore( script, head.firstChild );
+			},
+
+			abort: function() {
+				if ( script ) {
+					script.onload( 0, 1 );
+				}
+			}
+		};
+	}
+});
 var xhrCallbacks,
 	// #5280: Internet Explorer will keep connections alive if we don't abort on unload
 	xhrOnUnloadAbort = window.ActiveXObject ? function() {
@@ -8228,7 +8482,7 @@ if ( jQuery.support.ajax ) {
 									// on any attempt to access responseText (#11426)
 									try {
 										responses.text = xhr.responseText;
-									} catch( _ ) {
+									} catch( e ) {
 									}
 
 									// Firefox throws an exception when accessing
@@ -8296,6 +8550,679 @@ if ( jQuery.support.ajax ) {
 			};
 		}
 	});
+}
+var fxNow, timerId,
+	rfxtypes = /^(?:toggle|show|hide)$/,
+	rfxnum = new RegExp( "^(?:([-+])=|)(" + core_pnum + ")([a-z%]*)$", "i" ),
+	rrun = /queueHooks$/,
+	animationPrefilters = [ defaultPrefilter ],
+	tweeners = {
+		"*": [function( prop, value ) {
+			var end, unit,
+				tween = this.createTween( prop, value ),
+				parts = rfxnum.exec( value ),
+				target = tween.cur(),
+				start = +target || 0,
+				scale = 1,
+				maxIterations = 20;
+
+			if ( parts ) {
+				end = +parts[2];
+				unit = parts[3] || ( jQuery.cssNumber[ prop ] ? "" : "px" );
+
+				// We need to compute starting value
+				if ( unit !== "px" && start ) {
+					// Iteratively approximate from a nonzero starting point
+					// Prefer the current property, because this process will be trivial if it uses the same units
+					// Fallback to end or a simple constant
+					start = jQuery.css( tween.elem, prop, true ) || end || 1;
+
+					do {
+						// If previous iteration zeroed out, double until we get *something*
+						// Use a string for doubling factor so we don't accidentally see scale as unchanged below
+						scale = scale || ".5";
+
+						// Adjust and apply
+						start = start / scale;
+						jQuery.style( tween.elem, prop, start + unit );
+
+					// Update scale, tolerating zero or NaN from tween.cur()
+					// And breaking the loop if scale is unchanged or perfect, or if we've just had enough
+					} while ( scale !== (scale = tween.cur() / target) && scale !== 1 && --maxIterations );
+				}
+
+				tween.unit = unit;
+				tween.start = start;
+				// If a +=/-= token was provided, we're doing a relative animation
+				tween.end = parts[1] ? start + ( parts[1] + 1 ) * end : end;
+			}
+			return tween;
+		}]
+	};
+
+// Animations created synchronously will run synchronously
+function createFxNow() {
+	setTimeout(function() {
+		fxNow = undefined;
+	}, 0 );
+	return ( fxNow = jQuery.now() );
+}
+
+function createTweens( animation, props ) {
+	jQuery.each( props, function( prop, value ) {
+		var collection = ( tweeners[ prop ] || [] ).concat( tweeners[ "*" ] ),
+			index = 0,
+			length = collection.length;
+		for ( ; index < length; index++ ) {
+			if ( collection[ index ].call( animation, prop, value ) ) {
+
+				// we're done with this property
+				return;
+			}
+		}
+	});
+}
+
+function Animation( elem, properties, options ) {
+	var result,
+		index = 0,
+		tweenerIndex = 0,
+		length = animationPrefilters.length,
+		deferred = jQuery.Deferred().always( function() {
+			// don't match elem in the :animated selector
+			delete tick.elem;
+		}),
+		tick = function() {
+			var currentTime = fxNow || createFxNow(),
+				remaining = Math.max( 0, animation.startTime + animation.duration - currentTime ),
+				// archaic crash bug won't allow us to use 1 - ( 0.5 || 0 ) (#12497)
+				temp = remaining / animation.duration || 0,
+				percent = 1 - temp,
+				index = 0,
+				length = animation.tweens.length;
+
+			for ( ; index < length ; index++ ) {
+				animation.tweens[ index ].run( percent );
+			}
+
+			deferred.notifyWith( elem, [ animation, percent, remaining ]);
+
+			if ( percent < 1 && length ) {
+				return remaining;
+			} else {
+				deferred.resolveWith( elem, [ animation ] );
+				return false;
+			}
+		},
+		animation = deferred.promise({
+			elem: elem,
+			props: jQuery.extend( {}, properties ),
+			opts: jQuery.extend( true, { specialEasing: {} }, options ),
+			originalProperties: properties,
+			originalOptions: options,
+			startTime: fxNow || createFxNow(),
+			duration: options.duration,
+			tweens: [],
+			createTween: function( prop, end, easing ) {
+				var tween = jQuery.Tween( elem, animation.opts, prop, end,
+						animation.opts.specialEasing[ prop ] || animation.opts.easing );
+				animation.tweens.push( tween );
+				return tween;
+			},
+			stop: function( gotoEnd ) {
+				var index = 0,
+					// if we are going to the end, we want to run all the tweens
+					// otherwise we skip this part
+					length = gotoEnd ? animation.tweens.length : 0;
+
+				for ( ; index < length ; index++ ) {
+					animation.tweens[ index ].run( 1 );
+				}
+
+				// resolve when we played the last frame
+				// otherwise, reject
+				if ( gotoEnd ) {
+					deferred.resolveWith( elem, [ animation, gotoEnd ] );
+				} else {
+					deferred.rejectWith( elem, [ animation, gotoEnd ] );
+				}
+				return this;
+			}
+		}),
+		props = animation.props;
+
+	propFilter( props, animation.opts.specialEasing );
+
+	for ( ; index < length ; index++ ) {
+		result = animationPrefilters[ index ].call( animation, elem, props, animation.opts );
+		if ( result ) {
+			return result;
+		}
+	}
+
+	createTweens( animation, props );
+
+	if ( jQuery.isFunction( animation.opts.start ) ) {
+		animation.opts.start.call( elem, animation );
+	}
+
+	jQuery.fx.timer(
+		jQuery.extend( tick, {
+			anim: animation,
+			queue: animation.opts.queue,
+			elem: elem
+		})
+	);
+
+	// attach callbacks from options
+	return animation.progress( animation.opts.progress )
+		.done( animation.opts.done, animation.opts.complete )
+		.fail( animation.opts.fail )
+		.always( animation.opts.always );
+}
+
+function propFilter( props, specialEasing ) {
+	var index, name, easing, value, hooks;
+
+	// camelCase, specialEasing and expand cssHook pass
+	for ( index in props ) {
+		name = jQuery.camelCase( index );
+		easing = specialEasing[ name ];
+		value = props[ index ];
+		if ( jQuery.isArray( value ) ) {
+			easing = value[ 1 ];
+			value = props[ index ] = value[ 0 ];
+		}
+
+		if ( index !== name ) {
+			props[ name ] = value;
+			delete props[ index ];
+		}
+
+		hooks = jQuery.cssHooks[ name ];
+		if ( hooks && "expand" in hooks ) {
+			value = hooks.expand( value );
+			delete props[ name ];
+
+			// not quite $.extend, this wont overwrite keys already present.
+			// also - reusing 'index' from above because we have the correct "name"
+			for ( index in value ) {
+				if ( !( index in props ) ) {
+					props[ index ] = value[ index ];
+					specialEasing[ index ] = easing;
+				}
+			}
+		} else {
+			specialEasing[ name ] = easing;
+		}
+	}
+}
+
+jQuery.Animation = jQuery.extend( Animation, {
+
+	tweener: function( props, callback ) {
+		if ( jQuery.isFunction( props ) ) {
+			callback = props;
+			props = [ "*" ];
+		} else {
+			props = props.split(" ");
+		}
+
+		var prop,
+			index = 0,
+			length = props.length;
+
+		for ( ; index < length ; index++ ) {
+			prop = props[ index ];
+			tweeners[ prop ] = tweeners[ prop ] || [];
+			tweeners[ prop ].unshift( callback );
+		}
+	},
+
+	prefilter: function( callback, prepend ) {
+		if ( prepend ) {
+			animationPrefilters.unshift( callback );
+		} else {
+			animationPrefilters.push( callback );
+		}
+	}
+});
+
+function defaultPrefilter( elem, props, opts ) {
+	var index, prop, value, length, dataShow, toggle, tween, hooks, oldfire,
+		anim = this,
+		style = elem.style,
+		orig = {},
+		handled = [],
+		hidden = elem.nodeType && isHidden( elem );
+
+	// handle queue: false promises
+	if ( !opts.queue ) {
+		hooks = jQuery._queueHooks( elem, "fx" );
+		if ( hooks.unqueued == null ) {
+			hooks.unqueued = 0;
+			oldfire = hooks.empty.fire;
+			hooks.empty.fire = function() {
+				if ( !hooks.unqueued ) {
+					oldfire();
+				}
+			};
+		}
+		hooks.unqueued++;
+
+		anim.always(function() {
+			// doing this makes sure that the complete handler will be called
+			// before this completes
+			anim.always(function() {
+				hooks.unqueued--;
+				if ( !jQuery.queue( elem, "fx" ).length ) {
+					hooks.empty.fire();
+				}
+			});
+		});
+	}
+
+	// height/width overflow pass
+	if ( elem.nodeType === 1 && ( "height" in props || "width" in props ) ) {
+		// Make sure that nothing sneaks out
+		// Record all 3 overflow attributes because IE does not
+		// change the overflow attribute when overflowX and
+		// overflowY are set to the same value
+		opts.overflow = [ style.overflow, style.overflowX, style.overflowY ];
+
+		// Set display property to inline-block for height/width
+		// animations on inline elements that are having width/height animated
+		if ( jQuery.css( elem, "display" ) === "inline" &&
+				jQuery.css( elem, "float" ) === "none" ) {
+
+			// inline-level elements accept inline-block;
+			// block-level elements need to be inline with layout
+			if ( !jQuery.support.inlineBlockNeedsLayout || css_defaultDisplay( elem.nodeName ) === "inline" ) {
+				style.display = "inline-block";
+
+			} else {
+				style.zoom = 1;
+			}
+		}
+	}
+
+	if ( opts.overflow ) {
+		style.overflow = "hidden";
+		if ( !jQuery.support.shrinkWrapBlocks ) {
+			anim.done(function() {
+				style.overflow = opts.overflow[ 0 ];
+				style.overflowX = opts.overflow[ 1 ];
+				style.overflowY = opts.overflow[ 2 ];
+			});
+		}
+	}
+
+
+	// show/hide pass
+	for ( index in props ) {
+		value = props[ index ];
+		if ( rfxtypes.exec( value ) ) {
+			delete props[ index ];
+			toggle = toggle || value === "toggle";
+			if ( value === ( hidden ? "hide" : "show" ) ) {
+				continue;
+			}
+			handled.push( index );
+		}
+	}
+
+	length = handled.length;
+	if ( length ) {
+		dataShow = jQuery._data( elem, "fxshow" ) || jQuery._data( elem, "fxshow", {} );
+		if ( "hidden" in dataShow ) {
+			hidden = dataShow.hidden;
+		}
+
+		// store state if its toggle - enables .stop().toggle() to "reverse"
+		if ( toggle ) {
+			dataShow.hidden = !hidden;
+		}
+		if ( hidden ) {
+			jQuery( elem ).show();
+		} else {
+			anim.done(function() {
+				jQuery( elem ).hide();
+			});
+		}
+		anim.done(function() {
+			var prop;
+			jQuery.removeData( elem, "fxshow", true );
+			for ( prop in orig ) {
+				jQuery.style( elem, prop, orig[ prop ] );
+			}
+		});
+		for ( index = 0 ; index < length ; index++ ) {
+			prop = handled[ index ];
+			tween = anim.createTween( prop, hidden ? dataShow[ prop ] : 0 );
+			orig[ prop ] = dataShow[ prop ] || jQuery.style( elem, prop );
+
+			if ( !( prop in dataShow ) ) {
+				dataShow[ prop ] = tween.start;
+				if ( hidden ) {
+					tween.end = tween.start;
+					tween.start = prop === "width" || prop === "height" ? 1 : 0;
+				}
+			}
+		}
+	}
+}
+
+function Tween( elem, options, prop, end, easing ) {
+	return new Tween.prototype.init( elem, options, prop, end, easing );
+}
+jQuery.Tween = Tween;
+
+Tween.prototype = {
+	constructor: Tween,
+	init: function( elem, options, prop, end, easing, unit ) {
+		this.elem = elem;
+		this.prop = prop;
+		this.easing = easing || "swing";
+		this.options = options;
+		this.start = this.now = this.cur();
+		this.end = end;
+		this.unit = unit || ( jQuery.cssNumber[ prop ] ? "" : "px" );
+	},
+	cur: function() {
+		var hooks = Tween.propHooks[ this.prop ];
+
+		return hooks && hooks.get ?
+			hooks.get( this ) :
+			Tween.propHooks._default.get( this );
+	},
+	run: function( percent ) {
+		var eased,
+			hooks = Tween.propHooks[ this.prop ];
+
+		if ( this.options.duration ) {
+			this.pos = eased = jQuery.easing[ this.easing ](
+				percent, this.options.duration * percent, 0, 1, this.options.duration
+			);
+		} else {
+			this.pos = eased = percent;
+		}
+		this.now = ( this.end - this.start ) * eased + this.start;
+
+		if ( this.options.step ) {
+			this.options.step.call( this.elem, this.now, this );
+		}
+
+		if ( hooks && hooks.set ) {
+			hooks.set( this );
+		} else {
+			Tween.propHooks._default.set( this );
+		}
+		return this;
+	}
+};
+
+Tween.prototype.init.prototype = Tween.prototype;
+
+Tween.propHooks = {
+	_default: {
+		get: function( tween ) {
+			var result;
+
+			if ( tween.elem[ tween.prop ] != null &&
+				(!tween.elem.style || tween.elem.style[ tween.prop ] == null) ) {
+				return tween.elem[ tween.prop ];
+			}
+
+			// passing any value as a 4th parameter to .css will automatically
+			// attempt a parseFloat and fallback to a string if the parse fails
+			// so, simple values such as "10px" are parsed to Float.
+			// complex values such as "rotate(1rad)" are returned as is.
+			result = jQuery.css( tween.elem, tween.prop, false, "" );
+			// Empty strings, null, undefined and "auto" are converted to 0.
+			return !result || result === "auto" ? 0 : result;
+		},
+		set: function( tween ) {
+			// use step hook for back compat - use cssHook if its there - use .style if its
+			// available and use plain properties where available
+			if ( jQuery.fx.step[ tween.prop ] ) {
+				jQuery.fx.step[ tween.prop ]( tween );
+			} else if ( tween.elem.style && ( tween.elem.style[ jQuery.cssProps[ tween.prop ] ] != null || jQuery.cssHooks[ tween.prop ] ) ) {
+				jQuery.style( tween.elem, tween.prop, tween.now + tween.unit );
+			} else {
+				tween.elem[ tween.prop ] = tween.now;
+			}
+		}
+	}
+};
+
+// Remove in 2.0 - this supports IE8's panic based approach
+// to setting things on disconnected nodes
+
+Tween.propHooks.scrollTop = Tween.propHooks.scrollLeft = {
+	set: function( tween ) {
+		if ( tween.elem.nodeType && tween.elem.parentNode ) {
+			tween.elem[ tween.prop ] = tween.now;
+		}
+	}
+};
+
+jQuery.each([ "toggle", "show", "hide" ], function( i, name ) {
+	var cssFn = jQuery.fn[ name ];
+	jQuery.fn[ name ] = function( speed, easing, callback ) {
+		return speed == null || typeof speed === "boolean" ||
+			// special check for .toggle( handler, handler, ... )
+			( !i && jQuery.isFunction( speed ) && jQuery.isFunction( easing ) ) ?
+			cssFn.apply( this, arguments ) :
+			this.animate( genFx( name, true ), speed, easing, callback );
+	};
+});
+
+jQuery.fn.extend({
+	fadeTo: function( speed, to, easing, callback ) {
+
+		// show any hidden elements after setting opacity to 0
+		return this.filter( isHidden ).css( "opacity", 0 ).show()
+
+			// animate to the value specified
+			.end().animate({ opacity: to }, speed, easing, callback );
+	},
+	animate: function( prop, speed, easing, callback ) {
+		var empty = jQuery.isEmptyObject( prop ),
+			optall = jQuery.speed( speed, easing, callback ),
+			doAnimation = function() {
+				// Operate on a copy of prop so per-property easing won't be lost
+				var anim = Animation( this, jQuery.extend( {}, prop ), optall );
+
+				// Empty animations resolve immediately
+				if ( empty ) {
+					anim.stop( true );
+				}
+			};
+
+		return empty || optall.queue === false ?
+			this.each( doAnimation ) :
+			this.queue( optall.queue, doAnimation );
+	},
+	stop: function( type, clearQueue, gotoEnd ) {
+		var stopQueue = function( hooks ) {
+			var stop = hooks.stop;
+			delete hooks.stop;
+			stop( gotoEnd );
+		};
+
+		if ( typeof type !== "string" ) {
+			gotoEnd = clearQueue;
+			clearQueue = type;
+			type = undefined;
+		}
+		if ( clearQueue && type !== false ) {
+			this.queue( type || "fx", [] );
+		}
+
+		return this.each(function() {
+			var dequeue = true,
+				index = type != null && type + "queueHooks",
+				timers = jQuery.timers,
+				data = jQuery._data( this );
+
+			if ( index ) {
+				if ( data[ index ] && data[ index ].stop ) {
+					stopQueue( data[ index ] );
+				}
+			} else {
+				for ( index in data ) {
+					if ( data[ index ] && data[ index ].stop && rrun.test( index ) ) {
+						stopQueue( data[ index ] );
+					}
+				}
+			}
+
+			for ( index = timers.length; index--; ) {
+				if ( timers[ index ].elem === this && (type == null || timers[ index ].queue === type) ) {
+					timers[ index ].anim.stop( gotoEnd );
+					dequeue = false;
+					timers.splice( index, 1 );
+				}
+			}
+
+			// start the next in the queue if the last step wasn't forced
+			// timers currently will call their complete callbacks, which will dequeue
+			// but only if they were gotoEnd
+			if ( dequeue || !gotoEnd ) {
+				jQuery.dequeue( this, type );
+			}
+		});
+	}
+});
+
+// Generate parameters to create a standard animation
+function genFx( type, includeWidth ) {
+	var which,
+		attrs = { height: type },
+		i = 0;
+
+	// if we include width, step value is 1 to do all cssExpand values,
+	// if we don't include width, step value is 2 to skip over Left and Right
+	includeWidth = includeWidth? 1 : 0;
+	for( ; i < 4 ; i += 2 - includeWidth ) {
+		which = cssExpand[ i ];
+		attrs[ "margin" + which ] = attrs[ "padding" + which ] = type;
+	}
+
+	if ( includeWidth ) {
+		attrs.opacity = attrs.width = type;
+	}
+
+	return attrs;
+}
+
+// Generate shortcuts for custom animations
+jQuery.each({
+	slideDown: genFx("show"),
+	slideUp: genFx("hide"),
+	slideToggle: genFx("toggle"),
+	fadeIn: { opacity: "show" },
+	fadeOut: { opacity: "hide" },
+	fadeToggle: { opacity: "toggle" }
+}, function( name, props ) {
+	jQuery.fn[ name ] = function( speed, easing, callback ) {
+		return this.animate( props, speed, easing, callback );
+	};
+});
+
+jQuery.speed = function( speed, easing, fn ) {
+	var opt = speed && typeof speed === "object" ? jQuery.extend( {}, speed ) : {
+		complete: fn || !fn && easing ||
+			jQuery.isFunction( speed ) && speed,
+		duration: speed,
+		easing: fn && easing || easing && !jQuery.isFunction( easing ) && easing
+	};
+
+	opt.duration = jQuery.fx.off ? 0 : typeof opt.duration === "number" ? opt.duration :
+		opt.duration in jQuery.fx.speeds ? jQuery.fx.speeds[ opt.duration ] : jQuery.fx.speeds._default;
+
+	// normalize opt.queue - true/undefined/null -> "fx"
+	if ( opt.queue == null || opt.queue === true ) {
+		opt.queue = "fx";
+	}
+
+	// Queueing
+	opt.old = opt.complete;
+
+	opt.complete = function() {
+		if ( jQuery.isFunction( opt.old ) ) {
+			opt.old.call( this );
+		}
+
+		if ( opt.queue ) {
+			jQuery.dequeue( this, opt.queue );
+		}
+	};
+
+	return opt;
+};
+
+jQuery.easing = {
+	linear: function( p ) {
+		return p;
+	},
+	swing: function( p ) {
+		return 0.5 - Math.cos( p*Math.PI ) / 2;
+	}
+};
+
+jQuery.timers = [];
+jQuery.fx = Tween.prototype.init;
+jQuery.fx.tick = function() {
+	var timer,
+		timers = jQuery.timers,
+		i = 0;
+
+	fxNow = jQuery.now();
+
+	for ( ; i < timers.length; i++ ) {
+		timer = timers[ i ];
+		// Checks the timer has not already been removed
+		if ( !timer() && timers[ i ] === timer ) {
+			timers.splice( i--, 1 );
+		}
+	}
+
+	if ( !timers.length ) {
+		jQuery.fx.stop();
+	}
+	fxNow = undefined;
+};
+
+jQuery.fx.timer = function( timer ) {
+	if ( timer() && jQuery.timers.push( timer ) && !timerId ) {
+		timerId = setInterval( jQuery.fx.tick, jQuery.fx.interval );
+	}
+};
+
+jQuery.fx.interval = 13;
+
+jQuery.fx.stop = function() {
+	clearInterval( timerId );
+	timerId = null;
+};
+
+jQuery.fx.speeds = {
+	slow: 600,
+	fast: 200,
+	// Default speed
+	_default: 400
+};
+
+// Back Compat <1.8 extension point
+jQuery.fx.step = {};
+
+if ( jQuery.expr && jQuery.expr.filters ) {
+	jQuery.expr.filters.animated = function( elem ) {
+		return jQuery.grep(jQuery.timers, function( fn ) {
+			return elem === fn.elem;
+		}).length;
+	};
 }
 var rroot = /^(?:body|html)$/i;
 

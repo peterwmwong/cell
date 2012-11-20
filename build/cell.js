@@ -14,12 +14,49 @@ define(function(require) {
       }
     });
   });
+  $.fn.remove = function(selector, keepData) {
+    var $elem, elem, i;
+    elem = void 0;
+    i = 0;
+    while ((elem = this[i++]) != null) {
+      if (!selector || jQuery.filter(selector, [elem]).length) {
+        if (!keepData && elem.nodeType === 1) {
+          $elem = $(elem);
+          if ($elem.attr('cell')) {
+            $elem.triggerHandler('cell-remove');
+          }
+          $('[cell]', $elem).each(function() {
+            return $(this).triggerHandler('cell-remove');
+          });
+          jQuery.cleanData(elem.getElementsByTagName("*"));
+          jQuery.cleanData([elem]);
+        }
+        if (elem.parentNode) {
+          elem.parentNode.removeChild(elem);
+        }
+      }
+    }
+    return this;
+  };
   pic = void 0;
   return exp = {
     Cell: Backbone.View.extend({
       setElement: function(element, delegate) {
+        var onCellRemove,
+          _this = this;
         Backbone.View.prototype.setElement.call(this, element, delegate);
-        this.$el.attr('cell', this.name);
+        this.$el.attr('cell', this.name).on('cell-remove', onCellRemove = function() {
+          var _ref, _ref1;
+          _this.$el.off('cell-remove', onCellRemove);
+          if ((_ref = _this.model) != null) {
+            _ref.off(null, null, _this);
+          }
+          if ((_ref1 = _this.collection) != null) {
+            _ref1.off(null, null, _this);
+          }
+          _this.undelegateEvents();
+          return _this.model = _this.collection = _this.el = _this.$el = _this.$ = void 0;
+        });
         return this;
       },
       render: function() {

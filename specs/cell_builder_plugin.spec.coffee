@@ -21,7 +21,7 @@ define ->
 
       it "Should render Mock and MockNested Cells", ->
         expect(@$f('body').html().trim()).
-          toBe '<div class="Mock">Mock: <div class="MockNested">MockNested</div></div>'
+          toBe '<div class="Mock" cell="Mock">Mock: <div class="MockNested" cell="MockNested">MockNested</div></div>'
 
       it "Should apply Mock css from all.css", ->
         expect(@$f('.Mock').css('color')).

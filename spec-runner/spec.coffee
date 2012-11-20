@@ -5,7 +5,7 @@ define
     req [name], (Spec)-> load ->
       ctx_name_salt = 0
 
-      describe /.*\/specs\/cell_(.*).spec$/.exec(name)[1], ->
+      describe /.*\/specs\/(cell|jquery)_(.*).spec$/.exec(name)[2], ->
         specRequire = null
         ctx = undefined
 
