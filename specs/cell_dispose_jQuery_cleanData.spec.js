@@ -4,14 +4,110 @@ define(['./spec-utils'], function(_arg) {
   var node, nodeHTMLEquals, stringify;
   nodeHTMLEquals = _arg.nodeHTMLEquals, stringify = _arg.stringify, node = _arg.node;
   return function(_arg1) {
-    var beforeEachRequire;
+    var beforeEachRequire, emptyFunc, htmlFunc, removeFunc, testFunc, _i, _len, _ref;
     beforeEachRequire = _arg1.beforeEachRequire;
     beforeEachRequire(['cell!fixtures/remove/Root', 'cell', 'backbone'], function(Root, cell, Backbone) {
       this.Root = Root;
       this.cell = cell;
       this.Backbone = Backbone;
     });
-    return describe('Remove', function() {
+    removeFunc = {
+      name: 'jQuery.remove()',
+      func: function() {
+        return this.remove();
+      }
+    };
+    emptyFunc = {
+      name: 'jQuery.empty()',
+      func: function() {
+        return this.empty();
+      }
+    };
+    htmlFunc = {
+      name: "jQuery.html('')",
+      func: function() {
+        return this.html('');
+      }
+    };
+    _ref = [emptyFunc, htmlFunc];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      testFunc = _ref[_i];
+      describe(testFunc.name, function() {
+        beforeEach(function() {
+          this.model = new this.Backbone.Model();
+          this.model.root = 10;
+          this.model.parent = 100;
+          this.model.child = 1000;
+          this.model.root_el = 30;
+          this.model.parent_el = 300;
+          this.model.child_el = 3000;
+          this.collection = new this.Backbone.Collection();
+          this.collection.root = 20;
+          this.collection.parent = 200;
+          this.collection.child = 2000;
+          this.root = new this.Root({
+            model: this.model,
+            collection: this.collection
+          });
+          this.$rootEl = this.root.render().$el;
+          return this.$rootContainer = $('<div>').append(this.$rootEl);
+        });
+        describe('verify fixture cell model, collection and DOM Element handlers attached', function() {
+          beforeEach(function() {
+            this.model.trigger('flash', this.model);
+            this.collection.trigger('flash', this.collection);
+            return $('[cell]', this.$rootContainer).click();
+          });
+          it("Model event handlers", function() {
+            expect(this.model.root).toBe(11);
+            expect(this.model.parent).toBe(101);
+            return expect(this.model.child).toBe(1001);
+          });
+          it("Collection event handlers", function() {
+            expect(this.collection.root).toBe(21);
+            expect(this.collection.parent).toBe(201);
+            return expect(this.collection.child).toBe(2001);
+          });
+          return it("DOM Element event handlers", function() {
+            expect(this.model.root_el).toBe(31);
+            expect(this.model.parent_el).toBe(301);
+            return expect(this.model.child_el).toBe(3001);
+          });
+        });
+        return describe("Removing DOM elements using " + testFunc.name, function() {
+          beforeEach(function() {
+            testFunc.func.call(this.$rootContainer);
+            this.model.trigger('flash', this.model);
+            this.collection.trigger('flash', this.collection);
+            return $('[cell]', this.$rootContainer).click();
+          });
+          it("removes references to this.model, this.collection, this.el, this.$el, and this.$el", function() {
+            var _this = this;
+            return _.each(['model', 'collection', 'el', '$el', '$'], function(prop) {
+              expect(_this.root[prop]).not.toBeDefined();
+              expect(_this.root.parent[prop]).not.toBeDefined();
+              return expect(_this.root.parent.child[prop]).not.toBeDefined();
+            });
+          });
+          it("Detaches Model event handlers on all descendant cells", function() {
+            expect(this.model.root).toBe(10);
+            expect(this.model.parent).toBe(100);
+            return expect(this.model.child).toBe(1000);
+          });
+          it("Detaches Collection event handlers on all descendant cells", function() {
+            expect(this.collection.root).toBe(20);
+            expect(this.collection.parent).toBe(200);
+            return expect(this.collection.child).toBe(2000);
+          });
+          return it("Detaches DOM event handlers on all descendant cells", function() {
+            expect(this.model.root_el).toBe(30);
+            expect(this.model.parent_el).toBe(300);
+            return expect(this.model.child_el).toBe(3000);
+          });
+        });
+      });
+    }
+    return describe('jQuery.remove()', function() {
       beforeEach(function() {
         this.model = new this.Backbone.Model();
         this.model.root = 10;
@@ -53,7 +149,7 @@ define(['./spec-utils'], function(_arg) {
           return expect(this.model.child_el).toBe(3001);
         });
       });
-      describe('Removing an ancestor DOM element using $.remove()', function() {
+      describe('Removing an ancestor DOM element using jQuery.remove()', function() {
         beforeEach(function() {
           this.$rootContainer.children().remove();
           this.model.trigger('flash', this.model);
@@ -84,7 +180,7 @@ define(['./spec-utils'], function(_arg) {
           return expect(this.model.child_el).toBe(3000);
         });
       });
-      describe("Removing a cell's element using $.remove()", function() {
+      describe("Removing a cell's element using jQuery.remove()", function() {
         beforeEach(function() {
           $('.Root', this.$rootContainer).remove();
           this.model.trigger('flash', this.model);
@@ -115,7 +211,7 @@ define(['./spec-utils'], function(_arg) {
           return expect(this.model.child_el).toBe(3000);
         });
       });
-      describe("Removing a nested cell's element using $.remove()", function() {
+      describe("Removing a nested cell's element using jQuery.remove()", function() {
         beforeEach(function() {
           $('.Parent', this.$rootContainer).remove();
           this.model.trigger('flash', this.model);
@@ -138,7 +234,7 @@ define(['./spec-utils'], function(_arg) {
           return expect(this.model.child_el).toBe(3000);
         });
       });
-      return describe("Removing a leaf (cell doesn't contain any other cell) cell's element using $.remove()", function() {
+      return describe("Removing a leaf (cell doesn't contain any other cell) cell's element using jQuery.remove()", function() {
         beforeEach(function() {
           $('.Child', this.$rootContainer).remove();
           this.model.trigger('flash', this.model);

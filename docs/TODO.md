@@ -1,6 +1,10 @@
 TODO
 ====
 
+Finish http://jsperf.com/cell-dispose
+
+Convert bench/dispose
+
 Update dependencies
   - coffee-script
   

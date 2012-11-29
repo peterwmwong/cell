@@ -26,7 +26,7 @@ define
                   __: '../build/__'
                   jquery: '../support/jquery'
                   underscore: '../node_modules/underscore/underscore'
-                  backbone: '../node_modules/backbone/backbone'
+                  backbone: '../support/backbone.master'
                 shim:
                   underscore:
                     deps: ["jquery"]

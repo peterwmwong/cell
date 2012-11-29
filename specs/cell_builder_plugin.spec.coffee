@@ -1,10 +1,10 @@
 define ->
   ->
     load_fixture = (iframe_src, cb)->
-      $fixture_container = $('#spec-fixture')
-      $fixture_container.
-        empty().
-        html "<iframe src='#{iframe_src}'></iframe>"
+      $fixture_container = $ '#spec-fixture'
+      $fixture_container
+        .empty()
+        .html "<iframe src='#{iframe_src}'></iframe>"
 
       waitFor = ->
         $fix = $ 'html', $('iframe',$fixture_container)[0].contentDocument
@@ -19,9 +19,12 @@ define ->
         runs -> load_fixture '/specs/fixtures/cell-builder-plugin/index.html', (@$f)=>
         waitsFor -> @$f?
 
+      afterEach ->
+        $('#spec-fixture').empty()
+
       it "Should render Mock and MockNested Cells", ->
         expect(@$f('body').html().trim()).
-          toBe '<div class="Mock" cell="Mock">Mock: <div class="MockNested" cell="MockNested">MockNested</div></div>'
+          toMatch /<div class="Mock" cell="Mock" cell_cid="\w+">Mock: <div class="MockNested" cell="MockNested" cell_cid="\w+">MockNested<\/div><\/div>/
 
       it "Should apply Mock css from all.css", ->
         expect(@$f('.Mock').css('color')).

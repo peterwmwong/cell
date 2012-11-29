@@ -4,9 +4,10 @@ define(function() {
   return function(_arg) {
     var beforeEachRequire;
     beforeEachRequire = _arg.beforeEachRequire;
-    beforeEachRequire(['cell!fixtures/TestCell1', 'cell'], function(TestCell1, cell) {
+    beforeEachRequire(['cell!fixtures/TestCell1', 'cell', 'backbone'], function(TestCell1, cell, Backbone) {
       this.TestCell1 = TestCell1;
       this.cell = cell;
+      this.Backbone = Backbone;
       return this.testCell1 = new this.TestCell1;
     });
     it('attaches <link> for stylesheet', function() {
@@ -16,7 +17,7 @@ define(function() {
       return expect(this.testCell1 instanceof this.cell.Cell).toBe(true);
     });
     it('Creates a Backbone.View from the definition of the module', function() {
-      return expect(this.testCell1 instanceof Backbone.View).toBe(true);
+      return expect(this.testCell1 instanceof this.Backbone.View).toBe(true);
     });
     return it('overrides Backbone.View._ensureElement() to add a cell attribute', function() {
       return expect(this.testCell1.$el.attr('cell')).toBe('TestCell1');

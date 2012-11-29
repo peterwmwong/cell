@@ -3,7 +3,8 @@ define -> ({beforeEachRequire})->
   beforeEachRequire [
     'cell!fixtures/TestCell1'
     'cell'
-  ], (@TestCell1,@cell)->
+    'backbone'
+  ], (@TestCell1,@cell,@Backbone)->
     @testCell1 = new @TestCell1
 
   it 'attaches <link> for stylesheet', ->
@@ -15,7 +16,7 @@ define -> ({beforeEachRequire})->
     expect(@testCell1 instanceof @cell.Cell).toBe true
 
   it 'Creates a Backbone.View from the definition of the module', ->
-    expect(@testCell1 instanceof Backbone.View).toBe true
+    expect(@testCell1 instanceof @Backbone.View).toBe true
 
   it 'overrides Backbone.View._ensureElement() to add a cell attribute', ->
     expect(@testCell1.$el.attr 'cell').toBe 'TestCell1'

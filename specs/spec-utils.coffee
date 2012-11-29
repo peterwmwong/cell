@@ -1,4 +1,5 @@
-define ['underscore'], ->
+define (require)->
+  _ = require 'underscore'
 
   exports =
     stringify: (obj, excludeArrayBrackets)->
@@ -27,17 +28,25 @@ define ['underscore'], ->
       if node.tagName
         html = "<#{node.tagName.toLowerCase()}"
 
+        # Stringify attributes
         if node.attributes.length > 0
-          list = (attr for attr in node.attributes)
+
+          # Omit the @cell_cid attribute as it is generated
+          list = (attr for attr in node.attributes when attr.name isnt 'cell_cid')
+
+          # Sort attributes as order is not guaranteed to be the
+          # same on each browser
           list.sort (a,b)->
             if a.name is b.name then 0
             else if a.name < b.name then -1
             else 1
+
           for {name,value} in list
             html += " #{name}=\"#{value}\""
 
         html += ">"
-            
+
+        # Recursively html-ize children
         for child in $(node).contents()
           html += nodeToHTML child
           
