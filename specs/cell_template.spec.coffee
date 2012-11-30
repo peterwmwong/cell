@@ -17,6 +17,84 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
     describe '__.bind(backbone_model, attrs, transform)', ->
 
+      describe 'when passed as an attribute value', ->
+
+        describe "when attrs is an Array (multiple attribute names)", ->
+          beforeEachRequire ['__'], (__)->
+            @model = new Backbone.Model().set
+              attr1: 'initial value1'
+              attr2: 'initial value2'
+
+            @node = __ '.bound',
+              'data-custom':
+                (__.bind @model, ['attr1','attr2'], (attr1, attr2, model)-> "attr1: #{attr1}, attr2: #{attr2}")
+
+          it "sets initial value of backbone_model's attribute (attrs) to the element's attribute", ->
+            expect(@node.getAttribute 'data-custom').toBe "attr1: initial value1, attr2: initial value2"
+
+          describe "backbone_model either attribute changes", ->
+            beforeEach ->
+              @model.set
+                attr1: 'new1'
+                attr2: 'new2'
+
+            it "automatically sets value of the backbone_model's attribute (attrs) to the element's attribute", ->
+              expect(@node.getAttribute 'data-custom').toBe  "attr1: new1, attr2: new2"
+
+        describe "when attrs is a string (one attribute's name)", ->
+
+          describe "automatically transforms undefined into ''", ->
+            beforeEachRequire ['__'], (__)->
+              @model = new Backbone.Model()
+              @node = __ '.bound',
+                'data-custom': (__.bind @model, 'attr')
+
+            it "sets initial value of backbone_model's attribute (attrs) to the element's attribute", ->
+              expect(@node.getAttribute 'data-custom').toBe ""
+
+          describe "and transform is a function, automatically transforms undefined into ''", ->
+            beforeEachRequire ['__'], (__)->
+              @model = new Backbone.Model()
+              @node = __ '.bound',
+                'data-custom': (__.bind @model, 'attr', ->)
+
+            it "sets initial value of backbone_model's attribute (attrs) to the element's attribute", ->
+              expect(@node.getAttribute 'data-custom').toBe ""
+
+          describe "and transform is undefined", ->
+            beforeEachRequire ['__'], (__)->
+              @model = new Backbone.Model().set
+                attr: 'initial value'
+              @node = __ '.bound',
+                'data-custom': (__.bind @model, 'attr')
+
+            it "sets initial value of backbone_model's attribute (attrs) to the element's attribute", ->
+              expect(@node.getAttribute 'data-custom').toBe "initial value"
+
+            describe "backbone_model attribute (attrs) changes", ->
+              beforeEach ->
+                @model.set 'attr', 'new value'
+
+              it "automatically sets value of the backbone_model's attribute (attrs) to the element's attribute", ->
+                expect(@node.getAttribute 'data-custom').toBe "new value"
+
+          describe "and transform is a function", ->
+            beforeEachRequire ['__'], (__)->
+              @model = new Backbone.Model().set
+                attr: 'initial value'
+              @node = __ '.bound',
+                'data-custom': (__.bind @model, 'attr', (attr, model)-> "attr: #{attr}")
+
+            it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
+              expect(@node.getAttribute 'data-custom').toBe "attr: initial value"
+
+            describe "backbone_model attribute (attrs) changes", ->
+              beforeEach ->
+                @model.set 'attr', 'new value'
+
+              it "automatically sets value of the backbone_model's attribute (attrs) to innerHTML", ->
+                expect(@node.getAttribute 'data-custom').toBe "attr: new value"
+
       describe 'when passed as a Child for __()', ->
 
         describe "when attrs is an Array (multiple attribute names)", ->

@@ -22,6 +22,103 @@ define(['./spec-utils'], function(_arg) {
       });
     });
     describe('__.bind(backbone_model, attrs, transform)', function() {
+      describe('when passed as an attribute value', function() {
+        describe("when attrs is an Array (multiple attribute names)", function() {
+          beforeEachRequire(['__'], function(__) {
+            this.model = new Backbone.Model().set({
+              attr1: 'initial value1',
+              attr2: 'initial value2'
+            });
+            return this.node = __('.bound', {
+              'data-custom': __.bind(this.model, ['attr1', 'attr2'], function(attr1, attr2, model) {
+                return "attr1: " + attr1 + ", attr2: " + attr2;
+              })
+            });
+          });
+          it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
+            return expect(this.node.getAttribute('data-custom')).toBe("attr1: initial value1, attr2: initial value2");
+          });
+          return describe("backbone_model either attribute changes", function() {
+            beforeEach(function() {
+              return this.model.set({
+                attr1: 'new1',
+                attr2: 'new2'
+              });
+            });
+            return it("automatically sets value of the backbone_model's attribute (attrs) to the element's attribute", function() {
+              return expect(this.node.getAttribute('data-custom')).toBe("attr1: new1, attr2: new2");
+            });
+          });
+        });
+        return describe("when attrs is a string (one attribute's name)", function() {
+          describe("automatically transforms undefined into ''", function() {
+            beforeEachRequire(['__'], function(__) {
+              this.model = new Backbone.Model();
+              return this.node = __('.bound', {
+                'data-custom': __.bind(this.model, 'attr')
+              });
+            });
+            return it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
+              return expect(this.node.getAttribute('data-custom')).toBe("");
+            });
+          });
+          describe("and transform is a function, automatically transforms undefined into ''", function() {
+            beforeEachRequire(['__'], function(__) {
+              this.model = new Backbone.Model();
+              return this.node = __('.bound', {
+                'data-custom': __.bind(this.model, 'attr', function() {})
+              });
+            });
+            return it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
+              return expect(this.node.getAttribute('data-custom')).toBe("");
+            });
+          });
+          describe("and transform is undefined", function() {
+            beforeEachRequire(['__'], function(__) {
+              this.model = new Backbone.Model().set({
+                attr: 'initial value'
+              });
+              return this.node = __('.bound', {
+                'data-custom': __.bind(this.model, 'attr')
+              });
+            });
+            it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
+              return expect(this.node.getAttribute('data-custom')).toBe("initial value");
+            });
+            return describe("backbone_model attribute (attrs) changes", function() {
+              beforeEach(function() {
+                return this.model.set('attr', 'new value');
+              });
+              return it("automatically sets value of the backbone_model's attribute (attrs) to the element's attribute", function() {
+                return expect(this.node.getAttribute('data-custom')).toBe("new value");
+              });
+            });
+          });
+          return describe("and transform is a function", function() {
+            beforeEachRequire(['__'], function(__) {
+              this.model = new Backbone.Model().set({
+                attr: 'initial value'
+              });
+              return this.node = __('.bound', {
+                'data-custom': __.bind(this.model, 'attr', function(attr, model) {
+                  return "attr: " + attr;
+                })
+              });
+            });
+            it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
+              return expect(this.node.getAttribute('data-custom')).toBe("attr: initial value");
+            });
+            return describe("backbone_model attribute (attrs) changes", function() {
+              beforeEach(function() {
+                return this.model.set('attr', 'new value');
+              });
+              return it("automatically sets value of the backbone_model's attribute (attrs) to innerHTML", function() {
+                return expect(this.node.getAttribute('data-custom')).toBe("attr: new value");
+              });
+            });
+          });
+        });
+      });
       return describe('when passed as a Child for __()', function() {
         describe("when attrs is an Array (multiple attribute names)", function() {
           beforeEachRequire(['__'], function(__) {

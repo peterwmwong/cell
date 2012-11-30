@@ -66,7 +66,11 @@ define(['cell', 'underscore'], function(_arg) {
                   if (k === 'class') {
                     el.className += v;
                   } else {
-                    el.setAttribute(k, v);
+                    if (v instanceof Bind) {
+                      v.bindToAttr(el, k);
+                    } else {
+                      el.setAttribute(k, v);
+                    }
                   }
                 });
               }
@@ -103,14 +107,22 @@ define(['cell', 'underscore'], function(_arg) {
     if (typeof this.attrs === 'string') {
       this.attrs = [this.attrs];
     }
-    this.els = [];
+    this.boundEls = [];
+    this.boundAttrs = [];
     this.model.on("change:" + (this.attrs.join(' change:')), this.onChange, this);
     return this;
   };
   Bind.prototype = {
     bindTo: function(el) {
-      this.els.push(el);
+      this.boundEls.push(el);
       el.innerHTML = this.getResult();
+    },
+    bindToAttr: function(el, attr) {
+      this.boundAttrs.push({
+        el: el,
+        attr: attr
+      });
+      el.setAttribute(attr, this.getResult());
     },
     getResult: function() {
       var args;
@@ -121,10 +133,15 @@ define(['cell', 'underscore'], function(_arg) {
     },
     onChange: function() {
       var val;
-      if (this.els.length > 0) {
+      if (this.boundEls.length || this.boundAttrs.length) {
         val = this.getResult();
-        _.each(this.els, function(el) {
+        _.each(this.boundEls, function(el) {
           el.innerHTML = val;
+        });
+        _.each(this.boundAttrs, function(_arg1) {
+          var attr, el;
+          el = _arg1.el, attr = _arg1.attr;
+          el.setAttribute(attr, val);
         });
       }
     }

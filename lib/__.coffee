@@ -49,7 +49,11 @@ define ['cell','underscore'], ({Cell})->
               else
                 _.each b, (v,k)->
                   if k is 'class' then el.className += v
-                  else el.setAttribute k, v
+                  else
+                    if v instanceof Bind
+                      v.bindToAttr el, k
+                    else
+                      el.setAttribute k, v
                   return
 
             if haml.className
@@ -89,14 +93,20 @@ define ['cell','underscore'], ({Cell})->
 
   Bind = (@model, @attrs, @transform)->
     @attrs = [@attrs] if typeof @attrs is 'string'
-    @els = []
+    @boundEls = []
+    @boundAttrs = []
     @model.on "change:#{@attrs.join ' change:'}", @onChange, @
     @
 
   Bind.prototype =
     bindTo: (el)->
-      @els.push el
+      @boundEls.push el
       el.innerHTML = @getResult()
+      return
+
+    bindToAttr: (el, attr)->
+      @boundAttrs.push {el,attr}
+      el.setAttribute attr, @getResult()
       return
 
     getResult: -> 
@@ -104,11 +114,20 @@ define ['cell','underscore'], ({Cell})->
       (@transform and (@transform args...) or (args.slice(0,-1).join ' ')) or ''
 
     onChange: ->
-      if @els.length > 0
+      # Don't do anything if bound to nothing
+      if @boundEls.length or @boundAttrs.length
         val = @getResult()
-        _.each @els, (el)->
+
+        # Update innerHTMLs of content bound elements
+        _.each @boundEls, (el)->
           el.innerHTML = val
           return
+
+        # Update attribute values of attribute bounded elements
+        _.each @boundAttrs, ({el,attr})->
+          el.setAttribute attr, val
+          return
+
       return
 
   __.bind = (model, attrs, transform)-> new Bind model, attrs, transform

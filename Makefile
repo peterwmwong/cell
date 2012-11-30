@@ -58,7 +58,7 @@ endef
 export MAKE_ALL_TESTS_COFFEE
 
 specs: deps spec-cell-builder-plugin
-	find specs/ -name '*.coffee' | xargs $(coffee) -c
+	find specs/ -name '*.coffee' | xargs $(coffee) -c -b
 	cd specs/; find . -name "*.spec.js" -type f | xargs ../node_modules/.bin/coffee -e "$$MAKE_ALL_TESTS_COFFEE" > GENERATED_all-specs.js
 
 clean: 
