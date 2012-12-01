@@ -1,4 +1,8 @@
-define ['cell','underscore'], ({Cell})->
+define [
+  'cell'
+  'underscore'
+], ({Cell}, _)->
+
   _isJQueryish =
     if typeof Zepto is 'function'
       Zepto.fn.isPrototypeOf.bind Zepto.fn
@@ -39,7 +43,7 @@ define ['cell','underscore'], ({Cell})->
 
   __ = (a,b,children...)->
     if a
-      if _.isElement(b)
+      if _.isElement b
         children.unshift b
         b = undefined
 
@@ -48,30 +52,23 @@ define ['cell','underscore'], ({Cell})->
           if haml = _parseHAML a
             el = document.createElement haml.tag
             el.setAttribute 'id', haml.id if haml.id
+            el.className = haml.className if haml.className
 
             if b?
-              if (_isObj b) and (not _isJQueryish b) and (not (b instanceof Bind))
+              if _isObj b
                 _.each b, (v,k)->
-                  if k is 'class' then el.className += v
+                  if v instanceof Bind
+                    v.bindToAttr el, k
                   else
-                    if v instanceof Bind
-                      v.bindToAttr el, k
-                    else
-                      el.setAttribute k, v
+                    el.setAttribute k, v
                   return
               else
                 children.unshift b
-
-            if haml.className
-              el.className += if el.className then " #{haml.className}" else haml.className
             el
-
-          else
-            throw "__(): unsupported argument '#{a}'"
 
         else if a.prototype instanceof Cell
           cell_options =
-            if typeof b is 'string' and (haml = _parseHAML b)
+            if (typeof b is 'string') and (haml = _parseHAML b)
               if _isObj children[0]
                 (c = children.shift()).id = haml.id
                 c.className = haml.className
@@ -93,9 +90,9 @@ define ['cell','underscore'], ({Cell})->
           (new a cell_options).render().el
 
         else if _.isElement a then a
-        else throw "__(): unsupported argument #{a}"
 
-      parent and _renderNodes parent, children
+      throw "__(): unsupported argument #{a}" if not parent
+      _renderNodes parent, children
 
   Bind = (@model, @attrs, @transform)->
     @attrs = [@attrs] if typeof @attrs is 'string'
@@ -104,37 +101,36 @@ define ['cell','underscore'], ({Cell})->
     @model.on "change:#{@attrs.join ' change:'}", @onChange, @
     @
 
-  Bind.prototype =
-    bindTo: (el)->
-      @boundEls.push el
-      el.innerHTML = @getResult()
-      return
+  Bind::bindTo = (el)->
+    @boundEls.push el
+    el.innerHTML = @getResult()
+    return
 
-    bindToAttr: (el, attr)->
-      @boundAttrs.push {el,attr}
-      el.setAttribute attr, @getResult()
-      return
+  Bind::bindToAttr = (el, attr)->
+    @boundAttrs.push {el,attr}
+    el.setAttribute attr, @getResult()
+    return
 
-    getResult: -> 
-      args = _.map(@attrs, ((a)-> @[a]), @model.attributes)
-      (@transform? args..., @model) or args.join(' ') or ''
+  Bind::getResult = -> 
+    args = _.map(@attrs, ((a)-> @[a]), @model.attributes)
+    (@transform? args..., @model) or args.join(' ') or ''
 
-    onChange: ->
-      # Don't do anything if bound to nothing
-      if @boundEls.length or @boundAttrs.length
-        val = @getResult()
+  Bind::onChange = ->
+    # Don't do anything if bound to nothing
+    if @boundEls.length or @boundAttrs.length
+      val = @getResult()
 
-        # Update innerHTMLs of content bound elements
-        _.each @boundEls, (el)->
-          el.innerHTML = val
-          return
+      # Update innerHTMLs of content bound elements
+      _.each @boundEls, (el)->
+        el.innerHTML = val
+        return
 
-        # Update attribute values of attribute bounded elements
-        _.each @boundAttrs, ({el,attr})->
-          el.setAttribute attr, val
-          return
+      # Update attribute values of attribute bounded elements
+      _.each @boundAttrs, ({el,attr})->
+        el.setAttribute attr, val
+        return
 
-      return
+    return
 
   __.bind = (model, attrs, transform)-> new Bind model, attrs, transform
 

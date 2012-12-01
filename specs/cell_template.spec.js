@@ -305,7 +305,7 @@ define(['./spec-utils'], function(_arg) {
           'data-custom': 'myattr',
           'data-custom2': 'myattr2'
         }
-      ], '<p class="myclass3 myclass myclass2" data-custom="myattr" data-custom2="myattr2" id="myid"></p>');
+      ], '<p class="myclass3" data-custom="myattr" data-custom2="myattr2" id="myid"></p>');
       it_renders("Selector:<String>, Attribute Map:<Object>, Children...:<DOM Nodes, String, Number, Array, jQuery-ish object>", [
         'p', {
           'data-custom': 'myattr',
