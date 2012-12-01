@@ -8,20 +8,22 @@ define ['cell','underscore'], ({Cell})->
   _isObj = (o)-> o and o.constructor is Object
 
   _renderNodes = (parent,nodes)->
-    if (n = nodes[0]) instanceof Bind
-      n.bindTo parent
-    else
-      while nodes.length > 0 when (c = nodes.shift())?
-        if _.isElement c
-          parent.appendChild c
-        else if typeof c in ['string','number'] or _.isDate c
-          parent.appendChild document.createTextNode c
-        else if _isJQueryish c
-          c.appendTo parent
-        else if _.isArray c
-          nodes.unshift.apply nodes, c
-        else
-          throw "__: unsupported render child"
+    while (c = nodes.pop())?
+      if _.isElement c
+        parent.insertBefore c, parent.firstChild
+
+      else if _isJQueryish c
+        c.appendTo parent
+
+      else if _.isArray c
+        nodes = nodes.concat c
+
+      else if c instanceof Bind
+        c.bindTo parent
+
+      else
+        parent.insertBefore (document.createTextNode c), parent.firstChild
+
     parent
 
   # HAML-like selector, ex. div#myID.myClass
@@ -29,7 +31,11 @@ define ['cell','underscore'], ({Cell})->
     if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec(haml)
       tag: m[1] or 'div'
       id:  v = m[3]
-      className: if v = m[4] then v.slice(1).replace(/\./g, ' ') else ''
+      className:
+        if v = m[4]
+          v.slice(1).replace(/\./g, ' ')
+        else
+          ''
 
   __ = (a,b,children...)->
     if a
@@ -44,9 +50,7 @@ define ['cell','underscore'], ({Cell})->
             el.setAttribute 'id', haml.id if haml.id
 
             if b?
-              if (not _isObj b) or (_isJQueryish b) or (b instanceof Bind)
-                children.unshift b
-              else
+              if (_isObj b) and (not _isJQueryish b) and (not (b instanceof Bind))
                 _.each b, (v,k)->
                   if k is 'class' then el.className += v
                   else
@@ -55,6 +59,8 @@ define ['cell','underscore'], ({Cell})->
                     else
                       el.setAttribute k, v
                   return
+              else
+                children.unshift b
 
             if haml.className
               el.className += if el.className then " #{haml.className}" else haml.className

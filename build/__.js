@@ -11,24 +11,18 @@ define(['cell', 'underscore'], function(_arg) {
     return o && o.constructor === Object;
   };
   _renderNodes = function(parent, nodes) {
-    var c, n, _ref;
-    if ((n = nodes[0]) instanceof Bind) {
-      n.bindTo(parent);
-    } else {
-      while (nodes.length > 0) {
-        if ((c = nodes.shift()) != null) {
-          if (_.isElement(c)) {
-            parent.appendChild(c);
-          } else if (((_ref = typeof c) === 'string' || _ref === 'number') || _.isDate(c)) {
-            parent.appendChild(document.createTextNode(c));
-          } else if (_isJQueryish(c)) {
-            c.appendTo(parent);
-          } else if (_.isArray(c)) {
-            nodes.unshift.apply(nodes, c);
-          } else {
-            throw "__: unsupported render child";
-          }
-        }
+    var c;
+    while ((c = nodes.pop()) != null) {
+      if (_.isElement(c)) {
+        parent.insertBefore(c, parent.firstChild);
+      } else if (_isJQueryish(c)) {
+        c.appendTo(parent);
+      } else if (_.isArray(c)) {
+        nodes = nodes.concat(c);
+      } else if (c instanceof Bind) {
+        c.bindTo(parent);
+      } else {
+        parent.insertBefore(document.createTextNode(c), parent.firstChild);
       }
     }
     return parent;
@@ -59,9 +53,7 @@ define(['cell', 'underscore'], function(_arg) {
               el.setAttribute('id', haml.id);
             }
             if (b != null) {
-              if ((!_isObj(b)) || (_isJQueryish(b)) || (b instanceof Bind)) {
-                children.unshift(b);
-              } else {
+              if ((_isObj(b)) && (!_isJQueryish(b)) && (!(b instanceof Bind))) {
                 _.each(b, function(v, k) {
                   if (k === 'class') {
                     el.className += v;
@@ -73,6 +65,8 @@ define(['cell', 'underscore'], function(_arg) {
                     }
                   }
                 });
+              } else {
+                children.unshift(b);
               }
             }
             if (haml.className) {
