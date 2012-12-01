@@ -123,7 +123,7 @@ define(['cell', 'underscore'], function(_arg) {
       args = _.map(this.attrs, (function(a) {
         return this[a];
       }), this.model.attributes);
-      return (typeof this.transform === "function" ? this.transform.apply(this, __slice.call(args).concat([model])) : void 0) || '';
+      return (typeof this.transform === "function" ? this.transform.apply(this, __slice.call(args).concat([this.model])) : void 0) || args.join(' ') || '';
     },
     onChange: function() {
       var val;

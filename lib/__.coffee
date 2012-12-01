@@ -117,7 +117,7 @@ define ['cell','underscore'], ({Cell})->
 
     getResult: -> 
       args = _.map(@attrs, ((a)-> @[a]), @model.attributes)
-      (@transform? args..., model) or ''
+      (@transform? args..., @model) or args.join(' ') or ''
 
     onChange: ->
       # Don't do anything if bound to nothing

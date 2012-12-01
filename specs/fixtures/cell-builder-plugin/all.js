@@ -12895,8 +12895,8 @@ define('__',['cell', 'underscore'], function(_arg) {
       var args;
       args = _.map(this.attrs, (function(a) {
         return this[a];
-      }), this.model.attributes).concat(this.model);
-      return (this.transform && (this.transform.apply(this, args)) || (args.slice(0, -1).join(' '))) || '';
+      }), this.model.attributes);
+      return (typeof this.transform === "function" ? this.transform.apply(this, __slice.call(args).concat([this.model])) : void 0) || args.join(' ') || '';
     },
     onChange: function() {
       var val;
