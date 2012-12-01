@@ -39,6 +39,7 @@ define (require)->
         @collection?.off null, null, @
         @undelegateEvents()
         @model = @collection = @el = @$el = @$ = undefined
+        return
 
       setElement: (element, delegate)->
         Backbone.View::setElement.call @, element, delegate
