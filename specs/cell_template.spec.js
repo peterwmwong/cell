@@ -223,8 +223,8 @@ define(['./spec-utils'], function(_arg) {
         return expect(this.cdef.render_el).toHaveBeenCalledWith(this.__, this.__.bind);
       });
     });
-    return describe('__()', function() {
-      var empty, invalid, it_renders, it_renders_cell, _fn, _fn1, _i, _j, _len, _len1, _ref, _ref1;
+    return describe('__( viewOrSelector:[Backbone.View, String], options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', function() {
+      var empty, invalid, it_renders, it_renders_views, _fn, _fn1, _i, _j, _len, _len1, _ref, _ref1;
       beforeEachRequire(["cell!fixtures/TestCell1", '__'], function(TestCell1, __) {
         this.TestCell1 = TestCell1;
         this.__ = __;
@@ -233,8 +233,8 @@ define(['./spec-utils'], function(_arg) {
       _fn = function(invalid) {
         var invalid_str;
         invalid_str = "" + (invalid === '' && '""' || invalid);
-        return describe(invalid_str, function() {
-          return it("__ " + invalid_str + " === undefined", function() {
+        return describe("__( " + invalid_str + " )", function() {
+          return it("__( " + invalid_str + " ) === undefined", function() {
             var _this = this;
             return expect(function() {
               return _this.__(invalid);
@@ -250,8 +250,8 @@ define(['./spec-utils'], function(_arg) {
       _fn1 = function(empty) {
         var empty_str;
         empty_str = "" + (empty === '' && '""' || empty);
-        return describe(empty_str, function() {
-          return it("__ " + empty_str + " === undefined", function() {
+        return describe("__( " + empty_str + " )", function() {
+          return it("__( " + empty_str + " ) === undefined", function() {
             return expect(this.__(empty)).toBe(void 0);
           });
         });
@@ -261,10 +261,10 @@ define(['./spec-utils'], function(_arg) {
         _fn1(empty);
       }
       it_renders = function(desc, input_args, expected_html_output, debug) {
-        return describe(desc, function() {
+        return describe("__( " + desc + " )", function() {
           var input_strings;
           input_strings = stringify(input_args, true);
-          return it("__ " + input_strings + " === " + expected_html_output, function() {
+          return it("__( " + input_strings + " ) === " + expected_html_output, function() {
             if (debug) {
               debugger;
             }
@@ -272,11 +272,11 @@ define(['./spec-utils'], function(_arg) {
           });
         });
       };
-      it_renders_cell = function(desc, input_args, expected_html_output, debug) {
-        return describe(desc, function() {
+      it_renders_views = function(desc, input_args, expected_html_output, debug) {
+        return describe("__( " + desc + " )", function() {
           var input_strings;
           input_strings = stringify(input_args, true);
-          return it("__ Cell, " + input_strings + " === " + expected_html_output, function() {
+          return it("__( Backbone.View, " + input_strings + " ) === " + expected_html_output, function() {
             if (debug) {
               debugger;
             }
@@ -284,52 +284,46 @@ define(['./spec-utils'], function(_arg) {
           });
         });
       };
-      it_renders('Selector:<String> (tag, id, multiple classes)', ['p#myid.myclass.myclass2'], '<p class="myclass myclass2" id="myid"></p>');
-      it_renders('Selector:<String>, Child:<String>', ['p#myid.myclass.myclass2', 'blargo'], '<p class="myclass myclass2" id="myid">blargo</p>');
-      it_renders('Selector:<String>, Child:<String> # Zepto regression', ['p#myid.myclass.myclass2', '<'], '<p class="myclass myclass2" id="myid"><</p>');
-      it_renders('Selector:<String>, Child:<Number>', ['p#myid.myclass.myclass2', 777], '<p class="myclass myclass2" id="myid">777</p>');
-      it_renders('Selector:<String>, Child:<Number === 0>', ['p#myid.myclass.myclass2', 0], '<p class="myclass myclass2" id="myid">0</p>');
-      it_renders('Selector:<String>, Child:<DOM Node>', ['p#myid.myclass.myclass2', node('span')], '<p class="myclass myclass2" id="myid"><span></span></p>');
-      it_renders('Selector:<String>, Child:<jQuery-ish object>', ['p#myid.myclass.myclass2', $('<span></span>')], '<p class="myclass myclass2" id="myid"><span></span></p>');
+      it_renders('selector:String(tag, id, multiple classes)', ['p#myid.myclass.myclass2'], '<p class="myclass myclass2" id="myid"></p>');
+      it_renders('selector:String, child:String', ['p#myid.myclass.myclass2', 'blargo'], '<p class="myclass myclass2" id="myid">blargo</p>');
+      it_renders("selector:String, child:String('<')", ['p#myid.myclass.myclass2', '<'], '<p class="myclass myclass2" id="myid"><</p>');
+      it_renders('selector:String, child:Number', ['p#myid.myclass.myclass2', 777], '<p class="myclass myclass2" id="myid">777</p>');
+      it_renders('selector:String, child:Number(0)', ['p#myid.myclass.myclass2', 0], '<p class="myclass myclass2" id="myid">0</p>');
+      it_renders('selector:String, child:DOMNode', ['p#myid.myclass.myclass2', node('span')], '<p class="myclass myclass2" id="myid"><span></span></p>');
+      it_renders('selector:String, child:jQuery', ['p#myid.myclass.myclass2', $('<span></span>')], '<p class="myclass myclass2" id="myid"><span></span></p>');
       (function() {
         var mock_date;
         mock_date = new Date();
-        return it_renders('Selector:<String>, Child:<Date> # REGRESSION', ['p#myid.myclass.myclass2', mock_date], '<p class="myclass myclass2" id="myid">' + mock_date.toString() + '</p>');
+        return it_renders('selector:String, child:Date', ['p#myid.myclass.myclass2', mock_date], '<p class="myclass myclass2" id="myid">' + mock_date.toString() + '</p>');
       })();
-      it_renders('Selector:<String>, Children:<Array of Strings>', ['p#myid.myclass.myclass2', ['one', 'two']], '<p class="myclass myclass2" id="myid">onetwo</p>');
-      it_renders('Selector:<String>, Children...:<DOM Nodes, String, Number, Array, jQuery-ish object>', ['p#myid.myclass.myclass2', [node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('a'), $('<span class="result"></span><span class="jQueryObjDeux"></span>')]], '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="result"></span><span class="jQueryObjDeux"></span></p>');
-      it_renders('Selector:<String>, Children...:<undefined, null>', ['p#myid.myclass.myclass2', [void 0, null]], '<p class="myclass myclass2" id="myid"></p>');
-      it_renders("Selector:<String>, Attribute Map:<Object>", [
+      it_renders('selector:String, children:String[]', ['p#myid.myclass.myclass2', ['one', 'two']], '<p class="myclass myclass2" id="myid">onetwo</p>');
+      it_renders('selector:String, children...:[DOM Nodes, String, Number, Array, jQuery]', ['p#myid.myclass.myclass2', [node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('a'), $('<span class="result"></span><span class="jQueryObjDeux"></span>')]], '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="result"></span><span class="jQueryObjDeux"></span></p>');
+      it_renders('selector:String, children...:[undefined, null]', ['p#myid.myclass.myclass2', [void 0, null]], '<p class="myclass myclass2" id="myid"></p>');
+      it_renders("selector:String, attrHash:Object", [
         'p#myid.myclass.myclass2', {
           "class": 'myclass3',
           'data-custom': 'myattr',
           'data-custom2': 'myattr2'
         }
       ], '<p class="myclass3" data-custom="myattr" data-custom2="myattr2" id="myid"></p>');
-      it_renders("Selector:<String>, Attribute Map:<Object>, Children...:<DOM Nodes, String, Number, Array, jQuery-ish object>", [
+      it_renders("selector:String, attrHash:Object, children...:[DOM Nodes, String, Number, Array, jQuery]", [
         'p', {
           'data-custom': 'myattr',
           'data-custom2': 'myattr2'
         }, node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('a')
       ], '<p data-custom="myattr" data-custom2="myattr2"><span></span>hello<table></table>world5<div></div>0<a></a></p>');
-      it_renders('Selector:<String>, Children...:<undefined, null>', [
+      it_renders('selector:String, children...:[undefined, null]', [
         'p', {
           'data-custom': 'myattr',
           'data-custom2': 'myattr2'
         }, void 0, null
       ], '<p data-custom="myattr" data-custom2="myattr2"></p>');
-      it_renders_cell("cell:<cell>", [], '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>');
-      it_renders_cell("cell:<cell>, options:<Object>", [
+      it_renders_views("view:Backbone.View", [], '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>');
+      return it_renders_views("view:Backbone.View, options:Object", [
         {
           tagName: 'span'
         }
       ], '<span cell="TestCell1" class="TestCell1">TestCell1 Contents</span>');
-      it_renders_cell("cell:<cell>, Selector String:<String>", ['#myid.myclass.myclass2'], '<div cell="TestCell1" class="TestCell1 myclass myclass2" id="myid">TestCell1 Contents</div>');
-      return it_renders_cell("cell:<cell>, Selector String:<String>, options:<Object>", [
-        '#myid.myclass.myclass2', {
-          tagName: 'a'
-        }
-      ], '<a cell="TestCell1" class="TestCell1 myclass myclass2" id="myid">TestCell1 Contents</a>');
     });
   };
 });

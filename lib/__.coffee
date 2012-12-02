@@ -1,7 +1,8 @@
 define [
   'cell'
   'underscore'
-], ({Cell}, _)->
+  'backbone'
+], ({Cell}, _, Backbone)->
 
   _isJQueryish =
     if typeof Zepto is 'function'
@@ -41,58 +42,38 @@ define [
         else
           ''
 
-  __ = (a,b,children...)->
-    if a
-      if _.isElement b
-        children.unshift b
-        b = undefined
+  __ = (viewOrHAML, optionsOrFirstChild, children...)->
+    return unless viewOrHAML
 
-      parent =
-        if typeof a is 'string'
-          if haml = _parseHAML a
-            el = document.createElement haml.tag
-            el.setAttribute 'id', haml.id if haml.id
-            el.className = haml.className if haml.className
+    options =
+      if _isObj optionsOrFirstChild
+        optionsOrFirstChild
+      else
+        children.push optionsOrFirstChild
+        undefined
 
-            if b?
-              if _isObj b
-                _.each b, (v,k)->
-                  if v instanceof Bind
-                    v.bindToAttr el, k
-                  else
-                    el.setAttribute k, v
-                  return
-              else
-                children.unshift b
-            el
+    parent =
+      # HAML
+      if typeof viewOrHAML is 'string'
+        if haml = _parseHAML viewOrHAML
+          el = document.createElement haml.tag
+          el.setAttribute 'id', haml.id if haml.id
+          el.className = haml.className if haml.className
 
-        else if a.prototype instanceof Cell
-          cell_options =
-            if (typeof b is 'string') and (haml = _parseHAML b)
-              if _isObj children[0]
-                (c = children.shift()).id = haml.id
-                c.className = haml.className
-                c
-              else 
-                id: haml.id
-                className: haml.className
+          _.each options, (v,k)->
+            if v instanceof Bind
+              v.bindToAttr el, k
+            else
+              el.setAttribute k, v
+            return
+          el
 
-            else if _isObj b
-              b
+      # Cell
+      else if viewOrHAML.prototype instanceof Backbone.View
+        (new viewOrHAML options).render().el
 
-          if cell_options
-            cell_options.className =
-              if cell_options.className
-                "#{a::className} #{cell_options.className}"
-              else
-                a::className
-
-          (new a cell_options).render().el
-
-        else if _.isElement a then a
-
-      throw "__(): unsupported argument #{a}" if not parent
-      _renderNodes parent, children
+    throw "__(): unsupported argument #{viewOrHAML}" if not parent
+    _renderNodes parent, children
 
   Bind = (@model, @attrs, @transform)->
     @attrs = [@attrs] if typeof @attrs is 'string'
