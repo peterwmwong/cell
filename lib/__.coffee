@@ -113,13 +113,13 @@ define [
 
     return
 
-  __.bind = (model, attrs, transform)-> new Bind model, attrs, transform
+  __.bindTo = (model, attrs, transform)-> new Bind model, attrs, transform
 
   __.$ = (args...)-> $ __ args...
 
   Cell::__ = __
   Cell::render = ->
-    @render_el and _renderNodes @el, [@render_el(__,__.bind)]
+    @render_el and _renderNodes @el, [@render_el(__,__.bindTo)]
     @after_render?()
     @
   __

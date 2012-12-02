@@ -15,7 +15,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
       it 'jQuery-ish object wraps whatever is returned from __', ->
         nodeHTMLEquals @result[0], '<p class="myclass myclass2" id="myid"></p>'
 
-    describe '__.bind(backbone_model, attrs, transform)', ->
+    describe '__.bindTo(backbone_model, attrs, transform)', ->
 
       describe 'when passed as an attribute value', ->
 
@@ -27,7 +27,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
             @node = __ '.bound',
               'data-custom':
-                (__.bind @model, ['attr1','attr2'], (attr1, attr2, model)-> "attr1: #{attr1}, attr2: #{attr2}")
+                (__.bindTo @model, ['attr1','attr2'], (attr1, attr2, model)-> "attr1: #{attr1}, attr2: #{attr2}")
 
           it "sets initial value of backbone_model's attribute (attrs) to the element's attribute", ->
             expect(@node.getAttribute 'data-custom').toBe "attr1: initial value1, attr2: initial value2"
@@ -47,7 +47,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
             beforeEachRequire ['__'], (__)->
               @model = new Backbone.Model()
               @node = __ '.bound',
-                'data-custom': (__.bind @model, 'attr')
+                'data-custom': (__.bindTo @model, 'attr')
 
             it "sets initial value of backbone_model's attribute (attrs) to the element's attribute", ->
               expect(@node.getAttribute 'data-custom').toBe ""
@@ -56,7 +56,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
             beforeEachRequire ['__'], (__)->
               @model = new Backbone.Model()
               @node = __ '.bound',
-                'data-custom': (__.bind @model, 'attr', ->)
+                'data-custom': (__.bindTo @model, 'attr', ->)
 
             it "sets initial value of backbone_model's attribute (attrs) to the element's attribute", ->
               expect(@node.getAttribute 'data-custom').toBe ""
@@ -66,7 +66,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
               @model = new Backbone.Model().set
                 attr: 'initial value'
               @node = __ '.bound',
-                'data-custom': (__.bind @model, 'attr')
+                'data-custom': (__.bindTo @model, 'attr')
 
             it "sets initial value of backbone_model's attribute (attrs) to the element's attribute", ->
               expect(@node.getAttribute 'data-custom').toBe "initial value"
@@ -83,7 +83,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
               @model = new Backbone.Model().set
                 attr: 'initial value'
               @node = __ '.bound',
-                'data-custom': (__.bind @model, 'attr', (attr, model)-> "attr: #{attr}")
+                'data-custom': (__.bindTo @model, 'attr', (attr, model)-> "attr: #{attr}")
 
             it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
               expect(@node.getAttribute 'data-custom').toBe "attr: initial value"
@@ -104,7 +104,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
               attr2: 'initial value2'
 
             @node = __ '.bound',
-              __.bind @model, ['attr1','attr2'], (attr1, attr2, model)-> "attr1: #{attr1}, attr2: #{attr2}"
+              __.bindTo @model, ['attr1','attr2'], (attr1, attr2, model)-> "attr1: #{attr1}, attr2: #{attr2}"
 
           it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
             expect(@node.innerHTML).toBe "attr1: initial value1, attr2: initial value2"
@@ -124,7 +124,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
             beforeEachRequire ['__'], (__)->
               @model = new Backbone.Model()
               @node = __ '.bound',
-                __.bind @model, 'attr'
+                __.bindTo @model, 'attr'
 
             it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
               expect(@node.innerHTML).toBe ""
@@ -133,7 +133,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
             beforeEachRequire ['__'], (__)->
               @model = new Backbone.Model()
               @node = __ '.bound',
-                __.bind @model, 'attr', ->
+                __.bindTo @model, 'attr', ->
 
             it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
               expect(@node.innerHTML).toBe ""
@@ -143,7 +143,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
               @model = new Backbone.Model().set
                 attr: 'initial value'
               @node = __ '.bound',
-                __.bind @model, 'attr'
+                __.bindTo @model, 'attr'
 
             it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
               expect(@node.innerHTML).toBe "initial value"
@@ -160,7 +160,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
               @model = new Backbone.Model().set
                 attr: 'initial value'
               @node = __ '.bound',
-                __.bind @model, 'attr', (attr, model)-> "attr: #{attr}"
+                __.bindTo @model, 'attr', (attr, model)-> "attr: #{attr}"
 
             it "sets initial value of backbone_model's attribute (attrs) to innerHTML", ->
               expect(@node.innerHTML).toBe "attr: initial value"
@@ -175,13 +175,13 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
     describe 'Cell.prototype.render is modified', ->
 
       beforeEachRequire ['cell','__'], ({Cell},@__)->
-        @cdef = render_el: (__,bind)->
+        @cdef = render_el: (__,bindTo)->
         spyOn(@cdef, 'render_el').andCallThrough()
         C = Cell.extend(@cdef)
         new C().render()
           
-      it 'calls Cell.render_el(__,__.bind)', ->
-        expect(@cdef.render_el).toHaveBeenCalledWith(@__, @__.bind)
+      it 'calls Cell.render_el(__,__.bindTo)', ->
+        expect(@cdef.render_el).toHaveBeenCalledWith(@__, @__.bindTo)
 
     describe '__( viewOrSelector:[Backbone.View, String], options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', ->
 

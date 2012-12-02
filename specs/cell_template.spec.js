@@ -21,7 +21,7 @@ define(['./spec-utils'], function(_arg) {
         return nodeHTMLEquals(this.result[0], '<p class="myclass myclass2" id="myid"></p>');
       });
     });
-    describe('__.bind(backbone_model, attrs, transform)', function() {
+    describe('__.bindTo(backbone_model, attrs, transform)', function() {
       describe('when passed as an attribute value', function() {
         describe("when attrs is an Array (multiple attribute names)", function() {
           beforeEachRequire(['__'], function(__) {
@@ -30,7 +30,7 @@ define(['./spec-utils'], function(_arg) {
               attr2: 'initial value2'
             });
             return this.node = __('.bound', {
-              'data-custom': __.bind(this.model, ['attr1', 'attr2'], function(attr1, attr2, model) {
+              'data-custom': __.bindTo(this.model, ['attr1', 'attr2'], function(attr1, attr2, model) {
                 return "attr1: " + attr1 + ", attr2: " + attr2;
               })
             });
@@ -55,7 +55,7 @@ define(['./spec-utils'], function(_arg) {
             beforeEachRequire(['__'], function(__) {
               this.model = new Backbone.Model();
               return this.node = __('.bound', {
-                'data-custom': __.bind(this.model, 'attr')
+                'data-custom': __.bindTo(this.model, 'attr')
               });
             });
             return it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
@@ -66,7 +66,7 @@ define(['./spec-utils'], function(_arg) {
             beforeEachRequire(['__'], function(__) {
               this.model = new Backbone.Model();
               return this.node = __('.bound', {
-                'data-custom': __.bind(this.model, 'attr', function() {})
+                'data-custom': __.bindTo(this.model, 'attr', function() {})
               });
             });
             return it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
@@ -79,7 +79,7 @@ define(['./spec-utils'], function(_arg) {
                 attr: 'initial value'
               });
               return this.node = __('.bound', {
-                'data-custom': __.bind(this.model, 'attr')
+                'data-custom': __.bindTo(this.model, 'attr')
               });
             });
             it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
@@ -100,7 +100,7 @@ define(['./spec-utils'], function(_arg) {
                 attr: 'initial value'
               });
               return this.node = __('.bound', {
-                'data-custom': __.bind(this.model, 'attr', function(attr, model) {
+                'data-custom': __.bindTo(this.model, 'attr', function(attr, model) {
                   return "attr: " + attr;
                 })
               });
@@ -126,7 +126,7 @@ define(['./spec-utils'], function(_arg) {
               attr1: 'initial value1',
               attr2: 'initial value2'
             });
-            return this.node = __('.bound', __.bind(this.model, ['attr1', 'attr2'], function(attr1, attr2, model) {
+            return this.node = __('.bound', __.bindTo(this.model, ['attr1', 'attr2'], function(attr1, attr2, model) {
               return "attr1: " + attr1 + ", attr2: " + attr2;
             }));
           });
@@ -149,7 +149,7 @@ define(['./spec-utils'], function(_arg) {
           describe("automatically transforms undefined into ''", function() {
             beforeEachRequire(['__'], function(__) {
               this.model = new Backbone.Model();
-              return this.node = __('.bound', __.bind(this.model, 'attr'));
+              return this.node = __('.bound', __.bindTo(this.model, 'attr'));
             });
             return it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
               return expect(this.node.innerHTML).toBe("");
@@ -158,7 +158,7 @@ define(['./spec-utils'], function(_arg) {
           describe("and transform is a function, automatically transforms undefined into ''", function() {
             beforeEachRequire(['__'], function(__) {
               this.model = new Backbone.Model();
-              return this.node = __('.bound', __.bind(this.model, 'attr', function() {}));
+              return this.node = __('.bound', __.bindTo(this.model, 'attr', function() {}));
             });
             return it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
               return expect(this.node.innerHTML).toBe("");
@@ -169,7 +169,7 @@ define(['./spec-utils'], function(_arg) {
               this.model = new Backbone.Model().set({
                 attr: 'initial value'
               });
-              return this.node = __('.bound', __.bind(this.model, 'attr'));
+              return this.node = __('.bound', __.bindTo(this.model, 'attr'));
             });
             it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
               return expect(this.node.innerHTML).toBe("initial value");
@@ -188,7 +188,7 @@ define(['./spec-utils'], function(_arg) {
               this.model = new Backbone.Model().set({
                 attr: 'initial value'
               });
-              return this.node = __('.bound', __.bind(this.model, 'attr', function(attr, model) {
+              return this.node = __('.bound', __.bindTo(this.model, 'attr', function(attr, model) {
                 return "attr: " + attr;
               }));
             });
@@ -213,14 +213,14 @@ define(['./spec-utils'], function(_arg) {
         Cell = _arg2.Cell;
         this.__ = __;
         this.cdef = {
-          render_el: function(__, bind) {}
+          render_el: function(__, bindTo) {}
         };
         spyOn(this.cdef, 'render_el').andCallThrough();
         C = Cell.extend(this.cdef);
         return new C().render();
       });
-      return it('calls Cell.render_el(__,__.bind)', function() {
-        return expect(this.cdef.render_el).toHaveBeenCalledWith(this.__, this.__.bind);
+      return it('calls Cell.render_el(__,__.bindTo)', function() {
+        return expect(this.cdef.render_el).toHaveBeenCalledWith(this.__, this.__.bindTo);
       });
     });
     return describe('__( viewOrSelector:[Backbone.View, String], options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', function() {
