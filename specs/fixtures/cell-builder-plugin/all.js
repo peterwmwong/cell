@@ -14312,7 +14312,7 @@ define('__',['cell', 'underscore', 'backbone'], function(_arg, _, Backbone) {
       });
     }
   };
-  __.bind = function(model, attrs, transform) {
+  __.bindTo = function(model, attrs, transform) {
     return new Bind(model, attrs, transform);
   };
   __.$ = function() {
@@ -14322,7 +14322,7 @@ define('__',['cell', 'underscore', 'backbone'], function(_arg, _, Backbone) {
   };
   Cell.prototype.__ = __;
   Cell.prototype.render = function() {
-    this.render_el && _renderNodes(this.el, [this.render_el(__, __.bind)]);
+    this.render_el && _renderNodes(this.el, [this.render_el(__, __.bindTo)]);
     if (typeof this.after_render === "function") {
       this.after_render();
     }
