@@ -4,7 +4,7 @@ define(function() {
   return function(_arg) {
     var beforeEachRequire;
     beforeEachRequire = _arg.beforeEachRequire;
-    beforeEachRequire(['cell!fixtures/TestCell1'], function(TestCell1) {
+    beforeEachRequire(['fixtures/TestCell1'], function(TestCell1) {
       this.TestCell1 = TestCell1;
       return this.testCell1 = new this.TestCell1;
     });

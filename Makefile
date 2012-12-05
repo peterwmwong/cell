@@ -34,7 +34,7 @@ build/__.js: deps lib/__.coffee
 
 build/require.js: deps
 	mkdir -p build/
-	cp node_modules/requirejs/require.js build/
+	cp lib/require.js build/
 
 #-------------------------------------------------------------------
 # Dependencies 

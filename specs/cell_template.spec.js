@@ -213,19 +213,19 @@ define(['./spec-utils'], function(_arg) {
         Cell = _arg2.Cell;
         this.__ = __;
         this.cdef = {
-          render_el: function(__, bindTo) {}
+          renderEl: function(__, bindTo) {}
         };
-        spyOn(this.cdef, 'render_el').andCallThrough();
+        spyOn(this.cdef, 'renderEl').andCallThrough();
         C = Cell.extend(this.cdef);
         return new C().render();
       });
-      return it('calls Cell.render_el(__,__.bindTo)', function() {
-        return expect(this.cdef.render_el).toHaveBeenCalledWith(this.__, this.__.bindTo);
+      return it('calls Cell.renderEl(__,__.bindTo)', function() {
+        return expect(this.cdef.renderEl).toHaveBeenCalledWith(this.__, this.__.bindTo);
       });
     });
     return describe('__( viewOrSelector:[Backbone.View, String], options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', function() {
       var empty, invalid, it_renders, it_renders_views, _fn, _fn1, _i, _j, _len, _len1, _ref, _ref1;
-      beforeEachRequire(["cell!fixtures/TestCell1", '__'], function(TestCell1, __) {
+      beforeEachRequire(["fixtures/TestCell1", '__'], function(TestCell1, __) {
         this.TestCell1 = TestCell1;
         this.__ = __;
       });

@@ -36,7 +36,7 @@ define(function() {
             }
           });
         }
-        write("require(['cell'],function(p){\n  p.__preinstalledCells__ = " + (JSON.stringify(preinstalls)) + ";\n});\n");
+        write("require(['cell'],function(p){\n  p._installed = " + (JSON.stringify(preinstalls)) + ";\n});\n");
         return put(outcssfile, allcss);
       }
     },

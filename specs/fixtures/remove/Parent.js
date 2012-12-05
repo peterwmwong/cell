@@ -2,8 +2,8 @@
 
 define(function(require) {
   var Child;
-  Child = require('cell!./Child');
-  return {
+  Child = require('./Child');
+  return require('cell!')({
     initialize: function() {
       this.model.on('flash', this.onFlash, this);
       this.collection.on('flash', this.onFlash, this);
@@ -25,5 +25,5 @@ define(function(require) {
         return false;
       }
     }
-  };
+  });
 });

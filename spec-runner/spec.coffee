@@ -21,7 +21,6 @@ define ->
                 baseUrl: '/specs/'
                 paths:
                   cell: '../build/cell'
-                  css: '../build/css'
                   __: '../build/__'
                   jquery: '../support/jquery'
                   underscore: '../node_modules/underscore/underscore'

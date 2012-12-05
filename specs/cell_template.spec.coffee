@@ -175,18 +175,18 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
     describe 'Cell.prototype.render is modified', ->
 
       beforeEachRequire ['cell','__'], ({Cell},@__)->
-        @cdef = render_el: (__,bindTo)->
-        spyOn(@cdef, 'render_el').andCallThrough()
+        @cdef = renderEl: (__,bindTo)->
+        spyOn(@cdef, 'renderEl').andCallThrough()
         C = Cell.extend(@cdef)
         new C().render()
           
-      it 'calls Cell.render_el(__,__.bindTo)', ->
-        expect(@cdef.render_el).toHaveBeenCalledWith(@__, @__.bindTo)
+      it 'calls Cell.renderEl(__,__.bindTo)', ->
+        expect(@cdef.renderEl).toHaveBeenCalledWith(@__, @__.bindTo)
 
     describe '__( viewOrSelector:[Backbone.View, String], options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', ->
 
       beforeEachRequire [
-        "cell!fixtures/TestCell1"
+        "fixtures/TestCell1"
         '__'
       ], (@TestCell1,@__)->
 

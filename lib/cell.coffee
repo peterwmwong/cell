@@ -2,16 +2,6 @@ define (require)->
   Backbone = require 'backbone'
   $ = require 'jquery'
 
-  # Load/render cells specified in DOM node data-cell attributes
-  $ ->
-    $('[data-cell]').each (i,el)->
-      if cellname = @getAttribute 'data-cell'
-        require ["cell!#{cellname}"], (CType)->
-          el.appendChild new CType().render().el
-          return
-      return
-    return
-
   # Maps cid to cell
   cidToCell = {}
 
@@ -27,12 +17,10 @@ define (require)->
       cidToCell[cid].dispose()
     return
 
-  pic = undefined
-  exp =
-
+  module =
     Cell: Backbone.View.extend
 
-      # Removes 
+      # Removes anything that might leak memory
       dispose: ->
         delete cidToCell[@cid]
         @model?.off null, null, @
@@ -43,36 +31,40 @@ define (require)->
 
       setElement: (element, delegate)->
         Backbone.View::setElement.call @, element, delegate
+
+        # Track the cell instance by cid
         cidToCell[@cid] = this
-        @el.setAttribute 'cell', @name
+        @el.setAttribute 'cell', @_cellName
+
+        # Used jQuery.cleanData() to retrieve the cell instance
+        # associated with a DOM Element
         @el.setAttribute 'cell_cid', @cid
         @
 
       render: ->
-        @render_el and @el.innerHTML = @render_el()
-        @after_render?()
+        @el.innerHTML = @renderEl()
+        @afterRender()
         @
+
+      renderEl: $.noop
+      afterRender: $.noop
 
     pluginBuilder: 'cell-builder-plugin'
 
     load: (name, req, load, config)->
-      req [name], (def)->
-        throw "Couldn't load #{name} cell" unless def is Object(def)
-        pic or= (exp.__preinstalledCells__ or= {})
-        unless pic[name]
-          pic[name] = true
-          el = document.createElement 'link'
-          el.href = req.toUrl "#{name}.css"
-          el.rel = 'stylesheet'
-          el.type = 'text/css'
-          $('head').append el
+      # Attach te associated CSS file for cell
+      unless (module._installed or= {})[name]
+        module._installed[name] = true
+        el = document.createElement 'link'
+        el.href = req.toUrl "#{name}.css"
+        el.rel = 'stylesheet'
+        el.type = 'text/css'
+        document.head.appendChild el
 
-        def.className = def.name = /(.*\/)?(.*)$/.exec(name)[2]
+      name = /(.*\/)?(.*)$/.exec(name)[2]
+      load (proto,statics)->
+        proto or= {}
+        proto.className = proto._cellName = name
+        module.Cell.extend proto, statics
 
-        # Normalize render_el and after_render
-        def.render_el or= $.noop
-        def.after_render or= $.noop
-
-        load exp.Cell.extend def
-        return
       return

@@ -3,7 +3,7 @@ define ->
   ({beforeEachRequire})->
 
     beforeEachRequire [
-      'cell!fixtures/TestCell1'
+      'fixtures/TestCell1'
     ], (@TestCell1)->
       @testCell1 = new @TestCell1
 

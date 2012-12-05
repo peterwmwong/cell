@@ -110,10 +110,8 @@ define(['cell', 'underscore', 'backbone'], function(_arg, _, Backbone) {
   };
   Cell.prototype.__ = __;
   Cell.prototype.render = function() {
-    this.render_el && _renderNodes(this.el, [this.render_el(__, __.bindTo)]);
-    if (typeof this.after_render === "function") {
-      this.after_render();
-    }
+    _renderNodes(this.el, [this.renderEl(__, __.bindTo)]);
+    this.afterRender();
     return this;
   };
   return __;

@@ -1,4 +1,5 @@
-define
-  render_el: -> [
-  	"MockNested"
-  ]
+define (require)->
+  require('cell!')
+    renderEl: -> [
+    	"MockNested"
+    ]

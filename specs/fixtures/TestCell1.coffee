@@ -1,2 +1,3 @@
-define ->
-  render_el: -> "TestCell1 Contents"
+define (require)->
+  require('cell!')
+    renderEl: -> "TestCell1 Contents"

@@ -4,7 +4,7 @@ define(function() {
   return function(_arg) {
     var beforeEachRequire;
     beforeEachRequire = _arg.beforeEachRequire;
-    beforeEachRequire(['cell!fixtures/TestCell1', 'cell', 'backbone'], function(TestCell1, cell, Backbone) {
+    beforeEachRequire(['fixtures/TestCell1', 'cell', 'backbone'], function(TestCell1, cell, Backbone) {
       this.TestCell1 = TestCell1;
       this.cell = cell;
       this.Backbone = Backbone;

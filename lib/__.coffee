@@ -119,7 +119,7 @@ define [
 
   Cell::__ = __
   Cell::render = ->
-    @render_el and _renderNodes @el, [@render_el(__,__.bindTo)]
-    @after_render?()
+    _renderNodes @el, [@renderEl(__,__.bindTo)]
+    @afterRender()
     @
   __

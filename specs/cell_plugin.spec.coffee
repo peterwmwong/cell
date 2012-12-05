@@ -1,7 +1,7 @@
 define -> ({beforeEachRequire})->
 
   beforeEachRequire [
-    'cell!fixtures/TestCell1'
+    'fixtures/TestCell1'
     'cell'
     'backbone'
   ], (@TestCell1,@cell,@Backbone)->

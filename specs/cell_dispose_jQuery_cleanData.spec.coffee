@@ -3,7 +3,7 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
   ({beforeEachRequire})->
 
     beforeEachRequire [
-      'cell!fixtures/remove/Root'
+      'fixtures/remove/Root'
       'cell'
       'backbone'
     ], (@Root, @cell, @Backbone)->

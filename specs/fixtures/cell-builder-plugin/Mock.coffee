@@ -1,5 +1,8 @@
-define ['cell!./dir/MockNested','__'], (MockNested,__)->
-  render_el: -> [
-    "Mock: "
-    __ MockNested
-  ]
+define (require)->
+  MockNested = require 'dir/MockNested'
+
+  require('cell!')
+    renderEl: (__)-> [
+      "Mock: "
+      __ MockNested
+    ]
