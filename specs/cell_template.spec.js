@@ -21,187 +21,78 @@ define(['./spec-utils'], function(_arg) {
         return nodeHTMLEquals(this.result[0], '<p class="myclass myclass2" id="myid"></p>');
       });
     });
-    describe('__.bindTo(backbone_model, attrs, transform)', function() {
-      describe('when passed as an attribute value', function() {
-        describe("when attrs is an Array (multiple attribute names)", function() {
-          beforeEachRequire(['__'], function(__) {
-            this.model = new Backbone.Model().set({
-              attr1: 'initial value1',
-              attr2: 'initial value2'
-            });
-            return this.node = __('.bound', {
-              'data-custom': __.bindTo(this.model, ['attr1', 'attr2'], function(attr1, attr2, model) {
-                return "attr1: " + attr1 + ", attr2: " + attr2;
-              })
-            });
-          });
-          it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
-            return expect(this.node.getAttribute('data-custom')).toBe("attr1: initial value1, attr2: initial value2");
-          });
-          return describe("backbone_model either attribute changes", function() {
-            beforeEach(function() {
-              return this.model.set({
-                attr1: 'new1',
-                attr2: 'new2'
-              });
-            });
-            return it("automatically sets value of the backbone_model's attribute (attrs) to the element's attribute", function() {
-              return expect(this.node.getAttribute('data-custom')).toBe("attr1: new1, attr2: new2");
-            });
+    describe('Reference integration', function() {
+      beforeEachRequire(['__', 'ref'], function(__, ref) {
+        this.__ = __;
+        this.model = new Backbone.Model().set({
+          a: 'a val',
+          b: 'b val',
+          c: 'c val'
+        });
+        this.ref_a = this.model.ref('a');
+        this.ref_b = this.model.ref('b');
+        return this.ref_a_b = this.ref_a.combine(this.ref_b);
+      });
+      describe('when a Reference is passed as an attribute value', function() {
+        beforeEach(function() {
+          return this.node = this.__('.bound', {
+            'data-custom': this.ref_a
           });
         });
-        return describe("when attrs is a string (one attribute's name)", function() {
-          describe("automatically transforms undefined into ''", function() {
-            beforeEachRequire(['__'], function(__) {
-              this.model = new Backbone.Model();
-              return this.node = __('.bound', {
-                'data-custom': __.bindTo(this.model, 'attr')
-              });
-            });
-            return it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
-              return expect(this.node.getAttribute('data-custom')).toBe("");
+        it("sets initial value of References's value to the element's attribute", function() {
+          return expect(this.node.getAttribute('data-custom')).toBe('a val');
+        });
+        return describe("when the Reference's value changes", function() {
+          beforeEach(function() {
+            return this.model.set({
+              a: 'a val 2'
             });
           });
-          describe("and transform is a function, automatically transforms undefined into ''", function() {
-            beforeEachRequire(['__'], function(__) {
-              this.model = new Backbone.Model();
-              return this.node = __('.bound', {
-                'data-custom': __.bindTo(this.model, 'attr', function() {})
-              });
+          return it("automatically sets value of the Reference to the element's attribute", function() {
+            var done,
+              _this = this;
+            done = false;
+            runs(function() {
+              return setTimeout((function() {
+                return done = true;
+              }), 10);
             });
-            return it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
-              return expect(this.node.getAttribute('data-custom')).toBe("");
+            waitsFor(function() {
+              return done;
             });
-          });
-          describe("and transform is undefined", function() {
-            beforeEachRequire(['__'], function(__) {
-              this.model = new Backbone.Model().set({
-                attr: 'initial value'
-              });
-              return this.node = __('.bound', {
-                'data-custom': __.bindTo(this.model, 'attr')
-              });
-            });
-            it("sets initial value of backbone_model's attribute (attrs) to the element's attribute", function() {
-              return expect(this.node.getAttribute('data-custom')).toBe("initial value");
-            });
-            return describe("backbone_model attribute (attrs) changes", function() {
-              beforeEach(function() {
-                return this.model.set('attr', 'new value');
-              });
-              return it("automatically sets value of the backbone_model's attribute (attrs) to the element's attribute", function() {
-                return expect(this.node.getAttribute('data-custom')).toBe("new value");
-              });
-            });
-          });
-          return describe("and transform is a function", function() {
-            beforeEachRequire(['__'], function(__) {
-              this.model = new Backbone.Model().set({
-                attr: 'initial value'
-              });
-              return this.node = __('.bound', {
-                'data-custom': __.bindTo(this.model, 'attr', function(attr, model) {
-                  return "attr: " + attr;
-                })
-              });
-            });
-            it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
-              return expect(this.node.getAttribute('data-custom')).toBe("attr: initial value");
-            });
-            return describe("backbone_model attribute (attrs) changes", function() {
-              beforeEach(function() {
-                return this.model.set('attr', 'new value');
-              });
-              return it("automatically sets value of the backbone_model's attribute (attrs) to innerHTML", function() {
-                return expect(this.node.getAttribute('data-custom')).toBe("attr: new value");
-              });
+            return runs(function() {
+              return expect(_this.node.getAttribute('data-custom')).toBe("a val 2");
             });
           });
         });
       });
-      return describe('when passed as a Child for __()', function() {
-        describe("when attrs is an Array (multiple attribute names)", function() {
-          beforeEachRequire(['__'], function(__) {
-            this.model = new Backbone.Model().set({
-              attr1: 'initial value1',
-              attr2: 'initial value2'
-            });
-            return this.node = __('.bound', __.bindTo(this.model, ['attr1', 'attr2'], function(attr1, attr2, model) {
-              return "attr1: " + attr1 + ", attr2: " + attr2;
-            }));
-          });
-          it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
-            return expect(this.node.innerHTML).toBe("attr1: initial value1, attr2: initial value2");
-          });
-          return describe("backbone_model either attribute changes", function() {
-            beforeEach(function() {
-              return this.model.set({
-                attr1: 'new1',
-                attr2: 'new2'
-              });
-            });
-            return it("automatically sets value of the backbone_model's attribute (attrs) to innerHTML", function() {
-              return expect(this.node.innerHTML).toBe("attr1: new1, attr2: new2");
-            });
-          });
+      return describe('when a Reference is passed as a child', function() {
+        beforeEach(function() {
+          return this.node = this.__('.bound', this.ref_a);
         });
-        return describe("when attrs is a string (one attribute's name)", function() {
-          describe("automatically transforms undefined into ''", function() {
-            beforeEachRequire(['__'], function(__) {
-              this.model = new Backbone.Model();
-              return this.node = __('.bound', __.bindTo(this.model, 'attr'));
-            });
-            return it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
-              return expect(this.node.innerHTML).toBe("");
-            });
-          });
-          describe("and transform is a function, automatically transforms undefined into ''", function() {
-            beforeEachRequire(['__'], function(__) {
-              this.model = new Backbone.Model();
-              return this.node = __('.bound', __.bindTo(this.model, 'attr', function() {}));
-            });
-            return it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
-              return expect(this.node.innerHTML).toBe("");
+        it("sets initial value of References's value to the element's attribute", function() {
+          return expect(this.node.innerHTML).toBe('a val');
+        });
+        return describe("when the Reference's value changes", function() {
+          beforeEach(function() {
+            return this.model.set({
+              a: 'a val 2'
             });
           });
-          describe("and transform is undefined", function() {
-            beforeEachRequire(['__'], function(__) {
-              this.model = new Backbone.Model().set({
-                attr: 'initial value'
-              });
-              return this.node = __('.bound', __.bindTo(this.model, 'attr'));
+          return it("automatically sets value of the Reference to the element's attribute", function() {
+            var done,
+              _this = this;
+            done = false;
+            runs(function() {
+              return setTimeout((function() {
+                return done = true;
+              }), 10);
             });
-            it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
-              return expect(this.node.innerHTML).toBe("initial value");
+            waitsFor(function() {
+              return done;
             });
-            return describe("backbone_model attribute (attrs) changes", function() {
-              beforeEach(function() {
-                return this.model.set('attr', 'new value');
-              });
-              return it("automatically sets value of the backbone_model's attribute (attrs) to innerHTML", function() {
-                return expect(this.node.innerHTML).toBe("new value");
-              });
-            });
-          });
-          return describe("and transform is a function", function() {
-            beforeEachRequire(['__'], function(__) {
-              this.model = new Backbone.Model().set({
-                attr: 'initial value'
-              });
-              return this.node = __('.bound', __.bindTo(this.model, 'attr', function(attr, model) {
-                return "attr: " + attr;
-              }));
-            });
-            it("sets initial value of backbone_model's attribute (attrs) to innerHTML", function() {
-              return expect(this.node.innerHTML).toBe("attr: initial value");
-            });
-            return describe("backbone_model attribute (attrs) changes", function() {
-              beforeEach(function() {
-                return this.model.set('attr', 'new value');
-              });
-              return it("automatically sets value of the backbone_model's attribute (attrs) to innerHTML", function() {
-                return expect(this.node.innerHTML).toBe("attr: new value");
-              });
+            return runs(function() {
+              return expect(_this.node.innerHTML).toBe("a val 2");
             });
           });
         });
@@ -223,7 +114,7 @@ define(['./spec-utils'], function(_arg) {
         return expect(this.cdef.renderEl).toHaveBeenCalledWith(this.__, this.__.bindTo);
       });
     });
-    return describe('__( viewOrSelector:[Backbone.View, String], options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', function() {
+    return describe('__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', function() {
       var empty, invalid, it_renders, it_renders_views, _fn, _fn1, _i, _j, _len, _len1, _ref, _ref1;
       beforeEachRequire(["fixtures/TestCell1", '__'], function(TestCell1, __) {
         this.TestCell1 = TestCell1;
@@ -290,6 +181,7 @@ define(['./spec-utils'], function(_arg) {
       it_renders('selector:String, child:Number', ['p#myid.myclass.myclass2', 777], '<p class="myclass myclass2" id="myid">777</p>');
       it_renders('selector:String, child:Number(0)', ['p#myid.myclass.myclass2', 0], '<p class="myclass myclass2" id="myid">0</p>');
       it_renders('selector:String, child:DOMNode', ['p#myid.myclass.myclass2', node('span')], '<p class="myclass myclass2" id="myid"><span></span></p>');
+      it_renders('selector:String, child:jQuery', ['p#myid.myclass.myclass2', $('<span></span>')], '<p class="myclass myclass2" id="myid"><span></span></p>');
       it_renders('selector:String, child:jQuery', ['p#myid.myclass.myclass2', $('<span></span>')], '<p class="myclass myclass2" id="myid"><span></span></p>');
       (function() {
         var mock_date;

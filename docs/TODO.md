@@ -1,8 +1,6 @@
 TODO
 ====
 
-Finish css! plugin
-
 Finish http://jsperf.com/cell-dispose
 
 Revisit __.bind API and implementation

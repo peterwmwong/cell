@@ -2,4 +2,4 @@
 
 npm install
 mkdir -p build/
-node_modules/.bin/coffee --watch -o build/ -b -c lib/__.coffee lib/cell.coffee lib/cell-builder-plugin.coffee
+node_modules/.bin/coffee --watch -o build/ -b -c lib/

@@ -6,7 +6,7 @@ define ->
     # Load Spec
     req [name], (Spec)-> load ->
 
-      describe /.*\/specs\/(css|cell|jquery)_(.*).spec$/.exec(name)[2], ->
+      describe /.*\/specs\/(backbone|cell|jquery)_(.*).spec$/.exec(name)[2], ->
         specRequire = null
         ctx = undefined
 
@@ -22,6 +22,7 @@ define ->
                 paths:
                   cell: '../build/cell'
                   __: '../build/__'
+                  ref: '../build/ref'
                   jquery: '../support/jquery'
                   underscore: '../node_modules/underscore/underscore'
                   backbone: '../support/backbone.master'

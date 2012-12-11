@@ -6,6 +6,7 @@ require.config({
     css: '../../../build/css',
     cssPluginBuilder: '../../../build/cssPluginBuilder',
     __: '../../../build/__',
+    ref: '../../../build/ref',
     jquery: '../../../support/jquery',
     underscore: '../../../node_modules/underscore/underscore',
     backbone: '../../../node_modules/backbone/backbone'
