@@ -14216,7 +14216,7 @@ define('ref',['require','underscore','backbone'],function(require) {
     }), 0);
     this.onChangeAndDo = function(handler, context) {
       this.on('change', handler, context);
-      return handler.call(context, this, this.value());
+      handler.call(context, this, this.value());
     };
     this.value = function() {
       return this.transform.call(this.context, this.model.attributes[this.attrs[0]]);
@@ -14278,10 +14278,10 @@ define('__',['cell', 'jquery', 'underscore', 'backbone', 'ref'], function(_arg, 
     return o && o.constructor === Object;
   };
   _onReferenceChangeChild = function(ref, val) {
-    return this.html(val);
+    this.html(val);
   };
   _onReferenceChangeAttr = function(ref, val) {
-    return this.node.setAttribute(this.attr, val);
+    this.node.setAttribute(this.attr, val);
   };
   _renderNodes = function(parent, nodes) {
     var $parent, c;
