@@ -153,8 +153,12 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
           '<p class="myclass myclass2" id="myid">'+mock_date.toString()+'</p>'
 
       it_renders 'selector:String, children:String[]',
-        ['p#myid.myclass.myclass2', ['one','two']]
-        '<p class="myclass myclass2" id="myid">onetwo</p>'
+        ['p#myid.myclass.myclass2', ['one','two','three']]
+        '<p class="myclass myclass2" id="myid">onetwothree</p>'
+
+      it_renders 'selector:String, children:String...',
+        ['p#myid.myclass.myclass2', 'one', 'two', 'three']
+        '<p class="myclass myclass2" id="myid">onetwothree</p>'
 
       it_renders 'selector:String, children...:[DOM Nodes, String, Number, Array, jQuery]',
         [ 'p#myid.myclass.myclass2', [

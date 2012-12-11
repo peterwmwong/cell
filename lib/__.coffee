@@ -61,7 +61,7 @@ define [
       if _isObj optionsOrFirstChild
         optionsOrFirstChild
       else
-        children.push optionsOrFirstChild
+        children.unshift optionsOrFirstChild
         undefined
 
     parent =

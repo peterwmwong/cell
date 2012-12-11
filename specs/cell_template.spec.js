@@ -188,7 +188,8 @@ define(['./spec-utils'], function(_arg) {
         mock_date = new Date();
         return it_renders('selector:String, child:Date', ['p#myid.myclass.myclass2', mock_date], '<p class="myclass myclass2" id="myid">' + mock_date.toString() + '</p>');
       })();
-      it_renders('selector:String, children:String[]', ['p#myid.myclass.myclass2', ['one', 'two']], '<p class="myclass myclass2" id="myid">onetwo</p>');
+      it_renders('selector:String, children:String[]', ['p#myid.myclass.myclass2', ['one', 'two', 'three']], '<p class="myclass myclass2" id="myid">onetwothree</p>');
+      it_renders('selector:String, children:String...', ['p#myid.myclass.myclass2', 'one', 'two', 'three'], '<p class="myclass myclass2" id="myid">onetwothree</p>');
       it_renders('selector:String, children...:[DOM Nodes, String, Number, Array, jQuery]', ['p#myid.myclass.myclass2', [node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('a'), $('<span class="result"></span><span class="jQueryObjDeux"></span>')]], '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<a></a><span class="result"></span><span class="jQueryObjDeux"></span></p>');
       it_renders('selector:String, children...:[undefined, null]', ['p#myid.myclass.myclass2', [void 0, null]], '<p class="myclass myclass2" id="myid"></p>');
       it_renders("selector:String, attrHash:Object", [

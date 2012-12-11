@@ -14318,7 +14318,7 @@ define('__',['cell', 'jquery', 'underscore', 'backbone', 'ref'], function(_arg, 
     if (!viewOrHAML) {
       return;
     }
-    options = _isObj(optionsOrFirstChild) ? optionsOrFirstChild : (children.push(optionsOrFirstChild), void 0);
+    options = _isObj(optionsOrFirstChild) ? optionsOrFirstChild : (children.unshift(optionsOrFirstChild), void 0);
     parent = typeof viewOrHAML === 'string' ? (haml = _parseHAML(viewOrHAML)) ? (el = document.createElement(haml.tag), haml.id ? el.setAttribute('id', haml.id) : void 0, haml.className ? el.className = haml.className : void 0, _.each(options, function(v, k) {
       if (v instanceof Reference) {
         v.onChangeAndDo(_onReferenceChangeAttr, {
