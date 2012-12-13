@@ -14191,7 +14191,7 @@ define('ref',['require','underscore','backbone'],function(require) {
     }
     this.model.on("change:" + (this.attrs.join(' change:')), this._onChange, this);
     if (this.attrs.length > 1) {
-      this.value = new Function("return this.transform.call(" + "this.context," + ("this.model.attributes." + (this.attrs.join(', this.model.attributes.'))) + ")");
+      this.value = new Function("return this.transform" + (this.context ? '.call(this.context,' : '(') + ("this.model.attributes." + (this.attrs.join(', this.model.attributes.')) + ")"));
     }
     return this;
   };
@@ -14238,7 +14238,7 @@ define('ref',['require','underscore','backbone'],function(require) {
       ref.on('change', this._onChange, this);
     }, this);
     if (this.references.length > 1) {
-      this.value = new Function("return this.transform.call(" + "this.context," + ("this.references[" + (_.range(0, this.references.length).join('].value(), this.references[')) + "].value()") + ")");
+      this.value = new Function("return this.transform" + (this.context ? '.call(this.context,' : '(') + ("this.references[" + (_.range(0, this.references.length).join('].value(), this.references[')) + "].value())"));
     }
     return this;
   };

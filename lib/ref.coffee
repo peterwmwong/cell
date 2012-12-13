@@ -11,10 +11,9 @@ define (require)->
 
     # Optimize @value() for multi attribute cases
     if @attrs.length > 1
-      @value = new Function "return this.transform.call("+
-        "this.context,"+
-        "this.model.attributes.#{@attrs.join(', this.model.attributes.')}"+
-        ")"
+      @value = new Function "return this.transform"+
+        (if @context then '.call(this.context,' else '(')+
+        "this.model.attributes.#{@attrs.join(', this.model.attributes.')})"
     @
 
   ctor = ->
@@ -67,10 +66,9 @@ define (require)->
 
     # Optimize @value() for multi attribute cases
     if @references.length > 1
-      @value = new Function "return this.transform.call("+
-        "this.context,"+
-        "this.references[#{_.range(0,@references.length).join '].value(), this.references['}].value()"+
-        ")"
+      @value = new Function "return this.transform"+
+        (if @context then '.call(this.context,' else '(')+
+        "this.references[#{_.range(0,@references.length).join '].value(), this.references['}].value())"
     @
 
   ctor = ->
