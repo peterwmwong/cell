@@ -59,12 +59,13 @@ define(function(require) {
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               attr = _ref[_i];
-              if (attr.name !== 'cell_cid') {
+              if (attr.name !== 'cellcid') {
                 _results.push(attr);
               }
             }
             return _results;
           })();
+          debugger;
           list.sort(function(a, b) {
             if (a.name === b.name) {
               return 0;

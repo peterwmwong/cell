@@ -3,8 +3,8 @@
 define(function(require) {
   return require('cell!')({
     initialize: function() {
-      this.model.on('flash', this.onFlash, this);
-      return this.collection.on('flash', this.onFlash, this);
+      this.listenTo(this.model, 'flash', this.onFlash);
+      return this.listenTo(this.collection, 'flash', this.onFlash);
     },
     render_el: function() {
       return 'Child';

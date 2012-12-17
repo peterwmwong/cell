@@ -31,8 +31,9 @@ define (require)->
         # Stringify attributes
         if node.attributes.length > 0
 
-          # Omit the @cell_cid attribute as it is generated
-          list = (attr for attr in node.attributes when attr.name isnt 'cell_cid')
+          # Omit the @cellCid attribute as it is generated
+          list = (attr for attr in node.attributes when attr.name isnt 'cellcid')
+          debugger
 
           # Sort attributes as order is not guaranteed to be the
           # same on each browser

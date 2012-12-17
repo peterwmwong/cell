@@ -1,14 +1,15 @@
-resolve = require('path').resolve
-server = (connect = require 'connect')()
+{resolve} = require 'path'
+connect = require 'connect'
+http = require 'http'
 
 if process.argv.length != 3 then console.log "[dir]"
 else
-  path = resolve process.argv[2]
-
-  server.use use for use in [
+  root_path = resolve process.argv[2]
+  app = connect()
+  app.use(plugin) for plugin in [
     connect.favicon()
-    connect.static path, maxAge: 1, hidden: true
+    connect.compress()
+    connect.static root_path, maxAge: 1, hidden: true
   ]
-
-  server.listen 8080, ->
-  	console.log "'serving #{path} on #{server.address().port}"
+  http.createServer(app).listen port = 8080
+  console.log "serving #{root_path} on port #{port}"

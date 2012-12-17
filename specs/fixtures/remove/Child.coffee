@@ -2,8 +2,8 @@ define (require)->
 
   require('cell!')
     initialize: ->
-      @model.on 'flash', @onFlash, @
-      @collection.on 'flash', @onFlash, @
+      @listenTo @model, 'flash', @onFlash
+      @listenTo @collection, 'flash', @onFlash
 
     render_el: -> 'Child'
     

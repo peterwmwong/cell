@@ -4,7 +4,7 @@ define [
   'underscore'
   'backbone'
   'ref'
-], ({Cell}, $, _, Backbone, {Reference})->
+], (cell, $, _, Backbone, ref)->
 
   _isJQueryish =
     if typeof Zepto is 'function'
@@ -19,7 +19,7 @@ define [
     return
 
   _onReferenceChangeAttr = (ref,val)->
-    @node.setAttribute @attr, val
+    @[0].setAttribute @[1], val
     return
 
   _renderNodes = (parent,nodes)->
@@ -34,7 +34,7 @@ define [
       else if _.isArray c
         nodes = nodes.concat c
 
-      else if c instanceof Reference
+      else if c instanceof ref.Reference
         $parent or= $ parent
         c.onChangeAndDo _onReferenceChangeChild, $parent
 
@@ -54,8 +54,10 @@ define [
         else
           ''
 
-  __ = (viewOrHAML, optionsOrFirstChild, children...)->
+  __ = (viewOrHAML, optionsOrFirstChild)->
     return unless viewOrHAML
+
+    children = [].slice.call arguments, 2
 
     options =
       if _isObj optionsOrFirstChild
@@ -73,8 +75,8 @@ define [
           el.className = haml.className if haml.className
 
           _.each options, (v,k)->
-            if v instanceof Reference
-              v.onChangeAndDo _onReferenceChangeAttr, {node: el, attr: k}
+            if v instanceof ref.Reference
+              v.onChangeAndDo _onReferenceChangeAttr, [el,k]
             else
               el.setAttribute k, v
             return
@@ -87,11 +89,11 @@ define [
     throw "__(): unsupported argument #{viewOrHAML}" if not parent
     _renderNodes parent, children
 
-  __.$ = (args...)-> $ __ args...
+  __.$ = -> $ __.apply null, arguments
 
-  Cell::__ = __
-  Cell::render = ->
-    _renderNodes @el, [@renderEl(__,__.bindTo)]
+  cell.Cell::__ = __
+  cell.Cell::render = ->
+    _renderNodes @el, [@renderEl __]
     @afterRender()
     @
   __

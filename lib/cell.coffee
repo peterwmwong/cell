@@ -1,9 +1,10 @@
-define (require)->
-  Backbone = require 'backbone'
-  $ = require 'jquery'
-
+define [
+  'backbone'
+  'jquery'
+], (Backbone,$)->
+  
   # Maps cid to cell
-  cidToCell = {}
+  cidMap = {}
 
   # Override jQuery.cleanData()
   # This method is called whenever a DOM node is removed using $.fn.remove(),
@@ -11,21 +12,25 @@ define (require)->
   # @el, lookup the cell and call @dispose()
   origCleanData = $.cleanData
   $.cleanData = ( elems, acceptData )->
-    origCleanData elems, acceptData
-    i = 0
-    while (elem = elems[i++]) when (cid = elem.getAttribute 'cell_cid')
-      cidToCell[cid].dispose()
+    i=0
+    while elem = elems[i++]
+      origCleanData [elem], acceptData
+      if cid = elem.getAttribute 'cellcid'
+        cell = cidMap[cid]
+        cell.el = cell.$el = undefined
+        cell.remove()
     return
 
   module =
     Cell: Backbone.View.extend
 
       # Removes anything that might leak memory
-      dispose: ->
-        delete cidToCell[@cid]
-        @model?.off null, null, @
-        @collection?.off null, null, @
-        @undelegateEvents()
+      remove: ->
+        delete cidMap[@cid]
+        if @el
+          @el.removeAttribute 'cellcid'
+          @$el.remove()
+        @stopListening()
         @model = @collection = @el = @$el = @$ = undefined
         return
 
@@ -33,12 +38,12 @@ define (require)->
         Backbone.View::setElement.call @, element, delegate
 
         # Track the cell instance by cid
-        cidToCell[@cid] = this
+        cidMap[@cid] = this
         @el.setAttribute 'cell', @_cellName
 
         # Used jQuery.cleanData() to retrieve the cell instance
         # associated with a DOM Element
-        @el.setAttribute 'cell_cid', @cid
+        @el.setAttribute 'cellcid', @cid
         @
 
       render: ->
@@ -56,7 +61,7 @@ define (require)->
       unless (module._installed or= {})[name]
         module._installed[name] = true
         el = document.createElement 'link'
-        el.href = req.toUrl "#{name}.css"
+        el.href = req.toUrl name+".css"
         el.rel = 'stylesheet'
         el.type = 'text/css'
         document.head.appendChild el

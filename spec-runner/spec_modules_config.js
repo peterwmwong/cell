@@ -7,8 +7,8 @@ require.config({
     'cell': '../build/cell',
     '__': '../build/__',
     jquery: '../support/jquery',
-    underscore: '../node_modules/underscore/underscore',
-    backbone: '../support/backbone.master'
+    underscore: '../support/lodash.custom',
+    backbone: '../node_modules/backbone/backbone'
   },
   shim: {
     'underscore': {

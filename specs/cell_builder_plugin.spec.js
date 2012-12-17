@@ -38,7 +38,7 @@ define(function() {
         return $('#spec-fixture').empty();
       });
       it("Should render Mock and MockNested Cells", function() {
-        return expect(this.$f('body').html().trim()).toMatch(/<div class="Mock" cell="Mock" cell_cid="\w+">Mock: <div class="MockNested" cell="MockNested" cell_cid="\w+">MockNested<\/div><\/div>/);
+        return expect(this.$f('body').html().trim()).toMatch(/<div class="Mock" cell="Mock" cellcid="\w+">Mock: <div class="MockNested" cell="MockNested" cellcid="\w+">MockNested<\/div><\/div>/);
       });
       it("Should apply Mock css from all.css", function() {
         return expect(this.$f('.Mock').css('color')).toBe('rgb(0, 0, 255)');

@@ -5,8 +5,8 @@ define(function(require) {
   Child = require('./Child');
   return require('cell!')({
     initialize: function() {
-      this.model.on('flash', this.onFlash, this);
-      this.collection.on('flash', this.onFlash, this);
+      this.listenTo(this.model, 'flash', this.onFlash);
+      this.listenTo(this.collection, 'flash', this.onFlash);
       return this.child = new Child({
         model: this.model,
         collection: this.collection

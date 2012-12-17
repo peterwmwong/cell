@@ -1,7 +1,7 @@
 ({
   mainConfigFile: 'config.js',
   include: [
-    'requireLib',
+    'requireLib'
   ],
   optimize: "none",
   out: 'all.js'

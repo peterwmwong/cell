@@ -39,8 +39,12 @@ build/require.js: deps
 #-------------------------------------------------------------------
 # Dependencies 
 #------------------------------------------------------------------- 
-deps:
+deps: 
 	npm install
+
+lodash:
+	node_modules/.bin/lodash backbone plus=isElement,isArray,debounce,range -o support/lodash.custom.js
+	rm ./lodash.*js
 
 #-------------------------------------------------------------------
 # TEST
@@ -50,6 +54,7 @@ deps:
 # 	- Tests cell can be properly used by requirejs optimizer build script
 spec-cell-builder-plugin: build/cell.js build/cell-builder-plugin.js
 	node_modules/.bin/r.js -o specs/fixtures/cell-builder-plugin/build.js
+	cat specs/fixtures/cell-builder-plugin/config.js >> specs/fixtures/cell-builder-plugin/all.js
 
 define MAKE_ALL_TESTS_COFFEE
 specs = process.argv[4..].map (e)-> "spec!#{/(.*?\.spec)\.js/.exec(e)[1]}"

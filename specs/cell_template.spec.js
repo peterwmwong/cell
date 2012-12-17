@@ -110,8 +110,8 @@ define(['./spec-utils'], function(_arg) {
         C = Cell.extend(this.cdef);
         return new C().render();
       });
-      return it('calls Cell.renderEl(__,__.bindTo)', function() {
-        return expect(this.cdef.renderEl).toHaveBeenCalledWith(this.__, this.__.bindTo);
+      return it('calls Cell.renderEl(__)', function() {
+        return expect(this.cdef.renderEl).toHaveBeenCalledWith(this.__);
       });
     });
     return describe('__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', function() {

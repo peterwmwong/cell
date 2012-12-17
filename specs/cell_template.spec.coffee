@@ -78,8 +78,8 @@ define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
         C = Cell.extend(@cdef)
         new C().render()
           
-      it 'calls Cell.renderEl(__,__.bindTo)', ->
-        expect(@cdef.renderEl).toHaveBeenCalledWith(@__, @__.bindTo)
+      it 'calls Cell.renderEl(__)', ->
+        expect(@cdef.renderEl).toHaveBeenCalledWith @__
 
     describe '__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', ->
 

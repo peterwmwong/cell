@@ -3,10 +3,10 @@ TODO
 
 Finish http://jsperf.com/cell-dispose
 
-Update to Backbone 1.0.0 changes
+* Update to Backbone 1.0.0 changes
   - no dispose()
 
-Update dependencies
+* Update dependencies
   - coffee-script
 
 Assess arguments to __ render function

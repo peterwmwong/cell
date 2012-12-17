@@ -1,6 +1,7 @@
-define (require)->
-  _ = require 'underscore'
-  Backbone = require 'backbone'
+define [
+  'underscore'
+  'backbone'
+], ( _, Backbone )->
 
   Reference = (@model, @attrs, transform, @context)->
     # Only overwrite default transform if supplied

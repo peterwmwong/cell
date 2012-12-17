@@ -24,8 +24,8 @@ define ->
                   __: '../build/__'
                   ref: '../build/ref'
                   jquery: '../support/jquery'
-                  underscore: '../node_modules/underscore/underscore'
-                  backbone: '../support/backbone.master'
+                  underscore: '../support/lodash.custom'
+                  backbone: '../node_modules/backbone/backbone'
                 shim:
                   underscore:
                     deps: ["jquery"]

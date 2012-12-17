@@ -9,6 +9,6 @@ define ->
 
     describe '@initialize()', ->
 
-      it "sets cell's element with 'cell' and 'cell_cid' attributes", ->
+      it "sets cell's element with 'cell' and 'cellCid' attributes", ->
         expect(@testCell1.el.getAttribute 'cell').toBe 'TestCell1'
-        expect(@testCell1.el.getAttribute 'cell_cid').toBe @testCell1.cid
+        expect(@testCell1.el.getAttribute 'cellcid').toBe @testCell1.cid

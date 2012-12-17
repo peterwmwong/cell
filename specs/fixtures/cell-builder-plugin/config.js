@@ -8,7 +8,7 @@ require.config({
     __: '../../../build/__',
     ref: '../../../build/ref',
     jquery: '../../../support/jquery',
-    underscore: '../../../node_modules/underscore/underscore',
+    underscore: '../../../support/lodash.custom',
     backbone: '../../../node_modules/backbone/backbone'
   },
   shim: {
@@ -22,7 +22,6 @@ require.config({
     }
   },
   deps: [
-    '__',
     'App'
   ]
 })

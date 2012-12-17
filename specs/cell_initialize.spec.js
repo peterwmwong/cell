@@ -9,9 +9,9 @@ define(function() {
       return this.testCell1 = new this.TestCell1;
     });
     return describe('@initialize()', function() {
-      return it("sets cell's element with 'cell' and 'cell_cid' attributes", function() {
+      return it("sets cell's element with 'cell' and 'cellCid' attributes", function() {
         expect(this.testCell1.el.getAttribute('cell')).toBe('TestCell1');
-        return expect(this.testCell1.el.getAttribute('cell_cid')).toBe(this.testCell1.cid);
+        return expect(this.testCell1.el.getAttribute('cellcid')).toBe(this.testCell1.cid);
       });
     });
   };
