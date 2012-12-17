@@ -17,7 +17,7 @@ define [
       origCleanData [elem], acceptData
       if cid = elem.getAttribute 'cellcid'
         cell = cidMap[cid]
-        cell.el = cell.$el = undefined
+        cell.$el = undefined
         cell.remove()
     return
 
@@ -27,15 +27,15 @@ define [
       # Removes anything that might leak memory
       remove: ->
         delete cidMap[@cid]
-        if @el
-          @el.removeAttribute 'cellcid'
-          @$el.remove()
+        @el.removeAttribute 'cellcid'
+        @$el.remove() if @$el
         @stopListening()
         @model = @collection = @el = @$el = @$ = undefined
         return
 
+      _setElement: Backbone.View::setElement
       setElement: (element, delegate)->
-        Backbone.View::setElement.call @, element, delegate
+        @_setElement element, delegate
 
         # Track the cell instance by cid
         cidMap[@cid] = this

@@ -48,7 +48,7 @@ define(['cell', 'jquery', 'underscore', 'backbone', 'ref'], function(cell, $, _,
     if (!viewOrHAML) {
       return;
     }
-    children = [].slice.call(arguments, 2);
+    children = arguments.length === 0 ? [] : [].slice.call(arguments, 2);
     options = _isObj(optionsOrFirstChild) ? optionsOrFirstChild : (children.unshift(optionsOrFirstChild), void 0);
     parent = typeof viewOrHAML === 'string' ? (haml = _parseHAML(viewOrHAML)) ? (el = document.createElement(haml.tag), haml.id ? el.setAttribute('id', haml.id) : void 0, haml.className ? el.className = haml.className : void 0, _.each(options, function(v, k) {
       if (v instanceof ref.Reference) {

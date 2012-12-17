@@ -57,7 +57,9 @@ define [
   __ = (viewOrHAML, optionsOrFirstChild)->
     return unless viewOrHAML
 
-    children = [].slice.call arguments, 2
+    children =
+      if arguments.length is 0 then []
+      else [].slice.call arguments, 2
 
     options =
       if _isObj optionsOrFirstChild

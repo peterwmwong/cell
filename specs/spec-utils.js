@@ -5,21 +5,13 @@ define(function(require) {
   _ = require('underscore');
   return exports = {
     stringify: function(obj, excludeArrayBrackets) {
-      var el, k, str, v;
+      var k, str, v;
       if (obj === void 0) {
         return "undefined";
       } else if (obj === null) {
         return "null";
       } else if ((obj.jquery != null) || _.isArray(obj)) {
-        str = ((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = obj.length; _i < _len; _i++) {
-            el = obj[_i];
-            _results.push(exports.stringify(el));
-          }
-          return _results;
-        })()).join(', ');
+        str = _.map(obj, exports.stringify).join(', ');
         if (excludeArrayBrackets) {
           return str;
         } else {
@@ -49,23 +41,15 @@ define(function(require) {
       return expect(nodeToHTML(node)).toBe(expectedHTML);
     },
     nodeToHTML: nodeToHTML = function(node) {
-      var attr, child, html, list, name, value, _i, _j, _len, _len1, _ref, _ref1;
+      var html, list;
       if (node.tagName) {
         html = "<" + (node.tagName.toLowerCase());
         if (node.attributes.length > 0) {
-          list = (function() {
-            var _i, _len, _ref, _results;
-            _ref = node.attributes;
-            _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              attr = _ref[_i];
-              if (attr.name !== 'cellcid') {
-                _results.push(attr);
-              }
-            }
-            return _results;
-          })();
-          debugger;
+          list = _.filter(node.attributes, function(_arg) {
+            var name;
+            name = _arg.name;
+            return name !== 'cellcid';
+          });
           list.sort(function(a, b) {
             if (a.name === b.name) {
               return 0;
@@ -75,17 +59,14 @@ define(function(require) {
               return 1;
             }
           });
-          for (_i = 0, _len = list.length; _i < _len; _i++) {
-            _ref = list[_i], name = _ref.name, value = _ref.value;
-            html += " " + name + "=\"" + value + "\"";
-          }
+          _.each(list, function(el) {
+            return html += " " + el.name + "=\"" + el.value + "\"";
+          });
         }
         html += ">";
-        _ref1 = $(node).contents();
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          child = _ref1[_j];
-          html += nodeToHTML(child);
-        }
+        _.each($(node).contents(), function(el) {
+          return html += nodeToHTML(el);
+        });
         return html += "</" + (node.tagName.toLowerCase()) + ">";
       } else {
         return $(node).text();

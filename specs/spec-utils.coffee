@@ -5,15 +5,23 @@ define (require)->
     stringify: (obj, excludeArrayBrackets)->
       if obj is undefined
         "undefined"
+
       else if obj is null
         "null"
+
       else if obj.jquery? or _.isArray obj
-        str = (exports.stringify el for el in obj).join ', '
-        if excludeArrayBrackets then str else "[#{str}]"
+        str = _.map(obj,exports.stringify).join ', '
+        if excludeArrayBrackets 
+          str
+        else
+          "[#{str}]"
+
       else if _.isElement obj
         "<#{obj.tagName.toLowerCase()}/>"
+
       else if _.isObject obj
         "{#{("#{k}:#{exports.stringify v}" for k,v of obj).join ','}}"
+        
       else
         JSON.stringify obj
 
@@ -32,8 +40,7 @@ define (require)->
         if node.attributes.length > 0
 
           # Omit the @cellCid attribute as it is generated
-          list = (attr for attr in node.attributes when attr.name isnt 'cellcid')
-          debugger
+          list = _.filter node.attributes, ({name})-> name isnt 'cellcid'
 
           # Sort attributes as order is not guaranteed to be the
           # same on each browser
@@ -42,14 +49,12 @@ define (require)->
             else if a.name < b.name then -1
             else 1
 
-          for {name,value} in list
-            html += " #{name}=\"#{value}\""
+          _.each list, (el)-> html += " #{el.name}=\"#{el.value}\""
 
         html += ">"
 
         # Recursively html-ize children
-        for child in $(node).contents()
-          html += nodeToHTML child
+        _.each $(node).contents(), (el)-> html += nodeToHTML el
           
         html += "</#{node.tagName.toLowerCase()}>"
 

@@ -11,7 +11,7 @@ define(['backbone', 'jquery'], function(Backbone, $) {
       origCleanData([elem], acceptData);
       if (cid = elem.getAttribute('cellcid')) {
         cell = cidMap[cid];
-        cell.el = cell.$el = void 0;
+        cell.$el = void 0;
         cell.remove();
       }
     }
@@ -20,15 +20,16 @@ define(['backbone', 'jquery'], function(Backbone, $) {
     Cell: Backbone.View.extend({
       remove: function() {
         delete cidMap[this.cid];
-        if (this.el) {
-          this.el.removeAttribute('cellcid');
+        this.el.removeAttribute('cellcid');
+        if (this.$el) {
           this.$el.remove();
         }
         this.stopListening();
         this.model = this.collection = this.el = this.$el = this.$ = void 0;
       },
+      _setElement: Backbone.View.prototype.setElement,
       setElement: function(element, delegate) {
-        Backbone.View.prototype.setElement.call(this, element, delegate);
+        this._setElement(element, delegate);
         cidMap[this.cid] = this;
         this.el.setAttribute('cell', this._cellName);
         this.el.setAttribute('cellcid', this.cid);
