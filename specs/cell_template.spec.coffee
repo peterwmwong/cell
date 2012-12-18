@@ -1,4 +1,4 @@
-define ['./spec-utils'], ({nodeHTMLEquals,stringify,node})->
+define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
   verify_is_jQueryish = (obj)->
     expect(Object.getPrototypeOf obj).toBe $.fn
 
