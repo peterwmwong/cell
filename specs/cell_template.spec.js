@@ -55,7 +55,7 @@ define(['./utils/spec-utils'], function(_arg) {
             runs(function() {
               return setTimeout((function() {
                 return done = true;
-              }), 10);
+              }), 0);
             });
             waitsFor(function() {
               return done;
@@ -66,35 +66,81 @@ define(['./utils/spec-utils'], function(_arg) {
           });
         });
       });
-      return describe('when a Reference is passed as a child', function() {
-        beforeEach(function() {
-          return this.node = this.__('.bound', this.ref_a);
-        });
-        it("sets initial value of References's value to the element's attribute", function() {
-          return expect(this.node.innerHTML).toBe('a val');
-        });
-        return describe("when the Reference's value changes", function() {
-          beforeEach(function() {
-            return this.model.set({
-              a: 'a val 2'
+      return describe("when a Reference is passed as a child", function() {
+        var describe_render_reference;
+        describe_render_reference = function(_arg2) {
+          var expected_child_html, expected_child_html_after, ref_value, ref_value_after, value_type;
+          value_type = _arg2.value_type, ref_value = _arg2.ref_value, ref_value_after = _arg2.ref_value_after, expected_child_html = _arg2.expected_child_html, expected_child_html_after = _arg2.expected_child_html_after;
+          return describe("When the Reference value is a " + value_type, function() {
+            beforeEach(function() {
+              this.model = new Backbone.Model().set({
+                a: ref_value
+              });
+              this.ref_a = this.model.ref('a');
+              return this.node = this.__('.parent', 'BEFORE', this.ref_a, 'AFTER');
+            });
+            it("child is rendered correctly", function() {
+              return nodeHTMLEquals(this.node, "<div class=\"parent\">BEFORE" + expected_child_html + "AFTER</div>");
+            });
+            return describe("when the Reference's value changes", function() {
+              beforeEach(function() {
+                return this.model.set({
+                  a: ref_value_after
+                });
+              });
+              return it("automatically rerenders child correctly", function() {
+                var done,
+                  _this = this;
+                done = false;
+                runs(function() {
+                  return setTimeout((function() {
+                    return done = true;
+                  }), 0);
+                });
+                waitsFor(function() {
+                  return done;
+                });
+                return runs(function() {
+                  return nodeHTMLEquals(_this.node, "<div class=\"parent\">BEFORE" + expected_child_html_after + "AFTER</div>");
+                });
+              });
             });
           });
-          return it("automatically sets value of the Reference to the element's attribute", function() {
-            var done,
-              _this = this;
-            done = false;
-            runs(function() {
-              return setTimeout((function() {
-                return done = true;
-              }), 10);
-            });
-            waitsFor(function() {
-              return done;
-            });
-            return runs(function() {
-              return expect(_this.node.innerHTML).toBe("a val 2");
-            });
-          });
+        };
+        describe_render_reference({
+          value_type: 'DOMNode',
+          ref_value: node('a'),
+          ref_value_after: node('b'),
+          expected_child_html: '<a></a>',
+          expected_child_html_after: '<b></b>'
+        });
+        describe_render_reference({
+          value_type: 'String',
+          ref_value: 'Hello World!',
+          ref_value_after: 'Goodbye!',
+          expected_child_html: 'Hello World!',
+          expected_child_html_after: 'Goodbye!'
+        });
+        describe_render_reference({
+          value_type: 'Number',
+          ref_value: 0,
+          ref_value_after: 1,
+          expected_child_html: '0',
+          expected_child_html_after: '1'
+        });
+        describe_render_reference({
+          value_type: 'jQuery',
+          ref_value: $('<div class="initial"></div>'),
+          ref_value_after: $('<div class="after"></div>'),
+          expected_child_html: '<div class="initial"></div>',
+          expected_child_html_after: '<div class="after"></div>'
+        });
+        return describe_render_reference({
+          value_type: 'Array',
+          ref_value: ['Hello World!', 0, $('<div class="initial"></div>')],
+          ref_value_after: ['Goodbye!', 1, $('<div class="after"></div>')],
+          expected_child_html: 'Hello World!0<div class="initial"></div>',
+          expected_child_html_after: 'Goodbye!1<div class="after"></div>'
         });
       });
     });

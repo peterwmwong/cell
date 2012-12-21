@@ -15,7 +15,7 @@ define [
     i=0
     while elem = elems[i++]
       origCleanData [elem], acceptData
-      if cid = elem.getAttribute 'cellcid'
+      if cid = elem.cellcid
         cell = cidMap[cid]
         cell.$el = undefined
         cell.remove()
@@ -27,7 +27,7 @@ define [
       # Removes anything that might leak memory
       remove: ->
         delete cidMap[@cid]
-        @el.removeAttribute 'cellcid'
+        @el.cellcid = undefined
         @$el.remove() if @$el
         @stopListening()
         @model = @collection = @el = @$el = @$ = undefined
@@ -43,7 +43,7 @@ define [
 
         # Used jQuery.cleanData() to retrieve the cell instance
         # associated with a DOM Element
-        @el.setAttribute 'cellcid', @cid
+        @el.cellcid = @cid
         @
 
       render: ->

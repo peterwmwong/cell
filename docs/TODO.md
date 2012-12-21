@@ -1,22 +1,21 @@
 TODO
 ====
 
+NEW: Bindings
+-------------
+
+- open ended expressions (see angularjs, dart:webui, ember.js)
+- localized to a view
+  - all model and collection events trigger a debounced updateBinds() (similar angularjs digest())
+
+NEW: View Model on `this`
+-------------------------
+
+NEW: ext (see angularjs directives)
+-----------------------------------
+
+
 Finish http://jsperf.com/cell-dispose
-
-* Update to Backbone 1.0.0 changes
-  - no dispose()
-
-* Update dependencies
-  - coffee-script
-
-Assess arguments to __ render function
-  Currently
-    __( selector:string, [attributes:object], [children...:DOM Elements] )
-    AND
-    __( [view:Backbone.View], [selector:string], [options:object] )
-
-  Should be...
-    __( selector:string, [view:Backbone.View], [attributes/options:object], [children...:DOM Elements])
 
 Add @collectionEvents, @modelEvents
 

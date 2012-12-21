@@ -45,30 +45,81 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
           it "automatically sets value of the Reference to the element's attribute", ->
             done = false
-            runs -> setTimeout (->done=true), 10
+            runs -> setTimeout (->done=true), 0
             waitsFor -> done
             runs =>
               expect(@node.getAttribute 'data-custom').toBe  "a val 2"
 
-      describe 'when a Reference is passed as a child', ->
+      describe "when a Reference is passed as a child", ->
 
-        beforeEach ->
-          @node = @__ '.bound', @ref_a
+        describe_render_reference = ({value_type, ref_value, ref_value_after, expected_child_html, expected_child_html_after})->
 
-        it "sets initial value of References's value to the element's attribute", ->
-          expect(@node.innerHTML).toBe 'a val'
+          describe "When the Reference value is a #{value_type}", ->
 
-        describe "when the Reference's value changes", ->
-          beforeEach ->
-            @model.set a: 'a val 2'
+            beforeEach ->
+              @model = new Backbone.Model().set a: ref_value
+              @ref_a = @model.ref 'a'
+              @node = @__ '.parent',
+                'BEFORE'
+                @ref_a
+                'AFTER'
 
-          it "automatically sets value of the Reference to the element's attribute", ->
-            done = false
-            runs -> setTimeout (->done=true), 10
-            waitsFor -> done
-            runs =>
-              expect(@node.innerHTML).toBe  "a val 2"
+            it "child is rendered correctly", ->
+              nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html}AFTER</div>"
 
+            describe "when the Reference's value changes", ->
+              beforeEach ->
+                @model.set a: ref_value_after
+
+              it "automatically rerenders child correctly", ->
+                done = false
+                runs -> setTimeout (->done=true), 0
+                waitsFor -> done
+                runs =>
+                  nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html_after}AFTER</div>"
+
+        describe_render_reference
+          value_type: 'DOMNode'
+          ref_value: node 'a'
+          ref_value_after: node 'b'
+          expected_child_html: '<a></a>'
+          expected_child_html_after: '<b></b>'
+
+        describe_render_reference
+          value_type: 'String'
+          ref_value: 'Hello World!'
+          ref_value_after: 'Goodbye!'
+          expected_child_html: 'Hello World!'
+          expected_child_html_after: 'Goodbye!'
+
+        describe_render_reference
+          value_type: 'Number'
+          ref_value: 0
+          ref_value_after: 1
+          expected_child_html: '0'
+          expected_child_html_after: '1'
+
+        describe_render_reference
+          value_type: 'jQuery'
+          ref_value: $('<div class="initial"></div>')
+          ref_value_after: $('<div class="after"></div>')
+          expected_child_html: '<div class="initial"></div>'
+          expected_child_html_after: '<div class="after"></div>'
+
+        describe_render_reference
+          value_type: 'Array'
+          ref_value: [
+            'Hello World!'
+            0
+            $('<div class="initial"></div>')
+          ]
+          ref_value_after: [
+            'Goodbye!'
+            1
+            $('<div class="after"></div>')
+          ]
+          expected_child_html: 'Hello World!0<div class="initial"></div>'
+          expected_child_html_after: 'Goodbye!1<div class="after"></div>'
 
     describe 'Cell.prototype.render is modified', ->
 

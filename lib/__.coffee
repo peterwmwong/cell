@@ -15,44 +15,46 @@ define [
   _isObj = (o)-> o and o.constructor is Object
 
   _onReferenceChangeChild = (ref,val)->
-    @html val
+    newNodes = _renderNodes [val]
+
+    # Is this on a 'change' (not initial)
+    if @prevNodes and @prevNodes.length > 0
+      target = @prevNodes[0]
+      parent = target.parentNode
+
+      # Insert new nodes in the appropriate place
+      _.each newNodes, (node)-> parent.insertBefore node, target
+
+      # Remove old nodes
+      $(@prevNodes).remove()
+
+    @prevNodes = newNodes
     return
 
   _onReferenceChangeAttr = (ref,val)->
     @[0].setAttribute @[1], val
     return
 
-  _renderNodes = (parent,nodes)->
-    $parent = undefined
-    while (c = nodes.pop())?
+  _renderNodes = (nodes)->
+    rendered = []
+    while (c = nodes.shift())?
       if _.isElement c
-        parent.insertBefore c, parent.firstChild
+        rendered.push c
 
       else if _isJQueryish c
-        c.appendTo parent
+        rendered = rendered.concat c.toArray()
 
       else if _.isArray c
-        nodes = nodes.concat c
+        nodes = c.concat nodes
 
       else if c instanceof ref.Reference
-        $parent or= $ parent
-        c.onChangeAndDo _onReferenceChangeChild, $parent
+        ctx = {}
+        c.onChangeAndDo _onReferenceChangeChild, ctx
+        rendered = rendered.concat ctx.prevNodes
 
       else
-        parent.insertBefore (document.createTextNode c), parent.firstChild
-
-    parent
-
-  # HAML-like selector, ex. div#myID.myClass
-  _parseHAML = (haml)->
-    if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec(haml)
-      tag: m[1] or 'div'
-      id:  m[3]
-      className:
-        if v = m[4]
-          v.slice(1).replace(/\./g, ' ')
-        else
-          ''
+        rendered.push document.createTextNode c
+    rendered
 
   __ = (viewOrHAML, optionsOrFirstChild)->
     return unless viewOrHAML
@@ -71,10 +73,17 @@ define [
     parent =
       # HAML
       if typeof viewOrHAML is 'string'
-        if haml = _parseHAML viewOrHAML
-          el = document.createElement haml.tag
-          el.setAttribute 'id', haml.id if haml.id
-          el.className = haml.className if haml.className
+        if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec(viewOrHAML)
+          # Tag
+          el = document.createElement m[1] or 'div'
+
+          # id
+          if m[3]
+            el.setAttribute 'id', m[3]
+
+          # class
+          if m[4]
+            el.className = m[4].slice(1).replace(/\./g, ' ')
 
           _.each options, (v,k)->
             if v instanceof ref.Reference
@@ -89,13 +98,14 @@ define [
         (new viewOrHAML options).render().el
 
     throw "__(): unsupported argument #{viewOrHAML}" if not parent
-    _renderNodes parent, children
+    _.each (_renderNodes children), parent.appendChild, parent
+    parent
 
   __.$ = -> $ __.apply null, arguments
 
   cell.Cell::__ = __
   cell.Cell::render = ->
-    _renderNodes @el, [@renderEl __]
+    _.each (_renderNodes [@renderEl @__]), @el.appendChild, @el
     @afterRender()
     @
   __

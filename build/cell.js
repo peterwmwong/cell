@@ -9,7 +9,7 @@ define(['backbone', 'jquery'], function(Backbone, $) {
     i = 0;
     while (elem = elems[i++]) {
       origCleanData([elem], acceptData);
-      if (cid = elem.getAttribute('cellcid')) {
+      if (cid = elem.cellcid) {
         cell = cidMap[cid];
         cell.$el = void 0;
         cell.remove();
@@ -20,7 +20,7 @@ define(['backbone', 'jquery'], function(Backbone, $) {
     Cell: Backbone.View.extend({
       remove: function() {
         delete cidMap[this.cid];
-        this.el.removeAttribute('cellcid');
+        this.el.cellcid = void 0;
         if (this.$el) {
           this.$el.remove();
         }
@@ -32,7 +32,7 @@ define(['backbone', 'jquery'], function(Backbone, $) {
         this._setElement(element, delegate);
         cidMap[this.cid] = this;
         this.el.setAttribute('cell', this._cellName);
-        this.el.setAttribute('cellcid', this.cid);
+        this.el.cellcid = this.cid;
         return this;
       },
       render: function() {
