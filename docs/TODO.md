@@ -1,36 +1,33 @@
 TODO
 ====
 
-NEW: Bindings
--------------
+NEW: bind() Bound expressions
+-----------------------------
 
 - open ended expressions (see angularjs, dart:webui, ember.js)
 - localized to a view
   - all model and collection events trigger a debounced updateBinds() (similar angularjs digest())
 
+NEW: exts (see angularjs directives)
+-----------------------------------
+
+Extend html DOM functionality
+
+
 NEW: View Model on `this`
 -------------------------
 
-NEW: ext (see angularjs directives)
------------------------------------
+
+PERF: cell.remove() and $.cleanData()
+-------------------------------------
+
+- Finish http://jsperf.com/cell-dispose
+
+NEW: @collectionEvents, @modelEvents
+-------------------------------------
 
 
-Finish http://jsperf.com/cell-dispose
+NEW: zepto compat
+-----------------
 
-Add @collectionEvents, @modelEvents
-
-Ponder over adding @ui
-  Pros: 
-    - declare ui element accessors (using jQuery selectors)
-    - easy/flexible access to ui elements
-  Cons: 
-    - repeating yourself in most cases
-    - extra overhead
-    - potentially out of sync unless their functions
-    - promoting bad practices? mayhaps
-
-move to camelCase
-  
-support for $.html()
-
-zepto support for html/empty/remove extension
+support for html/empty/remove (jQuery.cleanData())
