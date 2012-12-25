@@ -4,79 +4,52 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
   ({beforeEachRequire})->
 
-    describe '__.$()', ->
+    describe 'Bindings: Bound function expressions', ->
 
-      beforeEachRequire ['__'], (__)->
-        @result = __.$ 'p#myid.myclass.myclass2'
+      beforeEachRequire ['cell'], ({@Cell})->
+        @cell = new @Cell()
+        @cell.test = 'test val'
+        @__ = @cell.__
 
-      it 'returns a jQuery-ish object', ->
-        verify_is_jQueryish @result
-
-      it 'jQuery-ish object wraps whatever is returned from __', ->
-        nodeHTMLEquals @result[0], '<p class="myclass myclass2" id="myid"></p>'
-
-
-    describe 'Reference integration', ->
-
-      beforeEachRequire [
-        '__'
-        'ref'
-      ], (@__, ref)->
-        @model = new Backbone.Model().set
-          a: 'a val'
-          b: 'b val'
-          c: 'c val'
-
-        @ref_a = @model.ref 'a'
-        @ref_b = @model.ref 'b'
-        @ref_a_b = @ref_a.combine @ref_b
-
-      describe 'when a Reference is passed as an attribute value', ->
+      describe 'when the bind is passed as an attribute', ->
 
         beforeEach ->
-          @node = @__ '.bound', 'data-custom': @ref_a
+          @node = @__ '.bound', 'data-custom': -> @test
 
-        it "sets initial value of References's value to the element's attribute", ->
-          expect(@node.getAttribute 'data-custom').toBe 'a val'
+        it "sets initial value of bindings's value to the element's attribute", ->
+          expect(@node.getAttribute 'data-custom').toBe 'test val'
 
-        describe "when the Reference's value changes", ->
+        describe "when the bindings's value changes and @updateBinds() is called", ->
           beforeEach ->
-            @model.set a: 'a val 2'
+            @cell.test = 'test val2'
+            @cell.updateBinds()
 
-          it "automatically sets value of the Reference to the element's attribute", ->
-            done = false
-            runs -> setTimeout (->done=true), 0
-            waitsFor -> done
-            runs =>
-              expect(@node.getAttribute 'data-custom').toBe  "a val 2"
+          it "automatically sets value of the element's attribute to the new binding's value", ->
+            expect(@node.getAttribute 'data-custom').toBe 'test val2'
 
-      describe "when a Reference is passed as a child", ->
+      describe "when the bind is passed as a child", ->
 
         describe_render_reference = ({value_type, ref_value, ref_value_after, expected_child_html, expected_child_html_after})->
 
-          describe "When the Reference value is a #{value_type}", ->
+          describe "when the bindings's value is of type #{value_type}", ->
 
             beforeEach ->
-              @model = new Backbone.Model().set a: ref_value
-              @ref_a = @model.ref 'a'
+              @cell.test = ref_value
               @node = @__ '.parent',
                 'BEFORE'
-                @ref_a
+                -> @test
                 'AFTER'
 
             it "child is rendered correctly", ->
               nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html}AFTER</div>"
 
-            describe "when the Reference's value changes", ->
+            describe "when the bindings's value changes and @updateBinds() is called", ->
               beforeEach ->
-                @model.set a: ref_value_after
+                @cell.test = ref_value_after
+                @cell.updateBinds()
 
               it "automatically rerenders child correctly", ->
-                done = false
-                runs -> setTimeout (->done=true), 0
-                waitsFor -> done
-                runs =>
-                  nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html_after}AFTER</div>"
+                nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html_after}AFTER</div>"
 
         describe_render_reference
           value_type: 'DOMNode'
@@ -123,33 +96,23 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
     describe 'Cell.prototype.render is modified', ->
 
-      beforeEachRequire ['cell','__'], ({Cell},@__)->
-        @cdef = renderEl: (__,bindTo)->
-        spyOn(@cdef, 'renderEl').andCallThrough()
-        C = Cell.extend(@cdef)
-        new C().render()
+      beforeEachRequire ['cell'], ({Cell})->
+        C = Cell.extend renderEl: @renderEl = jasmine.createSpy 'renderEl'
+        c = new C()
+        @__ = c.__
+        c.render()
           
       it 'calls Cell.renderEl(__)', ->
-        expect(@cdef.renderEl).toHaveBeenCalledWith @__
+        expect(@renderEl).toHaveBeenCalledWith @__
 
     describe '__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', ->
 
       beforeEachRequire [
         "fixtures/TestCell1"
-        '__'
-      ], (@TestCell1,@__)->
+        'cell'
+      ], (@TestCell1,{Cell})->
+        @__ = new Cell().__
 
-      for invalid in [(->)] then do(invalid)->
-        invalid_str = "#{invalid is '' and '""' or invalid}"
-        describe "__( #{invalid_str} )", ->
-          it "__( #{invalid_str} ) === undefined", ->
-            expect(=> @__ invalid).toThrow()
-
-      for empty in ['',undefined,null] then do(empty)->
-        empty_str = "#{empty is '' and '""' or empty}"
-        describe "__( #{empty_str} )", ->
-          it "__( #{empty_str} ) === undefined", ->
-            expect(@__ empty).toBe undefined
 
       it_renders = (desc, input_args, expected_html_output, debug)->
         describe "__( #{desc} )", ->
@@ -164,6 +127,20 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
           it "__( Backbone.View, #{input_strings} ) === #{expected_html_output}", ->
             debugger if debug
             nodeHTMLEquals (@__ @TestCell1, input_args...), expected_html_output
+
+      describe "__( function )", ->
+        it "__( function ) === undefined", ->
+          expect(@__ ->).toBe undefined
+
+      for empty in [undefined,null] then do(empty)->
+        empty_str = "#{empty is '' and '""' or empty}"
+        describe "__( #{empty_str} )", ->
+          it "__( #{empty_str} ) === undefined", ->
+            expect(@__ empty).toBe undefined
+
+      it_renders 'empty string',
+        ['']
+        '<div></div>'
 
       it_renders 'selector:String(tag, id, multiple classes)',
         ['p#myid.myclass.myclass2']

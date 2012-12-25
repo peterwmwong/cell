@@ -10,99 +10,56 @@ define(['./utils/spec-utils'], function(_arg) {
   return function(_arg1) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
-    describe('__.$()', function() {
-      beforeEachRequire(['__'], function(__) {
-        return this.result = __.$('p#myid.myclass.myclass2');
+    describe('Bindings: Bound function expressions', function() {
+      beforeEachRequire(['cell'], function(_arg2) {
+        this.Cell = _arg2.Cell;
+        this.cell = new this.Cell();
+        this.cell.test = 'test val';
+        return this.__ = this.cell.__;
       });
-      it('returns a jQuery-ish object', function() {
-        return verify_is_jQueryish(this.result);
-      });
-      return it('jQuery-ish object wraps whatever is returned from __', function() {
-        return nodeHTMLEquals(this.result[0], '<p class="myclass myclass2" id="myid"></p>');
-      });
-    });
-    describe('Reference integration', function() {
-      beforeEachRequire(['__', 'ref'], function(__, ref) {
-        this.__ = __;
-        this.model = new Backbone.Model().set({
-          a: 'a val',
-          b: 'b val',
-          c: 'c val'
-        });
-        this.ref_a = this.model.ref('a');
-        this.ref_b = this.model.ref('b');
-        return this.ref_a_b = this.ref_a.combine(this.ref_b);
-      });
-      describe('when a Reference is passed as an attribute value', function() {
+      describe('when the bind is passed as an attribute', function() {
         beforeEach(function() {
           return this.node = this.__('.bound', {
-            'data-custom': this.ref_a
+            'data-custom': function() {
+              return this.test;
+            }
           });
         });
-        it("sets initial value of References's value to the element's attribute", function() {
-          return expect(this.node.getAttribute('data-custom')).toBe('a val');
+        it("sets initial value of bindings's value to the element's attribute", function() {
+          return expect(this.node.getAttribute('data-custom')).toBe('test val');
         });
-        return describe("when the Reference's value changes", function() {
+        return describe("when the bindings's value changes and @updateBinds() is called", function() {
           beforeEach(function() {
-            return this.model.set({
-              a: 'a val 2'
-            });
+            this.cell.test = 'test val2';
+            return this.cell.updateBinds();
           });
-          return it("automatically sets value of the Reference to the element's attribute", function() {
-            var done,
-              _this = this;
-            done = false;
-            runs(function() {
-              return setTimeout((function() {
-                return done = true;
-              }), 0);
-            });
-            waitsFor(function() {
-              return done;
-            });
-            return runs(function() {
-              return expect(_this.node.getAttribute('data-custom')).toBe("a val 2");
-            });
+          return it("automatically sets value of the element's attribute to the new binding's value", function() {
+            return expect(this.node.getAttribute('data-custom')).toBe('test val2');
           });
         });
       });
-      return describe("when a Reference is passed as a child", function() {
+      return describe("when the bind is passed as a child", function() {
         var describe_render_reference;
         describe_render_reference = function(_arg2) {
           var expected_child_html, expected_child_html_after, ref_value, ref_value_after, value_type;
           value_type = _arg2.value_type, ref_value = _arg2.ref_value, ref_value_after = _arg2.ref_value_after, expected_child_html = _arg2.expected_child_html, expected_child_html_after = _arg2.expected_child_html_after;
-          return describe("When the Reference value is a " + value_type, function() {
+          return describe("when the bindings's value is of type " + value_type, function() {
             beforeEach(function() {
-              this.model = new Backbone.Model().set({
-                a: ref_value
-              });
-              this.ref_a = this.model.ref('a');
-              return this.node = this.__('.parent', 'BEFORE', this.ref_a, 'AFTER');
+              this.cell.test = ref_value;
+              return this.node = this.__('.parent', 'BEFORE', function() {
+                return this.test;
+              }, 'AFTER');
             });
             it("child is rendered correctly", function() {
               return nodeHTMLEquals(this.node, "<div class=\"parent\">BEFORE" + expected_child_html + "AFTER</div>");
             });
-            return describe("when the Reference's value changes", function() {
+            return describe("when the bindings's value changes and @updateBinds() is called", function() {
               beforeEach(function() {
-                return this.model.set({
-                  a: ref_value_after
-                });
+                this.cell.test = ref_value_after;
+                return this.cell.updateBinds();
               });
               return it("automatically rerenders child correctly", function() {
-                var done,
-                  _this = this;
-                done = false;
-                runs(function() {
-                  return setTimeout((function() {
-                    return done = true;
-                  }), 0);
-                });
-                waitsFor(function() {
-                  return done;
-                });
-                return runs(function() {
-                  return nodeHTMLEquals(_this.node, "<div class=\"parent\">BEFORE" + expected_child_html_after + "AFTER</div>");
-                });
+                return nodeHTMLEquals(this.node, "<div class=\"parent\">BEFORE" + expected_child_html_after + "AFTER</div>");
               });
             });
           });
@@ -145,58 +102,28 @@ define(['./utils/spec-utils'], function(_arg) {
       });
     });
     describe('Cell.prototype.render is modified', function() {
-      beforeEachRequire(['cell', '__'], function(_arg2, __) {
-        var C, Cell;
+      beforeEachRequire(['cell'], function(_arg2) {
+        var C, Cell, c;
         Cell = _arg2.Cell;
-        this.__ = __;
-        this.cdef = {
-          renderEl: function(__, bindTo) {}
-        };
-        spyOn(this.cdef, 'renderEl').andCallThrough();
-        C = Cell.extend(this.cdef);
-        return new C().render();
+        C = Cell.extend({
+          renderEl: this.renderEl = jasmine.createSpy('renderEl')
+        });
+        c = new C();
+        this.__ = c.__;
+        return c.render();
       });
       return it('calls Cell.renderEl(__)', function() {
-        return expect(this.cdef.renderEl).toHaveBeenCalledWith(this.__);
+        return expect(this.renderEl).toHaveBeenCalledWith(this.__);
       });
     });
     return describe('__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', function() {
-      var empty, invalid, it_renders, it_renders_views, _fn, _fn1, _i, _j, _len, _len1, _ref, _ref1;
-      beforeEachRequire(["fixtures/TestCell1", '__'], function(TestCell1, __) {
+      var empty, it_renders, it_renders_views, _fn, _i, _len, _ref;
+      beforeEachRequire(["fixtures/TestCell1", 'cell'], function(TestCell1, _arg2) {
+        var Cell;
         this.TestCell1 = TestCell1;
-        this.__ = __;
+        Cell = _arg2.Cell;
+        return this.__ = new Cell().__;
       });
-      _ref = [(function() {})];
-      _fn = function(invalid) {
-        var invalid_str;
-        invalid_str = "" + (invalid === '' && '""' || invalid);
-        return describe("__( " + invalid_str + " )", function() {
-          return it("__( " + invalid_str + " ) === undefined", function() {
-            var _this = this;
-            return expect(function() {
-              return _this.__(invalid);
-            }).toThrow();
-          });
-        });
-      };
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        invalid = _ref[_i];
-        _fn(invalid);
-      }
-      _ref1 = ['', void 0, null];
-      _fn1 = function(empty) {
-        var empty_str;
-        empty_str = "" + (empty === '' && '""' || empty);
-        return describe("__( " + empty_str + " )", function() {
-          return it("__( " + empty_str + " ) === undefined", function() {
-            return expect(this.__(empty)).toBe(void 0);
-          });
-        });
-      };
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        empty = _ref1[_j];
-        _fn1(empty);
-      }
       it_renders = function(desc, input_args, expected_html_output, debug) {
         return describe("__( " + desc + " )", function() {
           var input_strings;
@@ -221,6 +148,26 @@ define(['./utils/spec-utils'], function(_arg) {
           });
         });
       };
+      describe("__( function )", function() {
+        return it("__( function ) === undefined", function() {
+          return expect(this.__(function() {})).toBe(void 0);
+        });
+      });
+      _ref = [void 0, null];
+      _fn = function(empty) {
+        var empty_str;
+        empty_str = "" + (empty === '' && '""' || empty);
+        return describe("__( " + empty_str + " )", function() {
+          return it("__( " + empty_str + " ) === undefined", function() {
+            return expect(this.__(empty)).toBe(void 0);
+          });
+        });
+      };
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        empty = _ref[_i];
+        _fn(empty);
+      }
+      it_renders('empty string', [''], '<div></div>');
       it_renders('selector:String(tag, id, multiple classes)', ['p#myid.myclass.myclass2'], '<p class="myclass myclass2" id="myid"></p>');
       it_renders('selector:String, child:String', ['p#myid.myclass.myclass2', 'blargo'], '<p class="myclass myclass2" id="myid">blargo</p>');
       it_renders("selector:String, child:String('<')", ['p#myid.myclass.myclass2', '<'], '<p class="myclass myclass2" id="myid"><</p>');

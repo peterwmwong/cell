@@ -14,8 +14,8 @@ NEW: exts (see angularjs directives)
 Extend html DOM functionality
 
 
-NEW: View Model on `this`
--------------------------
+NEW: `Cell::tpl (__)->`
+-----------------------
 
 
 PERF: cell.remove() and $.cleanData()

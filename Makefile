@@ -43,7 +43,7 @@ deps:
 	npm install
 
 lodash:
-	node_modules/.bin/lodash backbone plus=isElement,isArray,debounce,range -o support/lodash.custom.js
+	node_modules/.bin/lodash backbone plus=isArray -o support/lodash.custom.js
 	rm ./lodash.*js
 
 #-------------------------------------------------------------------

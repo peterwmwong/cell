@@ -1,5 +1,4 @@
 define (require)->
-  __ = require '__'
   Mock = require './Mock'
 
   $ ->

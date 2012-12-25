@@ -16,7 +16,7 @@ define (require)->
         else
           "[#{str}]"
 
-      else if _.isElement obj
+      else if obj.nodeType is 1
         "<#{obj.tagName.toLowerCase()}/>"
 
       else if _.isObject obj

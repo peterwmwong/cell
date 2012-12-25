@@ -17,7 +17,7 @@ define(function(require) {
         } else {
           return "[" + str + "]";
         }
-      } else if (_.isElement(obj)) {
+      } else if (obj.nodeType === 1) {
         return "<" + (obj.tagName.toLowerCase()) + "/>";
       } else if (_.isObject(obj)) {
         return "{" + (((function() {

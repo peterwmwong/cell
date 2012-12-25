@@ -2,6 +2,15 @@ define [
   'backbone'
   'jquery'
 ], (Backbone,$)->
+
+  isArrayish =
+    if typeof Zepto is 'function'
+      (o)-> (_.isArray o) or (Zepto.fn.isPrototypeOf o)
+    else
+      (o)-> (_.isArray o) or o.jquery
+
+  isBind = (o)-> typeof o is 'function'
+
   
   # Maps cid to cell
   cidMap = {}
@@ -24,6 +33,118 @@ define [
   module =
     Cell: Backbone.View.extend
 
+      constructor: ->
+        @_binds = []
+        @__ = _.bind @__, @
+        Backbone.View.apply @, arguments
+
+      _renderBindEl: (bind)->
+        return false if (newVal = bind.func()) is bind.val or (newNodes = @_renderChildren newVal, []).length is 0
+        nodes = bind.nodes
+
+        # Is this on a 'change' (not initial)
+        if nodes
+          target = nodes[0]
+          parent = target.parentNode
+
+          # Insert new nodes in the appropriate place
+          parent.insertBefore n, target for n in newNodes
+
+          # Remove old nodes
+          $(nodes).remove()
+
+        bind.nodes = newNodes
+        bind.val = newVal
+        true
+
+      _renderBindAttr: (bind)->
+        if (newVal = bind.func()) is bind.val
+          false
+        else
+          bind.el.setAttribute bind.attr, bind.val = newVal
+          true
+
+      _renderChildren: (nodes, rendered)->
+        return rendered unless nodes?
+        nodes = [nodes] unless isArrayish nodes
+
+        for n in nodes when n?
+          if n.nodeType is 1
+            rendered.push n
+
+          else if isArrayish n
+            @_renderChildren n, rendered
+
+          else if isBind n
+            bind =
+              nodes: undefined
+              val: undefined
+              func: _.bind n, @
+
+            @_renderBindEl bind
+            @_binds.push bind
+            rendered.push n for n in bind.nodes
+
+          else
+            rendered.push document.createTextNode n
+
+        rendered
+
+      __: (viewOrHAML, optionsOrFirstChild)->
+        children =
+          if optionsOrFirstChild and optionsOrFirstChild.constructor is Object
+            options = optionsOrFirstChild
+            [].slice.call arguments, 2
+          else
+            [].slice.call arguments, 1
+
+        # HAML
+        if typeof viewOrHAML is 'string'
+          if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec(viewOrHAML)
+            # Tag
+            parent = document.createElement m[1] or 'div'
+
+            # id
+            if m[3]
+              parent.setAttribute 'id', m[3]
+
+            # class
+            if m[4]
+              parent.className = m[4].slice(1).replace(/\./g, ' ')
+
+            for k,v of options
+              if isBind v
+                @_binds.push bind =
+                  el: parent
+                  attr: k
+                  func: _.bind v, @
+                @_renderBindAttr bind
+
+              else
+                parent.setAttribute k, v
+
+        # Cell
+        else if viewOrHAML and viewOrHAML.prototype instanceof Backbone.View
+          parent = (new viewOrHAML options).render().el
+
+        if parent
+          parent.appendChild child for child in @_renderChildren children, []
+          parent
+
+
+      render: ->
+        @el.appendChild child for child in @_renderChildren (@renderEl @__), []
+        @afterRender()
+        @
+
+      updateBinds: ->
+        for b in @_binds
+          if b.attr
+            @_renderBindAttr b 
+          else
+            @_renderBindEl b
+        return
+
       # Removes anything that might leak memory
       remove: ->
         delete cidMap[@cid]
@@ -44,11 +165,6 @@ define [
         # Used jQuery.cleanData() to retrieve the cell instance
         # associated with a DOM Element
         @el.cellcid = @cid
-        @
-
-      render: ->
-        @el.innerHTML = @renderEl()
-        @afterRender()
         @
 
       renderEl: $.noop
