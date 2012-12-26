@@ -35,11 +35,19 @@ define [
 
       constructor: ->
         @_binds = []
-        @__ = _.bind @__, @
+        _.bindAll @, '__', 'updateBinds'
         Backbone.View.apply @, arguments
+        @listenTo bindUpdater, 'all', @updateBinds if (bindUpdater = @model or @collection)
 
       _renderBindEl: (bind)->
-        return false if (newVal = bind.func()) is bind.val or (newNodes = @_renderChildren newVal, []).length is 0
+        return false if ((newVal = bind.func()) is bind.val) and bind.nodes
+
+        newNodes =
+          if newVal?
+            @_renderChildren newVal, []
+          else
+            [document.createTextNode '']
+
         nodes = bind.nodes
 
         # Is this on a 'change' (not initial)
@@ -58,11 +66,9 @@ define [
         true
 
       _renderBindAttr: (bind)->
-        if (newVal = bind.func()) is bind.val
-          false
-        else
-          bind.el.setAttribute bind.attr, bind.val = newVal
-          true
+        return false if (newVal = bind.func()) is bind.val
+        bind.el.setAttribute bind.attr, bind.val = newVal
+        true
 
       _renderChildren: (nodes, rendered)->
         return rendered unless nodes?
@@ -131,18 +137,22 @@ define [
           parent.appendChild child for child in @_renderChildren children, []
           parent
 
-
       render: ->
         @el.appendChild child for child in @_renderChildren (@renderEl @__), []
         @afterRender()
         @
 
       updateBinds: ->
-        for b in @_binds
-          if b.attr
-            @_renderBindAttr b 
-          else
-            @_renderBindEl b
+        for i in [0...10]
+          change = false
+          for b in @_binds
+            bindChange =
+              if b.attr
+                @_renderBindAttr b 
+              else
+                @_renderBindEl b
+            change or= bindChange
+          break unless change
         return
 
       # Removes anything that might leak memory
@@ -182,10 +192,9 @@ define [
         el.type = 'text/css'
         document.head.appendChild el
 
-      name = /(.*\/)?(.*)$/.exec(name)[2]
-      load (proto,statics)->
+      load (proto)->
         proto or= {}
-        proto.className = proto._cellName = name
-        module.Cell.extend proto, statics
+        proto.className = proto._cellName = /(.*\/)?(.*)$/.exec(name)[2]
+        module.Cell.extend proto
 
       return

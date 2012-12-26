@@ -27,15 +27,20 @@ define(['backbone', 'jquery'], function(Backbone, $) {
   return module = {
     Cell: Backbone.View.extend({
       constructor: function() {
+        var bindUpdater;
         this._binds = [];
-        this.__ = _.bind(this.__, this);
-        return Backbone.View.apply(this, arguments);
+        _.bindAll(this, '__', 'updateBinds');
+        Backbone.View.apply(this, arguments);
+        if ((bindUpdater = this.model || this.collection)) {
+          return this.listenTo(bindUpdater, 'all', this.updateBinds);
+        }
       },
       _renderBindEl: function(bind) {
         var n, newNodes, newVal, nodes, parent, target, _i, _len;
-        if ((newVal = bind.func()) === bind.val || (newNodes = this._renderChildren(newVal, [])).length === 0) {
+        if (((newVal = bind.func()) === bind.val) && bind.nodes) {
           return false;
         }
+        newNodes = newVal != null ? this._renderChildren(newVal, []) : [document.createTextNode('')];
         nodes = bind.nodes;
         if (nodes) {
           target = nodes[0];
@@ -54,10 +59,9 @@ define(['backbone', 'jquery'], function(Backbone, $) {
         var newVal;
         if ((newVal = bind.func()) === bind.val) {
           return false;
-        } else {
-          bind.el.setAttribute(bind.attr, bind.val = newVal);
-          return true;
         }
+        bind.el.setAttribute(bind.attr, bind.val = newVal);
+        return true;
       },
       _renderChildren: function(nodes, rendered) {
         var bind, n, _i, _j, _len, _len1, _ref;
@@ -143,14 +147,17 @@ define(['backbone', 'jquery'], function(Backbone, $) {
         return this;
       },
       updateBinds: function() {
-        var b, _i, _len, _ref;
-        _ref = this._binds;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          b = _ref[_i];
-          if (b.attr) {
-            this._renderBindAttr(b);
-          } else {
-            this._renderBindEl(b);
+        var b, bindChange, change, i, _i, _j, _len, _ref;
+        for (i = _i = 0; _i < 10; i = ++_i) {
+          change = false;
+          _ref = this._binds;
+          for (_j = 0, _len = _ref.length; _j < _len; _j++) {
+            b = _ref[_j];
+            bindChange = b.attr ? this._renderBindAttr(b) : this._renderBindEl(b);
+            change || (change = bindChange);
+          }
+          if (!change) {
+            break;
           }
         }
       },
@@ -185,11 +192,10 @@ define(['backbone', 'jquery'], function(Backbone, $) {
         el.type = 'text/css';
         document.head.appendChild(el);
       }
-      name = /(.*\/)?(.*)$/.exec(name)[2];
-      load(function(proto, statics) {
+      load(function(proto) {
         proto || (proto = {});
-        proto.className = proto._cellName = name;
-        return module.Cell.extend(proto, statics);
+        proto.className = proto._cellName = /(.*\/)?(.*)$/.exec(name)[2];
+        return module.Cell.extend(proto);
       });
     }
   };

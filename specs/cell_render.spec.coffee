@@ -5,10 +5,22 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
     beforeEachRequire [
       'fixtures/TestCell1'
       'cell'
-    ], (@TestCell1, @cell)->
+    ], (@TestCell1, {@Cell})->
       @testCell1 = new @TestCell1
 
-    describe 'renderEl', ->
+
+    describe '@render()', ->
+
+      beforeEach ->
+        C = @Cell.extend renderEl: @renderEl = jasmine.createSpy 'renderEl'
+        c = new C()
+        @__ = c.__
+        c.render()
+          
+      it 'calls Cell.renderEl(__)', ->
+        expect(@renderEl).toHaveBeenCalledWith @__
+
+    describe '@renderEl()', ->
 
       it_renders = (desc, render_el_return, expected_html_output)->
         describe desc, ->
@@ -28,7 +40,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
         777
         '<div cell="TestCell1" class="TestCell1">777</div>'
 
-    describe 'afterRender', ->
+    describe '@afterRender()', ->
 
       it 'called after renderEl', ->
         @testCell1.renderEl = sinon.stub()

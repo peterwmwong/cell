@@ -6,12 +6,26 @@ define(['./utils/spec-utils'], function(_arg) {
   return function(_arg1) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
-    beforeEachRequire(['fixtures/TestCell1', 'cell'], function(TestCell1, cell) {
+    beforeEachRequire(['fixtures/TestCell1', 'cell'], function(TestCell1, _arg2) {
       this.TestCell1 = TestCell1;
-      this.cell = cell;
+      this.Cell = _arg2.Cell;
       return this.testCell1 = new this.TestCell1;
     });
-    describe('renderEl', function() {
+    describe('@render()', function() {
+      beforeEach(function() {
+        var C, c;
+        C = this.Cell.extend({
+          renderEl: this.renderEl = jasmine.createSpy('renderEl')
+        });
+        c = new C();
+        this.__ = c.__;
+        return c.render();
+      });
+      return it('calls Cell.renderEl(__)', function() {
+        return expect(this.renderEl).toHaveBeenCalledWith(this.__);
+      });
+    });
+    describe('@renderEl()', function() {
       var it_renders;
       it_renders = function(desc, render_el_return, expected_html_output) {
         return describe(desc, function() {
@@ -31,7 +45,7 @@ define(['./utils/spec-utils'], function(_arg) {
       it_renders('String', 'hello world', '<div cell="TestCell1" class="TestCell1">hello world</div>');
       return it_renders('Number', 777, '<div cell="TestCell1" class="TestCell1">777</div>');
     });
-    return describe('afterRender', function() {
+    return describe('@afterRender()', function() {
       it('called after renderEl', function() {
         this.testCell1.renderEl = sinon.stub();
         this.testCell1.afterRender = sinon.stub();
