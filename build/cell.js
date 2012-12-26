@@ -7,9 +7,7 @@ define(['backbone', 'jquery'], function(Backbone, $) {
   } : function(o) {
     return (_.isArray(o)) || o.jquery;
   };
-  isBind = function(o) {
-    return typeof o === 'function';
-  };
+  isBind = _.isFunction;
   cidMap = {};
   origCleanData = $.cleanData;
   $.cleanData = function(elems, acceptData) {

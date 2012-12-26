@@ -9,7 +9,7 @@ define [
     else
       (o)-> (_.isArray o) or o.jquery
 
-  isBind = (o)-> typeof o is 'function'
+  isBind = _.isFunction
 
   
   # Maps cid to cell
