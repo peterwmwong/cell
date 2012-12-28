@@ -1,4 +1,4 @@
-define ->
+define ['jquery'], ->
   ctx_name_salt = 0
 
   load: (name, req, load, config)->
@@ -21,14 +21,13 @@ define ->
                 baseUrl: '/specs/'
                 paths:
                   cell: '../build/cell'
-                  __: '../build/__'
+                  dom: '../build/dom'
                   ref: '../build/ref'
                   jquery: '../support/jquery'
                   underscore: '../support/lodash.custom'
                   backbone: '../node_modules/backbone/backbone'
                 shim:
                   underscore:
-                    deps: ["jquery"]
                     exports: '_'
                   backbone:
                     deps: ["underscore", "jquery"]

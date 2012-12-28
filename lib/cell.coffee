@@ -11,7 +11,6 @@ define [
 
   isBind = _.isFunction
 
-  
   # Maps cid to cell
   cidMap = {}
 
@@ -177,8 +176,8 @@ define [
         @el.cellcid = @cid
         @
 
-      renderEl: $.noop
-      afterRender: $.noop
+      renderEl: ->
+      afterRender: ->
 
     pluginBuilder: 'cell-builder-plugin'
 

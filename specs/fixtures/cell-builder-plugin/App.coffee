@@ -1,5 +1,7 @@
 define (require)->
   Mock = require './Mock'
+  $ = require 'jquery'
+  Backbone = require 'backbone'
+  Backbone.$ = $
 
-  $ ->
-    $('body').append new Mock().render().el
+  $(document.body).append new Mock().render().el

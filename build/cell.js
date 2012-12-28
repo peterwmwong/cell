@@ -176,8 +176,8 @@ define(['backbone', 'jquery'], function(Backbone, $) {
         this.el.cellcid = this.cid;
         return this;
       },
-      renderEl: $.noop,
-      afterRender: $.noop
+      renderEl: function() {},
+      afterRender: function() {}
     }),
     pluginBuilder: 'cell-builder-plugin',
     load: function(name, req, load, config) {
