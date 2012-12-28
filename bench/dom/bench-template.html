@@ -1,0 +1,39 @@
+<html>
+<head>
+<!-- setup -->
+<script>
+// Force require.js to load ASAP
+window._setTimeout = window.setTimeout;
+window.setTimeout = undefined;
+</script>
+<script src='built-dom.js'></script>
+<script>
+window.setTimeout = window._setTimeout;
+</script>
+<script>
+require(['dom'], function(dom){
+  window.dom1 = dom;
+});
+dom1.pww1 = 1;
+define = requirejs = require = undefined;
+</script>
+
+<script>
+// Force require.js to load ASAP
+window._setTimeout = window.setTimeout;
+window.setTimeout = undefined;
+</script>
+<script src='built-dom2.js'></script>
+<script>
+window.setTimeout = window._setTimeout;
+</script>
+<script>
+require(['dom'], function(dom){
+  window.dom2 = dom;
+});
+dom2.pww2 = 2;
+</script>
+<!-- setup END -->
+</head>
+<body></body>
+</html>
