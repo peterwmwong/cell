@@ -6,7 +6,7 @@
 window._setTimeout = window.setTimeout;
 window.setTimeout = undefined;
 </script>
-<script src='built-dom.js'></script>
+<script src='https://raw.github.com/peterwmwong/cell/04fe62d8657d4be2ebf72eaad5cc6456ccdefaa5/bench/dom/built-dom.js'></script>
 <script>
 window.setTimeout = window._setTimeout;
 </script>
@@ -14,7 +14,6 @@ window.setTimeout = window._setTimeout;
 require(['dom'], function(dom){
   window.dom1 = dom;
 });
-dom1.pww1 = 1;
 define = requirejs = require = undefined;
 </script>
 
@@ -23,7 +22,7 @@ define = requirejs = require = undefined;
 window._setTimeout = window.setTimeout;
 window.setTimeout = undefined;
 </script>
-<script src='built-dom2.js'></script>
+<script src='https://raw.github.com/peterwmwong/cell/e7dd4381bd6e3774188f76481eab2725d2c6d402/bench/dom/built-dom.js'></script>
 <script>
 window.setTimeout = window._setTimeout;
 </script>
@@ -31,7 +30,6 @@ window.setTimeout = window._setTimeout;
 require(['dom'], function(dom){
   window.dom2 = dom;
 });
-dom2.pww2 = 2;
 </script>
 <!-- setup END -->
 </head>

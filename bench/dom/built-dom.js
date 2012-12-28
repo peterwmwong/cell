@@ -2304,12 +2304,13 @@ define('dom',['underscore'], function(_) {
 
     // getAll
     DOM.prototype[desc.name+'All'] = new Function('ns',
-      'var n,val={};'+
+      'var n,name,val,vals={};e=this[0];'+
       'for(var i=0;i<ns.length;++i){'+
-        'n=ns[i];'+
-        'val[n]=this.'+desc.name+'(n);'+
+        'n=name=ns[i];'+
+        desc.get+
+        'vals[n]=val;'+
       '}'+
-      'return val;'
+      'return vals;'
     );
 
     // set
