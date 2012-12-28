@@ -93,7 +93,6 @@ define(['underscore'], function(_) {
       DOMAddNodes(this, element);
     }
   }
-  DOM.camelCase = camelCase;
   var dom = DOM;
 
   function DOMClone(element) {
@@ -220,6 +219,7 @@ define(['underscore'], function(_) {
   // Functions which are declared directly.
   //////////////////////////////////////////
   var DOMPrototype = DOM.prototype = {
+    camelCase: camelCase,
     eq: function(index) {
       return(index >= 0) ? dom(this[index]) : dom(this[this.length + index]);
     },
@@ -251,39 +251,76 @@ define(['underscore'], function(_) {
     return booleanAttr && BOOLEAN_ELEMENTS[element.nodeName] && booleanAttr;
   }
 
+  function createIter(body){
+    return new Function('name',
+      "for(var i=0; i<this.length; ++i){"+
+        body+
+      "}"+
+      "return this;"
+    );
+  }
+
+  DOM.prototype.removeAttr = createIter("this[i].removeAttribute(name);");
+
+  function createGetSetIter(desc){
+    // get
+    DOM.prototype[desc.name] = new Function('name',
+      'var val,e=this[0];'+
+      desc.get+
+      'return val;'
+    );
+
+    // getAll
+    DOM.prototype[desc.name+'All'] = new Function('ns',
+      'var n,val={};'+
+      'for(var i=0;i<ns.length;++i){'+
+        'n=ns[i];'+
+        'val[n]=this.'+desc.name+'(n);'+
+      '}'+
+      'return val;'
+    );
+
+    // set
+    DOM.prototype[desc.name+'Set'] = new Function('name','value',
+      'var e,name=this.camelCase(name);'+
+      'for(var i=0;i<this.length;++i){'+
+        'e=this[i];'+
+        desc.set+
+      '}'+
+      'return this;'
+    );
+
+    // setAll
+    DOM.prototype[desc.name+'SetAll'] = new Function('ns',
+      'for(var n in ns){'+
+        'this.'+desc.name+'Set(n,ns[n]);'+
+      '}'+
+      'return this;'
+    );
+  }
+
+  createGetSetIter({
+    name: 'css',
+    get: (
+      "name=this.camelCase(name);"+
+      ((msie <= 8)
+        ? "val=e.currentStyle&&e.currentStyle[name];"+
+          "if(val===''){val='auto;'}"+
+          "val=val||e.styl[name];"
+        : "val=e.style[name];")+
+      ((msie <= 8)
+        ? "val=(val==='')?undefined:val;"
+        : "")
+    ),
+    set: (
+      "e.style[name]=value;"
+    )
+  });
+
   _.each({
     data: DOMData,
 
-    removeAttr: function(element, name) {
-      element.removeAttribute(name);
-    },
-
     hasClass: DOMHasClass,
-
-    css: function(element, name, value) {
-      name = camelCase(name);
-
-      if(isDefined(value)) {
-        element.style[name] = value;
-      } else {
-        var val;
-
-        if(msie <= 8) {
-          // this is some IE specific weirdness that jQuery 1.6.4 does not sure why
-          val = element.currentStyle && element.currentStyle[name];
-          if(val === '') val = 'auto';
-        }
-
-        val = val || element.style[name];
-
-        if(msie <= 8) {
-          // jquery weirdness :-/
-          val = (val === '') ? undefined : val;
-        }
-
-        return val;
-      }
-    },
 
     attr: function(element, name, value) {
       var lowercasedName = lowercase(name);

@@ -480,38 +480,38 @@ define( [
 
 
         it('should ignore falsy values', function() {
-          var jqA = dom(a);
-          expect(jqA[0].className).toBe('');
+          var domA = dom(a);
+          expect(domA[0].className).toBe('');
 
-          jqA.addClass(undefined);
-          expect(jqA[0].className).toBe('');
+          domA.addClass(undefined);
+          expect(domA[0].className).toBe('');
 
-          jqA.addClass(null);
-          expect(jqA[0].className).toBe('');
+          domA.addClass(null);
+          expect(domA[0].className).toBe('');
 
-          jqA.addClass(false);
-          expect(jqA[0].className).toBe('');
+          domA.addClass(false);
+          expect(domA[0].className).toBe('');
         });
 
 
         it('should allow multiple classes to be added in a single string', function() {
-          var jqA = dom(a);
+          var domA = dom(a);
           expect(a.className).toBe('');
 
-          jqA.addClass('foo bar baz');
+          domA.addClass('foo bar baz');
           expect(a.className).toBe('foo bar baz');
         });
 
 
         it('should not add duplicate classes', function() {
-          var jqA = dom(a);
+          var domA = dom(a);
           expect(a.className).toBe('');
 
           a.className = 'foo';
-          jqA.addClass('foo');
+          domA.addClass('foo');
           expect(a.className).toBe('foo');
 
-          jqA.addClass('bar foo baz');
+          domA.addClass('bar foo baz');
           expect(a.className).toBe('foo bar baz');
         });
       });
@@ -563,91 +563,104 @@ define( [
 
 
         it('should remove multiple classes specified as one string', function() {
-          var jqA = dom(a);
+          var domA = dom(a);
 
           a.className = 'foo bar baz';
-          jqA.removeClass('foo baz noexistent');
+          domA.removeClass('foo baz noexistent');
           expect(a.className).toBe('bar');
         });
       });
     });
 
 
-    describe('css', function() {
-      it('should set and read css', function() {
-        var selector = dom([a, b]);
+    describe('css*', function() {
 
-        expect(selector.css('margin', '1px')).toEqual(selector);
-        expect(dom(a).css('margin')).toEqual('1px');
-        expect(dom(b).css('margin')).toEqual('1px');
+      beforeEach(function(){
+        this.selector = selector = dom([a, b]);
+      });
 
-        expect(selector.css({
-          'margin': '2px'
-        })).toEqual(selector);
-        expect(dom(a).css('margin')).toEqual('2px');
-        expect(dom(b).css('margin')).toEqual('2px');
+      describe('css() and cssSet()',function(){
 
-        dom(b).css({
-          'margin': '3px'
+        it('should get and set css',function(){
+          expect(this.selector.cssSet('margin', '1px')).toEqual(selector);
+          expect(dom(a).css('margin')).toEqual('1px');
+          expect(dom(b).css('margin')).toEqual('1px');
+
+          selector.cssSet('margin', '');
+          if(msie <= 8) {
+            expect(dom(a).css('margin')).toBe('auto');
+            expect(dom(b).css('margin')).toBe('auto');
+          } else {
+            expect(dom(a).css('margin')).toBeFalsy();
+            expect(dom(b).css('margin')).toBeFalsy();
+          }
         });
-        expect(dom(selector).css('margin')).toEqual('2px');
-        expect(dom(a).css('margin')).toEqual('2px');
-        expect(dom(b).css('margin')).toEqual('3px');
 
-        selector.css('margin', '');
-        if(msie <= 8) {
-          expect(dom(a).css('margin')).toBe('auto');
-          expect(dom(b).css('margin')).toBe('auto');
-        } else {
-          expect(dom(a).css('margin')).toBeFalsy();
-          expect(dom(b).css('margin')).toBeFalsy();
-        }
       });
 
 
-      it('should set a bunch of css properties specified via an object', function() {
-        if(msie <= 8) {
-          expect(dom(a).css('margin')).toBe('auto');
-          expect(dom(a).css('padding')).toBe('0px');
-          expect(dom(a).css('border')).toBeUndefined();
-        } else {
-          expect(dom(a).css('margin')).toBeFalsy();
-          expect(dom(a).css('padding')).toBeFalsy();
+      describe('cssAll() and cssSetAll()',function(){
+        it('should get and set a bunch of css',function(){
+          if(msie <= 8) {
+            expect(dom(a).css('margin')).toBe('auto');
+            expect(dom(a).css('padding')).toBe('0px');
+            expect(dom(a).css('border')).toBeUndefined();
+          } else {
+            expect(dom(a).css('margin')).toBeFalsy();
+            expect(dom(a).css('padding')).toBeFalsy();
+            expect(dom(a).css('border')).toBeFalsy();
+          }
+
+          dom(a).cssSetAll({
+            'margin': '1px',
+            'padding': '2px',
+            'border': ''
+          });
+
+          expect(dom(a).css('margin')).toBe('1px');
+          expect(dom(a).css('padding')).toBe('2px');
           expect(dom(a).css('border')).toBeFalsy();
-        }
 
-        dom(a).css({
-          'margin': '1px',
-          'padding': '2px',
-          'border': ''
+          var map = dom(a).cssAll(['margin','padding','border']);
+          expect(map.margin).toBe('1px');
+          expect(map.padding).toBe('2px');
+          expect(map.border).toBeFalsy();
         });
-
-        expect(dom(a).css('margin')).toBe('1px');
-        expect(dom(a).css('padding')).toBe('2px');
-        expect(dom(a).css('border')).toBeFalsy();
       });
 
 
       it('should correctly handle dash-separated and camelCased properties', function() {
-        var jqA = dom(a);
+        var domA = dom(a);
 
-        expect(jqA.css('z-index')).toBeOneOf('', 'auto');
-        expect(jqA.css('zIndex')).toBeOneOf('', 'auto');
+        expect(domA.css('z-index')).toBeOneOf('', 'auto');
+        expect(domA.css('zIndex')).toBeOneOf('', 'auto');
 
-
-        jqA.css({
+        domA.cssSetAll({
           'zIndex': 5
         });
 
-        expect(jqA.css('z-index')).toBeOneOf('5', 5);
-        expect(jqA.css('zIndex')).toBeOneOf('5', 5);
+        expect(domA.css('z-index')).toBeOneOf('5', 5);
+        expect(domA.css('zIndex')).toBeOneOf('5', 5);
 
-        jqA.css({
+        domA.cssSetAll({
           'z-index': 7
         });
 
-        expect(jqA.css('z-index')).toBeOneOf('7', 7);
-        expect(jqA.css('zIndex')).toBeOneOf('7', 7);
+        expect(domA.css('z-index')).toBeOneOf('7', 7);
+        expect(domA.css('zIndex')).toBeOneOf('7', 7);
+
+        domA.cssSet('zIndex', 5);
+
+        expect(domA.css('z-index')).toBeOneOf('5', 5);
+        expect(domA.css('zIndex')).toBeOneOf('5', 5);
+
+        domA.cssSet('z-index', 7);
+
+        expect(domA.css('z-index')).toBeOneOf('7', 7);
+        expect(domA.css('zIndex')).toBeOneOf('7', 7);
+
+        expect(domA.cssAll(['z-index'])['z-index']).toBeOneOf('7', 7);
+        expect(domA.cssAll(['zIndex'])['zIndex']).toBeOneOf('7', 7);
       });
     });
 
@@ -1160,23 +1173,23 @@ define( [
     describe('camelCase', function() {
 
       it('should leave non-dashed strings alone', function() {
-        expect(dom.camelCase('foo')).toBe('foo');
-        expect(dom.camelCase('')).toBe('');
-        expect(dom.camelCase('fooBar')).toBe('fooBar');
+        expect(dom.prototype.camelCase('foo')).toBe('foo');
+        expect(dom.prototype.camelCase('')).toBe('');
+        expect(dom.prototype.camelCase('fooBar')).toBe('fooBar');
       });
 
 
       it('should covert dash-separated strings to camelCase', function() {
-        expect(dom.camelCase('foo-bar')).toBe('fooBar');
-        expect(dom.camelCase('foo-bar-baz')).toBe('fooBarBaz');
-        expect(dom.camelCase('foo:bar_baz')).toBe('fooBarBaz');
+        expect(dom.prototype.camelCase('foo-bar')).toBe('fooBar');
+        expect(dom.prototype.camelCase('foo-bar-baz')).toBe('fooBarBaz');
+        expect(dom.prototype.camelCase('foo:bar_baz')).toBe('fooBarBaz');
       });
 
 
       it('should covert browser specific css properties', function() {
-        expect(dom.camelCase('-moz-foo-bar')).toBe('MozFooBar');
-        expect(dom.camelCase('-webkit-foo-bar')).toBe('webkitFooBar');
-        expect(dom.camelCase('-webkit-foo-bar')).toBe('webkitFooBar');
+        expect(dom.prototype.camelCase('-moz-foo-bar')).toBe('MozFooBar');
+        expect(dom.prototype.camelCase('-webkit-foo-bar')).toBe('webkitFooBar');
+        expect(dom.prototype.camelCase('-webkit-foo-bar')).toBe('webkitFooBar');
       })
     });
 
