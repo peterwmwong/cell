@@ -272,13 +272,12 @@ define(['underscore'], function(_) {
 
     // getAll
     DOM.prototype[desc.name+'All'] = new Function('ns',
-      'var n,name,val,vals={};e=this[0];'+
-      'for(var i=0;i<ns.length;++i){'+
-        'n=name=ns[i];'+
-        desc.get+
-        'vals[n]=val;'+
-      '}'+
-      'return vals;'
+       'var n,v={};'+
+       'for(var i=0;i<ns.length;++i){'+
+         'n=ns[i];'+
+         'v[n]=this.'+desc.name+'(n);'+
+       '}'+
+       'return v;'
     );
 
     // set
