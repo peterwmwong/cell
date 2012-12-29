@@ -61,7 +61,10 @@ a {
 
 var logDiv = document.getElementById('log');
 window.log = function(type,msg){
-  logDiv.innerHTML += "<div class='"+type+"''>"+msg+"</div>";
+  var newDiv = document.createElement('div');
+  newDiv.className = type;
+  newDiv.innerHTML = msg;
+  logDiv.appendChild(newDiv);
 }
 
 var match = /[&?]bench=(\w+)/.exec(window.location.search);
@@ -90,7 +93,6 @@ if (!bench) {
   var commitBranch = match && match[1] || 'dom';
 
   log('baseline', "Baseline: <a target='_blank' href='"+getCommitBranchDomURL(commitBranch)+"'>"+commitBranch+"</a>");
-
 
   require.config({
     paths: {
