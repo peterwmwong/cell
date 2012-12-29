@@ -1,0 +1,109 @@
+<html>
+<head>
+<!-- http://localhost:8080/bench/dom/bench.html?bench=css&base=04fe62d8657d4be2ebf72eaad5cc6456ccdefaa5 -->
+<script src="../../node_modules/requirejs/require.js"></script>
+<style>
+
+body {
+  font-family:Helvetica,Arial,sans-serif;
+  background-color: #333;
+  color: #AAA;
+}
+
+a {
+  text-decoration: none;
+  color: #5DBBE3;
+}
+
+.header {
+  font-weight: bold;
+  font-size: 42px;
+}
+
+.baseline {
+  border-bottom: 1px solid #444;
+  margin: 5px 0 10px 0;
+  padding-bottom: 15px;
+}
+
+.bench {
+  margin: 2px 0;
+  color: #666;
+}
+
+.benchResultHeader {
+  margin: 10px 0;
+  border-bottom: 1px solid #444;
+}
+
+.benchResult {
+  padding: 5px;
+  margin: 2px 0;
+  color: #FFF;
+}
+
+.benchResult.faster {
+  background-color: #16A159;
+  text-shadow: 0 -1px 0 #222;
+}
+
+.benchResult.slower {
+  background-color: #A13E16;
+  text-shadow: 0 -1px 0 #222;
+}
+
+</style>
+</head>
+<body>
+<div id='log'></div>
+<script>
+(function(){
+
+var logDiv = document.getElementById('log');
+window.log = function(type,msg){
+  logDiv.innerHTML += "<div class='"+type+"''>"+msg+"</div>";
+}
+
+var match = /[&?]bench=(\w+)/.exec(window.location.search);
+var bench = match && match[1];
+
+if (!bench) {
+  log('header', "NO BENCH SPECIFIED (ex. ?bench=css)");
+} else {
+  log('header', bench);
+
+  // Get the GitHub URL to dom.js
+  var getCommitBranchDomURL = function(commitOrBranch, raw){
+    var url = "https://";
+    if (raw) {
+      url += "raw.";
+    }
+    url += "github.com/peterwmwong/cell/";
+    if (!raw) {
+      url += "blob/";
+    }
+    url += commitOrBranch+"/build/dom.js";
+    return url;
+  };
+
+  match = /[&?]base=(\w+)/.exec(window.location.search);
+  var commitBranch = match && match[1] || 'dom';
+
+  log('baseline', "Baseline: <a target='_blank' href='"+getCommitBranchDomURL(commitBranch)+"'>"+commitBranch+"</a>");
+
+
+  require.config({
+    paths: {
+      underscore: '../../support/lodash.custom',
+      domBefore: getCommitBranchDomURL(commitBranch,true).slice(0,-3),
+      domAfter: '../../build/dom',
+      benchmark: '../../node_modules/benchmark/benchmark',
+      platform: '../../node_modules/platform/platform'
+    },
+    deps: [bench+'.bench']
+  });
+}
+})();
+</script>
+</body>
+</html>

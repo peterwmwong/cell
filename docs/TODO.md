@@ -1,15 +1,16 @@
 TODO
 ====
 
-MISC: Use AngularJS's jqLite
+NEW: dom
 ----------------------------
 
-https://github.com/angular/angular.js/blob/master/src/jqLite.js
-
+- build off of jqLite/jQuery API
+- build off of AngularJS's jqLite specs
+- Increase speed
+- Decrease size
 
 TEST: Testacular
 ----------------
-
 
 NEW: exts (see angularjs directives)
 -----------------------------------

@@ -9,6 +9,10 @@
   "engines": {
     "node": ">=0.8.0"
   },
+  "devDependencies": {
+    "benchmark":"~1.0.0",
+    "platform":"~1.0.0"
+  },
   "dependencies": {
     "backbone":"~0.9.9",
     "coffee-script": "~1.4.0",

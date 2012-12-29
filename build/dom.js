@@ -234,22 +234,23 @@ define(['underscore'], function(_) {
   // these functions return self on setter and
   // value on get.
   //////////////////////////////////////////
-  var BOOLEAN_ATTR = {};
-  _.each('multiple,selected,checked,disabled,readOnly,required'.split(','), function(value) {
-    BOOLEAN_ATTR[lowercase(value)] = value;
-  });
-  var BOOLEAN_ELEMENTS = {};
-  _.each('input,select,option,textarea,button,form'.split(','), function(value) {
-    BOOLEAN_ELEMENTS[uppercase(value)] = true;
-  });
+  var BOOLEAN_ATTR = {
+    multiple:true,
+    selected:true,
+    checked:true,
+    disabled:true,
+    readonly:true,
+    required:true
+  };
 
-  function getBooleanAttrName(element, name) {
-    // check dom last since we will most likely fail on name
-    var booleanAttr = BOOLEAN_ATTR[name.toLowerCase()];
-
-    // booleanAttr is here twice to minimize DOM access
-    return booleanAttr && BOOLEAN_ELEMENTS[element.nodeName] && booleanAttr;
-  }
+  var BOOLEAN_ELEMENTS = {
+    INPUT:true,
+    SELECT:true,
+    OPTION:true,
+    TEXTAREA:true,
+    BUTTON:true,
+    FORM:true
+  };
 
   function createIter(body){
     return new Function('name',
@@ -263,6 +264,8 @@ define(['underscore'], function(_) {
   DOM.prototype.removeAttr = createIter("this[i].removeAttribute(name);");
 
   function createGetSetIter(desc){
+    var before, loop;
+
     // get
     DOM.prototype[desc.name] = new Function('name',
       'var val,e=this[0];'+
@@ -281,11 +284,18 @@ define(['underscore'], function(_) {
     );
 
     // set
+    if (typeof desc === 'string') {
+      loop = desc;
+    } else {
+      before = desc.set.before;
+      loop = desc.set.loop;
+    }
     DOM.prototype[desc.name+'Set'] = new Function('name','value',
-      'var e,name=this.camelCase(name);'+
+      'var e;'+
+      (before || '')+
       'for(var i=0;i<this.length;++i){'+
         'e=this[i];'+
-        desc.set+
+        loop+
       '}'+
       'return this;'
     );
@@ -303,6 +313,25 @@ define(['underscore'], function(_) {
     name: 'css',
     get: (
       "name=this.camelCase(name);"+
+      ((msie <= 8)
+        ? "val=e.currentStyle&&e.currentStyle[name];"+
+          "if(val===''){val='auto;'}"+
+          "val=val||e.styl[name];"
+        : "val=e.style[name];")+
+      ((msie <= 8)
+        ? "val=(val==='')?undefined:val;"
+        : "")
+    ),
+    set: {
+      before: 'name=this.camelCase(name);',
+      loop: "e.style[name]=value;"
+    }
+  });
+
+  createGetSetIter({
+    name: 'attr',
+    get: (
+      "var lowercasedName = this.lowercase(name);"+
       ((msie <= 8)
         ? "val=e.currentStyle&&e.currentStyle[name];"+
           "if(val===''){val='auto;'}"+
