@@ -1,13 +1,16 @@
 <html>
 <head>
+<title id='pageTitle'>bench</title>
 <!-- http://localhost:8080/bench/dom/bench.html?bench=css&base=04fe62d8657d4be2ebf72eaad5cc6456ccdefaa5 -->
-<script src="../../node_modules/requirejs/require.js"></script>
+<script src='../../node_modules/requirejs/require.js'></script>
 <style>
 
 body {
   font-family:Helvetica,Arial,sans-serif;
   background-color: #333;
   color: #AAA;
+  margin: 0;
+  padding: 5px;
 }
 
 a {
@@ -37,9 +40,9 @@ a {
 }
 
 .benchResult {
-  padding: 5px;
-  margin: 2px 0;
+  margin: 2px -5px;
   color: #FFF;
+  padding: 5px;
 }
 
 .benchResult.faster {
@@ -67,38 +70,39 @@ window.log = function(type,msg){
   logDiv.appendChild(newDiv);
 }
 
-var match = /[&?]bench=(\w+)/.exec(window.location.search);
+var match = /[&?]bench=([\w-]+)/.exec(window.location.search);
 var bench = match && match[1];
 
 if (!bench) {
-  log('header', "NO BENCH SPECIFIED (ex. ?bench=css)");
+  log('header', 'NO BENCH SPECIFIED (ex. ?bench=css)');
 } else {
   log('header', bench);
+  document.getElementById('pageTitle').innerHTML += ': '+bench;
 
   // Get the GitHub URL to dom.js
   var getCommitBranchDomURL = function(commitOrBranch, raw){
-    var url = "https://";
+    var url = 'https://';
     if (raw) {
-      url += "raw.";
+      url += 'raw.';
     }
-    url += "github.com/peterwmwong/cell/";
+    url += 'github.com/peterwmwong/cell/';
     if (!raw) {
-      url += "blob/";
+      url += 'blob/';
     }
-    url += commitOrBranch+"/build/dom.js";
+    url += commitOrBranch+'/build/dom.js';
     return url;
   };
 
   match = /[&?]base=(\w+)/.exec(window.location.search);
   var commitBranch = match && match[1] || 'dom';
 
-  log('baseline', "Baseline: <a target='_blank' href='"+getCommitBranchDomURL(commitBranch)+"'>"+commitBranch+"</a>");
+  log('baseline', "baseline commit: <a target='_blank' href='"+getCommitBranchDomURL(commitBranch)+"'>"+commitBranch+"</a>");
 
   require.config({
     paths: {
       underscore: '../../support/lodash.custom',
-      domBefore: getCommitBranchDomURL(commitBranch,true).slice(0,-3),
-      domAfter: '../../build/dom',
+      domBaseline: getCommitBranchDomURL(commitBranch,true).slice(0,-3),
+      domNow: '../../build/dom',
       benchmark: '../../node_modules/benchmark/benchmark',
       platform: '../../node_modules/platform/platform'
     },

@@ -13,7 +13,14 @@ define (require)->
 
     tests:
       baseline: ->
-        baseline.css 'margin'
+        baseline.attr
+          name: '1px'
+          width: '2px'
+          height: '#BADA55'
 
       now: ->
-        now.css 'margin'
+        now.attrSetAll
+          name: '1px'
+          width: '2px'
+          height: '#BADA55'
+  

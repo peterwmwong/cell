@@ -8,11 +8,11 @@ define(function(require) {
   return bench.run({
     setup: "var html = '<div></div>';\nvar baseline = domBaseline(html);\nvar now = domNow(html);",
     tests: {
-      baseline: function() {
-        return baseline.css('margin');
+      before: function() {
+        return baseline.css('margin', '1px');
       },
-      now: function() {
-        return now.css('margin');
+      after: function() {
+        return now.cssSet('margin', '1px');
       }
     }
   });

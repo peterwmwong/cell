@@ -334,82 +334,124 @@ define( [
       });
     });
 
+    describe('attr*', function() {
 
-    describe('attr', function() {
-      it('should read write and remove attr', function() {
-        var selector = dom([a, b]);
+      beforeEach(function(){
+        this.selector = selector = dom([a, b]);
+      });
 
-        expect(selector.attr('prop', 'value')).toEqual(selector);
-        expect(dom(a).attr('prop')).toEqual('value');
-        expect(dom(b).attr('prop')).toEqual('value');
+      describe('removeAttr',function(){
+        it('pending',function(){
+          this.selector.removeAttr('prop');
+          expect(dom(a).attr('prop')).toBeFalsy();
+          expect(dom(b).attr('prop')).toBeFalsy();
+        })
+      });
 
-        expect(selector.attr({
-          'prop': 'new value'
-        })).toEqual(selector);
-        expect(dom(a).attr('prop')).toEqual('new value');
-        expect(dom(b).attr('prop')).toEqual('new value');
+      describe('attr() and attrSet()', function(){
 
-        dom(b).attr({
-          'prop': 'new value 2'
+        it('should get and set attributes',function(){
+          var selector = dom([a, b]);
+
+          expect(selector.attrSet('prop', 'value')).toEqual(selector);
+          expect(dom(a).attr('prop')).toEqual('value');
+          expect(dom(b).attr('prop')).toEqual('value');
         });
-        expect(dom(selector).attr('prop')).toEqual('new value');
-        expect(dom(b).attr('prop')).toEqual('new value 2');
 
-        selector.removeAttr('prop');
-        expect(dom(a).attr('prop')).toBeFalsy();
-        expect(dom(b).attr('prop')).toBeFalsy();
+        it('should handle getting boolean attributes',function(){
+          expect(dom('<select>').attr('multiple')).toBeUndefined();
+          expect(dom('<select multiple>').attr('multiple')).toBe('multiple');
+          expect(dom('<select multiple="">').attr('multiple')).toBe('multiple');
+          expect(dom('<select multiple="x">').attr('multiple')).toBe('multiple');
+        });
+
+        it('should add/remove boolean attributes', function() {
+          var select = dom('<select>');
+          select.attrSet('multiple', false);
+          expect(select.attr('multiple')).toBeUndefined();
+
+          select.attrSet('multiple', true);
+          expect(select.attr('multiple')).toBe('multiple');
+        });
+
+        it('should normalize the case of boolean attributes', function() {
+          var input = dom('<input readonly>');
+          expect(input.attr('readonly')).toBe('readonly');
+          expect(input.attr('readOnly')).toBe('readonly');
+          expect(input.attr('READONLY')).toBe('readonly');
+
+          input.attrSet('readonly', false);
+
+          // attr('readonly') fails in jQuery 1.6.4, so we have to bypass it
+          //expect(input.attr('readOnly')).toBeUndefined();
+          //expect(input.attr('readonly')).toBeUndefined();
+          if(msie < 9) {
+            expect(input[0].getAttribute('readonly')).toBe('');
+          } else {
+            expect(input[0].getAttribute('readonly')).toBe(null);
+          }
+
+          //expect('readOnly' in input[0].attributes).toBe(false);
+          input.attrSet('readOnly', 'READonly');
+          expect(input.attr('readonly')).toBe('readonly');
+          expect(input.attr('readOnly')).toBe('readonly');
+        });
+
+        it('should return undefined for non-existing attributes', function() {
+          var elm = dom('<div class="any">a</div>');
+          expect(elm.attr('non-existing')).toBeUndefined();
+        });
+
+        it('should return undefined for non-existing attributes on input', function() {
+          var elm = dom('<input>');
+          expect(elm.attr('readonly')).toBeUndefined();
+          expect(elm.attr('readOnly')).toBeUndefined();
+          expect(elm.attr('disabled')).toBeUndefined();
+        });
+
       });
 
-      it('should read boolean attributes as strings', function() {
-        var select = dom('<select>');
-        expect(select.attr('multiple')).toBeUndefined();
-        expect(dom('<select multiple>').attr('multiple')).toBe('multiple');
-        expect(dom('<select multiple="">').attr('multiple')).toBe('multiple');
-        expect(dom('<select multiple="x">').attr('multiple')).toBe('multiple');
+      describe('attrAll() and attrSetAll()', function(){
+
+        it('should get and set a bunch of attributes',function(){
+
+          expect(selector.attrSetAll({
+            'prop': 'new value',
+            'prop2': '2new value'
+          })).toEqual(selector);
+          expect(dom(a).attr('prop')).toEqual('new value');
+          expect(dom(a).attr('prop2')).toEqual('2new value');
+          expect(dom(b).attr('prop')).toEqual('new value');
+          expect(dom(b).attr('prop2')).toEqual('2new value');
+          expect(dom(a).attrAll(['prop','prop2'])).toEqual({
+            prop: 'new value',
+            prop2: '2new value'
+          });
+          expect(dom(b).attrAll(['prop','prop2'])).toEqual({
+            prop: 'new value',
+            prop2: '2new value'
+          });
+
+          dom(b).attrSetAll({
+            'prop': 'new value 2',
+            'prop2': '2new value 2'
+          });
+          expect(dom(selector).attr('prop')).toEqual('new value');
+          expect(dom(selector).attr('prop2')).toEqual('2new value');
+          expect(dom(b).attr('prop')).toEqual('new value 2');
+          expect(dom(b).attr('prop2')).toEqual('2new value 2');
+          expect(dom(selector).attrAll(['prop','prop2'])).toEqual({
+            prop: 'new value',
+            prop2: '2new value'
+          });
+          expect(dom(b).attrAll(['prop','prop2'])).toEqual({
+            prop: 'new value 2',
+            prop2: '2new value 2'
+          });
+        });
+
       });
 
-      it('should add/remove boolean attributes', function() {
-        var select = dom('<select>');
-        select.attr('multiple', false);
-        expect(select.attr('multiple')).toBeUndefined();
-
-        select.attr('multiple', true);
-        expect(select.attr('multiple')).toBe('multiple');
-      });
-
-      it('should normalize the case of boolean attributes', function() {
-        var input = dom('<input readonly>');
-        expect(input.attr('readonly')).toBe('readonly');
-        expect(input.attr('readOnly')).toBe('readonly');
-        expect(input.attr('READONLY')).toBe('readonly');
-
-        input.attr('readonly', false);
-
-        // attr('readonly') fails in jQuery 1.6.4, so we have to bypass it
-        //expect(input.attr('readOnly')).toBeUndefined();
-        //expect(input.attr('readonly')).toBeUndefined();
-        if(msie < 9) {
-          expect(input[0].getAttribute('readonly')).toBe('');
-        } else {
-          expect(input[0].getAttribute('readonly')).toBe(null);
-        }
-        //expect('readOnly' in input[0].attributes).toBe(false);
-        input.attr('readOnly', 'READonly');
-        expect(input.attr('readonly')).toBe('readonly');
-        expect(input.attr('readOnly')).toBe('readonly');
-      });
-
-      it('should return undefined for non-existing attributes', function() {
-        var elm = dom('<div class="any">a</div>');
-        expect(elm.attr('non-existing')).toBeUndefined();
-      });
-
-      it('should return undefined for non-existing attributes on input', function() {
-        var elm = dom('<input>');
-        expect(elm.attr('readonly')).toBeUndefined();
-        expect(elm.attr('readOnly')).toBeUndefined();
-        expect(elm.attr('disabled')).toBeUndefined();
-      });
     });
 
 

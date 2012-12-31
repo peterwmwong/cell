@@ -9,10 +9,18 @@ define(function(require) {
     setup: "var html = '<div></div>';\nvar baseline = domBaseline(html);\nvar now = domNow(html);",
     tests: {
       baseline: function() {
-        return baseline.css('margin');
+        return baseline.attr({
+          name: '1px',
+          width: '2px',
+          height: '#BADA55'
+        });
       },
       now: function() {
-        return now.css('margin');
+        return now.attrSetAll({
+          name: '1px',
+          width: '2px',
+          height: '#BADA55'
+        });
       }
     }
   });

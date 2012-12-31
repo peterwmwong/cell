@@ -13,7 +13,8 @@ define (require)->
 
     tests:
       baseline: ->
-        baseline.css 'margin'
+        baseline.cssAll ['margin','padding','color']
 
       now: ->
-        now.css 'margin'
+        now.cssAll ['margin','padding','color']
+  

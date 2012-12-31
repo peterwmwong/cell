@@ -220,6 +220,7 @@ define(['underscore'], function(_) {
   //////////////////////////////////////////
   var DOMPrototype = DOM.prototype = {
     camelCase: camelCase,
+    lowercase: lowercase,
     eq: function(index) {
       return(index >= 0) ? dom(this[index]) : dom(this[this.length + index]);
     },
@@ -234,7 +235,7 @@ define(['underscore'], function(_) {
   // these functions return self on setter and
   // value on get.
   //////////////////////////////////////////
-  var BOOLEAN_ATTR = {
+  DOM.prototype.BOOLEAN_ATTR = {
     multiple:true,
     selected:true,
     checked:true,
@@ -264,7 +265,7 @@ define(['underscore'], function(_) {
   DOM.prototype.removeAttr = createIter("this[i].removeAttribute(name);");
 
   function createGetSetIter(desc){
-    var before, loop;
+    var before, loop, set = desc.set;
 
     // get
     DOM.prototype[desc.name] = new Function('name',
@@ -284,12 +285,10 @@ define(['underscore'], function(_) {
     );
 
     // set
-    if (typeof desc === 'string') {
-      loop = desc;
-    } else {
-      before = desc.set.before;
-      loop = desc.set.loop;
-    }
+    loop = (typeof set === 'string')
+      ? set
+      : (before = set.before, set.loop)
+
     DOM.prototype[desc.name+'Set'] = new Function('name','value',
       'var e;'+
       (before || '')+
@@ -331,51 +330,33 @@ define(['underscore'], function(_) {
   createGetSetIter({
     name: 'attr',
     get: (
-      "var lowercasedName = this.lowercase(name);"+
-      ((msie <= 8)
-        ? "val=e.currentStyle&&e.currentStyle[name];"+
-          "if(val===''){val='auto;'}"+
-          "val=val||e.styl[name];"
-        : "val=e.style[name];")+
-      ((msie <= 8)
-        ? "val=(val==='')?undefined:val;"
-        : "")
+      "var lowercasedName=this.lowercase(name),item;"+
+      "if(this.BOOLEAN_ATTR[lowercasedName]){"+
+        "if(e[name]||((item=e.attributes.getNamedItem(name))&&item.specified)){"+
+          "val=lowercasedName;"+
+        "}"+
+      "}else{"+
+        // the extra argument "2" is to get the right thing for a.href in IE, see jQuery code
+        // some elements (e.g. Document) don't have get attribute, so return undefined
+        "val=e.getAttribute(name,2);"+
+        "if(val===null){val=undefined;}"+
+      "}"
     ),
-    set: (
-      "e.style[name]=value;"
-    )
+    set: {
+      before: "var lowercasedName=this.lowercase(name);",
+      loop:
+        "if(this.BOOLEAN_ATTR[lowercasedName]){"+
+          "(!!value)?e.setAttribute(name,lowercasedName):e.removeAttribute(lowercasedName);"+
+        "}else{"+
+          "e.setAttribute(name,value)"+
+        "}"
+    }
   });
 
   _.each({
     data: DOMData,
 
     hasClass: DOMHasClass,
-
-    attr: function(element, name, value) {
-      var lowercasedName = lowercase(name);
-      if(BOOLEAN_ATTR[lowercasedName]) {
-        if(isDefined(value)) {
-          if( !! value) {
-            element[name] = true;
-            element.setAttribute(name, lowercasedName);
-          } else {
-            element[name] = false;
-            element.removeAttribute(lowercasedName);
-          }
-        } else {
-          return(element[name] || (element.attributes.getNamedItem(name) ||
-          function() {}).specified) ? lowercasedName : undefined;
-        }
-      } else if(isDefined(value)) {
-        element.setAttribute(name, value);
-      } else if(element.getAttribute) {
-        // the extra argument "2" is to get the right thing for a.href in IE, see jQuery code
-        // some elements (e.g. Document) don't have get attribute, so return undefined
-        var ret = element.getAttribute(name, 2);
-        // normalize non-existing attributes to undefined (as jQuery)
-        return ret === null ? undefined : ret;
-      }
-    },
 
     prop: function(element, name, value) {
       if(isDefined(value)) {

@@ -6,13 +6,13 @@ define(function(require) {
   window.domBaseline = require('domBaseline');
   window.domNow = require('domNow');
   return bench.run({
-    setup: "var html = '<div></div>';\nvar baseline = domBaseline(html);\nvar now = domNow(html);",
+    setup: "var html = '<select multiple name=\"samp\"></select>';\nvar baseline = domBaseline(html);\nvar now = domNow(html);",
     tests: {
       baseline: function() {
-        return baseline.css('margin');
+        return baseline.attr('multiple');
       },
       now: function() {
-        return now.css('margin');
+        return now.attr('multiple');
       }
     }
   });

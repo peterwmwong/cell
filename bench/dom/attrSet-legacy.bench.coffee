@@ -6,14 +6,15 @@ define (require)->
   bench.run
     setup:
       """
-      var html = '<div></div>';
+      var html = '<select multiple name="samp"></select>';
       var baseline = domBaseline(html);
       var now = domNow(html);
       """
 
     tests:
-      baseline: ->
-        baseline.css 'margin'
+      before: ->
+        baseline.attr 'name', 'newName'
 
-      now: ->
-        now.css 'margin'
+      after: ->
+        now.attrSet 'name', 'newName'
+  

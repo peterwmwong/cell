@@ -9,10 +9,10 @@ define(function(require) {
     setup: "var html = '<div></div>';\nvar baseline = domBaseline(html);\nvar now = domNow(html);",
     tests: {
       baseline: function() {
-        return baseline.css('margin');
+        return baseline.cssAll(['margin', 'padding', 'color']);
       },
       now: function() {
-        return now.css('margin');
+        return now.cssAll(['margin', 'padding', 'color']);
       }
     }
   });

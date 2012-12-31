@@ -1,6 +1,24 @@
 TODO
 ====
 
+NEW: __.if __.repeat
+--------------------
+    
+    ...
+    renderEl: -> [
+      __.if (-> @model.loaded),
+        then:-> __ '.true'
+
+        else:->  __ '.false'
+    ]
+    ...
+
+    ...
+    renderEl: -> [
+      __.each (-> @collection), (item)->
+        __ View, model: item
+    ...
+
 NEW: dom
 ----------------------------
 

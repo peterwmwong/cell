@@ -12,8 +12,9 @@ define (require)->
       """
 
     tests:
-      baseline: ->
-        baseline.css 'margin'
+      before: ->
+        baseline.css 'margin', '1px'
 
-      now: ->
-        now.css 'margin'
+      after: ->
+        now.cssSet 'margin', '1px'
+  
