@@ -1,19 +1,4 @@
 define (require)->
-  bench = require 'bench'
-  window.domBaseline = require 'domBaseline'
-  window.domNow = require 'domNow'
-
-  bench.run
-    setup:
-      """
-      var html = '<select multiple name="samp"></select>';
-      var baseline = domBaseline(html);
-      var now = domNow(html);
-      """
-
-    tests:
-      baseline: ->
-        baseline.attr 'multiple'
-
-      now: ->
-        now.attr 'multiple'
+  require('bench-dom')
+    dom_html: '<select multiple name="samp"></select>'
+    both: "dom.attr('multiple');"

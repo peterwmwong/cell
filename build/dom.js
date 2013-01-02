@@ -156,32 +156,6 @@ define(['underscore'], function(_) {
     return expandoId && domCache[expandoId][key];
   }
 
-  function DOMData(element, key, value) {
-    var data = DOMExpandoStoreGet(element, 'data'),
-      isSetter = isDefined(value),
-      keyDefined = !isSetter && isDefined(key),
-      isSimpleGetter = keyDefined && !_.isObject(key);
-
-    if(!data && !isSimpleGetter) {
-      DOMExpandoStoreSet(element, 'data', data = {});
-    }
-
-    if(isSetter) {
-      data[key] = value;
-    } else {
-      if(keyDefined) {
-        if(isSimpleGetter) {
-          // don't create data in this case.
-          return data && data[key];
-        } else {
-          _.extend(data, key);
-        }
-      } else {
-        return data;
-      }
-    }
-  }
-
   function DOMHasClass(element, selector) {
     return((" " + element.className + " ").replace(/[\n\t]/g, " ").
     indexOf(" " + selector + " ") > -1);
@@ -221,6 +195,8 @@ define(['underscore'], function(_) {
   var DOMPrototype = DOM.prototype = {
     camelCase: camelCase,
     lowercase: lowercase,
+    DOMExpandoStoreGet: DOMExpandoStoreGet,
+    DOMExpandoStoreSet: DOMExpandoStoreSet,
     eq: function(index) {
       return(index >= 0) ? dom(this[index]) : dom(this[this.length + index]);
     },
@@ -255,7 +231,7 @@ define(['underscore'], function(_) {
 
   function createIter(body){
     return new Function('name',
-      "for(var i=0; i<this.length; ++i){"+
+      "for(var i=0,len=this.length;i<len;++i){"+
         body+
       "}"+
       "return this;"
@@ -289,7 +265,7 @@ define(['underscore'], function(_) {
       ? set
       : (before = set.before, set.loop)
 
-    DOM.prototype[desc.name+'Set'] = new Function('name','value',
+    DOM.prototype[desc.name+'Set'] = new Function('name','val',
       'var e;'+
       (before || '')+
       'for(var i=0;i<this.length;++i){'+
@@ -300,12 +276,14 @@ define(['underscore'], function(_) {
     );
 
     // setAll
-    DOM.prototype[desc.name+'SetAll'] = new Function('ns',
-      'for(var n in ns){'+
-        'this.'+desc.name+'Set(n,ns[n]);'+
-      '}'+
-      'return this;'
-    );
+    DOM.prototype[desc.name+'SetAll'] = new Function('val',(
+      (desc.setAll)
+        ? desc.setAll
+        : 'for(var n in val){'+
+            'this.'+desc.name+'Set(n,val[n]);'+
+          '}'+
+          'return this;'
+    ));
   }
 
   createGetSetIter({
@@ -323,7 +301,7 @@ define(['underscore'], function(_) {
     ),
     set: {
       before: 'name=this.camelCase(name);',
-      loop: "e.style[name]=value;"
+      loop: "e.style[name]=val;"
     }
   });
 
@@ -346,16 +324,65 @@ define(['underscore'], function(_) {
       before: "var lowercasedName=this.lowercase(name);",
       loop:
         "if(this.BOOLEAN_ATTR[lowercasedName]){"+
-          "(!!value)?e.setAttribute(name,lowercasedName):e.removeAttribute(lowercasedName);"+
+          "(!!val)?e.setAttribute(name,lowercasedName):e.removeAttribute(lowercasedName);"+
         "}else{"+
-          "e.setAttribute(name,value)"+
+          "e.setAttribute(name,val)"+
         "}"
     }
   });
 
-  _.each({
-    data: DOMData,
 
+  createGetSetIter({
+    name: 'data',
+    get: (
+      "var d=this.DOMExpandoStoreGet(e,'data');"+
+      "if(name==null){"+
+        "val=(!d)"+
+          "?(this.DOMExpandoStoreSet(e,'data',val={}),val)"+
+          ":d;"+
+      "}else{"+
+        "val=d&&d[name];"+
+      "}"
+    ),
+    set: (
+      "var d=this.DOMExpandoStoreGet(e,'data');"+
+      "if(!d){"+
+        "this.DOMExpandoStoreSet(e,'data',d={});"+
+      "}"+
+      "d[name]=val;"
+    ),
+    setAll: (
+      'for(var i=0,e;e=this[i],i<this.length;++i){'+
+        "var d=this.DOMExpandoStoreGet(e,'data');"+
+        "if(!d){"+
+          "this.DOMExpandoStoreSet(e,'data',d={});"+
+        "}"+
+        "_.extend(d,val)"+
+      '}'+
+      'return this;'
+    )
+  });
+  
+  createGetSetIter({
+    name: 'css',
+    get: (
+      "name=this.camelCase(name);"+
+      ((msie <= 8)
+        ? "val=e.currentStyle&&e.currentStyle[name];"+
+          "if(val===''){val='auto;'}"+
+          "val=val||e.styl[name];"
+        : "val=e.style[name];")+
+      ((msie <= 8)
+        ? "val=(val==='')?undefined:val;"
+        : "")
+    ),
+    set: {
+      before: 'name=this.camelCase(name);',
+      loop: "e.style[name]=val;"
+    }
+  });
+
+  _.each({
     hasClass: DOMHasClass,
 
     prop: function(element, name, value) {

@@ -1,20 +1,7 @@
+# !!! Compare with commit: 04fe62d8657d4be2ebf72eaad5cc6456ccdefaa5
 define (require)->
-  bench = require 'bench'
-  window.domBaseline = require 'domBaseline'
-  window.domNow = require 'domNow'
-
-  bench.run
-    setup:
-      """
-      var html = '<select multiple name="samp"></select>';
-      var baseline = domBaseline(html);
-      var now = domNow(html);
-      """
-
-    tests:
-      before: ->
-        baseline.attr 'name', 'newName'
-
-      after: ->
-        now.attrSet 'name', 'newName'
+  require('bench-dom')
+    dom_html: '<select multiple name="samp"></select>'
+    baseline: "dom.attr('name', 'newName');"
+    now:      "dom.attrSet('name', 'newName');"
   

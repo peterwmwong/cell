@@ -2,6 +2,6 @@
 
 define(function(require) {
   return require('bench-dom')({
-    both: "dom.cssAll(['margin','padding','color']);"
+    both: "dom.dataAll(['multiple','name','bogus']);"
   });
 });

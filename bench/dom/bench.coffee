@@ -2,9 +2,15 @@ define (require)->
   Benchmark = require 'benchmark'
   platform = require 'platform'
   publishResults = require 'publishResults'
+  escapeCode = (str)->
+    str
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
 
-  run: ({publish,sandboxid,setup,tests})->
+  run: ({publish,setup,tests})->
     Benchmark::setup = setup if setup
+    log 'benchCode', "<pre>// Setup\n#{escapeCode setup}</pre>"
 
     Benchmark.platform = platform
 
@@ -37,5 +43,6 @@ define (require)->
 
     for name,test of tests
       s.add name, test
+      log 'benchCode', "<pre>// #{name}<br>#{escapeCode test}</pre>"
 
     s.run async: true

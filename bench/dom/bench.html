@@ -34,6 +34,12 @@ a {
   color: #666;
 }
 
+.benchCode {
+  margin: 5px 0;
+  color: #999;
+  font-family: Courier, "Courier New"
+}
+
 .benchResultHeader {
   margin: 10px 0;
   border-bottom: 1px solid #444;
@@ -101,8 +107,8 @@ if (!bench) {
   require.config({
     paths: {
       underscore: '../../support/lodash.custom',
-      domBaseline: getCommitBranchDomURL(commitBranch,true).slice(0,-3),
-      domNow: '../../build/dom',
+      DOMBaseline: getCommitBranchDomURL(commitBranch,true).slice(0,-3),
+      DOMNow: '../../build/dom',
       benchmark: '../../node_modules/benchmark/benchmark',
       platform: '../../node_modules/platform/platform'
     },

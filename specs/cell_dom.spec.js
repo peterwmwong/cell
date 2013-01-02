@@ -220,34 +220,37 @@ define( [
     });
 
 
-    describe('data', function() {
-      it('should set and get and remove data', function() {
-        var selected = dom([a, b, c]);
+    describe('data*',function(){
 
-        expect(selected.data('prop')).toBeUndefined();
-        expect(selected.data('prop', 'value')).toBe(selected);
-        expect(selected.data('prop')).toBe('value');
-        expect(dom(a).data('prop')).toBe('value');
-        expect(dom(b).data('prop')).toBe('value');
-        expect(dom(c).data('prop')).toBe('value');
+      describe('data() and dataSet()',function(){
+        it('should get and set and remove data', function() {
+          var selected = dom([a, b, c]);
 
-        dom(a).data('prop', 'new value');
-        expect(dom(a).data('prop')).toBe('new value');
-        expect(selected.data('prop')).toBe('new value');
-        expect(dom(b).data('prop')).toBe('value');
-        expect(dom(c).data('prop')).toBe('value');
+          expect(selected.data('prop')).toBeUndefined();
+          expect(selected.dataSet('prop', 'value')).toBe(selected);
+          expect(selected.data('prop')).toBe('value');
+          expect(dom(a).data('prop')).toBe('value');
+          expect(dom(b).data('prop')).toBe('value');
+          expect(dom(c).data('prop')).toBe('value');
 
-        expect(selected.removeData('prop')).toBe(selected);
-        expect(dom(a).data('prop')).toBeUndefined();
-        expect(dom(b).data('prop')).toBeUndefined();
-        expect(dom(c).data('prop')).toBeUndefined();
+          dom(a).dataSet('prop', 'new value');
+          expect(dom(a).data('prop')).toBe('new value');
+          expect(selected.data('prop')).toBe('new value');
+          expect(dom(b).data('prop')).toBe('value');
+          expect(dom(c).data('prop')).toBe('value');
+
+          expect(selected.removeData('prop')).toBe(selected);
+          expect(dom(a).data('prop')).toBeUndefined();
+          expect(dom(b).data('prop')).toBeUndefined();
+          expect(dom(c).data('prop')).toBeUndefined();
+        });
       });
 
-      it('should retrieve all data if called without params', function() {
+      it('data() should retrieve all data if called without params', function() {
         var element = dom(a);
         expect(element.data()).toEqual({});
 
-        element.data('foo', 'bar');
+        element.dataSet('foo', 'bar');
         expect(element.data()).toEqual({
           foo: 'bar'
         });
@@ -259,24 +262,26 @@ define( [
         });
       });
 
-      it('should create a new data object if called without args', function() {
-        var element = dom(a),
-          data = element.data();
+      it('dataAll() should get a bunch of datas', function() {
+        var element = dom(a);
 
-        expect(data).toEqual({});
-        element.data('foo', 'bar');
-        expect(data).toEqual({
-          foo: 'bar'
+        element.dataSet('one','one val');
+        element.dataSet('two','two val');
+        element.dataSet('three','three val');
+
+        expect(element.dataAll(['one','three'])).toEqual({
+          'one': 'one val',
+          'three': 'three val'
         });
       });
 
-      it('should create a new data object if called with a single object arg', function() {
+      it('dataSetAll() should create a new data object if called with a single object arg', function() {
         var element = dom(a),
-          newData = {
-            foo: 'bar'
-          };
+            newData = {
+              foo: 'bar'
+            };
 
-        element.data(newData);
+        element.dataSetAll(newData);
         expect(element.data()).toEqual({
           foo: 'bar'
         });
@@ -285,7 +290,7 @@ define( [
 
       it('should merge existing data object with a new one if called with a single object arg', function() {
         var element = dom(a);
-        element.data('existing', 'val');
+        element.dataSet('existing', 'val');
         expect(element.data()).toEqual({
           existing: 'val'
         });
@@ -296,7 +301,7 @@ define( [
             'youLike': 'carrots'
           };
 
-        expect(element.data(newData)).toBe(element);
+        expect(element.dataSetAll(newData)).toBe(element);
         expect(element.data()).toEqual({
           meLike: 'turtles',
           youLike: 'carrots',
@@ -306,11 +311,12 @@ define( [
       });
 
       describe('data cleanup', function() {
+
         it('should remove data on element removal', function() {
           var div = dom('<div><span>text</span></div>'),
-            span = div.find('span');
+              span = div.find('span');
 
-          span.data('name', 'angular');
+          span.dataSet('name', 'angular');
           span.remove();
           expect(span.data('name')).toBeUndefined();
         });
@@ -328,10 +334,115 @@ define( [
 
           span.remove();
 
+          log = '';
           browserTrigger(span);
-          expect(log).toEqual('click;');
+          expect(log).toEqual('');
         });
       });
+
+    });
+
+    describe('data', function() {
+      // it('should set and get and remove data', function() {
+      //   var selected = dom([a, b, c]);
+
+      //   expect(selected.data('prop')).toBeUndefined();
+      //   expect(selected.data('prop', 'value')).toBe(selected);
+      //   expect(selected.data('prop')).toBe('value');
+      //   expect(dom(a).data('prop')).toBe('value');
+      //   expect(dom(b).data('prop')).toBe('value');
+      //   expect(dom(c).data('prop')).toBe('value');
+
+      //   dom(a).data('prop', 'new value');
+      //   expect(dom(a).data('prop')).toBe('new value');
+      //   expect(selected.data('prop')).toBe('new value');
+      //   expect(dom(b).data('prop')).toBe('value');
+      //   expect(dom(c).data('prop')).toBe('value');
+
+      //   expect(selected.removeData('prop')).toBe(selected);
+      //   expect(dom(a).data('prop')).toBeUndefined();
+      //   expect(dom(b).data('prop')).toBeUndefined();
+      //   expect(dom(c).data('prop')).toBeUndefined();
+      // });
+
+      // it('should retrieve all data if called without params', function() {
+      //   var element = dom(a);
+      //   expect(element.data()).toEqual({});
+
+      //   element.data('foo', 'bar');
+      //   expect(element.data()).toEqual({
+      //     foo: 'bar'
+      //   });
+
+      //   element.data().baz = 'xxx';
+      //   expect(element.data()).toEqual({
+      //     foo: 'bar',
+      //     baz: 'xxx'
+      //   });
+      // });
+
+      // it('should create a new data object if called with a single object arg', function() {
+      //   var element = dom(a),
+      //     newData = {
+      //       foo: 'bar'
+      //     };
+
+      //   element.data(newData);
+      //   expect(element.data()).toEqual({
+      //     foo: 'bar'
+      //   });
+      //   expect(element.data()).not.toBe(newData); // create a copy
+      // });
+
+      // it('should merge existing data object with a new one if called with a single object arg', function() {
+      //   var element = dom(a);
+      //   element.data('existing', 'val');
+      //   expect(element.data()).toEqual({
+      //     existing: 'val'
+      //   });
+
+      //   var oldData = element.data(),
+      //     newData = {
+      //       meLike: 'turtles',
+      //       'youLike': 'carrots'
+      //     };
+
+      //   expect(element.data(newData)).toBe(element);
+      //   expect(element.data()).toEqual({
+      //     meLike: 'turtles',
+      //     youLike: 'carrots',
+      //     existing: 'val'
+      //   });
+      //   expect(element.data()).toBe(oldData); // merge into the old object
+      // });
+
+      // describe('data cleanup', function() {
+      //   it('should remove data on element removal', function() {
+      //     var div = dom('<div><span>text</span></div>'),
+      //       span = div.find('span');
+
+      //     span.data('name', 'angular');
+      //     span.remove();
+      //     expect(span.data('name')).toBeUndefined();
+      //   });
+
+      //   it('should remove event listeners on element removal', function() {
+      //     var div = dom('<div><span>text</span></div>'),
+      //       span = div.find('span'),
+      //       log = '';
+
+      //     span.bind('click', function() {
+      //       log += 'click;'
+      //     });
+      //     browserTrigger(span);
+      //     expect(log).toEqual('click;');
+
+      //     span.remove();
+
+      //     browserTrigger(span);
+      //     expect(log).toEqual('click;');
+      //   });
+      // });
     });
 
     describe('attr*', function() {

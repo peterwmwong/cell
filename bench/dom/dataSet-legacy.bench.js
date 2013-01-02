@@ -2,6 +2,7 @@
 
 define(function(require) {
   return require('bench-dom')({
-    both: "dom.cssAll(['margin','padding','color']);"
+    baseline: "dom.data('name', 'newName');",
+    now: "dom.dataSet('name', 'newName');"
   });
 });

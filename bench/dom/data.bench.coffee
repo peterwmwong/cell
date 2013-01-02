@@ -1,3 +1,3 @@
 define (require)->
   require('bench-dom')
-    both: "dom.css('margin');"
+    both: "dom.data('name');"
