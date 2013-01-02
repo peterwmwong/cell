@@ -26,6 +26,11 @@ NEW: dom
 - build off of AngularJS's jqLite specs
 - Increase speed
 - Decrease size
+- Finish off...
+  - val()
+  - html()
+  - text()
+  - hasClass()
 
 TEST: Testacular
 ----------------
