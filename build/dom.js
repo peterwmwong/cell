@@ -240,22 +240,22 @@ define(['underscore'], function(_) {
 
   DOM.prototype.removeAttr = createIter("this[i].removeAttribute(name);");
 
-  function createGetSetIter(desc){
+  function createGetSetIter(name, desc){
     var before, loop, set = desc.set;
 
     // get
-    DOM.prototype[desc.name] = new Function('name',
+    DOM.prototype[name] = new Function('name',
       'var val,e=this[0];'+
       desc.get+
       'return val;'
     );
 
     // getAll
-    DOM.prototype[desc.name+'All'] = new Function('ns',
+    DOM.prototype[name+'All'] = new Function('ns',
        'var n,v={};'+
        'for(var i=0;i<ns.length;++i){'+
          'n=ns[i];'+
-         'v[n]=this.'+desc.name+'(n);'+
+         'v[n]=this.'+name+'(n);'+
        '}'+
        'return v;'
     );
@@ -265,7 +265,7 @@ define(['underscore'], function(_) {
       ? set
       : (before = set.before, set.loop)
 
-    DOM.prototype[desc.name+'Set'] = new Function('name','val',
+    DOM.prototype[name+'Set'] = new Function('name','val',
       'var e;'+
       (before || '')+
       'for(var i=0;i<this.length;++i){'+
@@ -276,18 +276,17 @@ define(['underscore'], function(_) {
     );
 
     // setAll
-    DOM.prototype[desc.name+'SetAll'] = new Function('val',(
+    DOM.prototype[name+'SetAll'] = new Function('val',(
       (desc.setAll)
         ? desc.setAll
         : 'for(var n in val){'+
-            'this.'+desc.name+'Set(n,val[n]);'+
+            'this.'+name+'Set(n,val[n]);'+
           '}'+
           'return this;'
     ));
   }
 
-  createGetSetIter({
-    name: 'css',
+  createGetSetIter('css',{
     get: (
       "name=this.camelCase(name);"+
       ((msie <= 8)
@@ -305,8 +304,7 @@ define(['underscore'], function(_) {
     }
   });
 
-  createGetSetIter({
-    name: 'attr',
+  createGetSetIter('attr',{
     get: (
       "var lowercasedName=this.lowercase(name),item;"+
       "if(this.BOOLEAN_ATTR[lowercasedName]){"+
@@ -332,8 +330,7 @@ define(['underscore'], function(_) {
   });
 
 
-  createGetSetIter({
-    name: 'data',
+  createGetSetIter('data',{
     get: (
       "var d=this.DOMExpandoStoreGet(e,'data');"+
       "if(name==null){"+
@@ -363,8 +360,7 @@ define(['underscore'], function(_) {
     )
   });
   
-  createGetSetIter({
-    name: 'css',
+  createGetSetIter('css',{
     get: (
       "name=this.camelCase(name);"+
       ((msie <= 8)
@@ -382,17 +378,13 @@ define(['underscore'], function(_) {
     }
   });
 
+  createGetSetIter('prop',{
+    get: "val=e[name];",
+    set: "e[name]=val;"
+  });
+
   _.each({
     hasClass: DOMHasClass,
-
-    prop: function(element, name, value) {
-      if(isDefined(value)) {
-        element[name] = value;
-      } else {
-        return element[name];
-      }
-    },
-
     text: _.extend(
       ((msie < 9)
         ? function(element, value) {

@@ -342,109 +342,6 @@ define( [
 
     });
 
-    describe('data', function() {
-      // it('should set and get and remove data', function() {
-      //   var selected = dom([a, b, c]);
-
-      //   expect(selected.data('prop')).toBeUndefined();
-      //   expect(selected.data('prop', 'value')).toBe(selected);
-      //   expect(selected.data('prop')).toBe('value');
-      //   expect(dom(a).data('prop')).toBe('value');
-      //   expect(dom(b).data('prop')).toBe('value');
-      //   expect(dom(c).data('prop')).toBe('value');
-
-      //   dom(a).data('prop', 'new value');
-      //   expect(dom(a).data('prop')).toBe('new value');
-      //   expect(selected.data('prop')).toBe('new value');
-      //   expect(dom(b).data('prop')).toBe('value');
-      //   expect(dom(c).data('prop')).toBe('value');
-
-      //   expect(selected.removeData('prop')).toBe(selected);
-      //   expect(dom(a).data('prop')).toBeUndefined();
-      //   expect(dom(b).data('prop')).toBeUndefined();
-      //   expect(dom(c).data('prop')).toBeUndefined();
-      // });
-
-      // it('should retrieve all data if called without params', function() {
-      //   var element = dom(a);
-      //   expect(element.data()).toEqual({});
-
-      //   element.data('foo', 'bar');
-      //   expect(element.data()).toEqual({
-      //     foo: 'bar'
-      //   });
-
-      //   element.data().baz = 'xxx';
-      //   expect(element.data()).toEqual({
-      //     foo: 'bar',
-      //     baz: 'xxx'
-      //   });
-      // });
-
-      // it('should create a new data object if called with a single object arg', function() {
-      //   var element = dom(a),
-      //     newData = {
-      //       foo: 'bar'
-      //     };
-
-      //   element.data(newData);
-      //   expect(element.data()).toEqual({
-      //     foo: 'bar'
-      //   });
-      //   expect(element.data()).not.toBe(newData); // create a copy
-      // });
-
-      // it('should merge existing data object with a new one if called with a single object arg', function() {
-      //   var element = dom(a);
-      //   element.data('existing', 'val');
-      //   expect(element.data()).toEqual({
-      //     existing: 'val'
-      //   });
-
-      //   var oldData = element.data(),
-      //     newData = {
-      //       meLike: 'turtles',
-      //       'youLike': 'carrots'
-      //     };
-
-      //   expect(element.data(newData)).toBe(element);
-      //   expect(element.data()).toEqual({
-      //     meLike: 'turtles',
-      //     youLike: 'carrots',
-      //     existing: 'val'
-      //   });
-      //   expect(element.data()).toBe(oldData); // merge into the old object
-      // });
-
-      // describe('data cleanup', function() {
-      //   it('should remove data on element removal', function() {
-      //     var div = dom('<div><span>text</span></div>'),
-      //       span = div.find('span');
-
-      //     span.data('name', 'angular');
-      //     span.remove();
-      //     expect(span.data('name')).toBeUndefined();
-      //   });
-
-      //   it('should remove event listeners on element removal', function() {
-      //     var div = dom('<div><span>text</span></div>'),
-      //       span = div.find('span'),
-      //       log = '';
-
-      //     span.bind('click', function() {
-      //       log += 'click;'
-      //     });
-      //     browserTrigger(span);
-      //     expect(log).toEqual('click;');
-
-      //     span.remove();
-
-      //     browserTrigger(span);
-      //     expect(log).toEqual('click;');
-      //   });
-      // });
-    });
-
     describe('attr*', function() {
 
       beforeEach(function(){
@@ -566,33 +463,50 @@ define( [
     });
 
 
-    describe('prop', function() {
-      it('should read element property', function() {
+    describe('prop*', function() {
+      it('prop() should read element property', function() {
         var elm = dom('<div class="foo">a</div>');
         expect(elm.prop('className')).toBe('foo');
       });
 
-      it('should set element property to a value', function() {
+      it('propSet() should set element property to a value', function() {
         var elm = dom('<div class="foo">a</div>');
-        elm.prop('className', 'bar');
+        elm.propSet('className', 'bar');
         expect(elm[0].className).toBe('bar');
         expect(elm.prop('className')).toBe('bar');
       });
 
-      it('should set boolean element property', function() {
+      it('propSetAll() should set a bunch properties', function() {
+        var elm = dom('<div></div>');
+        elm.propSetAll({a:'a val',b:'b val',c:'c val'});
+        expect(elm.prop('a')).toBe('a val');
+        expect(elm.prop('b')).toBe('b val');
+        expect(elm.prop('c')).toBe('c val');
+      });
+
+      it('propAll() should set a bunch properties', function() {
+        var elm = dom('<div></div>');
+        elm.propSetAll({a:'a val',b:'b val',c:'c val'});
+        expect(elm.propAll(['a','c'])).toEqual({
+          a:'a val',
+          c:'c val'
+        });
+      });
+
+      it('propSet() should set boolean element property', function() {
         var elm = dom('<input type="checkbox">');
         expect(elm.prop('checked')).toBe(false);
 
-        elm.prop('checked', true);
+        elm.propSet('checked', true);
         expect(elm.prop('checked')).toBe(true);
 
-        elm.prop('checked', '');
+        elm.propSet('checked', '');
         expect(elm.prop('checked')).toBe(false);
 
-        elm.prop('checked', 'lala');
+        elm.propSet('checked', 'lala');
         expect(elm.prop('checked')).toBe(true);
 
-        elm.prop('checked', null);
+        elm.propSet('checked', null);
         expect(elm.prop('checked')).toBe(false);
       });
     });
