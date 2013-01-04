@@ -3,7 +3,7 @@ require.config({
     requireLib: '../../../build/require',
     cell: '../../../build/cell',
     'cell-builder-plugin': '../../../build/cell-builder-plugin',
-    dom: '../../../build/dom',
+    jquery: '../../../support/jquery',
     underscore: '../../../support/lodash.custom',
     backbone: '../../../node_modules/backbone/backbone'
   },

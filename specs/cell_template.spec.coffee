@@ -2,6 +2,66 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
   ({beforeEachRequire})->
 
+    describe '__.if( condition:truthy, {then:function, else:function} )', ->
+
+      beforeEachRequire ['cell'], ({Cell})->
+        @__ = new Cell().__
+        @thenNode = node 'div'
+        @elseNode = node 'span'
+        @thenElse =
+          then: => @thenNode
+          else: => @elseNode
+
+      it 'when condition is truthy, renders then', ->
+        for truthy in [true,1,'1',[],{}]
+          expect(@__.if(truthy, @thenElse)).toEqual [@thenNode]
+
+      it 'when condition is falsy, renders then', ->
+        for falsy in [false,0,'',undefined,null]
+          expect(@__.if(falsy, @thenElse)).toEqual [@elseNode]
+
+    describe '__.each( many:arrayOrCollection, renderer:function )', ->
+
+      beforeEachRequire ['cell'], ({Cell})->
+        @__ = new Cell().__
+        @items = [
+          {name:'a'}
+          {name:'b'}
+          {name:'c'}
+        ]
+        @eachRenderer = jasmine.createSpy('eachRenderer')
+        @eachRenderer.andCallFake (item)=> @__ 'div', item.name or item.attributes.name
+
+      it 'when many is an empty array or collection', ->
+        expect(@__.each [], @eachRenderer).toEqual []
+        expect(@__.each (new Backbone.Collection), @eachRenderer).toEqual []
+        expect(@eachRenderer.callCount).toEqual 0
+
+      it 'when many is non-empty array', ->
+        result = @__.each @items, @eachRenderer
+        expect(@eachRenderer.callCount).toEqual 3
+        expect(@eachRenderer.calls[i].args).toEqual [item,i,@items] for item,i in @items
+        nodeHTMLEquals result[0], '<div>a</div>'
+        nodeHTMLEquals result[1], '<div>b</div>'
+        nodeHTMLEquals result[2], '<div>c</div>'
+
+      it 'when many is non-empty collection', ->
+        collection = new Backbone.Collection @items
+
+        result = @__.each collection, @eachRenderer
+        expect(@eachRenderer.callCount).toEqual 3
+
+        for item,i in @items
+          args = @eachRenderer.calls[i].args
+          expect(args[0] instanceof Backbone.Model).toBe true
+          expect(args[0].attributes).toEqual item
+          expect(args[1]).toEqual i
+          expect(args[2]).toBe collection.models
+
+        nodeHTMLEquals result[0], '<div>a</div>'
+        nodeHTMLEquals result[1], '<div>b</div>'
+        nodeHTMLEquals result[2], '<div>c</div>'
+
     describe '__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', ->
 
       beforeEachRequire [
@@ -132,6 +192,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
       it_renders_views "view:Backbone.View",
         []
         '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>'
+        true
 
       it_renders_views "view:Backbone.View, options:Object",
         [ tagName: 'span' ]

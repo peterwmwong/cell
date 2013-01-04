@@ -7,6 +7,101 @@ define(['./utils/spec-utils'], function(_arg) {
   return function(_arg1) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
+    describe('__.if( condition:truthy, {then:function, else:function} )', function() {
+      beforeEachRequire(['cell'], function(_arg2) {
+        var Cell,
+          _this = this;
+        Cell = _arg2.Cell;
+        this.__ = new Cell().__;
+        this.thenNode = node('div');
+        this.elseNode = node('span');
+        return this.thenElse = {
+          then: function() {
+            return _this.thenNode;
+          },
+          "else": function() {
+            return _this.elseNode;
+          }
+        };
+      });
+      it('when condition is truthy, renders then', function() {
+        var truthy, _i, _len, _ref, _results;
+        _ref = [true, 1, '1', [], {}];
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          truthy = _ref[_i];
+          _results.push(expect(this.__["if"](truthy, this.thenElse)).toEqual([this.thenNode]));
+        }
+        return _results;
+      });
+      return it('when condition is falsy, renders then', function() {
+        var falsy, _i, _len, _ref, _results;
+        _ref = [false, 0, '', void 0, null];
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          falsy = _ref[_i];
+          _results.push(expect(this.__["if"](falsy, this.thenElse)).toEqual([this.elseNode]));
+        }
+        return _results;
+      });
+    });
+    describe('__.each( many:arrayOrCollection, renderer:function )', function() {
+      beforeEachRequire(['cell'], function(_arg2) {
+        var Cell,
+          _this = this;
+        Cell = _arg2.Cell;
+        this.__ = new Cell().__;
+        this.items = [
+          {
+            name: 'a'
+          }, {
+            name: 'b'
+          }, {
+            name: 'c'
+          }
+        ];
+        this.eachRenderer = jasmine.createSpy('eachRenderer');
+        return this.eachRenderer.andCallFake(function(item) {
+          return _this.__('div', item.name || item.attributes.name);
+        });
+      });
+      it('when many is an empty array or collection', function() {
+        expect(this.__.each([], this.eachRenderer)).toEqual([]);
+        expect(this.__.each(new Backbone.Collection, this.eachRenderer)).toEqual([]);
+        return expect(this.eachRenderer.callCount).toEqual(0);
+      });
+      it('when many is non-empty array', function() {
+        var i, item, result, _i, _len, _ref;
+        result = this.__.each(this.items, this.eachRenderer);
+        expect(this.eachRenderer.callCount).toEqual(3);
+        _ref = this.items;
+        for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+          item = _ref[i];
+          expect(this.eachRenderer.calls[i].args).toEqual([item, i, this.items]);
+        }
+        nodeHTMLEquals(result[0], '<div>a</div>');
+        nodeHTMLEquals(result[1], '<div>b</div>');
+        return nodeHTMLEquals(result[2], '<div>c</div>');
+      });
+      return it('when many is non-empty collection', function() {
+        var args, collection, i, item, result, _i, _len, _ref;
+        collection = new Backbone.Collection(this.items);
+        result = this.__.each(collection, this.eachRenderer);
+        expect(this.eachRenderer.callCount).toEqual(3);
+        _ref = this.items;
+        for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+          item = _ref[i];
+          args = this.eachRenderer.calls[i].args;
+          expect(args[0] instanceof Backbone.Model).toBe(true);
+          expect(args[0].attributes).toEqual(item);
+          expect(args[1]).toEqual(i);
+          expect(args[2]).toBe(collection.models);
+        }
+        nodeHTMLEquals(result[0], '<div>a</div>');
+        nodeHTMLEquals(result[1], '<div>b</div>');
+        return nodeHTMLEquals(result[2], '<div>c</div>');
+      });
+    });
     return describe('__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', function() {
       var empty, it_renders, it_renders_views, _fn, _i, _len, _ref;
       beforeEachRequire(["fixtures/TestCell1", 'cell'], function(TestCell1, _arg2) {
@@ -95,7 +190,7 @@ define(['./utils/spec-utils'], function(_arg) {
           'data-custom2': 'myattr2'
         }, void 0, null
       ], '<p data-custom="myattr" data-custom2="myattr2"></p>');
-      it_renders_views("view:Backbone.View", [], '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>');
+      it_renders_views("view:Backbone.View", [], '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>', true);
       return it_renders_views("view:Backbone.View, options:Object", [
         {
           tagName: 'span'

@@ -18,7 +18,7 @@
     "coffee-script": "~1.4.0",
     "connect": "~2.7.1",
     "requirejs": "~2.1.2",
-    "uglify-js2": "~2.1.11",
+    "uglify-js": "~2.2.2",
     "lodash": "1.0.0-rc.3"
   }
 }

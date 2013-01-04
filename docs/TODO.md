@@ -1,23 +1,58 @@
 TODO
 ====
 
-NEW: __.if __.repeat
---------------------
+NEW: Cell::renderRoot()
+-----------------------
+
+Optional function to define when you want to control how a Cell's root element (@el) is rendered
+Elements produced by renderEl() will be the contents.
+
+    ...
+    renderRoot: (__)->
+      __ 'input', type:'checkbox', checked:(-> @model.get 'done')
+    ...
+
+
+NEW: __.if() __.each()
+----------------------
     
     ...
     renderEl: -> [
       __.if (-> @model.loaded),
         then:-> __ '.true'
-
         else:->  __ '.false'
     ]
     ...
 
     ...
     renderEl: -> [
-      __.each (-> @collection), (item)->
+      __.each @collection, (item)->
         __ View, model: item
+
+      __.each @collection, (item)->
+        __ 'div#myid.myclass', item
+
+      __.repeat View, @collection, (item)->
+      __.repeat View, @collection
+      __.repeat 'div#myid.myclass', @collection
     ...
+
+
+NEW: exts (see angularjs directives)
+-----------------------------------
+
+    __ '.todo', x_class(done:-> @model.get 'done')
+
+### __ API change
+
+    __( Selector, [exts:cell.Ext...], [attributes:object], [children...] )
+    __( View, [exts:cell.Ext...], [options:object], [children...] )
+
+### cell.Ext
+
+    cell.Ext.extend
+      initialize: (element, parentView, args...)->
+
 
 NEW: dom
 ----------------------------
@@ -35,8 +70,6 @@ NEW: dom
 TEST: Testacular
 ----------------
 
-NEW: exts (see angularjs directives)
------------------------------------
 
 Extend html DOM functionality
 

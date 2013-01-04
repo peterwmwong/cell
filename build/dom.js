@@ -295,7 +295,7 @@ define(['underscore'], function(_) {
           "val=val||e.styl[name];"
         : "val=e.style[name];")+
       ((msie <= 8)
-        ? "val=(val==='')?undefined:val;"
+        ? "val=(val==='')?void 0:val;"
         : "")
     ),
     set: {
@@ -315,7 +315,7 @@ define(['underscore'], function(_) {
         // the extra argument "2" is to get the right thing for a.href in IE, see jQuery code
         // some elements (e.g. Document) don't have get attribute, so return undefined
         "val=e.getAttribute(name,2);"+
-        "if(val===null){val=undefined;}"+
+        "if(val===null){val=void 0;}"+
       "}"
     ),
     set: {
@@ -369,7 +369,7 @@ define(['underscore'], function(_) {
           "val=val||e.styl[name];"
         : "val=e.style[name];")+
       ((msie <= 8)
-        ? "val=(val==='')?undefined:val;"
+        ? "val=(val==='')?void 0:val;"
         : "")
     ),
     set: {

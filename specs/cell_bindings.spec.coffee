@@ -17,7 +17,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
           @collection = new @Backbone.Collection()
           @cellWithCollection = new @Cell {@collection}
 
-        describe "when a @model/@collecion trigger's an event", ->
+        describe "and triggers an event", ->
 
           beforeEach ->
             @model.trigger 'modelEvent'
@@ -195,4 +195,3 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
           ]
           expected_child_html: 'Hello World!0<div class="initial"></div>'
           expected_child_html_after: 'Goodbye!1<div class="after"></div>'
-

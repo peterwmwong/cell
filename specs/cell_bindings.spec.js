@@ -23,7 +23,7 @@ define(['./utils/spec-utils'], function(_arg) {
             collection: this.collection
           });
         });
-        return describe("when a @model/@collecion trigger's an event", function() {
+        return describe("and triggers an event", function() {
           beforeEach(function() {
             this.model.trigger('modelEvent');
             return this.collection.trigger('collectionEvent');

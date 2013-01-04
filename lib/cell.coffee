@@ -29,12 +29,67 @@ define [
         cell.remove()
     return
 
+  __ = (viewOrHAML, optionsOrFirstChild)->
+    children =
+      if optionsOrFirstChild and optionsOrFirstChild.constructor is Object
+        options = optionsOrFirstChild
+        [].slice.call arguments, 2
+      else
+        [].slice.call arguments, 1
+
+    # HAML
+    if typeof viewOrHAML is 'string'
+      if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec(viewOrHAML)
+        # Tag
+        parent = document.createElement m[1] or 'div'
+
+        # id
+        if m[3]
+          parent.setAttribute 'id', m[3]
+
+        # class
+        if m[4]
+          parent.className = m[4].slice(1).replace(/\./g, ' ')
+
+        for k,v of options
+          if isBind v
+            @_binds.push bind =
+              el: parent
+              attr: k
+              func: _.bind v, @
+            @_renderBindAttr bind
+
+          else
+            parent.setAttribute k, v
+
+    # Cell
+    else if viewOrHAML and viewOrHAML.prototype instanceof Backbone.View
+      parent = (new viewOrHAML options).render().el
+
+    if parent
+      parent.appendChild child for child in @_renderChildren children, []
+      parent
+
+  __if = (condition,thenElse)->
+    [
+      if condition then thenElse.then()
+      else thenElse.else()
+    ]
+
+  __each = (col,renderer)->
+    if col instanceof Backbone.Collection
+      col.map renderer
+    else
+      renderer item, i, col for item,i in col
+
   module =
     Cell: Backbone.View.extend
 
       constructor: ->
         @_binds = []
-        _.bindAll @, '__', 'updateBinds'
+        @__ = _.bind @__, @
+        @__.if = __if
+        @__.each = __each
         Backbone.View.apply @, arguments
         @listenTo bindUpdater, 'all', @updateBinds if (bindUpdater = @model or @collection)
 
@@ -95,46 +150,7 @@ define [
 
         rendered
 
-      __: (viewOrHAML, optionsOrFirstChild)->
-        children =
-          if optionsOrFirstChild and optionsOrFirstChild.constructor is Object
-            options = optionsOrFirstChild
-            [].slice.call arguments, 2
-          else
-            [].slice.call arguments, 1
-
-        # HAML
-        if typeof viewOrHAML is 'string'
-          if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec(viewOrHAML)
-            # Tag
-            parent = document.createElement m[1] or 'div'
-
-            # id
-            if m[3]
-              parent.setAttribute 'id', m[3]
-
-            # class
-            if m[4]
-              parent.className = m[4].slice(1).replace(/\./g, ' ')
-
-            for k,v of options
-              if isBind v
-                @_binds.push bind =
-                  el: parent
-                  attr: k
-                  func: _.bind v, @
-                @_renderBindAttr bind
-
-              else
-                parent.setAttribute k, v
-
-        # Cell
-        else if viewOrHAML and viewOrHAML.prototype instanceof Backbone.View
-          parent = (new viewOrHAML options).render().el
-
-        if parent
-          parent.appendChild child for child in @_renderChildren children, []
-          parent
+      __: __
 
       render: ->
         @el.appendChild child for child in @_renderChildren (@renderEl @__), []
