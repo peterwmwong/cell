@@ -6,19 +6,64 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
       beforeEachRequire ['cell'], ({Cell})->
         @__ = new Cell().__
-        @thenNode = node 'div'
-        @elseNode = node 'span'
-        @thenElse =
-          then: => @thenNode
-          else: => @elseNode
 
-      it 'when condition is truthy, renders then', ->
-        for truthy in [true,1,'1',[],{}]
-          expect(@__.if(truthy, @thenElse)).toEqual [@thenNode]
+      describe 'when only then is provided', ->
 
-      it 'when condition is falsy, renders then', ->
-        for falsy in [false,0,'',undefined,null]
-          expect(@__.if(falsy, @thenElse)).toEqual [@elseNode]
+        beforeEach ->
+          @thenNode = node 'div'
+          @thenElse =
+            then: => @thenNode
+
+        it 'when condition is truthy, renders then', ->
+          expect(@__.if(true, @thenElse)).toEqual @thenNode
+
+        it 'when condition is falsy, renders undefined', ->
+          expect(@__.if(false, @thenElse)).toEqual undefined
+        
+      describe 'when only else is provided', ->
+
+        beforeEach ->
+          @elseNode = node 'div'
+          @thenElse =
+            else: => @elseNode
+
+        it 'when condition is truthy, renders undefined', ->
+          expect(@__.if(true, @thenElse)).toEqual undefined
+
+        it 'when condition is falsy, renders undefined', ->
+          expect(@__.if(false, @thenElse)).toEqual @elseNode
+
+      describe 'when then and else are provided', ->
+
+        beforeEach ->
+          @thenNode = node 'div'
+          @elseNode = node 'span'
+          @thenElse =
+            then: => @thenNode
+            else: => @elseNode
+
+        it 'when condition is truthy, renders then', ->
+          for truthy in [true,1,'1',[],{}]
+            expect(@__.if(truthy, @thenElse)).toEqual @thenNode
+
+        it 'when condition is falsy, renders else', ->
+          for falsy in [false,0,'',undefined,null]
+            expect(@__.if(falsy, @thenElse)).toEqual @elseNode
+
+
+      describe 'when then/else returns an array of nodes', ->
+
+        beforeEach ->
+          @thenNode1 = node 'div'
+          @thenNode2 = node 'div'
+          @thenElse =
+            then: => [
+              @thenNode1
+              @thenNode2
+            ]
+
+        it 'when condition is truthy, renders then', ->
+            expect(@__.if(true, @thenElse)).toEqual [@thenNode1,@thenNode2]
 
     describe '__.each( many:arrayOrCollection, renderer:function )', ->
 

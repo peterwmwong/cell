@@ -9,40 +9,93 @@ define(['./utils/spec-utils'], function(_arg) {
     beforeEachRequire = _arg1.beforeEachRequire;
     describe('__.if( condition:truthy, {then:function, else:function} )', function() {
       beforeEachRequire(['cell'], function(_arg2) {
-        var Cell,
-          _this = this;
+        var Cell;
         Cell = _arg2.Cell;
-        this.__ = new Cell().__;
-        this.thenNode = node('div');
-        this.elseNode = node('span');
-        return this.thenElse = {
-          then: function() {
-            return _this.thenNode;
-          },
-          "else": function() {
-            return _this.elseNode;
+        return this.__ = new Cell().__;
+      });
+      describe('when only then is provided', function() {
+        beforeEach(function() {
+          var _this = this;
+          this.thenNode = node('div');
+          return this.thenElse = {
+            then: function() {
+              return _this.thenNode;
+            }
+          };
+        });
+        it('when condition is truthy, renders then', function() {
+          return expect(this.__["if"](true, this.thenElse)).toEqual(this.thenNode);
+        });
+        return it('when condition is falsy, renders undefined', function() {
+          return expect(this.__["if"](false, this.thenElse)).toEqual(void 0);
+        });
+      });
+      describe('when only else is provided', function() {
+        beforeEach(function() {
+          var _this = this;
+          this.elseNode = node('div');
+          return this.thenElse = {
+            "else": function() {
+              return _this.elseNode;
+            }
+          };
+        });
+        it('when condition is truthy, renders undefined', function() {
+          return expect(this.__["if"](true, this.thenElse)).toEqual(void 0);
+        });
+        return it('when condition is falsy, renders undefined', function() {
+          return expect(this.__["if"](false, this.thenElse)).toEqual(this.elseNode);
+        });
+      });
+      describe('when then and else are provided', function() {
+        beforeEach(function() {
+          var _this = this;
+          this.thenNode = node('div');
+          this.elseNode = node('span');
+          return this.thenElse = {
+            then: function() {
+              return _this.thenNode;
+            },
+            "else": function() {
+              return _this.elseNode;
+            }
+          };
+        });
+        it('when condition is truthy, renders then', function() {
+          var truthy, _i, _len, _ref, _results;
+          _ref = [true, 1, '1', [], {}];
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            truthy = _ref[_i];
+            _results.push(expect(this.__["if"](truthy, this.thenElse)).toEqual(this.thenNode));
           }
-        };
+          return _results;
+        });
+        return it('when condition is falsy, renders else', function() {
+          var falsy, _i, _len, _ref, _results;
+          _ref = [false, 0, '', void 0, null];
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            falsy = _ref[_i];
+            _results.push(expect(this.__["if"](falsy, this.thenElse)).toEqual(this.elseNode));
+          }
+          return _results;
+        });
       });
-      it('when condition is truthy, renders then', function() {
-        var truthy, _i, _len, _ref, _results;
-        _ref = [true, 1, '1', [], {}];
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          truthy = _ref[_i];
-          _results.push(expect(this.__["if"](truthy, this.thenElse)).toEqual([this.thenNode]));
-        }
-        return _results;
-      });
-      return it('when condition is falsy, renders then', function() {
-        var falsy, _i, _len, _ref, _results;
-        _ref = [false, 0, '', void 0, null];
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          falsy = _ref[_i];
-          _results.push(expect(this.__["if"](falsy, this.thenElse)).toEqual([this.elseNode]));
-        }
-        return _results;
+      return describe('when then/else returns an array of nodes', function() {
+        beforeEach(function() {
+          var _this = this;
+          this.thenNode1 = node('div');
+          this.thenNode2 = node('div');
+          return this.thenElse = {
+            then: function() {
+              return [_this.thenNode1, _this.thenNode2];
+            }
+          };
+        });
+        return it('when condition is truthy, renders then', function() {
+          return expect(this.__["if"](true, this.thenElse)).toEqual([this.thenNode1, this.thenNode2]);
+        });
       });
     });
     describe('__.each( many:arrayOrCollection, renderer:function )', function() {

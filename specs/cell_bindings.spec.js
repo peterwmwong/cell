@@ -98,6 +98,67 @@ define(['./utils/spec-utils'], function(_arg) {
         this.cell.test = 'test val';
         return this.__ = this.cell.__;
       });
+      describe('when a bind is passed as the condition to __.if(condition, {then:function, else:function})', function() {
+        describe('when then and else return array of nodes', function() {
+          beforeEach(function() {
+            var _this = this;
+            this.condition = true;
+            this.CellWithIf = this.Cell.extend({
+              _cellName: 'test',
+              renderEl: function(__) {
+                return [
+                  __('.parent', __["if"]((function() {
+                    return _this.condition;
+                  }), {
+                    then: function() {
+                      return [__('.then1'), __('.then2')];
+                    },
+                    "else": function() {
+                      return [__('.else1'), __('.else2')];
+                    }
+                  }))
+                ];
+              }
+            });
+            return this.cell = new this.CellWithIf().render();
+          });
+          return it('renders initially correctly', function() {
+            return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>');
+          });
+        });
+        return describe('when then and else return a node', function() {
+          beforeEach(function() {
+            var _this = this;
+            this.condition = true;
+            this.CellWithIf = this.Cell.extend({
+              _cellName: 'test',
+              renderEl: function(__) {
+                return [
+                  __('.parent', __["if"]((function() {
+                    return _this.condition;
+                  }), {
+                    then: function() {
+                      return __('.then');
+                    },
+                    "else": function() {
+                      return __('.else');
+                    }
+                  }))
+                ];
+              }
+            });
+            return this.cell = new this.CellWithIf().render();
+          });
+          it('renders initially correctly', function() {
+            return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="then"></div></div></div>');
+          });
+          return it('renders after change correctly', function() {
+            this.condition = false;
+            this.cell.updateBinds();
+            return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="else"></div></div></div>');
+          });
+        });
+      });
       describe('when a bind is passed as an attribute', function() {
         beforeEach(function() {
           return this.node = this.__('.bound', {

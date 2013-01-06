@@ -90,6 +90,60 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
         @cell.test = 'test val'
         @__ = @cell.__
 
+      describe 'when a bind is passed as the condition to __.if(condition, {then:function, else:function})', ->
+
+        describe 'when then and else return array of nodes', ->
+
+          beforeEach ->
+            @condition = true
+            @CellWithIf = @Cell.extend
+              _cellName: 'test'
+              renderEl: (__)=> [
+                __ '.parent',
+                  __.if (=> @condition),
+                    then: -> [
+                      __ '.then1'
+                      __ '.then2'
+                    ]
+                    else: -> [
+                      __ '.else1'
+                      __ '.else2'
+                    ]
+              ]
+            @cell = new @CellWithIf().render()
+
+          it 'renders initially correctly', ->
+            nodeHTMLEquals @cell.el,
+              '<div cell="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>'
+
+          # it 'renders after change correctly', ->
+          #   @condition = false
+          #   @cell.updateBinds()
+          #   nodeHTMLEquals @cell.el, '<div cell="test"><div class="parent"><div class="else"></div></div></div>'
+
+
+        describe 'when then and else return a node', ->
+
+          beforeEach ->
+            @condition = true
+            @CellWithIf = @Cell.extend
+              _cellName: 'test'
+              renderEl: (__)=> [
+                __ '.parent',
+                  __.if (=> @condition),
+                    then: -> __ '.then'
+                    else: -> __ '.else'
+              ]
+            @cell = new @CellWithIf().render()
+
+          it 'renders initially correctly', ->
+            nodeHTMLEquals @cell.el, '<div cell="test"><div class="parent"><div class="then"></div></div></div>'
+
+          it 'renders after change correctly', ->
+            @condition = false
+            @cell.updateBinds()
+            nodeHTMLEquals @cell.el, '<div cell="test"><div class="parent"><div class="else"></div></div></div>'
+
       describe 'when a bind is passed as an attribute', ->
 
         beforeEach ->

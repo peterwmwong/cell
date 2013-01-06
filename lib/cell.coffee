@@ -31,11 +31,12 @@ define [
 
   __ = (viewOrHAML, optionsOrFirstChild)->
     children =
-      if optionsOrFirstChild and optionsOrFirstChild.constructor is Object
-        options = optionsOrFirstChild
-        [].slice.call arguments, 2
-      else
-        [].slice.call arguments, 1
+      [].slice.call arguments,
+        if optionsOrFirstChild and optionsOrFirstChild.constructor is Object
+          options = optionsOrFirstChild
+          2
+        else
+          1
 
     # HAML
     if typeof viewOrHAML is 'string'
@@ -53,11 +54,10 @@ define [
 
         for k,v of options
           if isBind v
-            @_binds.push bind =
-              el: parent
-              attr: k
-              func: _.bind v, @
-            @_renderBindAttr bind
+            bind = new AttrBind parent, k, (_.bind v, @)
+            @_binds.push bind
+            bind.needRender()
+            bind.render @
 
           else
             parent.setAttribute k, v
@@ -67,20 +67,53 @@ define [
       parent = (new viewOrHAML options).render().el
 
     if parent
-      parent.appendChild child for child in @_renderChildren children, []
+      @_renderChildren children, parent
       parent
 
   __if = (condition,thenElse)->
-    [
-      if condition then thenElse.then()
-      else thenElse.else()
-    ]
+    if typeof condition is 'function'
+      new IfBind undefined, condition, thenElse.then, thenElse.else
+    else
+      thenElse[if condition then 'then' else 'else']?()
 
   __each = (col,renderer)->
     if col instanceof Backbone.Collection
       col.map renderer
     else
       renderer item, i, col for item,i in col
+
+
+  Bind = (@parent, @getValue)->
+  Bind::value = undefined
+  Bind::nodes = undefined
+  Bind::getRenderValue = -> @value
+  Bind::needRender = ->
+    if (value = @getValue()) isnt @value
+      @value = value
+      true
+    else
+      false
+
+  Bind::render = (view, rendered)->
+    renderValue = @getRenderValue()
+    renderValue = [document.createTextNode ''] unless renderValue?
+    nodes = view._renderChildren renderValue, @parent, @nodes?[0]
+    @parent.removeChild n for n in @nodes if @nodes
+    @nodes = nodes
+    rendered.push n for n in nodes if rendered
+    return
+
+  IfBind = (@parent, @getValue, @then, @else)->
+    @getRenderValue = -> if @value then @then() else @else()
+    @
+  IfBind.prototype = Bind.prototype
+
+  AttrBind = (@parent, @attr, @getValue)->
+  AttrBind::value = undefined
+  AttrBind::needRender = Bind::needRender
+  AttrBind::render = ->
+    @parent.setAttribute @attr, @value
+    return
 
   module =
     Cell: Backbone.View.extend
@@ -93,81 +126,52 @@ define [
         Backbone.View.apply @, arguments
         @listenTo bindUpdater, 'all', @updateBinds if (bindUpdater = @model or @collection)
 
-      _renderBindEl: (bind)->
-        return false if ((newVal = bind.func()) is bind.val) and bind.nodes
-
-        newNodes =
-          if newVal?
-            @_renderChildren newVal, []
-          else
-            [document.createTextNode '']
-
-        nodes = bind.nodes
-
-        # Is this on a 'change' (not initial)
-        if nodes
-          target = nodes[0]
-          parent = target.parentNode
-
-          # Insert new nodes in the appropriate place
-          parent.insertBefore n, target for n in newNodes
-
-          # Remove old nodes
-          $(nodes).remove()
-
-        bind.nodes = newNodes
-        bind.val = newVal
-        true
-
-      _renderBindAttr: (bind)->
-        return false if (newVal = bind.func()) is bind.val
-        bind.el.setAttribute bind.attr, bind.val = newVal
-        true
-
-      _renderChildren: (nodes, rendered)->
+      _renderChildren: (nodes, parent, insertBeforeNode=null, rendered=[])->
         return rendered unless nodes?
         nodes = [nodes] unless isArrayish nodes
 
         for n in nodes when n?
-          if n.nodeType is 1
-            rendered.push n
+
+          # Is Element or Text Node
+          if n.nodeType in [1,3]
+            rendered.push parent.insertBefore n, insertBeforeNode
 
           else if isArrayish n
-            @_renderChildren n, rendered
+            @_renderChildren n, parent, insertBeforeNode, rendered
 
           else if isBind n
-            bind =
-              nodes: undefined
-              val: undefined
-              func: _.bind n, @
+            @_binds.push bind = new Bind parent, _.bind(n,@)
+            bind.needRender()
+            bind.render @, rendered
 
-            @_renderBindEl bind
-            @_binds.push bind
-            rendered.push n for n in bind.nodes
+          else if n instanceof Bind
+            @_binds.push n
+            n.parent = parent
+            n.needRender()
+            n.render @, rendered
 
           else
-            rendered.push document.createTextNode n
+            tn = document.createTextNode n
+            rendered.push parent.insertBefore tn, insertBeforeNode
 
         rendered
 
       __: __
 
       render: ->
-        @el.appendChild child for child in @_renderChildren (@renderEl @__), []
+        @_renderChildren (@renderEl @__), @el
         @afterRender()
         @
 
       updateBinds: ->
-        for i in [0...10]
+        i = 0
+        change = true
+        while change and (i++ < 10)
           change = false
           for b in @_binds
-            bindChange =
-              if b.attr
-                @_renderBindAttr b 
-              else
-                @_renderBindEl b
-            change or= bindChange
-          break unless change
+            if b.needRender()
+              change = true
+              b.render @
         return
 
       # Removes anything that might leak memory
