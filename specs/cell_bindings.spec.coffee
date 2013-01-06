@@ -116,10 +116,10 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
             nodeHTMLEquals @cell.el,
               '<div cell="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>'
 
-          # it 'renders after change correctly', ->
-          #   @condition = false
-          #   @cell.updateBinds()
-          #   nodeHTMLEquals @cell.el, '<div cell="test"><div class="parent"><div class="else"></div></div></div>'
+          it 'renders after change correctly', ->
+            @condition = false
+            @cell.updateBinds()
+            nodeHTMLEquals @cell.el, '<div cell="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
 
 
         describe 'when then and else return a node', ->

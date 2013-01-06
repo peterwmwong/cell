@@ -122,8 +122,13 @@ define(['./utils/spec-utils'], function(_arg) {
             });
             return this.cell = new this.CellWithIf().render();
           });
-          return it('renders initially correctly', function() {
+          it('renders initially correctly', function() {
             return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>');
+          });
+          return it('renders after change correctly', function() {
+            this.condition = false;
+            this.cell.updateBinds();
+            return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>');
           });
         });
         return describe('when then and else return a node', function() {
