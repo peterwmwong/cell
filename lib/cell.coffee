@@ -82,7 +82,6 @@ define [
     else
       renderer item, i, col for item,i in col
 
-
   Bind = (@parent, @getValue)->
   Bind::value = undefined
   Bind::nodes = undefined
@@ -93,7 +92,6 @@ define [
       true
     else
       false
-
   Bind::render = (view, rendered)->
     renderValue = @getRenderValue()
     renderValue = [document.createTextNode ''] unless renderValue?
@@ -114,6 +112,77 @@ define [
   AttrBind::render = ->
     @parent.setAttribute @attr, @value
     return
+
+  hashuid = 0
+  nextuid = -> (++hashuid).toString 36
+  hashkey = (obj)->
+    (objType = typeof obj) + ':' +
+      if (objType is 'object') and (obj isnt null)
+        obj.$$hashkey or= nextuid()
+      else
+        obj
+
+  HashQueue = ->
+    @hash = {}
+    this
+  HashQueue::push = (key,val)->
+    entry = (@hash[key] or= [])
+    entry.push val
+    return
+  HashQueue::shift = (key)->
+    if entry = @hash[key]
+      if entry.lengh is 1
+        delete @hash[key]
+        entry[0]
+      else
+        entry.shift()
+
+  EachBind = (@parent, @_getValue, @itemRenderer)->
+    @itemhash = new HashQueue
+
+  EachBind::value = []
+  EachBind::itemhash = undefined
+  EachBind::needRender = ->
+    value = @getValue() or []
+
+    # Quick change checks
+    unless change = (value isnt @value) or (@value.length isnt value.length)
+
+      # Deep change check (check each item)
+      i = @value.length
+      while --i >= 0
+        break if value[i] isnt @value[i]
+      change = (i >= 0)
+
+    if change
+      @value = value
+      true
+    else
+      false
+
+  EachBind::render = ->
+    newEls = []
+    newItemHash = new HashQueue
+
+    for item in @value
+      key = hashkey item
+      unless prevItemEl = @itemhash.shift key
+        prevItemEl = @itemRenderer item
+      
+      newItemHash.push key, prevItemEl
+      newEls.push prevItemEl
+
+    # Remove the elements for the itmes that were removed from the collection
+    for items of @itemhash.hash
+      for itemEl in items
+        @parent.removeChild itemEl
+    @itemhash = newItemHash
+
+    # Add the elements for the current items
+    @parent.appendChild el for el in newEls
+    return
+    
+  IfBind.prototype = Bind.prototype
 
   module =
     Cell: Backbone.View.extend

@@ -98,6 +98,30 @@ define(['./utils/spec-utils'], function(_arg) {
         this.cell.test = 'test val';
         return this.__ = this.cell.__;
       });
+      describe('when a bind is passed as the condition to __.each(collection, renderer:function)', function() {
+        return describe('when renderer returns an array of nodes', function() {
+          beforeEach(function() {
+            var _this = this;
+            this.collection = [1, 2, 3];
+            this.CellWithEach = this.Cell.extend({
+              _cellName: 'test',
+              renderEl: function(__) {
+                return [
+                  __('.parent', __.each((function() {
+                    return _this.collection;
+                  }), function(item) {
+                    return [__(".item" + item)];
+                  }))
+                ];
+              }
+            });
+            return this.cell = new this.CellWithEach().render();
+          });
+          return it('renders initially correctly', function() {
+            return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>');
+          });
+        });
+      });
       describe('when a bind is passed as the condition to __.if(condition, {then:function, else:function})', function() {
         describe('when then and else return array of nodes', function() {
           beforeEach(function() {

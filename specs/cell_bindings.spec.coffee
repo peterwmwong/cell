@@ -90,6 +90,32 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
         @cell.test = 'test val'
         @__ = @cell.__
 
+      describe 'when a bind is passed as the condition to __.each(collection, renderer:function)', ->
+
+        describe 'when renderer returns an array of nodes', ->
+
+          beforeEach ->
+            @collection = [1,2,3]
+            @CellWithEach = @Cell.extend
+              _cellName: 'test'
+              renderEl: (__)=> [
+                __ '.parent',
+                  __.each (=> @collection), (item)-> [
+                    __ ".item#{item}"
+                  ]
+              ]
+            @cell = new @CellWithEach().render()
+
+          it 'renders initially correctly', ->
+            nodeHTMLEquals @cell.el,
+              '<div cell="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>'
+
+          # it 'renders after change correctly', ->
+          #   @condition = false
+          #   @cell.updateBinds()
+          #   nodeHTMLEquals @cell.el, '<div cell="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
+
+
       describe 'when a bind is passed as the condition to __.if(condition, {then:function, else:function})', ->
 
         describe 'when then and else return array of nodes', ->
