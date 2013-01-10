@@ -11,6 +11,8 @@ define [
 
   isBind = _.isFunction
 
+  textNode = (text)-> document.createTextNode text
+
   # Maps cid to cell
   cidMap = {}
 
@@ -77,7 +79,9 @@ define [
       thenElse[if condition then 'then' else 'else']?()
 
   __each = (col,renderer)->
-    if col instanceof Backbone.Collection
+    if isBind col
+      new EachBind undefined, col, renderer
+    else if col instanceof Backbone.Collection
       col.map renderer
     else
       renderer item, i, col for item,i in col
@@ -94,7 +98,7 @@ define [
       false
   Bind::render = (view, rendered)->
     renderValue = @getRenderValue()
-    renderValue = [document.createTextNode ''] unless renderValue?
+    renderValue = [textNode ''] unless renderValue?
     nodes = view._renderChildren renderValue, @parent, @nodes?[0]
     @parent.removeChild n for n in @nodes if @nodes
     @nodes = nodes
@@ -105,6 +109,9 @@ define [
     @getRenderValue = -> if @value then @then() else @else()
     @
   IfBind.prototype = Bind.prototype
+
+  ElBind = (@parent,@getValue)->
+
 
   AttrBind = (@parent, @attr, @getValue)->
   AttrBind::value = undefined
@@ -137,8 +144,9 @@ define [
       else
         entry.shift()
 
-  EachBind = (@parent, @_getValue, @itemRenderer)->
+  EachBind = (@parent, @getValue, @itemRenderer)->
     @itemhash = new HashQueue
+    this
 
   EachBind::value = []
   EachBind::itemhash = undefined
@@ -173,7 +181,7 @@ define [
       newEls.push prevItemEl
 
     # Remove the elements for the itmes that were removed from the collection
-    for items of @itemhash.hash
+    for key, items of @itemhash.hash
       for itemEl in items
         @parent.removeChild itemEl
     @itemhash = newItemHash
@@ -200,7 +208,6 @@ define [
         nodes = [nodes] unless isArrayish nodes
 
         for n in nodes when n?
-
           # Is Element or Text Node
           if n.nodeType in [1,3]
             rendered.push parent.insertBefore n, insertBeforeNode
@@ -213,15 +220,14 @@ define [
             bind.needRender()
             bind.render @, rendered
 
-          else if n instanceof Bind
+          else if (n instanceof Bind) or (n instanceof EachBind)
             @_binds.push n
             n.parent = parent
             n.needRender()
             n.render @, rendered
 
           else
-            tn = document.createTextNode n
-            rendered.push parent.insertBefore tn, insertBeforeNode
+            rendered.push parent.insertBefore textNode(n), insertBeforeNode
 
         rendered
 

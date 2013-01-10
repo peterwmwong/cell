@@ -100,9 +100,8 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
               _cellName: 'test'
               renderEl: (__)=> [
                 __ '.parent',
-                  __.each (=> @collection), (item)-> [
+                  __.each (=> @collection), (item)->
                     __ ".item#{item}"
-                  ]
               ]
             @cell = new @CellWithEach().render()
 
@@ -110,10 +109,21 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
             nodeHTMLEquals @cell.el,
               '<div cell="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>'
 
-          # it 'renders after change correctly', ->
-          #   @condition = false
-          #   @cell.updateBinds()
-          #   nodeHTMLEquals @cell.el, '<div cell="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
+          describe 'when collection changes and updateBinds() is called', ->
+
+            beforeEach ->
+              @collection = [4,1,3]
+              @item1 = @cell.el.children[0].children[0]
+              @item3 = @cell.el.children[0].children[2]
+              @cell.updateBinds()
+
+            it 'renders after change correctly', ->
+              nodeHTMLEquals @cell.el,
+                '<div cell="test"><div class="parent"><div class="item4"></div><div class="item1"></div><div class="item3"></div></div></div>'
+
+            it "doesn't rerender previous items", ->
+              expect(@cell.el.children[0].children[1]).toBe @item1
+              expect(@cell.el.children[0].children[2]).toBe @item3
 
 
       describe 'when a bind is passed as the condition to __.if(condition, {then:function, else:function})', ->

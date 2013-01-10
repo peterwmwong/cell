@@ -16,9 +16,9 @@
   "dependencies": {
     "backbone":"~0.9.9",
     "coffee-script": "~1.4.0",
-    "connect": "~2.7.1",
+    "connect": "~2.7.2",
     "requirejs": "~2.1.2",
-    "uglify-js": "~2.2.2",
+    "uglify-js": "~2.2.3",
     "lodash": "1.0.0-rc.3"
   }
 }
