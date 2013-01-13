@@ -7,7 +7,7 @@ define(['./utils/spec-utils'], function(_arg) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
     describe('@updateBinds()', function() {
-      beforeEachRequire(['backbone', 'cell/View'], function(Backbone, View) {
+      beforeEachRequire(['backbone', 'cell/opts/ViewBindings', 'cell/View'], function(Backbone, ViewBindings, View) {
         this.Backbone = Backbone;
         this.View = View;
       });
@@ -15,11 +15,11 @@ define(['./utils/spec-utils'], function(_arg) {
         beforeEach(function() {
           spyOn(this.View.prototype, 'updateBinds');
           this.model = new this.Backbone.Model();
-          this.cellWithModel = new this.View({
+          this.viewWithModel = new this.View({
             model: this.model
           });
           this.collection = new this.Backbone.Collection();
-          return this.cellWithCollection = new this.View({
+          return this.viewWithCollection = new this.View({
             collection: this.collection
           });
         });
@@ -31,26 +31,27 @@ define(['./utils/spec-utils'], function(_arg) {
           return it("calls @updateBinds()", function() {
             expect(this.View.prototype.updateBinds.calls[0]).toEqual({
               args: ['modelEvent'],
-              object: this.cellWithModel
+              object: this.viewWithModel
             });
             return expect(this.View.prototype.updateBinds.calls[1]).toEqual({
               args: ['collectionEvent'],
-              object: this.cellWithCollection
+              object: this.viewWithCollection
             });
           });
         });
       });
       describe("Given multiple binds, when a bind updates due to another bind's update", function() {
         beforeEach(function() {
-          this.cell = new this.View();
-          this.cell.count = -1;
-          this.__ = this.cell.__;
+          this.view = new this.View();
+          this.view.count = -1;
+          this.__ = this.view.__;
           this.bind1 = jasmine.createSpy('bind1').andCallFake(function() {
             if (this.count === 0) {
               ++this.count;
             }
             return this.count;
           });
+          debugger;
           this.oneEl = this.__('.one', this.bind1);
           this.bind2 = jasmine.createSpy('bind2').andCallFake(function() {
             if (this.count === 1) {
@@ -61,8 +62,8 @@ define(['./utils/spec-utils'], function(_arg) {
           this.twoEl = this.__('.two', this.bind2);
           this.bind1.reset();
           this.bind2.reset();
-          this.cell.count = 0;
-          return this.cell.updateBinds();
+          this.view.count = 0;
+          return this.view.updateBinds();
         });
         return it('Calls binds 3 times (1 - updateBinds(), 2 - bind1 changed, 3 - bind2 changed)', function() {
           expect(this.bind1.callCount).toBe(3);
@@ -73,30 +74,30 @@ define(['./utils/spec-utils'], function(_arg) {
       });
       return describe("when a bind continues to update", function() {
         beforeEach(function() {
-          this.cell = new this.View();
-          this.cell.count = -1;
-          this.__ = this.cell.__;
+          this.view = new this.View();
+          this.view.count = -1;
+          this.__ = this.view.__;
           this.bind1 = jasmine.createSpy('bind1').andCallFake(function() {
             return ++this.count;
           });
           this.oneEl = this.__('.one', this.bind1);
           this.bind1.reset();
-          this.cell.count = 0;
-          return this.cell.updateBinds();
+          this.view.count = 0;
+          return this.view.updateBinds();
         });
         return it('max out after 10 tries', function() {
           expect(this.bind1.callCount).toBe(10);
-          expect(this.cell.count).toBe(10);
+          expect(this.view.count).toBe(10);
           return expect(this.oneEl.innerHTML).toBe('10');
         });
       });
     });
     return describe('Passing Bindings (functions) to __', function() {
-      beforeEachRequire(['cell/View'], function(View) {
+      beforeEachRequire(['cell/opts/ViewBindings', 'cell/View'], function(ViewBindings, View) {
         this.View = View;
-        this.cell = new this.View();
-        this.cell.test = 'test val';
-        return this.__ = this.cell.__;
+        this.view = new this.View();
+        this.view.test = 'test val';
+        return this.__ = this.view.__;
       });
       describe('when a bind is passed as the condition to __.each(collection, renderer:function)', function() {
         return describe('when renderer returns an array of nodes', function() {
@@ -115,24 +116,24 @@ define(['./utils/spec-utils'], function(_arg) {
                 ];
               }
             });
-            return this.cell = new this.CellWithEach().render();
+            return this.view = new this.CellWithEach().render();
           });
           it('renders initially correctly', function() {
-            return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>');
+            return nodeHTMLEquals(this.view.el, '<div cell="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>');
           });
           return describe('when collection changes and updateBinds() is called', function() {
             beforeEach(function() {
               this.collection = [4, 1, 3];
-              this.item1 = this.cell.el.children[0].children[0];
-              this.item3 = this.cell.el.children[0].children[2];
-              return this.cell.updateBinds();
+              this.item1 = this.view.el.children[0].children[0];
+              this.item3 = this.view.el.children[0].children[2];
+              return this.view.updateBinds();
             });
             it('renders after change correctly', function() {
-              return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="item4"></div><div class="item1"></div><div class="item3"></div></div></div>');
+              return nodeHTMLEquals(this.view.el, '<div cell="test"><div class="parent"><div class="item4"></div><div class="item1"></div><div class="item3"></div></div></div>');
             });
             return it("doesn't rerender previous items", function() {
-              expect(this.cell.el.children[0].children[1]).toBe(this.item1);
-              return expect(this.cell.el.children[0].children[2]).toBe(this.item3);
+              expect(this.view.el.children[0].children[1]).toBe(this.item1);
+              return expect(this.view.el.children[0].children[2]).toBe(this.item3);
             });
           });
         });
@@ -159,15 +160,15 @@ define(['./utils/spec-utils'], function(_arg) {
                 ];
               }
             });
-            return this.cell = new this.CellWithIf().render();
+            return this.view = new this.CellWithIf().render();
           });
           it('renders initially correctly', function() {
-            return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>');
+            return nodeHTMLEquals(this.view.el, '<div cell="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>');
           });
           return it('renders after change correctly', function() {
             this.condition = false;
-            this.cell.updateBinds();
-            return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>');
+            this.view.updateBinds();
+            return nodeHTMLEquals(this.view.el, '<div cell="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>');
           });
         });
         return describe('when then and else return a node', function() {
@@ -191,15 +192,15 @@ define(['./utils/spec-utils'], function(_arg) {
                 ];
               }
             });
-            return this.cell = new this.CellWithIf().render();
+            return this.view = new this.CellWithIf().render();
           });
           it('renders initially correctly', function() {
-            return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="then"></div></div></div>');
+            return nodeHTMLEquals(this.view.el, '<div cell="test"><div class="parent"><div class="then"></div></div></div>');
           });
           return it('renders after change correctly', function() {
             this.condition = false;
-            this.cell.updateBinds();
-            return nodeHTMLEquals(this.cell.el, '<div cell="test"><div class="parent"><div class="else"></div></div></div>');
+            this.view.updateBinds();
+            return nodeHTMLEquals(this.view.el, '<div cell="test"><div class="parent"><div class="else"></div></div></div>');
           });
         });
       });
@@ -216,8 +217,8 @@ define(['./utils/spec-utils'], function(_arg) {
         });
         return describe("when the bindings's value changes and @updateBinds() is called", function() {
           beforeEach(function() {
-            this.cell.test = 'test val2';
-            return this.cell.updateBinds();
+            this.view.test = 'test val2';
+            return this.view.updateBinds();
           });
           return it("automatically sets the element's attribute to the new binding's value", function() {
             return expect(this.node.getAttribute('data-custom')).toBe('test val2');
@@ -231,7 +232,7 @@ define(['./utils/spec-utils'], function(_arg) {
           value_type = _arg2.value_type, ref_value = _arg2.ref_value, ref_value_after = _arg2.ref_value_after, expected_child_html = _arg2.expected_child_html, expected_child_html_after = _arg2.expected_child_html_after;
           return describe("when the bindings's value is of type " + value_type, function() {
             beforeEach(function() {
-              this.cell.test = ref_value;
+              this.view.test = ref_value;
               return this.node = this.__('.parent', 'BEFORE', function() {
                 return this.test;
               }, 'AFTER');
@@ -241,8 +242,8 @@ define(['./utils/spec-utils'], function(_arg) {
             });
             return describe("when the bindings's value changes and @updateBinds() is called", function() {
               beforeEach(function() {
-                this.cell.test = ref_value_after;
-                return this.cell.updateBinds();
+                this.view.test = ref_value_after;
+                return this.view.updateBinds();
               });
               return it("automatically rerenders child correctly", function() {
                 return nodeHTMLEquals(this.node, "<div class=\"parent\">BEFORE" + expected_child_html_after + "AFTER</div>");
@@ -252,7 +253,7 @@ define(['./utils/spec-utils'], function(_arg) {
         };
         describe("when the bindings's value is undefined", function() {
           beforeEach(function() {
-            this.cell.test = void 0;
+            this.view.test = void 0;
             return this.node = this.__('.parent', 'BEFORE', function() {
               return this.test;
             }, 'AFTER');
@@ -262,8 +263,8 @@ define(['./utils/spec-utils'], function(_arg) {
           });
           return describe("when the bindings's value changes and @updateBinds() is called", function() {
             beforeEach(function() {
-              this.cell.test = 'something';
-              return this.cell.updateBinds();
+              this.view.test = 'something';
+              return this.view.updateBinds();
             });
             return it("automatically rerenders child correctly", function() {
               return nodeHTMLEquals(this.node, "<div class=\"parent\">BEFOREsomethingAFTER</div>");

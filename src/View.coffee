@@ -1,17 +1,10 @@
 define [
+  'underscore'
   'backbone'
   'jquery'
-], (Backbone,$)->
+], (_, Backbone, $)->
 
-  isArrayish =
-    if typeof Zepto is 'function'
-      (o)-> (_.isArray o) or (Zepto.fn.isPrototypeOf o)
-    else
-      (o)-> (_.isArray o) or o.jquery
-
-  isBind = _.isFunction
-
-  textNode = (text)-> document.createTextNode text
+  isArrayish = (o)-> (_.isArray o) or o.jquery
 
   # Maps cid to cell
   cidMap = {}
@@ -54,16 +47,8 @@ define [
         if m[4]
           parent.className = m[4].slice(1).replace(/\./g, ' ')
 
-        for k,v of options
-          if isBind v
-            bind = new AttrBind parent, k, (_.bind v, @)
-            @_binds.push bind
-            bind.needRender()
-            bind.render @
-
-          else
-            parent.setAttribute k, v
-
+        @_renderAttr(k,v,parent) for k,v of options
+          
     # Cell
     else if viewOrHAML and viewOrHAML.prototype instanceof Backbone.View
       parent = (new viewOrHAML options).render().el
@@ -72,162 +57,48 @@ define [
       @_renderChildren children, parent
       parent
 
-  __if = (condition,thenElse)->
-    if typeof condition is 'function'
-      new IfBind undefined, condition, thenElse.then, thenElse.else
-    else
-      thenElse[if condition then 'then' else 'else']?()
+  __.if = (condition,thenElse)->
+    thenElse[if condition then 'then' else 'else']?()
 
-  __each = (col,renderer)->
-    if isBind col
-      new EachBind undefined, col, renderer
-    else if col instanceof Backbone.Collection
+  __.each = (col,renderer)->
+    if col instanceof Backbone.Collection
       col.map renderer
     else
       renderer item, i, col for item,i in col
 
-  Bind = (@parent, @getValue)->
-  Bind::value = undefined
-  Bind::nodes = undefined
-  Bind::getRenderValue = -> @value
-  Bind::needRender = ->
-    if (value = @getValue()) isnt @value
-      @value = value
-      true
-    else
-      false
-  Bind::render = (view, rendered)->
-    renderValue = @getRenderValue()
-    renderValue = [textNode ''] unless renderValue?
-    nodes = view._renderChildren renderValue, @parent, @nodes?[0]
-    @parent.removeChild n for n in @nodes if @nodes
-    @nodes = nodes
-    rendered.push n for n in nodes if rendered
-    return
 
-  IfBind = (@parent, @getValue, @then, @else)->
-    @getRenderValue = -> if @value then @then() else @else()
-    @
-  IfBind.prototype = Bind.prototype
+  View = Backbone.View.extend
 
-  ElBind = (@parent,@getValue)->
-
-
-  AttrBind = (@parent, @attr, @getValue)->
-  AttrBind::value = undefined
-  AttrBind::needRender = Bind::needRender
-  AttrBind::render = ->
-    @parent.setAttribute @attr, @value
-    return
-
-  hashuid = 0
-  nextuid = -> (++hashuid).toString 36
-  hashkey = (obj)->
-    (objType = typeof obj) + ':' +
-      if (objType is 'object') and (obj isnt null)
-        obj.$$hashkey or= nextuid()
-      else
-        obj
-
-  HashQueue = ->
-    @hash = {}
-    this
-  HashQueue::push = (key,val)->
-    entry = (@hash[key] or= [])
-    entry.push val
-    return
-  HashQueue::shift = (key)->
-    if entry = @hash[key]
-      if entry.lengh is 1
-        delete @hash[key]
-        entry[0]
-      else
-        entry.shift()
-
-  EachBind = (@parent, @getValue, @itemRenderer)->
-    @itemhash = new HashQueue
-    this
-
-  EachBind::value = []
-  EachBind::itemhash = undefined
-  EachBind::needRender = ->
-    value = @getValue() or []
-
-    # Quick change checks
-    unless change = (value isnt @value) or (@value.length isnt value.length)
-
-      # Deep change check (check each item)
-      i = @value.length
-      while --i >= 0
-        break if value[i] isnt @value[i]
-      change = (i >= 0)
-
-    if change
-      @value = value
-      true
-    else
-      false
-
-  EachBind::render = ->
-    newEls = []
-    newItemHash = new HashQueue
-
-    for item in @value
-      key = hashkey item
-      unless prevItemEl = @itemhash.shift key
-        prevItemEl = @itemRenderer item
-      
-      newItemHash.push key, prevItemEl
-      newEls.push prevItemEl
-
-    # Remove the elements for the itmes that were removed from the collection
-    for key, items of @itemhash.hash
-      for itemEl in items
-        @parent.removeChild itemEl
-    @itemhash = newItemHash
-
-    # Add the elements for the current items
-    @parent.appendChild el for el in newEls
-    return
-    
-  IfBind.prototype = Bind.prototype
-  
-  Backbone.View.extend
+    _constructor: ->
+      @__ = _.bind @__, @
+      @__.if = View::__.if
+      @__.each = View::__.each
+      return
 
     constructor: ->
-      @_binds = []
-      @__ = _.bind @__, @
-      @__.if = __if
-      @__.each = __each
       Backbone.View.apply @, arguments
-      @listenTo bindUpdater, 'all', @updateBinds if (bindUpdater = @model or @collection)
+      @_constructor()
+      return
+
+    _renderAttr: (k,v,parent)->
+      parent.setAttribute k, v
+
+    _renderChild: (n, parent, insertBeforeNode, rendered)->
+       # Is Element or Text Node
+      if n.nodeType in [1,3]
+        rendered.push parent.insertBefore n, insertBeforeNode
+
+      else if isArrayish n
+        @_renderChildren n, parent, insertBeforeNode, rendered
+
+      else
+        rendered.push parent.insertBefore document.createTextNode(n), insertBeforeNode
+      return
 
     _renderChildren: (nodes, parent, insertBeforeNode=null, rendered=[])->
       return rendered unless nodes?
       nodes = [nodes] unless isArrayish nodes
-
-      for n in nodes when n?
-        # Is Element or Text Node
-        if n.nodeType in [1,3]
-          rendered.push parent.insertBefore n, insertBeforeNode
-
-        else if isArrayish n
-          @_renderChildren n, parent, insertBeforeNode, rendered
-
-        else if isBind n
-          @_binds.push bind = new Bind parent, _.bind(n,@)
-          bind.needRender()
-          bind.render @, rendered
-
-        else if (n instanceof Bind) or (n instanceof EachBind)
-          @_binds.push n
-          n.parent = parent
-          n.needRender()
-          n.render @, rendered
-
-        else
-          rendered.push parent.insertBefore textNode(n), insertBeforeNode
-
+      @_renderChild(n, parent, insertBeforeNode, rendered) for n in nodes when n?
       rendered
 
     __: __
@@ -236,17 +107,6 @@ define [
       @_renderChildren (@renderEl @__), @el
       @afterRender()
       @
-
-    updateBinds: ->
-      i = 0
-      change = true
-      while change and (i++ < 10)
-        change = false
-        for b in @_binds
-          if b.needRender()
-            change = true
-            b.render @
-      return
 
     # Removes anything that might leak memory
     remove: ->

@@ -4,7 +4,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
     describe '@updateBinds()', ->
 
-      beforeEachRequire ['backbone','cell/View'], (@Backbone, @View)->
+      beforeEachRequire ['backbone','cell/opts/ViewBindings','cell/View'], (@Backbone, ViewBindings, @View)->
 
       describe "When @model or @collection is present", ->
 
@@ -12,10 +12,10 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
           spyOn @View.prototype , 'updateBinds'
 
           @model = new @Backbone.Model()
-          @cellWithModel = new @View {@model}
+          @viewWithModel = new @View {@model}
 
           @collection = new @Backbone.Collection()
-          @cellWithCollection = new @View {@collection}
+          @viewWithCollection = new @View {@collection}
 
         describe "and triggers an event", ->
 
@@ -26,22 +26,24 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
           it "calls @updateBinds()", ->
             expect(@View::updateBinds.calls[0]).toEqual
               args: ['modelEvent']
-              object: @cellWithModel
+              object: @viewWithModel
 
             expect(@View::updateBinds.calls[1]).toEqual
               args: ['collectionEvent']
-              object: @cellWithCollection
+              object: @viewWithCollection
 
       describe "Given multiple binds, when a bind updates due to another bind's update", ->
 
         beforeEach ->
-          @cell = new @View()
-          @cell.count = -1
-          @__ = @cell.__
+          @view = new @View()
+          @view.count = -1
+          @__ = @view.__
 
           @bind1 = jasmine.createSpy('bind1').andCallFake ->
             ++@count if @count is 0
             @count
+
+          debugger
           @oneEl = @__ '.one', @bind1
 
           @bind2 = jasmine.createSpy('bind2').andCallFake ->
@@ -53,8 +55,8 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
           @bind1.reset()
           @bind2.reset()
 
-          @cell.count = 0
-          @cell.updateBinds()
+          @view.count = 0
+          @view.updateBinds()
 
         it 'Calls binds 3 times (1 - updateBinds(), 2 - bind1 changed, 3 - bind2 changed)', ->
           expect(@bind1.callCount).toBe 3
@@ -65,9 +67,9 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
       describe "when a bind continues to update", ->
 
         beforeEach ->
-          @cell = new @View()
-          @cell.count = -1
-          @__ = @cell.__
+          @view = new @View()
+          @view.count = -1
+          @__ = @view.__
 
           @bind1 = jasmine.createSpy('bind1').andCallFake -> ++@count
           @oneEl = @__ '.one', @bind1
@@ -75,20 +77,20 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
           # Binds are called during rendering
           @bind1.reset()
           
-          @cell.count = 0
-          @cell.updateBinds()
+          @view.count = 0
+          @view.updateBinds()
 
         it 'max out after 10 tries', ->
           expect(@bind1.callCount).toBe 10
-          expect(@cell.count).toBe 10
+          expect(@view.count).toBe 10
           expect(@oneEl.innerHTML).toBe '10'
 
     describe 'Passing Bindings (functions) to __', ->
 
-      beforeEachRequire ['cell/View'], (@View)->
-        @cell = new @View()
-        @cell.test = 'test val'
-        @__ = @cell.__
+      beforeEachRequire ['cell/opts/ViewBindings','cell/View'], (ViewBindings, @View)->
+        @view = new @View()
+        @view.test = 'test val'
+        @__ = @view.__
 
       describe 'when a bind is passed as the condition to __.each(collection, renderer:function)', ->
 
@@ -103,27 +105,27 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
                   __.each (=> @collection), (item)->
                     __ ".item#{item}"
               ]
-            @cell = new @CellWithEach().render()
+            @view = new @CellWithEach().render()
 
           it 'renders initially correctly', ->
-            nodeHTMLEquals @cell.el,
+            nodeHTMLEquals @view.el,
               '<div cell="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>'
 
           describe 'when collection changes and updateBinds() is called', ->
 
             beforeEach ->
               @collection = [4,1,3]
-              @item1 = @cell.el.children[0].children[0]
-              @item3 = @cell.el.children[0].children[2]
-              @cell.updateBinds()
+              @item1 = @view.el.children[0].children[0]
+              @item3 = @view.el.children[0].children[2]
+              @view.updateBinds()
 
             it 'renders after change correctly', ->
-              nodeHTMLEquals @cell.el,
+              nodeHTMLEquals @view.el,
                 '<div cell="test"><div class="parent"><div class="item4"></div><div class="item1"></div><div class="item3"></div></div></div>'
 
             it "doesn't rerender previous items", ->
-              expect(@cell.el.children[0].children[1]).toBe @item1
-              expect(@cell.el.children[0].children[2]).toBe @item3
+              expect(@view.el.children[0].children[1]).toBe @item1
+              expect(@view.el.children[0].children[2]).toBe @item3
 
 
       describe 'when a bind is passed as the condition to __.if(condition, {then:function, else:function})', ->
@@ -146,16 +148,16 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
                       __ '.else2'
                     ]
               ]
-            @cell = new @CellWithIf().render()
+            @view = new @CellWithIf().render()
 
           it 'renders initially correctly', ->
-            nodeHTMLEquals @cell.el,
+            nodeHTMLEquals @view.el,
               '<div cell="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>'
 
           it 'renders after change correctly', ->
             @condition = false
-            @cell.updateBinds()
-            nodeHTMLEquals @cell.el, '<div cell="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
+            @view.updateBinds()
+            nodeHTMLEquals @view.el, '<div cell="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
 
 
         describe 'when then and else return a node', ->
@@ -170,15 +172,15 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
                     then: -> __ '.then'
                     else: -> __ '.else'
               ]
-            @cell = new @CellWithIf().render()
+            @view = new @CellWithIf().render()
 
           it 'renders initially correctly', ->
-            nodeHTMLEquals @cell.el, '<div cell="test"><div class="parent"><div class="then"></div></div></div>'
+            nodeHTMLEquals @view.el, '<div cell="test"><div class="parent"><div class="then"></div></div></div>'
 
           it 'renders after change correctly', ->
             @condition = false
-            @cell.updateBinds()
-            nodeHTMLEquals @cell.el, '<div cell="test"><div class="parent"><div class="else"></div></div></div>'
+            @view.updateBinds()
+            nodeHTMLEquals @view.el, '<div cell="test"><div class="parent"><div class="else"></div></div></div>'
 
       describe 'when a bind is passed as an attribute', ->
 
@@ -190,8 +192,8 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
         describe "when the bindings's value changes and @updateBinds() is called", ->
           beforeEach ->
-            @cell.test = 'test val2'
-            @cell.updateBinds()
+            @view.test = 'test val2'
+            @view.updateBinds()
 
           it "automatically sets the element's attribute to the new binding's value", ->
             expect(@node.getAttribute 'data-custom').toBe 'test val2'
@@ -204,7 +206,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
           describe "when the bindings's value is of type #{value_type}", ->
 
             beforeEach ->
-              @cell.test = ref_value
+              @view.test = ref_value
               @node = @__ '.parent',
                 'BEFORE'
                 -> @test
@@ -215,8 +217,8 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
             describe "when the bindings's value changes and @updateBinds() is called", ->
               beforeEach ->
-                @cell.test = ref_value_after
-                @cell.updateBinds()
+                @view.test = ref_value_after
+                @view.updateBinds()
 
               it "automatically rerenders child correctly", ->
                 nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html_after}AFTER</div>"
@@ -225,7 +227,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
         describe "when the bindings's value is undefined", ->
 
           beforeEach ->
-            @cell.test = undefined
+            @view.test = undefined
             @node = @__ '.parent',
               'BEFORE'
               -> @test
@@ -236,8 +238,8 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
           describe "when the bindings's value changes and @updateBinds() is called", ->
             beforeEach ->
-              @cell.test = 'something'
-              @cell.updateBinds()
+              @view.test = 'something'
+              @view.updateBinds()
 
             it "automatically rerenders child correctly", ->
               nodeHTMLEquals @node, "<div class=\"parent\">BEFOREsomethingAFTER</div>"
