@@ -147,7 +147,7 @@ define( [
       }
     };
 
-    beforeEachRequire(['dom'], function(_dom) {
+    beforeEachRequire(['cell/dom'], function(_dom) {
       dom = _dom;
       a = dom('<div>A</div>')[0];
       b = dom('<div>B</div>')[0];

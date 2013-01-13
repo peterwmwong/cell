@@ -4,18 +4,18 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
     describe '@updateBinds()', ->
 
-      beforeEachRequire ['backbone','cell'], (@Backbone, {@Cell})->
+      beforeEachRequire ['backbone','cell/View'], (@Backbone, @View)->
 
       describe "When @model or @collection is present", ->
 
         beforeEach ->
-          spyOn @Cell.prototype , 'updateBinds'
+          spyOn @View.prototype , 'updateBinds'
 
           @model = new @Backbone.Model()
-          @cellWithModel = new @Cell {@model}
+          @cellWithModel = new @View {@model}
 
           @collection = new @Backbone.Collection()
-          @cellWithCollection = new @Cell {@collection}
+          @cellWithCollection = new @View {@collection}
 
         describe "and triggers an event", ->
 
@@ -24,18 +24,18 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
             @collection.trigger 'collectionEvent'
 
           it "calls @updateBinds()", ->
-            expect(@Cell::updateBinds.calls[0]).toEqual
+            expect(@View::updateBinds.calls[0]).toEqual
               args: ['modelEvent']
               object: @cellWithModel
 
-            expect(@Cell::updateBinds.calls[1]).toEqual
+            expect(@View::updateBinds.calls[1]).toEqual
               args: ['collectionEvent']
               object: @cellWithCollection
 
       describe "Given multiple binds, when a bind updates due to another bind's update", ->
 
         beforeEach ->
-          @cell = new @Cell()
+          @cell = new @View()
           @cell.count = -1
           @__ = @cell.__
 
@@ -65,7 +65,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
       describe "when a bind continues to update", ->
 
         beforeEach ->
-          @cell = new @Cell()
+          @cell = new @View()
           @cell.count = -1
           @__ = @cell.__
 
@@ -85,8 +85,8 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
     describe 'Passing Bindings (functions) to __', ->
 
-      beforeEachRequire ['cell'], ({@Cell})->
-        @cell = new @Cell()
+      beforeEachRequire ['cell/View'], (@View)->
+        @cell = new @View()
         @cell.test = 'test val'
         @__ = @cell.__
 
@@ -96,7 +96,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
           beforeEach ->
             @collection = [1,2,3]
-            @CellWithEach = @Cell.extend
+            @CellWithEach = @View.extend
               _cellName: 'test'
               renderEl: (__)=> [
                 __ '.parent',
@@ -132,7 +132,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
           beforeEach ->
             @condition = true
-            @CellWithIf = @Cell.extend
+            @CellWithIf = @View.extend
               _cellName: 'test'
               renderEl: (__)=> [
                 __ '.parent',
@@ -162,7 +162,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
           beforeEach ->
             @condition = true
-            @CellWithIf = @Cell.extend
+            @CellWithIf = @View.extend
               _cellName: 'test'
               renderEl: (__)=> [
                 __ '.parent',

@@ -36,7 +36,7 @@ define(function() {
             }
           });
         }
-        write("require(['cell'],function(p){\n  p._installed = " + (JSON.stringify(preinstalls)) + ";\n});\n");
+        write("require(['cell/defineView'],function(p){\n  p._installed = " + (JSON.stringify(preinstalls)) + ";\n});\n");
         return put(outcssfile, allcss);
       }
     },
@@ -53,6 +53,7 @@ define(function() {
           cssurl: req.toUrl("" + name + ".css")
         });
         onLoad();
+        req(['cell/View']);
         return req([name]);
       };
     })()

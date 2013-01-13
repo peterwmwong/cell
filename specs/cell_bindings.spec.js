@@ -7,19 +7,19 @@ define(['./utils/spec-utils'], function(_arg) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
     describe('@updateBinds()', function() {
-      beforeEachRequire(['backbone', 'cell'], function(Backbone, _arg2) {
+      beforeEachRequire(['backbone', 'cell/View'], function(Backbone, View) {
         this.Backbone = Backbone;
-        this.Cell = _arg2.Cell;
+        this.View = View;
       });
       describe("When @model or @collection is present", function() {
         beforeEach(function() {
-          spyOn(this.Cell.prototype, 'updateBinds');
+          spyOn(this.View.prototype, 'updateBinds');
           this.model = new this.Backbone.Model();
-          this.cellWithModel = new this.Cell({
+          this.cellWithModel = new this.View({
             model: this.model
           });
           this.collection = new this.Backbone.Collection();
-          return this.cellWithCollection = new this.Cell({
+          return this.cellWithCollection = new this.View({
             collection: this.collection
           });
         });
@@ -29,11 +29,11 @@ define(['./utils/spec-utils'], function(_arg) {
             return this.collection.trigger('collectionEvent');
           });
           return it("calls @updateBinds()", function() {
-            expect(this.Cell.prototype.updateBinds.calls[0]).toEqual({
+            expect(this.View.prototype.updateBinds.calls[0]).toEqual({
               args: ['modelEvent'],
               object: this.cellWithModel
             });
-            return expect(this.Cell.prototype.updateBinds.calls[1]).toEqual({
+            return expect(this.View.prototype.updateBinds.calls[1]).toEqual({
               args: ['collectionEvent'],
               object: this.cellWithCollection
             });
@@ -42,7 +42,7 @@ define(['./utils/spec-utils'], function(_arg) {
       });
       describe("Given multiple binds, when a bind updates due to another bind's update", function() {
         beforeEach(function() {
-          this.cell = new this.Cell();
+          this.cell = new this.View();
           this.cell.count = -1;
           this.__ = this.cell.__;
           this.bind1 = jasmine.createSpy('bind1').andCallFake(function() {
@@ -73,7 +73,7 @@ define(['./utils/spec-utils'], function(_arg) {
       });
       return describe("when a bind continues to update", function() {
         beforeEach(function() {
-          this.cell = new this.Cell();
+          this.cell = new this.View();
           this.cell.count = -1;
           this.__ = this.cell.__;
           this.bind1 = jasmine.createSpy('bind1').andCallFake(function() {
@@ -92,9 +92,9 @@ define(['./utils/spec-utils'], function(_arg) {
       });
     });
     return describe('Passing Bindings (functions) to __', function() {
-      beforeEachRequire(['cell'], function(_arg2) {
-        this.Cell = _arg2.Cell;
-        this.cell = new this.Cell();
+      beforeEachRequire(['cell/View'], function(View) {
+        this.View = View;
+        this.cell = new this.View();
         this.cell.test = 'test val';
         return this.__ = this.cell.__;
       });
@@ -103,7 +103,7 @@ define(['./utils/spec-utils'], function(_arg) {
           beforeEach(function() {
             var _this = this;
             this.collection = [1, 2, 3];
-            this.CellWithEach = this.Cell.extend({
+            this.CellWithEach = this.View.extend({
               _cellName: 'test',
               renderEl: function(__) {
                 return [
@@ -142,7 +142,7 @@ define(['./utils/spec-utils'], function(_arg) {
           beforeEach(function() {
             var _this = this;
             this.condition = true;
-            this.CellWithIf = this.Cell.extend({
+            this.CellWithIf = this.View.extend({
               _cellName: 'test',
               renderEl: function(__) {
                 return [
@@ -174,7 +174,7 @@ define(['./utils/spec-utils'], function(_arg) {
           beforeEach(function() {
             var _this = this;
             this.condition = true;
-            this.CellWithIf = this.Cell.extend({
+            this.CellWithIf = this.View.extend({
               _cellName: 'test',
               renderEl: function(__) {
                 return [

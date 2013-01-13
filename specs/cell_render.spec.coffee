@@ -4,15 +4,15 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
     beforeEachRequire [
       'fixtures/TestCell1'
-      'cell'
-    ], (@TestCell1, {@Cell})->
+      'cell/View'
+    ], (@TestCell1, @View)->
       @testCell1 = new @TestCell1
 
 
     describe '@render()', ->
 
       beforeEach ->
-        C = @Cell.extend renderEl: @renderEl = jasmine.createSpy 'renderEl'
+        C = @View.extend renderEl: @renderEl = jasmine.createSpy 'renderEl'
         c = new C()
         @__ = c.__
         c.render()

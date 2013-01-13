@@ -1,7 +1,7 @@
 define (require)->
   MockNested = require 'dir/MockNested'
 
-  require('cell!')
+  require('cell/defineView!')
     renderEl: (__)-> [
       "Mock: "
       __ MockNested

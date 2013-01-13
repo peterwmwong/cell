@@ -6,15 +6,15 @@ define(['./utils/spec-utils'], function(_arg) {
   return function(_arg1) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
-    beforeEachRequire(['fixtures/TestCell1', 'cell'], function(TestCell1, _arg2) {
+    beforeEachRequire(['fixtures/TestCell1', 'cell/View'], function(TestCell1, View) {
       this.TestCell1 = TestCell1;
-      this.Cell = _arg2.Cell;
+      this.View = View;
       return this.testCell1 = new this.TestCell1;
     });
     describe('@render()', function() {
       beforeEach(function() {
         var C, c;
-        C = this.Cell.extend({
+        C = this.View.extend({
           renderEl: this.renderEl = jasmine.createSpy('renderEl')
         });
         c = new C();

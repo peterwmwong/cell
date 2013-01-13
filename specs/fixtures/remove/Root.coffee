@@ -1,7 +1,7 @@
 define (require)->
   Parent = require './Parent'
 
-  require('cell!')
+  require('cell/defineView!')
     initialize: ->
       @listenTo @model, 'flash', @onFlash
       @listenTo @collection, 'flash', @onFlash

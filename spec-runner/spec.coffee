@@ -20,9 +20,7 @@ define ['jquery'], ->
                 context: ctxName = "specs#{ctx_name_salt++}"
                 baseUrl: '/specs/'
                 paths:
-                  cell: '../build/cell'
-                  dom: '../build/dom'
-                  ref: '../build/ref'
+                  cell: '../src'
                   jquery: '../support/jquery'
                   underscore: '../support/lodash.custom'
                   backbone: '../node_modules/backbone/backbone'

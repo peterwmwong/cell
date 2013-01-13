@@ -4,9 +4,9 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
     beforeEachRequire [
       'fixtures/remove/Root'
-      'cell'
+      'cell/View'
       'backbone'
-    ], (@Root, @cell, @Backbone)->
+    ], (@Root, @View, @Backbone)->
 
     emptyFunc =
       name: 'jQuery.empty()'

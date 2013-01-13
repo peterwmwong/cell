@@ -31,7 +31,7 @@ define ->
           allcss += contents if not err? and typeof contents == 'string'
 
       write """
-            require(['cell'],function(p){
+            require(['cell/defineView'],function(p){
               p._installed = #{JSON.stringify preinstalls};
             });\n
             """
@@ -44,4 +44,5 @@ define ->
         outcssfile = match[1]+'.css'
       Cstack.push name: name, cssurl: req.toUrl "#{name}.css"
       onLoad()
+      req ['cell/View']
       req [name]

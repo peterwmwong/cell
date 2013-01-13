@@ -4,9 +4,9 @@ define(function() {
   return function(_arg) {
     var beforeEachRequire;
     beforeEachRequire = _arg.beforeEachRequire;
-    beforeEachRequire(['fixtures/TestCell1', 'cell', 'backbone'], function(TestCell1, cell, Backbone) {
+    beforeEachRequire(['fixtures/TestCell1', 'cell/View', 'backbone'], function(TestCell1, View, Backbone) {
       this.TestCell1 = TestCell1;
-      this.cell = cell;
+      this.View = View;
       this.Backbone = Backbone;
       return this.testCell1 = new this.TestCell1;
     });
@@ -14,7 +14,7 @@ define(function() {
       return expect($('link[href="/specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length).not.toBe(0);
     });
     it('exposes @Cell', function() {
-      return expect(this.testCell1 instanceof this.cell.Cell).toBe(true);
+      return expect(this.testCell1 instanceof this.View).toBe(true);
     });
     it('Creates a Backbone.View from the definition of the module', function() {
       return expect(this.testCell1 instanceof this.Backbone.View).toBe(true);

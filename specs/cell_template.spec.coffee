@@ -4,8 +4,8 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
     describe '__.if( condition:truthy, {then:function, else:function} )', ->
 
-      beforeEachRequire ['cell'], ({Cell})->
-        @__ = new Cell().__
+      beforeEachRequire ['cell/View'], (View)->
+        @__ = new View().__
 
       describe 'when only then is provided', ->
 
@@ -67,8 +67,8 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
     describe '__.each( many:arrayOrCollection, renderer:function )', ->
 
-      beforeEachRequire ['cell'], ({Cell})->
-        @__ = new Cell().__
+      beforeEachRequire ['cell/View'], (View)->
+        @__ = new View().__
         @items = [
           {name:'a'}
           {name:'b'}
@@ -111,9 +111,9 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
       beforeEachRequire [
         "fixtures/TestCell1"
-        'cell'
-      ], (@TestCell1,{Cell})->
-        @__ = new Cell().__
+        'cell/View'
+      ], (@TestCell1,View)->
+        @__ = new View().__
 
 
       it_renders = (desc, input_args, expected_html_output, debug)->

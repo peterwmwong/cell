@@ -3,7 +3,7 @@
 define(function(require) {
   var Child;
   Child = require('./Child');
-  return require('cell!')({
+  return require('cell/defineView!')({
     initialize: function() {
       this.listenTo(this.model, 'flash', this.onFlash);
       this.listenTo(this.collection, 'flash', this.onFlash);

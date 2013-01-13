@@ -1,4 +1,3 @@
 #!/bin/zsh
-
 npm install
-find bench/ spec-runner/ specs/ -name '*.coffee' | xargs node_modules/.bin/coffee --watch -c -b
+find bench/ spec-runner/ specs/ -name '*.coffee' | xargs node_modules/.bin/coffee $1 -c -b

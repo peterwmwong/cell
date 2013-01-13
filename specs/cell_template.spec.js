@@ -8,10 +8,8 @@ define(['./utils/spec-utils'], function(_arg) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
     describe('__.if( condition:truthy, {then:function, else:function} )', function() {
-      beforeEachRequire(['cell'], function(_arg2) {
-        var Cell;
-        Cell = _arg2.Cell;
-        return this.__ = new Cell().__;
+      beforeEachRequire(['cell/View'], function(View) {
+        return this.__ = new View().__;
       });
       describe('when only then is provided', function() {
         beforeEach(function() {
@@ -99,11 +97,9 @@ define(['./utils/spec-utils'], function(_arg) {
       });
     });
     describe('__.each( many:arrayOrCollection, renderer:function )', function() {
-      beforeEachRequire(['cell'], function(_arg2) {
-        var Cell,
-          _this = this;
-        Cell = _arg2.Cell;
-        this.__ = new Cell().__;
+      beforeEachRequire(['cell/View'], function(View) {
+        var _this = this;
+        this.__ = new View().__;
         this.items = [
           {
             name: 'a'
@@ -157,11 +153,9 @@ define(['./utils/spec-utils'], function(_arg) {
     });
     return describe('__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', function() {
       var empty, it_renders, it_renders_views, _fn, _i, _len, _ref;
-      beforeEachRequire(["fixtures/TestCell1", 'cell'], function(TestCell1, _arg2) {
-        var Cell;
+      beforeEachRequire(["fixtures/TestCell1", 'cell/View'], function(TestCell1, View) {
         this.TestCell1 = TestCell1;
-        Cell = _arg2.Cell;
-        return this.__ = new Cell().__;
+        return this.__ = new View().__;
       });
       it_renders = function(desc, input_args, expected_html_output, debug) {
         return describe("__( " + desc + " )", function() {

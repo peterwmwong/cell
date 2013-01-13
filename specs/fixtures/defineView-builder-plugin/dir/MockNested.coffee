@@ -1,5 +1,5 @@
 define (require)->
-  require('cell!')
+  require('cell/defineView!')
     renderEl: -> [
     	"MockNested"
     ]

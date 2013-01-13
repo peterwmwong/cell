@@ -1,8 +1,7 @@
 require.config({
   paths:{
-    requireLib: '../../../build/require',
-    cell: '../../../build/cell',
-    'cell-builder-plugin': '../../../build/cell-builder-plugin',
+    requireLib: '../../../src/require',
+    cell: '../../../src',
     jquery: '../../../support/jquery',
     underscore: '../../../support/lodash.custom',
     backbone: '../../../node_modules/backbone/backbone'

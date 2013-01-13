@@ -6,9 +6,9 @@ define(['./utils/spec-utils'], function(_arg) {
   return function(_arg1) {
     var beforeEachRequire, emptyFunc, htmlFunc, testFunc, _i, _len, _ref;
     beforeEachRequire = _arg1.beforeEachRequire;
-    beforeEachRequire(['fixtures/remove/Root', 'cell', 'backbone'], function(Root, cell, Backbone) {
+    beforeEachRequire(['fixtures/remove/Root', 'cell/View', 'backbone'], function(Root, View, Backbone) {
       this.Root = Root;
-      this.cell = cell;
+      this.View = View;
       this.Backbone = Backbone;
     });
     emptyFunc = {

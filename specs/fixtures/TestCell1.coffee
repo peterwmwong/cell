@@ -1,3 +1,3 @@
 define (require)->
-  require('cell!')
+  require('cell/defineView!')
     renderEl: -> "TestCell1 Contents"

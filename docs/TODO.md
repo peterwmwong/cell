@@ -1,6 +1,52 @@
 TODO
 ====
 
+BUG: __.if() and __.each() need to call with view as `this`
+-----------------------------------------------------------
+
+
+NEW: Modularize
+---------------
+
+### Modules
+
+- View
+- Ext
+
+### Optional Installable Modules
+
+- Binds
+- NoBackbone
+
+Description
+- provide opt-in functionality added to other cell modules
+- easy installation: simply required before any other cell module is required
+
+    '''
+    require.config({
+      paths: {
+        cell: 'vendor/cell'
+      },
+      deps: [
+        'cell/opts/Binds',
+        'cell/opts/NoBackbone'
+      ]
+    });
+    '''
+
+### New directory layout
+
+    cell/
+      View.js
+      Ext.js
+      opts/
+        Binds.js
+        NoBackbone.js
+      exts/
+        x_class.js
+        x_model.js
+
+
 NEW: Cell::renderRoot()
 -----------------------
 
@@ -10,31 +56,6 @@ Elements produced by renderEl() will be the contents.
     ...
     renderRoot: (__)->
       __ 'input', type:'checkbox', checked:(-> @model.get 'done')
-    ...
-
-
-NEW: __.if() __.each()
-----------------------
-    
-    ...
-    renderEl: -> [
-      __.if (-> @model.loaded),
-        then:-> __ '.true'
-        else:->  __ '.false'
-    ]
-    ...
-
-    ...
-    renderEl: -> [
-      __.each @collection, (item)->
-        __ View, model: item
-
-      __.each @collection, (item)->
-        __ 'div#myid.myclass', item
-
-      __.repeat View, @collection, (item)->
-      __.repeat View, @collection
-      __.repeat 'div#myid.myclass', @collection
     ...
 
 
@@ -48,14 +69,19 @@ NEW: exts (see angularjs directives)
     __( Selector, [exts:cell.Ext...], [attributes:object], [children...] )
     __( View, [exts:cell.Ext...], [options:object], [children...] )
 
-### cell.Ext
+### cell/ext
 
-    cell.Ext.extend
+    require('!cell/ext')
       initialize: (element, parentView, args...)->
+
+### exts
+
+- x_class
+- x_model
 
 
 NEW: dom
-----------------------------
+--------
 
 - build off of jqLite/jQuery API
 - build off of AngularJS's jqLite specs
@@ -66,6 +92,15 @@ NEW: dom
   - html()
   - text()
   - hasClass()
+
+NEW: require.js plugin builder layer?
+-------------------------------------
+
+Currently the builder plugin (defineView-builder-plugin), hackishly keeps track of a stack to figure out the when it is appropriate to write out the final CSS file.
+In recent versions of require.js, a new callback `onLayerEnd()` may be the better approach.
+
+http://requirejs.org/docs/plugins.html#apionlayerend
+
 
 TEST: Testacular
 ----------------
@@ -84,7 +119,13 @@ PERF: cell.remove() and $.cleanData()
 NEW: @collectionEvents, @modelEvents
 -------------------------------------
 
-NEW: zepto compat
------------------
+NEW: require.js alt
+-------------------
 
-support for html/empty/remove (jQuery.cleanData())
+- smaller
+- faster
+- simpler
+  - less config options
+- better error reporting
+  - couldn't find a dep... for who!?
+

@@ -3,7 +3,7 @@
 define(function(require) {
   var MockNested;
   MockNested = require('dir/MockNested');
-  return require('cell!')({
+  return require('cell/defineView!')({
     renderEl: function(__) {
       return ["Mock: ", __(MockNested)];
     }

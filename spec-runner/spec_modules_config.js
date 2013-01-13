@@ -4,7 +4,6 @@ require.config({
   paths: {
     'SpecHelpers': '../spec-runner/SpecHelpers',
     'spec': '../spec-runner/spec',
-    'cell': '../build/cell', // TODO remove me
     jquery: '../support/jquery',
     underscore: '../support/lodash.custom',
     backbone: '../node_modules/backbone/backbone'

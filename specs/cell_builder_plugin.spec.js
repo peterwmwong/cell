@@ -26,7 +26,7 @@ define(function() {
         this.$f = void 0;
         runs(function() {
           var _this = this;
-          return load_fixture('/specs/fixtures/cell-builder-plugin/index.html', function($f) {
+          return load_fixture('/specs/fixtures/defineView-builder-plugin/index.html', function($f) {
             _this.$f = $f;
           });
         });

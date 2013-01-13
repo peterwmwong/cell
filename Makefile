@@ -1,40 +1,19 @@
 #===================================================================
 #--------------------------- VARIABLES -----------------------------
 #===================================================================
-coffee = node_modules/.bin/coffee
 requirejsBuild = node_modules/.bin/r.js
-
-define coffee-compile
-	$(coffee) $2 -o build/ -b -c $1 
-endef
 
 
 #===================================================================
 #­--------------------------- TARGETS ------------------------------
 #===================================================================
-.PHONY : clean
+.PHONY : all
 
-all: build/require.js build/cell.js build/cell-builder-plugin.js build/__.js
-
+all: specs
 
 #-------------------------------------------------------------------
 # BUILD
 #------------------------------------------------------------------- 
-build/cell.js: deps lib/cell.coffee
-	mkdir -p build/
-	$(call coffee-compile,lib/cell.coffee)
-
-build/cell-builder-plugin.js: deps lib/cell-builder-plugin.coffee
-	mkdir -p build/
-	$(call coffee-compile,lib/cell-builder-plugin.coffee)
-
-build/__.js: deps lib/__.coffee
-	mkdir -p build/
-	$(call coffee-compile,lib/__.coffee)
-
-build/require.js: deps
-	mkdir -p build/
-	cp lib/require.js build/
 
 #-------------------------------------------------------------------
 # Dependencies 
@@ -50,11 +29,12 @@ lodash:
 # TEST
 #------------------------------------------------------------------- 
 
-# Build test/fixtures/cell-builder-plugin/
+# Build test/fixtures/defineView-builder-plugin/
 # 	- Tests cell can be properly used by requirejs optimizer build script
-spec-cell-builder-plugin: build/cell.js build/cell-builder-plugin.js
-	node_modules/.bin/r.js -o specs/fixtures/cell-builder-plugin/build.js
-	cat specs/fixtures/cell-builder-plugin/config.js >> specs/fixtures/cell-builder-plugin/all.js
+spec-defineView-builder-plugin:
+	script/compile-specs
+	$(requirejsBuild) -o specs/fixtures/defineView-builder-plugin/build.js
+	cat specs/fixtures/defineView-builder-plugin/config.js >> specs/fixtures/defineView-builder-plugin/all.js
 
 define MAKE_ALL_TESTS_COFFEE
 specs = process.argv[4..].map (e)-> "spec!#{/(.*?\.spec)\.js/.exec(e)[1]}"
@@ -62,10 +42,6 @@ console.log "define(#{JSON.stringify specs},function(){return Array.prototype.sl
 endef
 export MAKE_ALL_TESTS_COFFEE
 
-specs: deps spec-cell-builder-plugin
-	find specs/ -name '*.coffee' | xargs $(coffee) -c -b
+specs: deps spec-defineView-builder-plugin
+	script/compile-specs
 	cd specs/; find . -name "*.spec.js" -type f | xargs ../node_modules/.bin/coffee -e "$$MAKE_ALL_TESTS_COFFEE" > GENERATED_all-specs.js
-
-clean: 
-	@@rm -rf build
-
