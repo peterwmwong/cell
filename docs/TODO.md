@@ -4,61 +4,6 @@ TODO
 BUG: __.if() and __.each() need to call with view as `this`
 -----------------------------------------------------------
 
-
-NEW: Modularize
----------------
-
-### Modules
-
-- View
-- Ext
-
-### Optional Installable Modules
-
-- Binds
-- NoBackbone
-
-Description
-- provide opt-in functionality added to other cell modules
-- easy installation: simply required before any other cell module is required
-
-    '''
-    require.config({
-      paths: {
-        cell: 'vendor/cell'
-      },
-      deps: [
-        'cell/opts/Binds',
-        'cell/opts/NoBackbone'
-      ]
-    });
-    '''
-
-### New directory layout
-
-    cell/
-      View.js
-      Ext.js
-      opts/
-        Binds.js
-        NoBackbone.js
-      exts/
-        x_class.js
-        x_model.js
-
-
-NEW: Cell::renderRoot()
------------------------
-
-Optional function to define when you want to control how a Cell's root element (@el) is rendered
-Elements produced by renderEl() will be the contents.
-
-    ...
-    renderRoot: (__)->
-      __ 'input', type:'checkbox', checked:(-> @model.get 'done')
-    ...
-
-
 NEW: exts (see angularjs directives)
 -----------------------------------
 
@@ -78,6 +23,18 @@ NEW: exts (see angularjs directives)
 
 - x_class
 - x_model
+
+
+NEW: Cell::renderRoot()
+-----------------------
+
+Optional function to define when you want to control how a Cell's root element (@el) is rendered
+Elements produced by renderEl() will be the contents.
+
+    ...
+    renderRoot: (__)->
+      __ 'input', type:'checkbox', checked:(-> @model.get 'done')
+    ...
 
 
 NEW: dom

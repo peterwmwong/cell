@@ -43,7 +43,6 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
             ++@count if @count is 0
             @count
 
-          debugger
           @oneEl = @__ '.one', @bind1
 
           @bind2 = jasmine.createSpy('bind2').andCallFake ->
