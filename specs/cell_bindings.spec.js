@@ -51,7 +51,6 @@ define(['./utils/spec-utils'], function(_arg) {
             }
             return this.count;
           });
-          debugger;
           this.oneEl = this.__('.one', this.bind1);
           this.bind2 = jasmine.createSpy('bind2').andCallFake(function() {
             if (this.count === 1) {

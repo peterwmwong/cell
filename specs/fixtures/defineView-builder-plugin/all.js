@@ -11009,7 +11009,6 @@ define('cell/View',['underscore', 'backbone', 'jquery'], function(_, Backbone, $
     constructor: function() {
       Backbone.View.apply(this, arguments);
       this._constructor();
-      return this;
     },
     _renderAttr: function(k, v, parent) {
       return parent.setAttribute(k, v);

@@ -7,8 +7,6 @@ define(['underscore', 'cell/View'], function(_, View) {
     this.parent = parent;
     this.getValue = getValue;
   };
-  Bind.prototype.value = void 0;
-  Bind.prototype.nodes = void 0;
   Bind.prototype.getRenderValue = function() {
     return this.value;
   };
@@ -55,7 +53,6 @@ define(['underscore', 'cell/View'], function(_, View) {
         return this["else"]();
       }
     };
-    return this;
   };
   IfBind.prototype = Bind.prototype;
   ElBind = function(parent, getValue) {
@@ -67,7 +64,6 @@ define(['underscore', 'cell/View'], function(_, View) {
     this.attr = attr;
     this.getValue = getValue;
   };
-  AttrBind.prototype.value = void 0;
   AttrBind.prototype.needRender = Bind.prototype.needRender;
   AttrBind.prototype.render = function() {
     this.parent.setAttribute(this.attr, this.value);
@@ -82,7 +78,6 @@ define(['underscore', 'cell/View'], function(_, View) {
   };
   HashQueue = function() {
     this.hash = {};
-    return this;
   };
   HashQueue.prototype.push = function(key, val) {
     var entry, _base;
@@ -105,10 +100,7 @@ define(['underscore', 'cell/View'], function(_, View) {
     this.getValue = getValue;
     this.itemRenderer = itemRenderer;
     this.itemhash = new HashQueue;
-    return this;
   };
-  EachBind.prototype.value = [];
-  EachBind.prototype.itemhash = void 0;
   EachBind.prototype.needRender = function() {
     var change, i, value;
     value = this.getValue() || [];
@@ -174,7 +166,6 @@ define(['underscore', 'cell/View'], function(_, View) {
       return orig__each.call(this, col, renderer);
     }
   };
-  View.prototype._binds = void 0;
   orig_constructor = View.prototype._constructor;
   View.prototype._constructor = function() {
     var bindUpdater;

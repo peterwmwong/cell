@@ -8,7 +8,7 @@ define(['jquery'], function() {
     load: function(name, req, load, config) {
       return req([name], function(Spec) {
         return load(function() {
-          return describe(/.*\/specs\/(backbone|cell|jquery)_(.*).spec$/.exec(name)[2], function() {
+          return describe(/.*\/specs\/((backbone|cell|jquery)_)?(.*).spec$/.exec(name)[3], function() {
             var ctx, specRequire;
             specRequire = null;
             ctx = void 0;

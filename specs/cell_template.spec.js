@@ -151,7 +151,7 @@ define(['./utils/spec-utils'], function(_arg) {
         return nodeHTMLEquals(result[2], '<div>c</div>');
       });
     });
-    return describe('__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', function() {
+    return describe('__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children...:[DOMNode, String, Number, Array, jQuery] )', function() {
       var empty, it_renders, it_renders_views, _fn, _i, _len, _ref;
       beforeEachRequire(["fixtures/TestCell1", 'cell/View'], function(TestCell1, View) {
         this.TestCell1 = TestCell1;

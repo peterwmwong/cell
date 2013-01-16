@@ -6,7 +6,7 @@ define ['jquery'], ->
     # Load Spec
     req [name], (Spec)-> load ->
 
-      describe /.*\/specs\/(backbone|cell|jquery)_(.*).spec$/.exec(name)[2], ->
+      describe /.*\/specs\/((backbone|cell|jquery)_)?(.*).spec$/.exec(name)[3], ->
         specRequire = null
         ctx = undefined
 

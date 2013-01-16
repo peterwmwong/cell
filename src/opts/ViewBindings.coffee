@@ -6,8 +6,6 @@ define [
   isBind = _.isFunction
 
   Bind = (@parent, @getValue)->
-  Bind::value = undefined
-  Bind::nodes = undefined
   Bind::getRenderValue = -> @value
   Bind::needRender = ->
     if (value = @getValue()) isnt @value
@@ -26,13 +24,12 @@ define [
 
   IfBind = (@parent, @getValue, @then, @else)->
     @getRenderValue = -> if @value then @then() else @else()
-    @
+    return
   IfBind.prototype = Bind.prototype
 
   ElBind = (@parent,@getValue)->
 
   AttrBind = (@parent, @attr, @getValue)->
-  AttrBind::value = undefined
   AttrBind::needRender = Bind::needRender
   AttrBind::render = ->
     @parent.setAttribute @attr, @value
@@ -49,7 +46,7 @@ define [
 
   HashQueue = ->
     @hash = {}
-    this
+    return
   HashQueue::push = (key,val)->
     entry = (@hash[key] or= [])
     entry.push val
@@ -64,10 +61,8 @@ define [
 
   EachBind = (@parent, @getValue, @itemRenderer)->
     @itemhash = new HashQueue
-    this
+    return
 
-  EachBind::value = []
-  EachBind::itemhash = undefined
   EachBind::needRender = ->
     value = @getValue() or []
 
@@ -124,8 +119,6 @@ define [
       new EachBind undefined, col, renderer
     else
       orig__each.call @, col, renderer
-
-  View::_binds = undefined
 
   orig_constructor = View::_constructor
   View::_constructor = ->

@@ -107,7 +107,7 @@ define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
         nodeHTMLEquals result[1], '<div>b</div>'
         nodeHTMLEquals result[2], '<div>c</div>'
 
-    describe '__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children:[DOMNode, String, Number, Array, jQuery] )', ->
+    describe '__( viewOrSelector:[Backbone.View, String], attrHash_or_options?:Object, children...:[DOMNode, String, Number, Array, jQuery] )', ->
 
       beforeEachRequire [
         "fixtures/TestCell1"
