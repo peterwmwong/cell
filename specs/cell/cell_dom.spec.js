@@ -1,8 +1,8 @@
 define( [
-  './utils/spec-utils',
+  '../utils/spec-utils',
   'underscore',
   'jquery',
-  './utils/spec-matchers'
+  '../utils/spec-matchers'
 ], function(specUtils, _, _jQuery, matchers) {
   var nodeHTMLEquals = specUtils.nodeHTMLEquals,
       stringify = specUtils.stringify,

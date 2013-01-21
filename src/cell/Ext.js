@@ -4,8 +4,11 @@ define(function() {
   var Ext, Surrogate;
   Surrogate = function() {};
   Ext = function() {};
+  Ext.prototype.getValue = function(v, callback) {
+    return callback(typeof v === 'function' ? v() : v);
+  };
   Ext.prototype.run = function(element) {
-    this.func(element, this.options);
+    this.func(element, this.options, this.getValue);
   };
   Ext.extend = function(func) {
     var NewExt;

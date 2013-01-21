@@ -11112,7 +11112,8 @@ define('App',['require','./Mock','jquery','backbone'],function(require) {
 require.config({
   paths:{
     requireLib: '../../../src/require',
-    cell: '../../../src',
+    cell: '../../../src/cell',
+    dom: '../../../src/dom',
     jquery: '../../../support/jquery',
     underscore: '../../../support/lodash.custom',
     backbone: '../../../node_modules/backbone/backbone'

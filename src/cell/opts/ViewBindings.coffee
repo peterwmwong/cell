@@ -103,8 +103,6 @@ define [
     @parent.appendChild el for el in newEls
     return
     
-  IfBind.prototype = Bind.prototype
-
   __ = View::__
   orig__if = __.if
   __.if = (condition,thenElse)->

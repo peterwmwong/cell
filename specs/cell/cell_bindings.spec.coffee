@@ -1,4 +1,4 @@
-define ['./utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
+define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
   ({beforeEachRequire})->
 

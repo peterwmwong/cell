@@ -2,8 +2,13 @@ define ->
   Surrogate = ->
 
   Ext = ->
+  Ext::getValue = (v,callback)->
+    callback(
+      if typeof v is 'function' then v()
+      else v
+    )
   Ext::run = (element)->
-    @func element, @options
+    @func element, @options, @getValue
     return
 
   Ext.extend = (func)->

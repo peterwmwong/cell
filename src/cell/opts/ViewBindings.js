@@ -148,7 +148,6 @@ define(['underscore', 'cell/View'], function(_, View) {
       this.parent.appendChild(el);
     }
   };
-  IfBind.prototype = Bind.prototype;
   __ = View.prototype.__;
   orig__if = __["if"];
   __["if"] = function(condition, thenElse) {

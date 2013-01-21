@@ -366,7 +366,7 @@ define(['underscore'], function(_) {
       ((msie <= 8)
         ? "val=e.currentStyle&&e.currentStyle[name];"+
           "if(val===''){val='auto;'}"+
-          "val=val||e.styl[name];"
+          "val=val||e.style[name];"
         : "val=e.style[name];")+
       ((msie <= 8)
         ? "val=(val==='')?void 0:val;"
