@@ -1,7 +1,88 @@
-define (require)->
-  _ = require 'underscore'
+define ['underscore'], (_)->
+
+  msie = Number((/msie (\d+)/.exec(navigator.userAgent.toLowerCase()) or [])[1])
+  lowercase = (s)-> s.toLowerCase()
+  uppercase = (s)-> s.toUpperCase()
+
+  nodeName_ =
+    if(msie < 9)
+      (element)->
+        element = if element.nodeName then element else element[0]
+        if element.scopeName and element.scopeName isnt 'HTML'
+          uppercase(element.scopeName + ':' + element.nodeName)
+        else
+          element.nodeName
+    else
+      (element)->
+        if element.nodeName then element.nodeName else element[0].nodeName
 
   exports =
+    browserTrigger: (element, type, keys)->
+      element = element[0] if element and not element.nodeName
+      return unless element
+
+      unless type
+        type = {
+          'text': 'change'
+          'textarea': 'change'
+          'hidden': 'change'
+          'password': 'change'
+          'button': 'click'
+          'submit': 'click'
+          'reset': 'click'
+          'image': 'click'
+          'checkbox': 'click'
+          'radio': 'click'
+          'select-one': 'change'
+          'select-multiple': 'change'
+        }[lowercase element.type] or 'click'
+
+      if lowercase(nodeName_ element) is 'option'
+        element.parentNode.value = element.value
+        element = element.parentNode
+        type = 'change'
+
+      keys or= []
+      pressed = (key)-> _.indexOf(keys, key) isnt -1
+
+      if msie < 9
+        if element.type in ['radio','checkbox']
+          element.checked = not element.checked
+        
+        # WTF!!! Error: Unspecified error.
+        # Don't know why, but some elements when detached seem to be in inconsistent state and
+        # calling .fireEvent() on them will result in very unhelpful error (Error: Unspecified error)
+        # forcing the browser to compute the element position (by reading its CSS)
+        # puts the element in consistent state.
+        element.style.posLeft
+
+        # TODO(vojta): create event objects with pressed keys to get it working on IE<9
+        ret = element.fireEvent "on#{type}"
+        if lowercase(element.type) is 'submit'
+          while element
+            if lowercase(element.nodeName) is 'form'
+              element.fireEvent 'onsubmit'
+              break
+            element = element.parentNode
+
+        ret
+
+      else
+        evnt = document.createEvent 'MouseEvents'
+        originalPreventDefault = evnt.preventDefault
+        fakeProcessDefault = true
+        finalProcessDefault = undefined
+
+        evnt.preventDefault = ->
+          fakeProcessDefault = false
+          originalPreventDefault.apply evnt, arguments
+
+        evnt.initMouseEvent(type, true, true, window, 0, 0, 0, 0, 0, pressed('ctrl'), pressed('alt'), pressed('shift'), pressed('meta'), 0, element)
+
+        element.dispatchEvent evnt
+        finalProcessDefault = fakeProcessDefault
+        finalProcessDefault
+
     stringify: (obj, excludeArrayBrackets)->
       if obj is undefined
         "undefined"

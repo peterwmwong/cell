@@ -1,28 +1,10 @@
 define [
-  'underscore'
-  'backbone'
-  'jquery'
-], (_, Backbone, $)->
+  'dom/mutate'
+  'dom/data'
+  'dom/class'
+], (mutate, data, cls)->
 
-  isArrayish = (o)-> (_.isArray o) or o.jquery
-
-  # Maps cid to cell
-  cidMap = {}
-
-  # Override jQuery.cleanData()
-  # This method is called whenever a DOM node is removed using $.fn.remove(),
-  # $.fn.empty(), or $.fn.html().  If the DOM node being removed is a cell's
-  # @el, lookup the cell and call @dispose()
-  origCleanData = $.cleanData
-  $.cleanData = ( elems, acceptData )->
-    i=0
-    while elem = elems[i++]
-      origCleanData [elem], acceptData
-      if cid = elem.cellcid
-        cell = cidMap[cid]
-        cell.$el = undefined
-        cell.remove()
-    return
+  isArray = Array.isArray or (o)-> Object::toString.call(o) is "[object Array]"
 
   __ = (viewOrHAML, optionsOrFirstChild)->
     children =
@@ -49,9 +31,9 @@ define [
 
         @_renderAttr(k,v,parent) for k,v of options
           
-    # Cell
-    else if viewOrHAML and viewOrHAML.prototype instanceof Backbone.View
-      parent = (new viewOrHAML options).render().el
+    # View
+    else if viewOrHAML and viewOrHAML.prototype instanceof View
+      parent = new viewOrHAML(options).el
 
     if parent
       @_renderChildren children, parent
@@ -61,34 +43,53 @@ define [
     thenElse[if condition then 'then' else 'else']?()
 
   __.each = (col,renderer)->
-    if col instanceof Backbone.Collection
-      col.map renderer
-    else
-      renderer item, i, col for item,i in col
+    renderer item, i, col for item,i in col
 
+  View = (@options)->
+    @options ?= {}
+    @_constructor()
+    @_render_el()
+    return
 
-  View = Backbone.View.extend
+  View::[key] = value for key, value of {
+    beforeRender: ->
+    render_el: (__)-> document.createElement 'div'
+    render: ->
+    afterRender: ->
+
+    __: __
+
+    remove: ->
+      mutate.remove @el
+      delete @el
+      return
 
     _constructor: ->
-      @__ = _.bind @__, @
-      @__.if = View::__.if
-      @__.each = View::__.each
+      __ = View::__
+      @__ = => __.apply @, arguments
+      @__.if = __.if
+      @__.each = __.each
       return
 
-    constructor: ->
-      Backbone.View.apply @, arguments
-      @_constructor()
-      return
+    _render_el: ->
+      @beforeRender()
+      @el = @render_el @__
+      cls.add @el, @_cellName
+      data.set @el, 'cellRef', @
+      @el.setAttribute 'cell', @_cellName
+      @_renderChildren (@render @__), @el
+      @afterRender()
 
     _renderAttr: (k,v,parent)->
       parent.setAttribute k, v
+      return
 
     _renderChild: (n, parent, insertBeforeNode, rendered)->
        # Is Element or Text Node
       if n.nodeType in [1,3]
         rendered.push parent.insertBefore n, insertBeforeNode
 
-      else if isArrayish n
+      else if isArray n
         @_renderChildren n, parent, insertBeforeNode, rendered
 
       else
@@ -97,39 +98,25 @@ define [
 
     _renderChildren: (nodes, parent, insertBeforeNode=null, rendered=[])->
       return rendered unless nodes?
-      nodes = [nodes] unless isArrayish nodes
+      nodes = [nodes] unless isArray nodes
       @_renderChild(n, parent, insertBeforeNode, rendered) for n in nodes when n?
       rendered
+  }
 
-    __: __
+  View.extend = (proto)->
+    SuperView = this
 
-    render: ->
-      @_renderChildren (@renderEl @__), @el
-      @afterRender()
-      @
-
-    # Removes anything that might leak memory
-    remove: ->
-      delete cidMap[@cid]
-      @el.cellcid = undefined
-      @$el.remove() if @$el
-      @stopListening()
-      @model = @collection = @el = @$el = @$ = undefined
+    NewView = (options)->
+      SuperView.call @, options
       return
+    NewView.extend = SuperView.extend
 
-    _setElement: Backbone.View::setElement
-    setElement: (element, delegate)->
-      @_setElement element, delegate
+    Surrogate = ->
+    Surrogate:: = SuperView::
+    NewView:: = new Surrogate()
+    if proto
+      NewView::[k] = v for k,v of proto
+    NewView
 
-      # Track the cell instance by cid
-      cidMap[@cid] = this
-      @el.setAttribute 'cell', @_cellName
-
-      # Used jQuery.cleanData() to retrieve the cell instance
-      # associated with a DOM Element
-      @el.cellcid = @cid
-      @
-
-    renderEl: ->
-    afterRender: ->
+  View
   

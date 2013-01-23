@@ -1,6 +1,12 @@
 TODO
 ====
 
+NEW: Leverage almond in defineView-builder-plugin fixture spec
+--------------------------------------------------------------
+
+NEW: Remove underscore dependency
+---------------------------------
+
 BUG: __.if() and __.each() need to call with view as `this`
 -----------------------------------------------------------
 

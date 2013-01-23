@@ -3,7 +3,7 @@ define ['../../utils/spec-utils'], ({node})-> ({beforeEachRequire})->
     'dom/class'
     'cell/Ext'
     'cell/exts/x_class'
-  ], ({@hasClass}, @Ext, @x_class)->
+  ], (@cls, @Ext, @x_class)->
 
   describe 'x_class( classHash:object )', ->
     beforeEach ->
@@ -26,15 +26,15 @@ define ['../../utils/spec-utils'], ({node})-> ({beforeEachRequire})->
         @ext.run @element
 
       it 'applies truthy classes', ->
-        expect(@hasClass @element, 'trueClass').toBe true
-        expect(@hasClass @element, 'truthyClass').toBe true
+        expect(@cls.has @element, 'trueClass').toBe true
+        expect(@cls.has @element, 'truthyClass').toBe true
 
       it 'does NOT apply falsy classes', ->
-        expect(@hasClass @element, 'falseClass').toBe false
-        expect(@hasClass @element, 'falsyClass').toBe false
+        expect(@cls.has @element, 'falseClass').toBe false
+        expect(@cls.has @element, 'falsyClass').toBe false
 
       it 'removes falsy classes', ->
-        expect(@hasClass @element, 'one').toBe false
-        expect(@hasClass @element, 'two').toBe true
-        expect(@hasClass @element, 'three').toBe false
+        expect(@cls.has @element, 'one').toBe false
+        expect(@cls.has @element, 'two').toBe true
+        expect(@cls.has @element, 'three').toBe false
 

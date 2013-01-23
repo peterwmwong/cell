@@ -15,7 +15,7 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
       this.parent.innerHTML = "<div style=\"margin: 1px;\"></div>\n<div></div>";
       return _ref = this.parent.children, this.element = _ref[0], this.elementNoMargin = _ref[1], _ref;
     });
-    describe('@css  element:Element, style:string ) # Get ', function() {
+    describe('css( element:Element, style:string ) # Get ', function() {
       it('gets style', function() {
         return expect(this.css(this.element, 'margin')).toEqual('1px');
       });
@@ -29,7 +29,7 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
         }
       });
     });
-    describe('@css  element:Element, style:string, value:any ) # Set', function() {
+    describe('css( element:Element, style:string, value:any ) # Set', function() {
       beforeEach(function() {
         return this.css(this.element, 'margin', '2px');
       });
@@ -37,7 +37,7 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
         return expect(this.parent.innerHTML.indexOf('<div style="margin: 2px;"></div>') !== -1).toBe(true);
       });
     });
-    describe('@css  element:Element, styles:string[] ) # Get Many', function() {
+    describe('css( element:Element, styles:string[] ) # Get Many', function() {
       beforeEach(function() {
         this.css(this.element, 'display', 'inline');
         return this.result = this.css(this.element, ['margin', 'display']);
@@ -49,7 +49,7 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
         });
       });
     });
-    describe('@css  element:Element, styleValueHash:object ) # Set Many', function() {
+    describe('css( element:Element, styleValueHash:object ) # Set Many', function() {
       beforeEach(function() {
         return this.css(this.element, {
           margin: '3px',

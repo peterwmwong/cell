@@ -1,36 +1,10 @@
-define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
+define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
   ({beforeEachRequire})->
 
     describe '@updateBinds()', ->
 
-      beforeEachRequire ['backbone','cell/opts/ViewBindings','cell/View'], (@Backbone, ViewBindings, @View)->
-
-      describe "When @model or @collection is present", ->
-
-        beforeEach ->
-          spyOn @View.prototype , 'updateBinds'
-
-          @model = new @Backbone.Model()
-          @viewWithModel = new @View {@model}
-
-          @collection = new @Backbone.Collection()
-          @viewWithCollection = new @View {@collection}
-
-        describe "and triggers an event", ->
-
-          beforeEach ->
-            @model.trigger 'modelEvent'
-            @collection.trigger 'collectionEvent'
-
-          it "calls @updateBinds()", ->
-            expect(@View::updateBinds.calls[0]).toEqual
-              args: ['modelEvent']
-              object: @viewWithModel
-
-            expect(@View::updateBinds.calls[1]).toEqual
-              args: ['collectionEvent']
-              object: @viewWithCollection
+      beforeEachRequire ['cell/opts/ViewBindings','cell/View'], (ViewBindings, @View)->
 
       describe "Given multiple binds, when a bind updates due to another bind's update", ->
 
@@ -99,16 +73,16 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
             @collection = [1,2,3]
             @CellWithEach = @View.extend
               _cellName: 'test'
-              renderEl: (__)=> [
+              render: (__)=> [
                 __ '.parent',
                   __.each (=> @collection), (item)->
                     __ ".item#{item}"
               ]
-            @view = new @CellWithEach().render()
+            @view = new @CellWithEach()
 
           it 'renders initially correctly', ->
             nodeHTMLEquals @view.el,
-              '<div cell="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>'
+              '<div cell="test" class="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>'
 
           describe 'when collection changes and updateBinds() is called', ->
 
@@ -120,7 +94,7 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
 
             it 'renders after change correctly', ->
               nodeHTMLEquals @view.el,
-                '<div cell="test"><div class="parent"><div class="item4"></div><div class="item1"></div><div class="item3"></div></div></div>'
+                '<div cell="test" class="test"><div class="parent"><div class="item4"></div><div class="item1"></div><div class="item3"></div></div></div>'
 
             it "doesn't rerender previous items", ->
               expect(@view.el.children[0].children[1]).toBe @item1
@@ -135,7 +109,7 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
             @condition = true
             @CellWithIf = @View.extend
               _cellName: 'test'
-              renderEl: (__)=> [
+              render: (__)=> [
                 __ '.parent',
                   __.if (=> @condition),
                     then: -> [
@@ -147,16 +121,16 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
                       __ '.else2'
                     ]
               ]
-            @view = new @CellWithIf().render()
+            @view = new @CellWithIf()
 
           it 'renders initially correctly', ->
             nodeHTMLEquals @view.el,
-              '<div cell="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>'
+              '<div cell="test" class="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>'
 
           it 'renders after change correctly', ->
             @condition = false
             @view.updateBinds()
-            nodeHTMLEquals @view.el, '<div cell="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
+            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
 
 
         describe 'when then and else return a node', ->
@@ -165,21 +139,21 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
             @condition = true
             @CellWithIf = @View.extend
               _cellName: 'test'
-              renderEl: (__)=> [
+              render: (__)=> [
                 __ '.parent',
                   __.if (=> @condition),
                     then: -> __ '.then'
                     else: -> __ '.else'
               ]
-            @view = new @CellWithIf().render()
+            @view = new @CellWithIf()
 
           it 'renders initially correctly', ->
-            nodeHTMLEquals @view.el, '<div cell="test"><div class="parent"><div class="then"></div></div></div>'
+            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="then"></div></div></div>'
 
           it 'renders after change correctly', ->
             @condition = false
             @view.updateBinds()
-            nodeHTMLEquals @view.el, '<div cell="test"><div class="parent"><div class="else"></div></div></div>'
+            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else"></div></div></div>'
 
       describe 'when a bind is passed as an attribute', ->
 
@@ -208,7 +182,9 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
               @view.test = ref_value
               @node = @__ '.parent',
                 'BEFORE'
-                -> @test
+                ->
+                  debugger
+                  @test
                 'AFTER'
 
             it "child is rendered correctly", ->
@@ -266,23 +242,14 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
           expected_child_html_after: '1'
 
         describe_render_reference
-          value_type: 'jQuery'
-          ref_value: $('<div class="initial"></div>')
-          ref_value_after: $('<div class="after"></div>')
-          expected_child_html: '<div class="initial"></div>'
-          expected_child_html_after: '<div class="after"></div>'
-
-        describe_render_reference
           value_type: 'Array'
           ref_value: [
             'Hello World!'
             0
-            $('<div class="initial"></div>')
           ]
           ref_value_after: [
             'Goodbye!'
             1
-            $('<div class="after"></div>')
           ]
-          expected_child_html: 'Hello World!0<div class="initial"></div>'
-          expected_child_html_after: 'Goodbye!1<div class="after"></div>'
+          expected_child_html: 'Hello World!0'
+          expected_child_html_after: 'Goodbye!1'

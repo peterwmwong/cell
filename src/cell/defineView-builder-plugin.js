@@ -27,6 +27,7 @@ define(function() {
       if ((outcssfile != null) && Cstack.length > 0 && Cstack.length === writeCount) {
         allcss = '';
         preinstalls = {};
+        console.log(Cstack);
         for (_i = 0, _len = Cstack.length; _i < _len; _i++) {
           _ref = Cstack[_i], name = _ref.name, cssurl = _ref.cssurl;
           preinstalls[name] = 1;

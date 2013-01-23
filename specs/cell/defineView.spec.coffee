@@ -3,8 +3,7 @@ define -> ({beforeEachRequire})->
   beforeEachRequire [
     'fixtures/TestCell1'
     'cell/View'
-    'backbone'
-  ], (@TestCell1,@View,@Backbone)->
+  ], (@TestCell1, @View)->
     @testCell1 = new @TestCell1
 
   it 'attaches <link> for stylesheet', ->
@@ -12,11 +11,11 @@ define -> ({beforeEachRequire})->
       $('link[href="/specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length
     ).not.toBe 0
 
-  it 'exposes @Cell', ->
+  it 'exposes @View', ->
     expect(@testCell1 instanceof @View).toBe true
 
-  it 'Creates a Backbone.View from the definition of the module', ->
-    expect(@testCell1 instanceof @Backbone.View).toBe true
+  it 'modifies rendering to automatically add cell attribute', ->
+    expect(@testCell1.el.getAttribute 'cell').toBe 'TestCell1'
 
-  it 'overrides Backbone.View._ensureElement() to add a cell attribute', ->
-    expect(@testCell1.$el.attr 'cell').toBe 'TestCell1'
+  it 'modifies rendering to automatically add class', ->
+    expect(@testCell1.el.className).toBe 'TestCell1'

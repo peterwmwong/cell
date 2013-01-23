@@ -2,7 +2,7 @@
 
 define(function(require) {
   return require('cell/defineView!')({
-    renderEl: function() {
+    render: function() {
       return ["MockNested"];
     }
   });

@@ -25,6 +25,8 @@ define ->
       allcss = ''
       preinstalls = {}
 
+      console.log Cstack
+
       for {name,cssurl} in Cstack
         preinstalls[name] = 1
         get cssurl, (err, contents)->

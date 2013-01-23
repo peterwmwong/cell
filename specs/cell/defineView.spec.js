@@ -4,23 +4,22 @@ define(function() {
   return function(_arg) {
     var beforeEachRequire;
     beforeEachRequire = _arg.beforeEachRequire;
-    beforeEachRequire(['fixtures/TestCell1', 'cell/View', 'backbone'], function(TestCell1, View, Backbone) {
+    beforeEachRequire(['fixtures/TestCell1', 'cell/View'], function(TestCell1, View) {
       this.TestCell1 = TestCell1;
       this.View = View;
-      this.Backbone = Backbone;
       return this.testCell1 = new this.TestCell1;
     });
     it('attaches <link> for stylesheet', function() {
       return expect($('link[href="/specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length).not.toBe(0);
     });
-    it('exposes @Cell', function() {
+    it('exposes @View', function() {
       return expect(this.testCell1 instanceof this.View).toBe(true);
     });
-    it('Creates a Backbone.View from the definition of the module', function() {
-      return expect(this.testCell1 instanceof this.Backbone.View).toBe(true);
+    it('modifies rendering to automatically add cell attribute', function() {
+      return expect(this.testCell1.el.getAttribute('cell')).toBe('TestCell1');
     });
-    return it('overrides Backbone.View._ensureElement() to add a cell attribute', function() {
-      return expect(this.testCell1.$el.attr('cell')).toBe('TestCell1');
+    return it('modifies rendering to automatically add class', function() {
+      return expect(this.testCell1.el.className).toBe('TestCell1');
     });
   };
 });

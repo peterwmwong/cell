@@ -19,7 +19,7 @@ define [
         """
       [@element,@elementNoMargin] = @parent.children
 
-    describe '@css  element:Element, style:string ) # Get ', ->
+    describe 'css( element:Element, style:string ) # Get ', ->
 
       it 'gets style', ->
         expect(@css @element, 'margin').toEqual '1px'
@@ -31,14 +31,14 @@ define [
         else
           expectation.toBeFalsy()
 
-    describe '@css  element:Element, style:string, value:any ) # Set', ->
+    describe 'css( element:Element, style:string, value:any ) # Set', ->
       beforeEach ->
         @css @element, 'margin', '2px'
 
       it 'sets style', ->
         expect(@parent.innerHTML.indexOf('<div style="margin: 2px;"></div>') isnt -1).toBe true
 
-    describe '@css  element:Element, styles:string[] ) # Get Many', ->
+    describe 'css( element:Element, styles:string[] ) # Get Many', ->
       beforeEach ->
         @css @element, 'display', 'inline'
         @result = @css @element, ['margin','display']
@@ -48,7 +48,7 @@ define [
           margin: '1px'
           display: 'inline'
 
-    describe '@css  element:Element, styleValueHash:object ) # Set Many', ->
+    describe 'css( element:Element, styleValueHash:object ) # Set Many', ->
       beforeEach ->
         @css @element,
           margin: '3px'

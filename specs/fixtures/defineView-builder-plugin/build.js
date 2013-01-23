@@ -3,6 +3,6 @@
   include: [
     'requireLib'
   ],
-  optimize: "none",
+  // optimize: "none",
   out: 'all.js'
 })
