@@ -1,9 +1,6 @@
 TODO
 ====
 
-NEW: Leverage almond in defineView-builder-plugin fixture spec
---------------------------------------------------------------
-
 NEW: Remove underscore dependency
 ---------------------------------
 

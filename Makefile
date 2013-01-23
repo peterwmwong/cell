@@ -34,7 +34,6 @@ lodash:
 spec-defineView-builder-plugin:
 	script/compile-specs
 	$(requirejsBuild) -o specs/fixtures/defineView-builder-plugin/build.js
-	cat specs/fixtures/defineView-builder-plugin/config.js >> specs/fixtures/defineView-builder-plugin/all.js
 
 define MAKE_ALL_TESTS_COFFEE
 specs = process.argv[4..].map (e)-> "spec!#{/(.*?\.spec)\.js/.exec(e)[1]}"
