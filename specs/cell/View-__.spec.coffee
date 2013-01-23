@@ -1,4 +1,4 @@
-define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
+define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})->
 
   ({beforeEachRequire})->
 
@@ -101,6 +101,12 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
       it_renders "selector:String, attrHash:Object",
         [ 'p#myid.myclass.myclass2', class:'myclass3', 'data-custom':'myattr', 'data-custom2':'myattr2']
         '<p class="myclass3" data-custom="myattr" data-custom2="myattr2" id="myid"></p>'
+
+      it "renders on* event handlers", ->
+        @node = @__ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
+        expect(@clickHandler).not.toHaveBeenCalled()
+        browserTrigger @node, 'click'
+        expect(@clickHandler).toHaveBeenCalled()
 
       it_renders "selector:String, attrHash:Object, children...:[DOM Nodes, String, Number, Array, jQuery]",
         [ 'p', 'data-custom':'myattr', 'data-custom2':'myattr2',

@@ -1,4 +1,4 @@
-define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
+define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})->
 
   ({beforeEachRequire})->
 
@@ -171,6 +171,13 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
           it "automatically sets the element's attribute to the new binding's value", ->
             expect(@node.getAttribute 'data-custom').toBe 'test val2'
 
+
+      describe "when the attribute is a on* event handler", ->
+        it "doesn't think it's a bind", ->
+          @node = @__ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
+          expect(@clickHandler).not.toHaveBeenCalled()
+          browserTrigger @node, 'click'
+          expect(@clickHandler).toHaveBeenCalled()
 
       describe "when a bind is passed as a child", ->
 

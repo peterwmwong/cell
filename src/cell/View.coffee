@@ -1,8 +1,8 @@
 define [
   'dom/mutate'
   'dom/data'
-  'dom/class'
-], (mutate, data, cls)->
+  'dom/events'
+], (mutate, data, events)->
 
   isArray = Array.isArray or (o)-> Object::toString.call(o) is "[object Array]"
 
@@ -29,7 +29,11 @@ define [
         if m[4]
           parent.className = m[4].slice(1).replace(/\./g, ' ')
 
-        @_renderAttr(k,v,parent) for k,v of options
+        for k,v of options
+          if match = /^on(\w+)/.exec k
+            events.bind parent, match[1], v
+          else
+            @_renderAttr(k,v,parent)
           
     # View
     else if viewOrHAML and viewOrHAML.prototype instanceof View
@@ -74,7 +78,7 @@ define [
     _render_el: ->
       @beforeRender()
       @el = @render_el @__
-      cls.add @el, @_cellName
+      @el.className = if (cls = @el.className) then (cls+' '+@_cellName) else @_cellName
       data.set @el, 'cellRef', @
       @el.setAttribute 'cell', @_cellName
       @_renderChildren (@render @__), @el

@@ -79,6 +79,7 @@ define [
         delete event.stopPropagation
         delete event.isDefaultPrevented
     eventHandler.elem = element
+    eventHandler.destroy = -> DOMUnbindAllEvents element, events
     eventHandler
 
   DOMUnbindAllEvents = (element,events)->
@@ -127,7 +128,7 @@ define [
 
     if type?
       if fn?
-        arrayRemove(events[type], fn);
+        arrayRemove events[type], fn
       else
         removeEventListenerFn element, type, events[type]
         delete events[type]

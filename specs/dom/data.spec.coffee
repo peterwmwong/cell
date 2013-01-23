@@ -1,14 +1,14 @@
 define [
   '../utils/spec-utils'
   '../utils/spec-matchers'
-],  ({node}, matchers)->
+],  ({node,browserTrigger}, matchers)->
 
   ({beforeEachRequire})->
 
     beforeEachRequire [
       'dom/data'
-      'dom/api'
-    ], (@data, @api)->
+      'dom/events'
+    ], (@data, @events)->
       @addMatchers matchers
       @element = node 'div'
 
@@ -44,16 +44,14 @@ define [
         @data.remove @element
         expect(@data.get @element, 'name').toBeUndefined()
 
-      # it('should remove event listeners on element removal', function() {
-      #   var div = dom('<div><span>text</span></div>'),
-      #     span = div.find('span'),
-      #     log = '';
-      #   span.bind('click', function() {
-      #     log += 'click;'
-      #   });
-      #   browserTrigger(span);
-      #   expect(log).toEqual('click;');
-      #   span.remove();
-      #   log = '';
-      #   browserTrigger(span);
-      #   expect(log).toEqual('');
+      it 'should remove event listeners on element removal', ->
+        log = []
+        @events.bind @span, 'click', -> log.push 'click'
+        browserTrigger @span, 'click'
+        expect(log).toEqual ['click']
+
+        @data.remove @span
+        log = []
+
+        browserTrigger @span, 'click'
+        expect(log).toEqual []

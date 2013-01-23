@@ -2,8 +2,8 @@
 var __slice = [].slice;
 
 define(['../utils/spec-utils'], function(_arg) {
-  var node, nodeHTMLEquals, stringify;
-  nodeHTMLEquals = _arg.nodeHTMLEquals, stringify = _arg.stringify, node = _arg.node;
+  var browserTrigger, node, nodeHTMLEquals, stringify;
+  nodeHTMLEquals = _arg.nodeHTMLEquals, stringify = _arg.stringify, node = _arg.node, browserTrigger = _arg.browserTrigger;
   return function(_arg1) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
@@ -79,6 +79,14 @@ define(['../utils/spec-utils'], function(_arg) {
           'data-custom2': 'myattr2'
         }
       ], '<p class="myclass3" data-custom="myattr" data-custom2="myattr2" id="myid"></p>');
+      it("renders on* event handlers", function() {
+        this.node = this.__('.bound', {
+          onclick: this.clickHandler = jasmine.createSpy('click')
+        });
+        expect(this.clickHandler).not.toHaveBeenCalled();
+        browserTrigger(this.node, 'click');
+        return expect(this.clickHandler).toHaveBeenCalled();
+      });
       it_renders("selector:String, attrHash:Object, children...:[DOM Nodes, String, Number, Array, jQuery]", [
         'p', {
           'data-custom': 'myattr',

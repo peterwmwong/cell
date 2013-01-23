@@ -72,6 +72,9 @@ define(['dom/browser', 'dom/data'], function(browser, data) {
       }
     };
     eventHandler.elem = element;
+    eventHandler.destroy = function() {
+      return DOMUnbindAllEvents(element, events);
+    };
     return eventHandler;
   };
   DOMUnbindAllEvents = function(element, events) {
