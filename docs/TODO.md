@@ -1,9 +1,6 @@
 TODO
 ====
 
-NEW: Remove underscore dependency
----------------------------------
-
 BUG: __.if() and __.each() need to call with view as `this`
 -----------------------------------------------------------
 
@@ -26,18 +23,6 @@ NEW: exts (see angularjs directives)
 
 - x_class
 - x_model
-
-
-NEW: Cell::renderRoot()
------------------------
-
-Optional function to define when you want to control how a Cell's root element (@el) is rendered
-Elements produced by renderEl() will be the contents.
-
-    ...
-    renderRoot: (__)->
-      __ 'input', type:'checkbox', checked:(-> @model.get 'done')
-    ...
 
 
 NEW: dom

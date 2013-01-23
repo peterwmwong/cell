@@ -30,7 +30,7 @@ define(['dom/browser', 'dom/data'], function(browser, data) {
   createEventHandler = function(element, events) {
     var eventHandler;
     eventHandler = function(event, type) {
-      var fn, prevent, _i, _len, _ref;
+      var evs, fn, prevent, _i, _len;
       if (!event.preventDefault) {
         event.preventDefault = function() {
           event.returnValue = false;
@@ -55,10 +55,11 @@ define(['dom/browser', 'dom/data'], function(browser, data) {
       event.isDefaultPrevented = function() {
         return event.defaultPrevented;
       };
-      _ref = events[type || event.type];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        fn = _ref[_i];
-        fn.call(element, event);
+      if (evs = events[type || event.type]) {
+        for (_i = 0, _len = evs.length; _i < _len; _i++) {
+          fn = evs[_i];
+          fn.call(element, event);
+        }
       }
       if (browser.msie <= 8) {
         event.preventDefault = null;

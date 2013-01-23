@@ -1,4 +1,4 @@
-define ['underscore'], (_)->
+define ->
 
   msie: Number((/msie (\d+)/.exec(navigator.userAgent.toLowerCase()) or [])[1])
   define: (o)->
@@ -15,7 +15,7 @@ define ['underscore'], (_)->
             o.set e, name, value
 
         # get all
-        else if _.isArray nameOrHash
+        else if nameOrHash instanceof Array
           result = {}
           for name in nameOrHash
             result[name] = o.get e, name

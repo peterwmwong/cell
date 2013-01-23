@@ -6,7 +6,7 @@ define ['../../utils/spec-utils'], ({node})->
       'require'
     ], (@Ext, @View, @require)->
 
-    describe 'modifies View.__() method signature ( viewOrSelector:[Backbone.View, String], exts...:Ext, attrHash_or_options?:Object, children...:[DOMElement, String, Number, Array, jQuery] )', ->
+    describe 'modifies View.__() method signature ( viewOrSelector:[View, String], exts...:Ext, attrHash_or_options?:Object, children...:[DOMElement, String, Number, Array, jQuery] )', ->
       beforeEach ->
         @orig__ = (spyOn @View.prototype, '__').andReturn @element = {}
         @x_test1 = @Ext.extend @x_test1_func = jasmine.createSpy 'x_test1_func'

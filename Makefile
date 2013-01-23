@@ -1,7 +1,7 @@
 #===================================================================
 #--------------------------- VARIABLES -----------------------------
 #===================================================================
-requirejsBuild = node_modules/.bin/r.js
+requirejsBuild = src/r.js
 
 
 #===================================================================
@@ -33,7 +33,7 @@ lodash:
 # 	- Tests cell can be properly used by requirejs optimizer build script
 spec-defineView-builder-plugin:
 	script/compile-specs
-	$(requirejsBuild) -o specs/fixtures/defineView-builder-plugin/build.js
+	node $(requirejsBuild) -o specs/fixtures/defineView-builder-plugin/build.js
 
 define MAKE_ALL_TESTS_COFFEE
 specs = process.argv[4..].map (e)-> "spec!#{/(.*?\.spec)\.js/.exec(e)[1]}"

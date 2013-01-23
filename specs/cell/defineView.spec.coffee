@@ -1,4 +1,4 @@
-define -> ({beforeEachRequire})->
+define ['jquery'], ($)-> ({beforeEachRequire})->
 
   beforeEachRequire [
     'fixtures/TestCell1'

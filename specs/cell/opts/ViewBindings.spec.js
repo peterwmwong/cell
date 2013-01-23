@@ -203,7 +203,7 @@ define(['../../utils/spec-utils'], function(_arg) {
             beforeEach(function() {
               this.view.test = ref_value;
               return this.node = this.__('.parent', 'BEFORE', function() {
-                debugger;                return this.test;
+                return this.test;
               }, 'AFTER');
             });
             it("child is rendered correctly", function() {

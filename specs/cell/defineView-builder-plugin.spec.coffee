@@ -1,4 +1,4 @@
-define ->
+define ['jquery'], ($)->
   ->
     load_fixture = (iframe_src, cb)->
       $fixture_container = $ '#spec-fixture'

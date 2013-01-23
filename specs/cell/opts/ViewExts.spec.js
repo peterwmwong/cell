@@ -12,7 +12,7 @@ define(['../../utils/spec-utils'], function(_arg) {
       this.View = View;
       this.require = require;
     });
-    return describe('modifies View.__() method signature ( viewOrSelector:[Backbone.View, String], exts...:Ext, attrHash_or_options?:Object, children...:[DOMElement, String, Number, Array, jQuery] )', function() {
+    return describe('modifies View.__() method signature ( viewOrSelector:[View, String], exts...:Ext, attrHash_or_options?:Object, children...:[DOMElement, String, Number, Array, jQuery] )', function() {
       beforeEach(function() {
         var _this = this;
         this.orig__ = (spyOn(this.View.prototype, '__')).andReturn(this.element = {});

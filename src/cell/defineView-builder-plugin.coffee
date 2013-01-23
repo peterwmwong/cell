@@ -30,11 +30,7 @@ define ->
         get cssurl, (err, contents)->
           allcss += contents if not err? and typeof contents == 'string'
 
-      write """
-            require(['cell/defineView'],function(p){
-              p._installed = #{JSON.stringify preinstalls};
-            });\n
-            """
+      write ";window.__installedViews = #{JSON.stringify preinstalls};"
       put outcssfile, allcss
   
   load: do->

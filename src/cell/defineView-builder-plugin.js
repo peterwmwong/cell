@@ -36,7 +36,7 @@ define(function() {
             }
           });
         }
-        write("require(['cell/defineView'],function(p){\n  p._installed = " + (JSON.stringify(preinstalls)) + ";\n});\n");
+        write(";window.__installedViews = " + (JSON.stringify(preinstalls)) + ";");
         return put(outcssfile, allcss);
       }
     },

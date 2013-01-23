@@ -1,4 +1,4 @@
-define ['jquery'], ->
+define ['jquery'], ($)->
   ctx_name_salt = 0
 
   load: (name, req, load, config)->
@@ -22,15 +22,6 @@ define ['jquery'], ->
                 paths:
                   cell: '../src/cell'
                   dom: '../src/dom'
-                  jquery: '../support/jquery'
-                  underscore: '../support/lodash.custom'
-                  backbone: '../node_modules/backbone/backbone'
-                shim:
-                  underscore:
-                    exports: '_'
-                  backbone:
-                    deps: ["underscore", "jquery"]
-                    exports: "Backbone"
 
               ctx = window.require.s.contexts[ctxName]
               

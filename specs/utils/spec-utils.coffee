@@ -1,4 +1,17 @@
-define ['underscore'], (_)->
+define ['jquery'], ($)->
+
+  indexOf =
+    if Array.prototype.indexOf
+      (arr,el)-> arr.indexOf(el)
+    else
+      (arr,el)->
+        i=0
+        while i<arr.length
+          if arr[i] is el
+            return i;
+          else
+            ++i
+        -1
 
   msie = Number((/msie (\d+)/.exec(navigator.userAgent.toLowerCase()) or [])[1])
   lowercase = (s)-> s.toLowerCase()
@@ -43,7 +56,8 @@ define ['underscore'], (_)->
         type = 'change'
 
       keys or= []
-      pressed = (key)-> _.indexOf(keys, key) isnt -1
+
+      pressed = (key)-> indexOf(keys, key) isnt -1
 
       if msie < 9
         if element.type in ['radio','checkbox']
@@ -90,8 +104,9 @@ define ['underscore'], (_)->
       else if obj is null
         "null"
 
-      else if obj.jquery? or _.isArray obj
-        str = _.map(obj,exports.stringify).join ', '
+      else if obj.jquery? or obj instanceof Array
+        str = (for o in obj then exports.stringify o).join ', '
+        # str = _.map(obj,exports.stringify).join ', '
         if excludeArrayBrackets 
           str
         else
@@ -100,7 +115,7 @@ define ['underscore'], (_)->
       else if obj.nodeType is 1
         "<#{obj.tagName.toLowerCase()}/>"
 
-      else if _.isObject obj
+      else if obj?.constructor is Object
         "{#{("#{k}:#{exports.stringify v}" for k,v of obj).join ','}}"
         
       else
@@ -121,7 +136,7 @@ define ['underscore'], (_)->
         if node.attributes.length > 0
 
           # Omit the @cellCid attribute as it is generated
-          list = _.filter node.attributes, ({name})-> name isnt 'cellcid'
+          list = (for attr in node.attributes when attr.name isnt 'cellcid' then attr)
 
           # Sort attributes as order is not guaranteed to be the
           # same on each browser
@@ -130,12 +145,14 @@ define ['underscore'], (_)->
             else if a.name < b.name then -1
             else 1
 
-          _.each list, (el)-> html += " #{el.name}=\"#{el.value}\""
+          for el in list
+            html += " #{el.name}=\"#{el.value}\""
 
         html += ">"
 
         # Recursively html-ize children
-        _.each $(node).contents(), (el)-> html += nodeToHTML el
+        for el in $(node).contents()
+          html += nodeToHTML el
           
         html += "</#{node.tagName.toLowerCase()}>"
 

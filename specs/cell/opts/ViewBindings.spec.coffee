@@ -182,9 +182,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node})->
               @view.test = ref_value
               @node = @__ '.parent',
                 'BEFORE'
-                ->
-                  debugger
-                  @test
+                -> @test
                 'AFTER'
 
             it "child is rendered correctly", ->

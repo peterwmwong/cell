@@ -1,4 +1,5 @@
-define ['require','../specs/GENERATED_all-specs'], (require,specs)->
+define ['require','../specs/GENERATED_all-specs','jquery'], (require,specs,jquery)->
+  jquery.noConflict true
   spec() for spec in specs
   trivialReporter = new jasmine.TrivialReporter()
   jasmineEnv = jasmine.getEnv()

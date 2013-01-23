@@ -1,9 +1,10 @@
 define [
-  'underscore'
   'cell/View'
-], (_, View)->
-
-  isBind = _.isFunction
+], (View)->
+  
+  isBind = (o)-> typeof o is 'function'
+  bind = (f,o)->
+    -> f.apply o, arguments
 
   Bind = (@parent, @getValue)->
   Bind::getRenderValue = -> @value
@@ -128,7 +129,7 @@ define [
   orig_renderAttr = View::_renderAttr
   View::_renderAttr = (k, v, parent)->
     if isBind v
-      @_binds.push bind = new AttrBind parent, k, (_.bind v, @)
+      @_binds.push bind = new AttrBind parent, k, (bind v, @)
       bind.needRender()
       bind.render @
     return
@@ -136,7 +137,7 @@ define [
   orig_renderChild = View::_renderChild
   View::_renderChild = (n, parent, insertBeforeNode, rendered)->
     if isBind n
-      n = new Bind parent, _.bind(n,@)
+      n = new Bind parent, bind(n,@)
 
     if (n instanceof Bind) or (n instanceof EachBind)
       @_binds.push n

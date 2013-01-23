@@ -4,18 +4,7 @@ require.config({
   paths: {
     'SpecHelpers': '../spec-runner/SpecHelpers',
     'spec': '../spec-runner/spec',
-    jquery: '../support/jquery',
-    underscore: '../support/lodash.custom',
-    backbone: '../node_modules/backbone/backbone'
-  },
-  shim: {
-    'underscore': {
-      "exports": '_'
-    },
-    'backbone': {
-      "deps": ["underscore", "jquery"],
-      "exports": "Backbone"  //attaches "Backbone" to the window object
-    }
+    'jquery': '../support/jquery'
   },
   deps: [
     'SpecRunner'

@@ -1,8 +1,26 @@
-define(['underscore'], function(_) {
+define(function() {
   'use strict';
 
+  var isString = function(o) {
+    return typeof o === 'string'
+  }
+
+  var indexOf = (Array.prototype.indexOf)
+    ? function(arr,el) { return arr.indexOf(el); }
+    : function(arr,el) {
+        var i=0;
+        while(i<arr.length) {
+          if (arr[i] === el) {
+            return i;
+          } else {
+            ++i;
+          }
+        }
+        return -1;
+      };
+
   function arrayRemove(array, value) {
-    var index = _.indexOf(array, value);
+    var index = indexOf(array, value);
     if(index >= 0) array.splice(index, 1);
     return value;
   }
@@ -16,15 +34,15 @@ define(['underscore'], function(_) {
   };
 
   function lowercase(string) {
-    return _.isString(string) ? string.toLowerCase() : string;
+    return isString(string) ? string.toLowerCase() : string;
   };
 
   function trim(value) {
-    return _.isString(value) ? value.replace(/^\s*/, '').replace(/\s*$/, '') : value;
+    return isString(value) ? value.replace(/^\s*/, '').replace(/\s*$/, '') : value;
   };
 
   function uppercase(string) {
-    return _.isString(string) ? string.toUpperCase() : string;
+    return isString(string) ? string.toUpperCase() : string;
   };
 
   function isUndefined(obj){
@@ -75,13 +93,13 @@ define(['underscore'], function(_) {
       return element;
     }
     if(!(this instanceof DOM)) {
-      if(_.isString(element) && element.charAt(0) !== '<') {
+      if(isString(element) && element.charAt(0) !== '<') {
         throw Error('selectors not implemented');
       }
       return new DOM(element);
     }
 
-    if(_.isString(element)) {
+    if(isString(element)) {
       var div = document.createElement('div');
       // Read about the NoScope elements here:
       // http://msdn.microsoft.com/en-us/library/ms533897(VS.85).aspx

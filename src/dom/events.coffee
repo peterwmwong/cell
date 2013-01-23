@@ -62,8 +62,9 @@ define [
       event.isDefaultPrevented = ->
         return event.defaultPrevented
 
-      for fn in events[type or event.type]
-        fn.call element, event
+      if evs = events[type or event.type]
+        for fn in evs
+          fn.call element, event
 
       # Remove monkey-patched methods (IE),
       # as they would cause memory leaks in IE8.
