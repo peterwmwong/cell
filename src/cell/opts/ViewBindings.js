@@ -111,7 +111,7 @@ define(['cell/View'], function(View) {
   EachBind.prototype.needRender = function() {
     var change, i, value;
     value = this.getValue() || [];
-    if (!(change = (value !== this.value) || (this.value.length !== value.length))) {
+    if (!(change = (!(this.value != null)) || this.value.length !== value.length)) {
       i = this.value.length;
       while (--i >= 0) {
         if (value[i] !== this.value[i]) {
@@ -121,7 +121,7 @@ define(['cell/View'], function(View) {
       change = i >= 0;
     }
     if (change) {
-      this.value = value;
+      this.value = [].slice.call(value);
       return true;
     } else {
       return false;

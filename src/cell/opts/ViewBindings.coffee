@@ -68,7 +68,7 @@ define [
     value = @getValue() or []
 
     # Quick change checks
-    unless change = (value isnt @value) or (@value.length isnt value.length)
+    unless change = ((not @value?) or @value.length isnt value.length)
 
       # Deep change check (check each item)
       i = @value.length
@@ -77,7 +77,7 @@ define [
       change = (i >= 0)
 
     if change
-      @value = value
+      @value = [].slice.call value
       true
     else
       false

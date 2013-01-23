@@ -87,18 +87,19 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
           describe 'when collection changes and updateBinds() is called', ->
 
             beforeEach ->
-              @collection = [4,1,3]
-              @item1 = @view.el.children[0].children[0]
+              @item2 = @view.el.children[0].children[1]
               @item3 = @view.el.children[0].children[2]
+              @collection.shift()
+              @collection.push 4
               @view.updateBinds()
 
             it 'renders after change correctly', ->
               nodeHTMLEquals @view.el,
-                '<div cell="test" class="test"><div class="parent"><div class="item4"></div><div class="item1"></div><div class="item3"></div></div></div>'
+                '<div cell="test" class="test"><div class="parent"><div class="item2"></div><div class="item3"></div><div class="item4"></div></div></div>'
 
             it "doesn't rerender previous items", ->
-              expect(@view.el.children[0].children[1]).toBe @item1
-              expect(@view.el.children[0].children[2]).toBe @item3
+              expect(@view.el.children[0].children[0]).toBe @item2
+              expect(@view.el.children[0].children[1]).toBe @item3
 
 
       describe 'when a bind is passed as the condition to __.if(condition, {then:function, else:function})', ->

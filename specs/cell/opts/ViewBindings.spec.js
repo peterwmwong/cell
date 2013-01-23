@@ -92,17 +92,18 @@ define(['../../utils/spec-utils'], function(_arg) {
           });
           return describe('when collection changes and updateBinds() is called', function() {
             beforeEach(function() {
-              this.collection = [4, 1, 3];
-              this.item1 = this.view.el.children[0].children[0];
+              this.item2 = this.view.el.children[0].children[1];
               this.item3 = this.view.el.children[0].children[2];
+              this.collection.shift();
+              this.collection.push(4);
               return this.view.updateBinds();
             });
             it('renders after change correctly', function() {
-              return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="item4"></div><div class="item1"></div><div class="item3"></div></div></div>');
+              return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="item2"></div><div class="item3"></div><div class="item4"></div></div></div>');
             });
             return it("doesn't rerender previous items", function() {
-              expect(this.view.el.children[0].children[1]).toBe(this.item1);
-              return expect(this.view.el.children[0].children[2]).toBe(this.item3);
+              expect(this.view.el.children[0].children[0]).toBe(this.item2);
+              return expect(this.view.el.children[0].children[1]).toBe(this.item3);
             });
           });
         });
