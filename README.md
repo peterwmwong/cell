@@ -8,12 +8,13 @@ Getting Started
 
 ```coffee
 # App.coffee
-define ->
-  __ = require '__' # Optional, but very cool render helper
+define (require)->
+  App = require('cell/defineView!')
+    render: (__)-> [
+      __ '.greeting', 'Hello World'
+    ]
 
-  render_el: -> [
-    __ '.greeting', 'Hello World'
-  ]
+  document.body.appendChild new App()
 ```
 
 ```css
@@ -26,18 +27,18 @@ define ->
 ### 2. Add dependencies and load cell
 
 ```html
-<script src='vendor/jquery.js'></script>
-<script src='vendor/underscore.js'></script>
-<script src='vendor/backbone.js'></script>
-<!-- add require.js and load cell module -->
-<script data-main='cell' src='node_modules/requirejs/require.js'></script>
+<script src='cell/require.js'></script>
+<script>
+require.config({
+  paths:{
+    cell: 'cell/cell',
+    dom: 'cell/dom'
+  },
+  deps: [
+    'App'
+  ]
+});
+</script>
 ```
 
-### 3. Add your cell
-
-```html
-<body data-cell='App'></body>
-```
-
-
-### 4. Sit back and relax
+### 3. Sit back and relax
