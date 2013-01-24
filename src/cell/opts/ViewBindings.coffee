@@ -137,6 +137,8 @@ define [
       @_binds.push bind = new AttrBind parent, k, (bind v, @)
       bind.needRender()
       bind.render @
+    else
+      orig_renderAttr k, v, parent
     return
 
   orig_renderChild = View::_renderChild

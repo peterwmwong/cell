@@ -193,6 +193,8 @@ define(['cell/View'], function(View) {
       this._binds.push(bind = new AttrBind(parent, k, bind(v, this)));
       bind.needRender();
       bind.render(this);
+    } else {
+      orig_renderAttr(k, v, parent);
     }
   };
   orig_renderChild = View.prototype._renderChild;
