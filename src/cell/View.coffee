@@ -55,7 +55,7 @@ define [
     @_render_el()
     return
 
-  View::[key] = value for key, value of {
+  View:: =
     beforeRender: ->
     render_el: (__)-> document.createElement 'div'
     render: ->
@@ -105,7 +105,6 @@ define [
       nodes = [nodes] unless isArray nodes
       @_renderChild(n, parent, insertBeforeNode, rendered) for n in nodes when n?
       rendered
-  }
 
   View.extend = (proto)->
     SuperView = this

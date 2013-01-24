@@ -7,34 +7,35 @@ define [
     -> f.apply o, arguments
 
   Bind = (@parent, @getValue)->
-  Bind::getRenderValue = -> @value
-  Bind::needRender = ->
-    if (value = @getValue()) isnt @value
-      @value = value
-      true
-    else
-      false
-  Bind::render = (view, rendered)->
-    renderValue = @getRenderValue()
-    renderValue = [document.createTextNode ''] unless renderValue?
-    nodes = view._renderChildren renderValue, @parent, @nodes?[0]
-    @parent.removeChild n for n in @nodes if @nodes
-    @nodes = nodes
-    rendered.push n for n in nodes if rendered
-    return
+  Bind:: =
+    constructor: Bind
+    getRenderValue: -> @value
+    needRender: ->
+      if (value = @getValue()) isnt @value
+        @value = value
+        true
+      else
+        false
+    render: (view, rendered)->
+      renderValue = @getRenderValue()
+      renderValue = [document.createTextNode ''] unless renderValue?
+      nodes = view._renderChildren renderValue, @parent, @nodes?[0]
+      @parent.removeChild n for n in @nodes if @nodes
+      @nodes = nodes
+      rendered.push n for n in nodes if rendered
+      return
 
   IfBind = (@parent, @getValue, @then, @else)->
     @getRenderValue = -> if @value then @then() else @else()
     return
   IfBind.prototype = Bind.prototype
 
-  ElBind = (@parent,@getValue)->
-
   AttrBind = (@parent, @attr, @getValue)->
-  AttrBind::needRender = Bind::needRender
-  AttrBind::render = ->
-    @parent.setAttribute @attr, @value
-    return
+  AttrBind:: =
+    needRender: Bind::needRender
+    render: ->
+      @parent.setAttribute @attr, @value
+      return
 
   hashuid = 0
   nextuid = -> (++hashuid).toString 36
@@ -48,61 +49,65 @@ define [
   HashQueue = ->
     @hash = {}
     return
-  HashQueue::push = (key,val)->
-    entry = (@hash[key] or= [])
-    entry.push val
-    return
-  HashQueue::shift = (key)->
-    if entry = @hash[key]
-      if entry.lengh is 1
-        delete @hash[key]
-        entry[0]
-      else
-        entry.shift()
+
+  HashQueue:: =
+    push: (key,val)->
+      entry = (@hash[key] or= [])
+      entry.push val
+      return
+    shift: (key)->
+      if entry = @hash[key]
+        if entry.lengh is 1
+          delete @hash[key]
+          entry[0]
+        else
+          entry.shift()
 
   EachBind = (@parent, @getValue, @itemRenderer)->
     @itemhash = new HashQueue
     return
 
-  EachBind::needRender = ->
-    value = @getValue() or []
+  EachBind:: =
+    constructor: EachBind
+    needRender: ->
+      value = @getValue() or []
 
-    # Quick change checks
-    unless change = ((not @value?) or @value.length isnt value.length)
+      # Quick change checks
+      unless change = ((not @value?) or @value.length isnt value.length)
 
-      # Deep change check (check each item)
-      i = @value.length
-      while --i >= 0
-        break if value[i] isnt @value[i]
-      change = (i >= 0)
+        # Deep change check (check each item)
+        i = @value.length
+        while --i >= 0
+          break if value[i] isnt @value[i]
+        change = (i >= 0)
 
-    if change
-      @value = [].slice.call value
-      true
-    else
-      false
+      if change
+        @value = [].slice.call value
+        true
+      else
+        false
 
-  EachBind::render = ->
-    newEls = []
-    newItemHash = new HashQueue
+    render: ->
+      newEls = []
+      newItemHash = new HashQueue
 
-    for item in @value
-      key = hashkey item
-      unless prevItemEl = @itemhash.shift key
-        prevItemEl = @itemRenderer item
-      
-      newItemHash.push key, prevItemEl
-      newEls.push prevItemEl
+      for item in @value
+        key = hashkey item
+        unless prevItemEl = @itemhash.shift key
+          prevItemEl = @itemRenderer item
+        
+        newItemHash.push key, prevItemEl
+        newEls.push prevItemEl
 
-    # Remove the elements for the itmes that were removed from the collection
-    for key, items of @itemhash.hash
-      for itemEl in items
-        @parent.removeChild itemEl
-    @itemhash = newItemHash
+      # Remove the elements for the itmes that were removed from the collection
+      for key, items of @itemhash.hash
+        for itemEl in items
+          @parent.removeChild itemEl
+      @itemhash = newItemHash
 
-    # Add the elements for the current items
-    @parent.appendChild el for el in newEls
-    return
+      # Add the elements for the current items
+      @parent.appendChild el for el in newEls
+      return
     
   __ = View::__
   orig__if = __.if
