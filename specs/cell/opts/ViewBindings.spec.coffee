@@ -159,10 +159,11 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
       describe 'when a bind is passed as an attribute', ->
 
         beforeEach ->
-          @node = @__ '.bound', 'data-custom': -> @test
+          @node = @__ '.bound', 'data-custom':(-> @test), 'non-bind': 'constant value'
 
         it "sets bindings's value to the element's attribute", ->
           expect(@node.getAttribute 'data-custom').toBe 'test val'
+          expect(@node.getAttribute 'non-bind').toBe 'constant value'
 
         describe "when the bindings's value changes and @updateBinds() is called", ->
           beforeEach ->

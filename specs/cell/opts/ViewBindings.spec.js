@@ -177,13 +177,15 @@ define(['../../utils/spec-utils'], function(_arg) {
       describe('when a bind is passed as an attribute', function() {
         beforeEach(function() {
           return this.node = this.__('.bound', {
-            'data-custom': function() {
+            'data-custom': (function() {
               return this.test;
-            }
+            }),
+            'non-bind': 'constant value'
           });
         });
         it("sets bindings's value to the element's attribute", function() {
-          return expect(this.node.getAttribute('data-custom')).toBe('test val');
+          expect(this.node.getAttribute('data-custom')).toBe('test val');
+          return expect(this.node.getAttribute('non-bind')).toBe('constant value');
         });
         return describe("when the bindings's value changes and @updateBinds() is called", function() {
           beforeEach(function() {
