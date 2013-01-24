@@ -180,11 +180,7 @@ define(['cell/View'], function(View) {
   };
   orig_constructor = View.prototype._constructor;
   View.prototype._constructor = function() {
-    var bindUpdater;
     this._binds = [];
-    if ((bindUpdater = this.model || this.collection)) {
-      this.listenTo(bindUpdater, 'all', this.updateBinds);
-    }
     orig_constructor.call(this);
   };
   orig_renderAttr = View.prototype._renderAttr;
@@ -213,8 +209,8 @@ define(['cell/View'], function(View) {
   };
   orig_remove = View.prototype.remove;
   View.prototype.remove = function() {
-    this._binds = void 0;
-    return orig_remove.call(this);
+    delete this._binds;
+    orig_remove.call(this);
   };
   return View.prototype.updateBinds = function() {
     var b, change, i, _i, _len, _ref;

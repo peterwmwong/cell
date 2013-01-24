@@ -127,7 +127,6 @@ define [
   orig_constructor = View::_constructor
   View::_constructor = ->
     @_binds = []
-    @listenTo bindUpdater, 'all', @updateBinds if (bindUpdater = @model or @collection)
     orig_constructor.call @
     return
 
@@ -157,8 +156,9 @@ define [
 
   orig_remove = View::remove
   View::remove = ->
-    @_binds = undefined
+    delete @_binds
     orig_remove.call @
+    return
 
   View::updateBinds = ->
     i = 0
