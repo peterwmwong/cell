@@ -18,7 +18,7 @@ define(['jquery'], function($) {
                   var ctxName, dep_modules;
                   specRequire = window.require.config({
                     context: ctxName = "specs" + (ctx_name_salt++),
-                    baseUrl: '/specs/',
+                    baseUrl: '../specs/',
                     paths: {
                       cell: '../src/cell',
                       dom: '../src/dom'

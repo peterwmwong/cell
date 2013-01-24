@@ -8,7 +8,7 @@ define ['jquery'], ($)-> ({beforeEachRequire})->
 
   it 'attaches <link> for stylesheet', ->
     expect(
-      $('link[href="/specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length
+      $('link[href$="specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length
     ).not.toBe 0
 
   it 'exposes @View', ->

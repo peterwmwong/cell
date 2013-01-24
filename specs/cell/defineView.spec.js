@@ -10,7 +10,7 @@ define(['jquery'], function($) {
       return this.testCell1 = new this.TestCell1;
     });
     it('attaches <link> for stylesheet', function() {
-      return expect($('link[href="/specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length).not.toBe(0);
+      return expect($('link[href$="specs/fixtures/TestCell1.css"][rel=stylesheet][type="text/css"]').length).not.toBe(0);
     });
     it('exposes @View', function() {
       return expect(this.testCell1 instanceof this.View).toBe(true);

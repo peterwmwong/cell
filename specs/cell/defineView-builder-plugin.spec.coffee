@@ -16,7 +16,7 @@ define ['jquery'], ($)->
     describe 'A single JS and single CSS are created correctly', ->
       beforeEach ->
         @$f = undefined
-        runs -> load_fixture '/specs/fixtures/defineView-builder-plugin/index.html', (@$f)=>
+        runs -> load_fixture '../specs/fixtures/defineView-builder-plugin/index.html', (@$f)=>
         waitsFor -> @$f?
 
       afterEach ->

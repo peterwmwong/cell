@@ -18,7 +18,7 @@ define ['jquery'], ($)->
               # Create a new require context for each spec describe/it
               specRequire = window.require.config
                 context: ctxName = "specs#{ctx_name_salt++}"
-                baseUrl: '/specs/'
+                baseUrl: '../specs/'
                 paths:
                   cell: '../src/cell'
                   dom: '../src/dom'
