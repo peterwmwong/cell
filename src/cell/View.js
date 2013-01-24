@@ -85,7 +85,7 @@ define(['dom/mutate', 'dom/data', 'dom/events'], function(mutate, data, events) 
       data.set(this.el, 'cellRef', this);
       this.el.setAttribute('cell', this._cellName);
       this._renderChildren(this.render(this.__), this.el);
-      return this.afterRender();
+      this.afterRender();
     },
     _renderAttr: function(k, v, parent) {
       parent.setAttribute(k, v);

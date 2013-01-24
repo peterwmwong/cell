@@ -3,22 +3,20 @@
 define(['dom/data'], function(data) {
   var dealloc;
   dealloc = function(element) {
-    var child, _i, _len, _ref, _results;
+    var child, _i, _len, _ref;
     data.remove(element);
     _ref = element.children;
-    _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       child = _ref[_i];
-      _results.push(dealloc(child));
+      dealloc(child);
     }
-    return _results;
   };
   return {
     remove: function(element) {
       var parent;
       dealloc(element);
       if (parent = element.parentNode) {
-        return parent.removeChild(element);
+        parent.removeChild(element);
       }
     }
   };

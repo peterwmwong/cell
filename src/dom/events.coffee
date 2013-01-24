@@ -36,6 +36,10 @@ define [
         element.detachEvent "on#{type}", fn
         return
 
+  eventHandlerDestroy = ->
+    DOMUnbindAllEvents @elem, @events
+    return
+
   createEventHandler = (element, events)->
     eventHandler = (event, type)->
       unless event.preventDefault
@@ -78,8 +82,11 @@ define [
         delete event.preventDefault
         delete event.stopPropagation
         delete event.isDefaultPrevented
+      return
+
     eventHandler.elem = element
-    eventHandler.destroy = -> DOMUnbindAllEvents element, events
+    eventHandler.events = events
+    eventHandler.destroy = eventHandlerDestroy
     eventHandler
 
   DOMUnbindAllEvents = (element,events)->

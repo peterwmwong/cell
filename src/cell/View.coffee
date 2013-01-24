@@ -83,6 +83,7 @@ define [
       @el.setAttribute 'cell', @_cellName
       @_renderChildren (@render @__), @el
       @afterRender()
+      return
 
     _renderAttr: (k,v,parent)->
       parent.setAttribute k, v
