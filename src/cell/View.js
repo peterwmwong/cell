@@ -9,7 +9,7 @@ define(['dom/mutate', 'dom/data', 'dom/events'], function(mutate, data, events) 
     var children, k, m, match, options, parent, v;
     children = [].slice.call(arguments, optionsOrFirstChild && optionsOrFirstChild.constructor === Object ? (options = optionsOrFirstChild, 2) : 1);
     if (typeof viewOrHAML === 'string') {
-      if (m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec(viewOrHAML)) {
+      if (m = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/.exec(viewOrHAML)) {
         parent = document.createElement(m[1] || 'div');
         if (m[3]) {
           parent.setAttribute('id', m[3]);

@@ -17,7 +17,7 @@ define [
 
     # HAML
     if typeof viewOrHAML is 'string'
-      if m = /^(\w+)?(#([\w\-]+))*(\.[\w\.\-]+)?$/.exec(viewOrHAML)
+      if m = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/.exec(viewOrHAML)
         # Tag
         parent = document.createElement m[1] or 'div'
 
