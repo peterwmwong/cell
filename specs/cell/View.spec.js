@@ -17,6 +17,16 @@ define(['../utils/spec-utils'], function(_arg) {
         expect((new View).options).toEqual({});
         return expect((new View(void 0)).options).toEqual({});
       });
+      it('sets @model, if options.model exists', function() {
+        var View, model, view;
+        View = this.View.extend();
+        model = {};
+        view = new View({
+          model: model
+        });
+        expect(view.model).toBe(model);
+        return expect(view.options.model).toBeUndefined();
+      });
       return describe('sets @el', function() {
         beforeEach(function() {
           var _this = this;

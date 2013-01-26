@@ -1,38 +1,52 @@
 define [
+  'utils'
   'cell/View'
-], (View)->
+  'cell/Ext'
+], (utils, View, Ext)->
   
   isBind = (o)-> typeof o is 'function'
-  bind = (f,o)->
-    -> f.apply o, arguments
+
+  Ext::getValue = (v,callback)->
+    if isBind v
+      @view._binds.push new ExtBind callback, v
+    else
+      callback v
+    return
 
   Bind = (@parent, @getValue)->
   Bind:: =
     constructor: Bind
     getRenderValue: -> @value
-    needRender: ->
+    needRender: BindNeedRender = ->
       if (value = @getValue()) isnt @value
         @value = value
         true
-      else
-        false
     render: (view, rendered)->
       renderValue = @getRenderValue()
       renderValue = [document.createTextNode ''] unless renderValue?
-      nodes = view._renderChildren renderValue, @parent, @nodes?[0]
+      nodes = view._renderChildren renderValue, @parent, (@nodes and @nodes[0])
       @parent.removeChild n for n in @nodes if @nodes
       @nodes = nodes
       rendered.push n for n in nodes if rendered
       return
 
-  IfBind = (@parent, @getValue, @then, @else)->
-    @getRenderValue = -> if @value then @then() else @else()
+  ExtBind = (@cb, @getValue)->
+    @cb @value = @getValue()
     return
-  IfBind.prototype = Bind.prototype
+  ExtBind:: =
+    needRender: BindNeedRender
+    render: ->
+      @cb @value
+      return
+
+  IfBind = (@parent, @getValue, thn, els)->
+    @getRenderValue = -> if @value then thn() else els()
+    return
+  IfBind:: = Bind::
 
   AttrBind = (@parent, @attr, @getValue)->
   AttrBind:: =
-    needRender: Bind::needRender
+    needRender: BindNeedRender
     render: ->
       @parent.setAttribute @attr, @value
       return
@@ -133,9 +147,9 @@ define [
   orig_renderAttr = View::_renderAttr
   View::_renderAttr = (k, v, parent)->
     if isBind v
-      @_binds.push bind = new AttrBind parent, k, (bind v, @)
-      bind.needRender()
-      bind.render @
+      @_binds.push binding = new AttrBind parent, k, (utils.bind v, @)
+      binding.needRender()
+      binding.render @
     else
       orig_renderAttr k, v, parent
     return
@@ -143,7 +157,7 @@ define [
   orig_renderChild = View::_renderChild
   View::_renderChild = (n, parent, insertBeforeNode, rendered)->
     if isBind n
-      n = new Bind parent, bind(n,@)
+      n = new Bind parent, (utils.bind n, @)
 
     if (n instanceof Bind) or (n instanceof EachBind)
       @_binds.push n

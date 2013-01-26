@@ -22,7 +22,7 @@ define(['cell/Ext', 'cell/View'], function(Ext, View) {
     el = orig__.apply(this, args);
     for (_j = 0, _len1 = exts.length; _j < _len1; _j++) {
       e = exts[_j];
-      e.run(el);
+      e.run(el, this);
     }
     return el;
   };

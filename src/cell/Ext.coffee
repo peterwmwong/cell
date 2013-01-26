@@ -1,7 +1,7 @@
-define ->
-  Surrogate = ->
-
-  Ext = ->
+define ['utils'], (utils)->
+  Ext = (@options={})->
+    @getValue = utils.bind @getValue, @
+    return
   Ext:: =
     getValue: (v,callback)->
       callback(
@@ -10,19 +10,9 @@ define ->
       )
       return
       
-    run: (element)->
-      @func element, @options, @getValue
+    run: (element, @view)->
+      @func element, @options, @getValue, view
       return
 
-  Ext.extend = (func)->
-    NewExt = (options)->
-      return new NewExt(options) unless @ instanceof NewExt
-      @options = options
-      return
-
-    Surrogate:: = Ext::
-    NewExt:: = new Surrogate()
-    NewExt::func = func
-    NewExt
-
+  Ext.extend = utils.extend
   Ext

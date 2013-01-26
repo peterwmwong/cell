@@ -16,8 +16,12 @@ define(['../../utils/spec-utils'], function(_arg) {
       beforeEach(function() {
         var _this = this;
         this.orig__ = (spyOn(this.View.prototype, '__')).andReturn(this.element = {});
-        this.x_test1 = this.Ext.extend(this.x_test1_func = jasmine.createSpy('x_test1_func'));
-        this.x_test2 = this.Ext.extend(this.x_test2_func = jasmine.createSpy('x_test2_func'));
+        this.x_test1 = this.Ext.extend({
+          func: this.x_test1_func = jasmine.createSpy('x_test1_func')
+        });
+        this.x_test2 = this.Ext.extend({
+          func: this.x_test2_func = jasmine.createSpy('x_test2_func')
+        });
         runs(function() {
           return _this.require(['cell/opts/ViewExts'], function(ViewExts) {
             _this.ViewExts = ViewExts;
@@ -33,12 +37,12 @@ define(['../../utils/spec-utils'], function(_arg) {
       });
       describe('__( selector:String, exts...:Ext )', function() {
         beforeEach(function() {
-          return this.result = this.__('.myClass', this.x_test1(this.x_test1_options = {}), this.x_test2(this.x_test2_options = {}));
+          return this.result = this.__('.myClass', this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {}));
         });
         it('calls Ext.run(element) for each ext', function() {
-          expect(this.x_test1_func).toHaveBeenCalledWith(this.element, this.x_test1_options, this.Ext.prototype.getValue);
+          expect(this.x_test1_func).toHaveBeenCalledWith(this.element, this.x_test1_options, this.x_test1_instance.getValue, this.view);
           expect(this.x_test1_func.callCount).toBe(1);
-          expect(this.x_test2_func).toHaveBeenCalledWith(this.element, this.x_test2_options, this.Ext.prototype.getValue);
+          expect(this.x_test2_func).toHaveBeenCalledWith(this.element, this.x_test2_options, this.x_test2_instance.getValue, this.view);
           return expect(this.x_test2_func.callCount).toBe(1);
         });
         return it('calls original View.__( selector )', function() {
@@ -50,14 +54,14 @@ define(['../../utils/spec-utils'], function(_arg) {
       });
       describe('__( selector:String, exts...:Ext, attrHash_or_options:Object )', function() {
         beforeEach(function() {
-          return this.result = this.__('.myClass', this.x_test1(this.x_test1_options = {}), this.x_test2(this.x_test2_options = {}), this.options = {
+          return this.result = this.__('.myClass', this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {}), this.options = {
             a: 1
           });
         });
         it('calls Ext.run(element) for each ext', function() {
-          expect(this.x_test1_func).toHaveBeenCalledWith(this.element, this.x_test1_options, this.Ext.prototype.getValue);
+          expect(this.x_test1_func).toHaveBeenCalledWith(this.element, this.x_test1_options, this.x_test1_instance.getValue, this.view);
           expect(this.x_test1_func.callCount).toBe(1);
-          expect(this.x_test2_func).toHaveBeenCalledWith(this.element, this.x_test2_options, this.Ext.prototype.getValue);
+          expect(this.x_test2_func).toHaveBeenCalledWith(this.element, this.x_test2_options, this.x_test2_instance.getValue, this.view);
           return expect(this.x_test2_func.callCount).toBe(1);
         });
         return it('calls original View.__( selector )', function() {
@@ -69,14 +73,14 @@ define(['../../utils/spec-utils'], function(_arg) {
       });
       describe('__( selector:String, exts...:Ext, attrHash_or_options:Object, children...:[DOMElement, String, Number, Array] )', function() {
         beforeEach(function() {
-          return this.result = this.__.apply(this, [(this.sel_arg = '.myClass'), this.x_test1(this.x_test1_options = {}), this.x_test2(this.x_test2_options = {}), this.options = {
+          return this.result = this.__.apply(this, [(this.sel_arg = '.myClass'), this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {}), this.options = {
             a: 1
           }].concat(__slice.call((this.child_args = [node('a'), 'hello', 0, [node('b'), 'bye', 1]]))));
         });
         it('calls Ext.run(element) for each ext', function() {
-          expect(this.x_test1_func).toHaveBeenCalledWith(this.element, this.x_test1_options, this.Ext.prototype.getValue);
+          expect(this.x_test1_func).toHaveBeenCalledWith(this.element, this.x_test1_options, this.x_test1_instance.getValue, this.view);
           expect(this.x_test1_func.callCount).toBe(1);
-          expect(this.x_test2_func).toHaveBeenCalledWith(this.element, this.x_test2_options, this.Ext.prototype.getValue);
+          expect(this.x_test2_func).toHaveBeenCalledWith(this.element, this.x_test2_options, this.x_test2_instance.getValue, this.view);
           return expect(this.x_test2_func.callCount).toBe(1);
         });
         return it('calls original View.__( selector )', function() {
@@ -89,12 +93,12 @@ define(['../../utils/spec-utils'], function(_arg) {
       });
       return describe('__( selector:String, exts...:Ext, children...:[DOMElement, String, Number, Array] )', function() {
         beforeEach(function() {
-          return this.result = this.__.apply(this, [(this.sel_arg = '.myClass'), this.x_test1(this.x_test1_options = {}), this.x_test2(this.x_test2_options = {})].concat(__slice.call((this.child_args = [node('a'), 'hello', 0, [node('b'), 'bye', 1]]))));
+          return this.result = this.__.apply(this, [(this.sel_arg = '.myClass'), this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {})].concat(__slice.call((this.child_args = [node('a'), 'hello', 0, [node('b'), 'bye', 1]]))));
         });
         it('calls Ext.run(element) for each ext', function() {
-          expect(this.x_test1_func).toHaveBeenCalledWith(this.element, this.x_test1_options, this.Ext.prototype.getValue);
+          expect(this.x_test1_func).toHaveBeenCalledWith(this.element, this.x_test1_options, this.x_test1_instance.getValue, this.view);
           expect(this.x_test1_func.callCount).toBe(1);
-          expect(this.x_test2_func).toHaveBeenCalledWith(this.element, this.x_test2_options, this.Ext.prototype.getValue);
+          expect(this.x_test2_func).toHaveBeenCalledWith(this.element, this.x_test2_options, this.x_test2_instance.getValue, this.view);
           return expect(this.x_test2_func.callCount).toBe(1);
         });
         return it('calls original View.__( selector )', function() {

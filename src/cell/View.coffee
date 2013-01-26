@@ -1,8 +1,9 @@
 define [
+  'utils'
   'dom/mutate'
   'dom/data'
   'dom/events'
-], (mutate, data, events)->
+], (utils, mutate, data, events)->
 
   isArray = Array.isArray or (o)-> Object::toString.call(o) is "[object Array]"
 
@@ -49,8 +50,9 @@ define [
   __.each = (col,renderer)->
     renderer item, i, col for item,i in col
 
-  View = (@options)->
-    @options ?= {}
+  View = (@options={})->
+    @model = @options.model
+    delete @options.model
     @_constructor()
     @_render_el()
     return
@@ -107,20 +109,6 @@ define [
       @_renderChild(n, parent, insertBeforeNode, rendered) for n in nodes when n?
       rendered
 
-  View.extend = (proto)->
-    SuperView = this
-
-    NewView = (options)->
-      SuperView.call @, options
-      return
-    NewView.extend = SuperView.extend
-
-    Surrogate = ->
-    Surrogate:: = SuperView::
-    NewView:: = new Surrogate()
-    if proto
-      NewView::[k] = v for k,v of proto
-    NewView
-
+  View.extend = utils.extend
   View
   

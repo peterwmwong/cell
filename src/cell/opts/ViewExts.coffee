@@ -15,6 +15,6 @@ define [
       args = args.concat rest.slice i
 
     el = orig__.apply @, args
-    e.run el for e in exts
+    e.run el, @ for e in exts
     el
 

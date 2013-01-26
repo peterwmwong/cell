@@ -10,6 +10,13 @@ define ['../utils/spec-utils'], ({node,browserTrigger})->
         expect((new View).options).toEqual {}
         expect((new View undefined).options).toEqual {}
 
+      it 'sets @model, if options.model exists', ->
+        View = @View.extend()
+        model= {}
+        view = new View {model}
+        expect(view.model).toBe model
+        expect(view.options.model).toBeUndefined()
+
       describe 'sets @el', ->
 
         beforeEach ->

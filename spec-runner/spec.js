@@ -21,7 +21,8 @@ define(['jquery'], function($) {
                     baseUrl: '/specs/',
                     paths: {
                       cell: '../src/cell',
-                      dom: '../src/dom'
+                      dom: '../src/dom',
+                      utils: '../src/utils'
                     }
                   });
                   ctx = window.require.s.contexts[ctxName];
