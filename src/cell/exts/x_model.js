@@ -6,7 +6,7 @@ define(['utils', 'dom/events', 'cell/Ext'], function(utils, events, Ext) {
     text: {
       g: 'value',
       s: function(value) {
-        debugger;        this.el[this.ea] = value;
+        this.el[this.ea] = value;
       }
     },
     checkbox: {

@@ -8,7 +8,6 @@ define [
     text:
       g: 'value'
       s: (value)->
-        debugger
         @el[@ea] = value
         return
     checkbox:
