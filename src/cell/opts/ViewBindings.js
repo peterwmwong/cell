@@ -73,9 +73,9 @@ define(['cell/View', 'cell/Ext'], function(View, Ext) {
     this.getValue = getValue;
     this.getRenderValue = function() {
       if (this.value) {
-        return thn();
+        return thn && thn();
       } else {
-        return els();
+        return els && els();
       }
     };
   };

@@ -40,7 +40,7 @@ define [
       return
 
   IfBind = (@parent, @getValue, thn, els)->
-    @getRenderValue = -> if @value then thn() else els()
+    @getRenderValue = -> if @value then (thn and thn()) else (els and els())
     return
   IfBind:: = Bind::
 
