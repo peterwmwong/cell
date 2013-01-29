@@ -5,6 +5,7 @@ define [
   'dom/events'
 ], (utils, mutate, data, events)->
 
+  noop = ->
   isArray = Array.isArray or (o)-> Object::toString.call(o) is "[object Array]"
 
   __ = (viewOrHAML, optionsOrFirstChild)->
@@ -32,7 +33,8 @@ define [
 
         for k,v of options
           if match = /^on(\w+)/.exec k
-            events.bind parent, match[1], v
+            v.viewHandler = true
+            events.on parent, match[1], v, @
           else
             @_renderAttr(k,v,parent)
           
@@ -58,10 +60,10 @@ define [
     return
 
   View:: =
-    beforeRender: ->
+    beforeRender: noop
     render_el: (__)-> document.createElement 'div'
-    render: ->
-    afterRender: ->
+    render: noop
+    afterRender: noop
 
     __: __
 

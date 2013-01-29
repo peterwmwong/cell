@@ -3,8 +3,7 @@ define [
   'cell/View'
 ], (Ext, View)->
 
-  orig__ = View::__
-  View::__ = (viewOrSelector, rest...)->
+  __ = (viewOrSelector, rest...)->
     exts = []
     args = [viewOrSelector]
 
@@ -18,3 +17,7 @@ define [
     e.run el, @ for e in exts
     el
 
+  orig__ = View::__
+  __.if = orig__.if
+  __.each = orig__.each
+  View::__ = __

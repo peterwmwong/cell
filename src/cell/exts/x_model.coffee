@@ -1,8 +1,7 @@
 define [
-  'utils'
   'dom/events'
   'cell/Ext'
-], (utils,events,Ext)->
+], (events,Ext)->
 
   ModelElement =
     text:
@@ -16,18 +15,16 @@ define [
         @el[@ea] = not not value
         return
 
-  onElementChange = ->
-    @m[@ma] = @el[@ea]
-    @v.updateBinds()
-    return
-
-  getModelValue = -> @m[@ma]
-
   Ext.extend
-    func: (@el, @ma, getValue, @v)->
+    func: (@el, ma, getValue, view)->
       if (@el.tagName is 'INPUT') and (modelEl = ModelElement[@el.type.toLowerCase()])
-        @m = @v.model
         @ea = modelEl.g
-        events.bind @el, 'change', (utils.bind onElementChange, @)
-        getValue (utils.bind getModelValue, @), (utils.bind modelEl.s, @)
+        events.on @el,
+          'change'
+          ->
+            view.model[ma] = @el[@ea]
+            view.updateBinds
+            return
+          @
+        getValue (-> @model[ma]), modelEl.s
       return

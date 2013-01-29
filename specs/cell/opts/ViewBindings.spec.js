@@ -10,6 +10,19 @@ define(['../../utils/spec-utils'], function(_arg) {
       beforeEachRequire(['cell/opts/ViewBindings', 'cell/View'], function(ViewBindings, View) {
         this.View = View;
       });
+      it("called after any registered event fires", function() {
+        this.view = new (this.View.extend({
+          render: function(__) {
+            return __('.mydiv', {
+              onclick: function() {}
+            });
+          }
+        }));
+        spyOn(this.view, 'updateBinds');
+        expect(this.view.updateBinds).not.toHaveBeenCalled();
+        browserTrigger(this.view.el.children[0], 'click');
+        return expect(this.view.updateBinds).toHaveBeenCalled();
+      });
       describe("Given multiple binds, when a bind updates due to another bind's update", function() {
         beforeEach(function() {
           this.view = new this.View();

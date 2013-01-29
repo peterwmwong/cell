@@ -11,7 +11,8 @@ define(['../utils/spec-utils'], function(_arg) {
       var empty, it_renders, it_renders_views, _fn, _i, _len, _ref;
       beforeEachRequire(["fixtures/TestCell1", 'cell/View'], function(TestCell1, View) {
         this.TestCell1 = TestCell1;
-        return this.__ = new View().__;
+        this.view = new View();
+        return this.__ = this.view.__;
       });
       it_renders = function(desc, input_args, expected_html_output, debug) {
         return describe("__( " + desc + " )", function() {
@@ -79,13 +80,16 @@ define(['../utils/spec-utils'], function(_arg) {
           'data-custom2': 'myattr2'
         }
       ], '<p class="myclass3" data-custom="myattr" data-custom2="myattr2" id="myid"></p>');
-      it("renders on* event handlers", function() {
-        this.node = this.__('.bound', {
-          onclick: this.clickHandler = jasmine.createSpy('click')
+      describe("on* event handlers", function() {
+        return it('registers event handler', function() {
+          this.node = this.__('.bound', {
+            onclick: this.clickHandler = jasmine.createSpy('click')
+          });
+          expect(this.clickHandler).not.toHaveBeenCalled();
+          browserTrigger(this.node, 'click');
+          expect(this.clickHandler).toHaveBeenCalled();
+          return expect(this.clickHandler.calls[0].object).toBe(this.view);
         });
-        expect(this.clickHandler).not.toHaveBeenCalled();
-        browserTrigger(this.node, 'click');
-        return expect(this.clickHandler).toHaveBeenCalled();
       });
       it_renders("selector:String, attrHash:Object, children...:[DOM Nodes, String, Number, Array, jQuery]", [
         'p', {

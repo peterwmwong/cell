@@ -8,7 +8,7 @@ define(['utils'], function(utils) {
   };
   Ext.prototype = {
     getValue: function(v, callback) {
-      callback(typeof v === 'function' ? v() : v);
+      callback.call(this, v);
     },
     run: function(element, view) {
       this.view = view;

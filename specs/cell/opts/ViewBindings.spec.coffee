@@ -6,6 +6,13 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
       beforeEachRequire ['cell/opts/ViewBindings','cell/View'], (ViewBindings, @View)->
 
+      it "called after any registered event fires", ->
+        @view = new (@View.extend render: (__)-> __ '.mydiv', onclick:->)
+        spyOn @view, 'updateBinds'
+        expect(@view.updateBinds).not.toHaveBeenCalled()
+        browserTrigger @view.el.children[0], 'click'
+        expect(@view.updateBinds).toHaveBeenCalled()
+
       describe "Given multiple binds, when a bind updates due to another bind's update", ->
 
         beforeEach ->

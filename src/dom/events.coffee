@@ -1,20 +1,8 @@
 define [
+  'utils'
   'dom/browser'
   'dom/data'
-], (browser, data)->
-
-  indexOf =
-    if Array::indexOf
-      (array, el)-> array.indexOf el
-    else
-      (array, el)->
-        i=0
-        return i-1 while a = array[i++] when a is el
-        -1
-
-  arrayRemove = (array, el)->
-    array.splice indexOf(array, el), 1
-    return
+], (utils, browser, data)->
 
   addEventListenerFn =
     if window.document.addEventListener
@@ -67,8 +55,19 @@ define [
         return event.defaultPrevented
 
       if evs = events[type or event.type]
-        for fn in evs
-          fn.call element, event
+        hasViewHandler = false
+        for fc in evs
+          hasViewHandler or= fc[0].viewHandler
+          fc[0].call (fc[1] or element), event
+
+        # Search for the nearest cell to updateBinds
+        if hasViewHandler
+          cur = element
+          while cur
+            if cell = data.get cur, 'cellRef'
+              cell.updateBinds?()
+              break
+            cur = cur.parentNode
 
       # Remove monkey-patched methods (IE),
       # as they would cause memory leaks in IE8.
@@ -95,39 +94,38 @@ define [
       delete events[type]
     return
 
-  bind: bindFn = (element, type, fn)->
+  on: onFn = (element, type, fn, ctx)->
     unless events = data.get element, 'events'
       data.set element, 'events', events = {}
       
     unless handle = data.get element, 'handle'
       data.set element, 'handle', handle = createEventHandler element, events
 
-    for type in type.split ' '
-      unless eventFns = events[type]
-        if type in ['mouseenter', 'mouseleave']
-          counter = 0
-          events.mouseenter = []
-          events.mouseleave = []
+    unless eventFns = events[type]
+      if type in ['mouseenter', 'mouseleave']
+        counter = 0
+        events.mouseenter = []
+        events.mouseleave = []
 
-          bindFn element, 'mouseover', (event)->
-            counter++
-            if counter is 1
-              handle event, 'mouseenter'
+        onFn element, 'mouseover', (event)->
+          counter++
+          if counter is 1
+            handle event, 'mouseenter'
 
-          bindFn element, 'mouseout', (event)->
-            counter--
-            if counter is 0
-              handle event, 'mouseleave'
+        onFn element, 'mouseout', (event)->
+          counter--
+          if counter is 0
+            handle event, 'mouseleave'
+      else
+        addEventListenerFn element, type, handle
+        events[type] = []
 
-        else
-          addEventListenerFn element, type, handle
-          events[type] = []
-        eventFns = events[type]
+      eventFns = events[type]
 
-      eventFns.push fn
+    eventFns.push [fn,ctx]
     return
   
-  unbind: (element, type, fn)->
+  off: (element, type, fn)->
     handle = data.get element, 'handle'
     events = data.get element, 'events'
 
@@ -135,7 +133,7 @@ define [
 
     if type?
       if fn?
-        arrayRemove events[type], fn
+        utils.ev.rm events[type], fn, 0
       else
         removeEventListenerFn element, type, events[type]
         delete events[type]

@@ -1,16 +1,16 @@
 define [
-  'utils'
   'cell/View'
   'cell/Ext'
-], (utils, View, Ext)->
+], (View, Ext)->
   
+  bind = (f,o)-> -> f.call o
   isBind = (o)-> typeof o is 'function'
 
   Ext::getValue = (v,callback)->
     if isBind v
-      @view._binds.push new ExtBind callback, v
+      @view._binds.push new ExtBind callback, (bind v, @view), @
     else
-      callback v
+      callback.call @, v
     return
 
   Bind = (@parent, @getValue)->
@@ -30,13 +30,13 @@ define [
       rendered.push n for n in nodes if rendered
       return
 
-  ExtBind = (@cb, @getValue)->
-    @cb @value = @getValue()
+  ExtBind = (@cb, @getValue, @ext)->
+    @cb.call @ext, @value = @getValue()
     return
   ExtBind:: =
     needRender: BindNeedRender
     render: ->
-      @cb @value
+      @cb.call @ext, @value
       return
 
   IfBind = (@parent, @getValue, thn, els)->
@@ -147,7 +147,7 @@ define [
   orig_renderAttr = View::_renderAttr
   View::_renderAttr = (k, v, parent)->
     if isBind v
-      @_binds.push binding = new AttrBind parent, k, (utils.bind v, @)
+      @_binds.push binding = new AttrBind parent, k, (bind v, @)
       binding.needRender()
       binding.render @
     else
@@ -157,7 +157,7 @@ define [
   orig_renderChild = View::_renderChild
   View::_renderChild = (n, parent, insertBeforeNode, rendered)->
     if isBind n
-      n = new Bind parent, (utils.bind n, @)
+      n = new Bind parent, (bind n, @)
 
     if (n instanceof Bind) or (n instanceof EachBind)
       @_binds.push n

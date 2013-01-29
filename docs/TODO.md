@@ -1,6 +1,17 @@
 TODO
 ====
 
+NEW: __.if() with no then or else defaults to empty
+---------------------------------------------------
+
+NEW: __.each() second param is a View -> __ View, model: el
+-----------------------------------------------------------
+
+    __.each stuff, -> __ AnotherView, model: model
+
+    __.each stuff, AnotherView
+
+
 BUG: __.if() and __.each() need to call with view as `this`
 -----------------------------------------------------------
 

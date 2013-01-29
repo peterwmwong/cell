@@ -4,10 +4,7 @@ define ['utils'], (utils)->
     return
   Ext:: =
     getValue: (v,callback)->
-      callback(
-        if typeof v is 'function' then v()
-        else v
-      )
+      callback.call @, v
       return
       
     run: (element, @view)->

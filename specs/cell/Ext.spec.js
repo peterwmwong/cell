@@ -41,18 +41,6 @@ define(function() {
           beforeEach(function() {
             return this.callback = jasmine.createSpy('callback');
           });
-          describe('when value is a function', function() {
-            beforeEach(function() {
-              var _this = this;
-              this.value = {};
-              return this.newext.getValue((function() {
-                return _this.value;
-              }), this.callback);
-            });
-            return it('calls callback( value() )', function() {
-              return expect(this.callback).toHaveBeenCalledWith(this.value);
-            });
-          });
           _ref = [0, void 0, null, 'test string', {}];
           _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {

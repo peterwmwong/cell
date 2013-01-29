@@ -8,7 +8,8 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
         "fixtures/TestCell1"
         'cell/View'
       ], (@TestCell1,View)->
-        @__ = new View().__
+        @view = new View()
+        @__ = @view.__
 
       it_renders = (desc, input_args, expected_html_output, debug)->
         describe "__( #{desc} )", ->
@@ -102,11 +103,14 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
         [ 'p#myid.myclass.myclass2', class:'myclass3', 'data-custom':'myattr', 'data-custom2':'myattr2']
         '<p class="myclass3" data-custom="myattr" data-custom2="myattr2" id="myid"></p>'
 
-      it "renders on* event handlers", ->
-        @node = @__ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
-        expect(@clickHandler).not.toHaveBeenCalled()
-        browserTrigger @node, 'click'
-        expect(@clickHandler).toHaveBeenCalled()
+      describe "on* event handlers", ->
+
+        it 'registers event handler', ->
+          @node = @__ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
+          expect(@clickHandler).not.toHaveBeenCalled()
+          browserTrigger @node, 'click'
+          expect(@clickHandler).toHaveBeenCalled()
+          expect(@clickHandler.calls[0].object).toBe @view
 
       it_renders "selector:String, attrHash:Object, children...:[DOM Nodes, String, Number, Array, jQuery]",
         [ 'p', 'data-custom':'myattr', 'data-custom2':'myattr2',

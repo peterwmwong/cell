@@ -31,15 +31,6 @@ define -> ({beforeEachRequire})->
         beforeEach ->
           @callback = jasmine.createSpy 'callback'
 
-        describe 'when value is a function', ->
-          beforeEach ->
-            @value = {}
-            @newext.getValue (=>@value), @callback
-
-          it 'calls callback( value() )', ->
-            expect(@callback).toHaveBeenCalledWith @value
-
-
         for nonFunc in [0,undefined,null,'test string',{}] then do(nonFunc)->
           describe "when value is NOT a function (#{nonFunc} : #{typeof nonFunc})", ->
             beforeEach ->
