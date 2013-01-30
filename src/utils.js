@@ -7,15 +7,13 @@ define({
   isF: function(o) {
     return typeof o === 'function';
   },
-  ev: {
-    rm: function(events, fn, whichOrCtx) {
-      var ev, i, isWhich;
-      i = -1;
-      isWhich = typeof whichOrCtx === 'number';
-      while (ev = events[++i]) {
-        if ((isWhich ? ev[whichOrCtx] === fn : (ev[0] === fn) && (ev[1] === whichOrCtx))) {
-          events.splice(i--, 1);
-        }
+  evrm: function(events, fn, whichOrCtx) {
+    var ev, i, isWhich;
+    i = -1;
+    isWhich = typeof whichOrCtx === 'number';
+    while (ev = events[++i]) {
+      if ((isWhich ? ev[whichOrCtx] === fn : (ev[0] === fn) && (ev[1] === whichOrCtx))) {
+        events.splice(i--, 1);
       }
     }
   },
@@ -32,6 +30,9 @@ define({
         return new Child(options);
       }
       Parent.call(this, options);
+      if (proto && proto.constructor) {
+        proto.constructor.call(this, options);
+      }
     };
     Child.extend = Parent.extend;
     Surrogate = function() {};

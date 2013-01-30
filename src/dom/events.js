@@ -128,7 +128,7 @@ define(['utils', 'dom/browser', 'dom/data'], function(utils, browser, data) {
       }
       if (type != null) {
         if (fn != null) {
-          utils.ev.rm(events[type], fn, 0);
+          utils.evrm(events[type], fn, 0);
         } else {
           removeEventListenerFn(element, type, events[type]);
           delete events[type];

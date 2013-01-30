@@ -133,7 +133,7 @@ define [
 
     if type?
       if fn?
-        utils.ev.rm events[type], fn, 0
+        utils.evrm events[type], fn, 0
       else
         removeEventListenerFn element, type, events[type]
         delete events[type]

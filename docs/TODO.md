@@ -1,29 +1,34 @@
 TODO
 ====
 
+NEW: Collection
+---------------
+
+NEW: Targetted Bindings (The JDAM of bindings)
+----------------------------------------------------
+
+Convert open ended "unguided" bindings into smart targetted agents of changes.
+
+### Problem
+
+With current bindings, we don't really know what might trigger a change in it's value.
+We make educated guesses when...
+- View.model changes ('any' event)
+- View event handlers are triggered (ex. onclick)
+
+...but even then we have to rip through the whole list of binds, determine a change in value,
+and, at the very least, do it all over again if there is a change in value (a bind can change
+another bind's value). At worst we do this TEN FRIGGGIN TIMES.
+
+We can do better.
+
+### Solution
+
+Binds will be smart and know exactly which Model/Collection to listen to, and even better, know exactly which property of a Model triggers a change in value.
+
+
 BUG: __.if() and __.each() need to call with view as `this`
 -----------------------------------------------------------
-
-NEW: exts (see angularjs directives)
------------------------------------
-
-    __ '.todo', x_class(done:-> @model.get 'done')
-
-### __ API change
-
-    __( Selector, [exts:cell.Ext...], [attributes:object], [children...] )
-    __( View, [exts:cell.Ext...], [options:object], [children...] )
-
-### cell/ext
-
-    require('!cell/ext')
-      initialize: (element, parentView, args...)->
-
-### exts
-
-- x_class
-- x_model
-
 
 NEW: dom
 --------

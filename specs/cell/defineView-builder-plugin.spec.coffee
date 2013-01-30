@@ -9,7 +9,7 @@ define ['jquery'], ($)->
       waitFor = ->
         $fix = $ 'html', $('iframe',$fixture_container)[0].contentDocument
         $f = (sel)-> $ sel, $fix
-        if $f('body > *').length > 0 then cb $f
+        if $f('body > *').length > 1 then cb $f
         else setTimeout waitFor, 20
       waitFor()
 

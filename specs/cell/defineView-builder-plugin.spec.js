@@ -13,7 +13,7 @@ define(['jquery'], function($) {
         $f = function(sel) {
           return $(sel, $fix);
         };
-        if ($f('body > *').length > 0) {
+        if ($f('body > *').length > 1) {
           return cb($f);
         } else {
           return setTimeout(waitFor, 20);
