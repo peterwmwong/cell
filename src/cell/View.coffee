@@ -50,7 +50,19 @@ define [
     thenElse[if condition then 'then' else 'else']?()
 
   __.each = (col,renderer)->
-    renderer item, i, col for item,i in col
+    if col
+      length = col.length
+      i=-1
+      results = []
+      while ++i < length
+        results.push (
+          if renderer.prototype instanceof View
+            new renderer(model: col[i]).el
+          else
+            renderer col[i], i, col
+        )
+    results
+          
 
   View = (@options={})->
     @model = @options.model

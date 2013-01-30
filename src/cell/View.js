@@ -41,13 +41,18 @@ define(['utils', 'dom/mutate', 'dom/data', 'dom/events'], function(utils, mutate
     return typeof thenElse[_name = condition ? 'then' : 'else'] === "function" ? thenElse[_name]() : void 0;
   };
   __.each = function(col, renderer) {
-    var i, item, _i, _len, _results;
-    _results = [];
-    for (i = _i = 0, _len = col.length; _i < _len; i = ++_i) {
-      item = col[i];
-      _results.push(renderer(item, i, col));
+    var i, length, results;
+    if (col) {
+      length = col.length;
+      i = -1;
+      results = [];
+      while (++i < length) {
+        results.push((renderer.prototype instanceof View ? new renderer({
+          model: col[i]
+        }).el : renderer(col[i], i, col)));
+      }
     }
-    return _results;
+    return results;
   };
   View = function(options) {
     this.options = options != null ? options : {};

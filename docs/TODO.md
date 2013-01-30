@@ -1,14 +1,6 @@
 TODO
 ====
 
-NEW: __.each() second param is a View -> __ View, model: el
------------------------------------------------------------
-
-    __.each stuff, (model)-> __ AnotherView, model: model
-
-    __.each stuff, AnotherView
-
-
 BUG: __.if() and __.each() need to call with view as `this`
 -----------------------------------------------------------
 
