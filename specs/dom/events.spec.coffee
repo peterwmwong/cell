@@ -9,10 +9,10 @@ define [
     ], (@events)->
       @addMatchers matchers
       @element = node 'div'
-      {@bind,@unbind} = @events
+      {@on,@off} = @events
 
-    describe 'bind', ->
-      it 'should bind to window on hashchange', ->
+    describe 'on( element:DOMNode, type:string, handler:function, ctx?:object)', ->
+      it 'should on to window on hashchange', ->
         eventFn = undefined
         window =
           addEventListener: (type, fn)->
@@ -31,36 +31,20 @@ define [
 
         handler = jasmine.createSpy 'onHashChange'
 
-        @events.bind window, 'hashchange', handler
+        @events.on window, 'hashchange', handler
         eventFn type: 'hashchange'
         expect(handler).toHaveBeenCalled()
 
-
-      it 'should bind to all events separated by space', ->
-        callback = jasmine.createSpy 'callback'
-
-        @events.bind @element, 'click keypress', callback
-        @events.bind @element, 'click', callback
-
-        browserTrigger @element, 'click'
-        expect(callback).toHaveBeenCalled()
-        expect(callback.callCount).toBe 2
-
-        callback.reset()
-        browserTrigger @element, 'keypress'
-        expect(callback).toHaveBeenCalled()
-        expect(callback.callCount).toBe(1)
-
       it 'should set event.target on IE', ->
         called = false
-        @events.bind @element, 'click', (event)=>
+        @events.on @element, 'click', (event)=>
           expect(event.target).toBe @element
           called = true
         browserTrigger @element, 'click'
         expect(called).toBe true
 
       it 'should have event.isDefaultPrevented method', ->
-        @events.bind @element, 'click', (e)->
+        @events.on @element, 'click', (e)->
           expect(->
             expect(e.isDefaultPrevented()).toBe(false)
             e.preventDefault()
@@ -68,6 +52,12 @@ define [
           ).not.toThrow()
 
         browserTrigger @element, 'click'
+
+      it 'should call handler with this set to ctx if ctx provided', ->
+        @events.on @element, 'click', (@handler = jasmine.createSpy 'click'), (@ctx = {})
+        browserTrigger @element, 'click'
+        expect(@handler.calls[0].object).toBe @ctx
+
 
       describe 'mouseenter-mouseleave', ->
         beforeEach ->
@@ -77,14 +67,14 @@ define [
           @parent.appendChild @child = node 'span'
           @root.appendChild @sibling = node 'ul'
 
-          @events.bind @parent, 'mouseenter', => @log += 'parentEnter'
-          @events.bind @parent, 'mouseleave', => @log += 'parentLeave'
+          @events.on @parent, 'mouseenter', => @log += 'parentEnter'
+          @events.on @parent, 'mouseleave', => @log += 'parentLeave'
 
           @parent.mouseover = => browserTrigger @parent, 'mouseover'
           @parent.mouseout = => browserTrigger @parent, 'mouseout'
 
-          @events.bind @child, 'mouseenter', => @log += 'childEnter'
-          @events.bind @child, 'mouseleave', => @log += 'childLeave'
+          @events.on @child, 'mouseenter', => @log += 'childEnter'
+          @events.on @child, 'mouseleave', => @log += 'childLeave'
 
           @child.mouseover = => browserTrigger @child, 'mouseover'
           @child.mouseout = => browserTrigger @child, 'mouseout'
@@ -106,19 +96,19 @@ define [
           expect(@log).toEqual('parentEnterchildEnterchildLeaveparentLeave')
 
 
-    describe 'unbind', ->
+    describe 'off', ->
 
       it 'should do nothing when no listener was registered with bound', ->
-        @events.unbind @element
-        @events.unbind @element, 'click'
-        @events.unbind @element, 'click', ->
+        @events.off @element
+        @events.off @element, 'click'
+        @events.off @element, 'click', ->
 
       it 'should deregister all listeners', ->
         clickSpy = jasmine.createSpy 'click'
         mouseoverSpy = jasmine.createSpy 'mouseover'
 
-        @bind @element, 'click', clickSpy
-        @bind @element, 'mouseover', mouseoverSpy
+        @on @element, 'click', clickSpy
+        @on @element, 'mouseover', mouseoverSpy
 
         browserTrigger @element, 'click'
         expect(clickSpy).toHaveBeenCalledOnce()
@@ -128,7 +118,7 @@ define [
         clickSpy.reset()
         mouseoverSpy.reset()
 
-        @unbind @element
+        @off @element
 
         browserTrigger @element, 'click'
         expect(clickSpy).not.toHaveBeenCalled()
@@ -139,8 +129,8 @@ define [
         clickSpy = jasmine.createSpy('click')
         mouseoverSpy = jasmine.createSpy('mouseover')
 
-        @bind @element, 'click', clickSpy
-        @bind @element, 'mouseover', mouseoverSpy
+        @on @element, 'click', clickSpy
+        @on @element, 'mouseover', mouseoverSpy
 
         browserTrigger @element, 'click'
         expect(clickSpy).toHaveBeenCalledOnce()
@@ -150,7 +140,7 @@ define [
         clickSpy.reset()
         mouseoverSpy.reset()
 
-        @unbind @element, 'click'
+        @off @element, 'click'
 
         browserTrigger @element, 'click'
         expect(clickSpy).not.toHaveBeenCalled()
@@ -159,17 +149,17 @@ define [
 
         mouseoverSpy.reset()
 
-        @unbind @element, 'mouseover'
+        @off @element, 'mouseover'
         browserTrigger @element, 'mouseover'
         expect(mouseoverSpy).not.toHaveBeenCalled()
 
 
-      it 'should deregister specific listener', ->
+      it 'should deregister a specific listener', ->
         clickSpy1 = jasmine.createSpy('click1')
         clickSpy2 = jasmine.createSpy('click2')
 
-        @bind @element, 'click', clickSpy1
-        @bind @element, 'click', clickSpy2
+        @on @element, 'click', clickSpy1
+        @on @element, 'click', clickSpy2
 
         browserTrigger @element, 'click'
         expect(clickSpy1).toHaveBeenCalledOnce()
@@ -178,7 +168,7 @@ define [
         clickSpy1.reset()
         clickSpy2.reset()
 
-        @unbind @element, 'click', clickSpy1
+        @off @element, 'click', clickSpy1
 
         browserTrigger @element, 'click'
         expect(clickSpy1).not.toHaveBeenCalled()
@@ -186,6 +176,6 @@ define [
 
         clickSpy2.reset()
 
-        @unbind @element, 'click', clickSpy2
+        @off @element, 'click', clickSpy2
         browserTrigger @element, 'click'
         expect(clickSpy2).not.toHaveBeenCalled()

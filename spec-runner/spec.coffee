@@ -6,13 +6,17 @@ define ['jquery'], ($)->
     # Load Spec
     req [name], (Spec)-> load ->
 
-      describe /.*\/specs\/((backbone|cell|jquery)_)?(.*).spec$/.exec(name)[3], ->
+      describe /.*\/specs\/(.*).spec$/.exec(name)[1], ->
         specRequire = null
         ctx = undefined
 
         # Run Spec
         Spec
-          beforeEachRequire: (deps,cb)->
+          beforeEachRequire: (prereqDeps,deps,cb)->
+            if arguments.length is 2
+              cb = deps
+              deps = prereqDeps
+              prereqDeps = undefined
 
             beforeEach ->
               # Create a new require context for each spec describe/it
@@ -22,9 +26,15 @@ define ['jquery'], ($)->
                 paths:
                   cell: '../src/cell'
                   dom: '../src/dom'
+                  util: '../src/util'
 
               ctx = window.require.s.contexts[ctxName]
               
+              if prereqDeps
+                prereqdep_modules = undefined
+                runs -> specRequire prereqDeps, (dms...)-> prereqdep_modules = dms
+                waitsFor -> prereqdep_modules?
+
               dep_modules = undefined
               runs -> specRequire deps, (dms...)-> dep_modules = dms
               waitsFor -> dep_modules?

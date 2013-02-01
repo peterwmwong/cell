@@ -8,23 +8,42 @@ define(['jquery'], function($) {
     load: function(name, req, load, config) {
       return req([name], function(Spec) {
         return load(function() {
-          return describe(/.*\/specs\/((backbone|cell|jquery)_)?(.*).spec$/.exec(name)[3], function() {
+          return describe(/.*\/specs\/(.*).spec$/.exec(name)[1], function() {
             var ctx, specRequire;
             specRequire = null;
             ctx = void 0;
             return Spec({
-              beforeEachRequire: function(deps, cb) {
+              beforeEachRequire: function(prereqDeps, deps, cb) {
+                if (arguments.length === 2) {
+                  cb = deps;
+                  deps = prereqDeps;
+                  prereqDeps = void 0;
+                }
                 beforeEach(function() {
-                  var ctxName, dep_modules;
+                  var ctxName, dep_modules, prereqdep_modules;
                   specRequire = window.require.config({
                     context: ctxName = "specs" + (ctx_name_salt++),
                     baseUrl: '../specs/',
                     paths: {
                       cell: '../src/cell',
-                      dom: '../src/dom'
+                      dom: '../src/dom',
+                      util: '../src/util'
                     }
                   });
                   ctx = window.require.s.contexts[ctxName];
+                  if (prereqDeps) {
+                    prereqdep_modules = void 0;
+                    runs(function() {
+                      return specRequire(prereqDeps, function() {
+                        var dms;
+                        dms = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+                        return prereqdep_modules = dms;
+                      });
+                    });
+                    waitsFor(function() {
+                      return prereqdep_modules != null;
+                    });
+                  }
                   dep_modules = void 0;
                   runs(function() {
                     return specRequire(deps, function() {

@@ -1,28 +1,15 @@
-define ->
-  Surrogate = ->
-
-  Ext = ->
+define ['util/fn','util/extend'], (fn,extend)->
+  Ext = (@options={})->
+    @getValue = fn.bind @getValue, @
+    return
   Ext:: =
     getValue: (v,callback)->
-      callback(
-        if typeof v is 'function' then v()
-        else v
-      )
+      callback.call @, v
       return
       
-    run: (element)->
-      @func element, @options, @getValue
+    run: (element, @view)->
+      @func element, @options, @getValue, view
       return
 
-  Ext.extend = (func)->
-    NewExt = (options)->
-      return new NewExt(options) unless @ instanceof NewExt
-      @options = options
-      return
-
-    Surrogate:: = Ext::
-    NewExt:: = new Surrogate()
-    NewExt::func = func
-    NewExt
-
+  Ext.extend = extend
   Ext

@@ -9,13 +9,33 @@ define(['../utils/spec-utils'], function(_arg) {
     beforeEachRequire(['cell/View'], function(View) {
       this.View = View;
     });
-    describe('View( options?:object )', function() {
+    return describe('View( options?:object )', function() {
       it('sets @options', function() {
         var View, o1;
         View = this.View.extend();
         expect((new View(o1 = {})).options).toBe(o1);
         expect((new View).options).toEqual({});
         return expect((new View(void 0)).options).toEqual({});
+      });
+      it('sets @model, if options.model exists', function() {
+        var View, model, view;
+        View = this.View.extend();
+        model = {};
+        view = new View({
+          model: model
+        });
+        expect(view.model).toBe(model);
+        return expect(view.options.model).toBeUndefined();
+      });
+      it('sets @collection, if options.collection exists', function() {
+        var View, collection, view;
+        View = this.View.extend();
+        collection = {};
+        view = new View({
+          collection: collection
+        });
+        expect(view.collection).toBe(collection);
+        return expect(view.options.collection).toBeUndefined();
       });
       return describe('sets @el', function() {
         beforeEach(function() {
@@ -51,43 +71,6 @@ define(['../utils/spec-utils'], function(_arg) {
         return it('calls functions in this order: beforeRender(), render_el(), render() and finally afterRender()', function() {
           return expect(this.log).toEqual(['beforeRender', 'render_el', 'render', 'afterRender']);
         });
-      });
-    });
-    return describe('@remove()', function() {
-      beforeEach(function() {
-        var View,
-          _this = this;
-        this.clickHandler = jasmine.createSpy('click');
-        View = this.View.extend({
-          render: function(__) {
-            return [
-              __('.clickable', {
-                onclick: _this.clickHandler
-              })
-            ];
-          }
-        });
-        this.parent = node('div');
-        this.view = new View;
-        return this.parent.appendChild(this.view.el);
-      });
-      it('removes event handlers', function() {
-        var clickable;
-        clickable = this.view.el.children[0];
-        browserTrigger(clickable, 'click');
-        expect(this.clickHandler).toHaveBeenCalled();
-        this.clickHandler.reset();
-        this.view.remove();
-        browserTrigger(clickable, 'click');
-        return expect(this.clickHandler).not.toHaveBeenCalled();
-      });
-      it('removes @el from parent', function() {
-        this.view.remove();
-        return expect(this.parent.children.length).toBe(0);
-      });
-      return it('removes @el itself', function() {
-        this.view.remove();
-        return expect(this.view.el).toBeUndefined();
       });
     });
   };

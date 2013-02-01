@@ -6,6 +6,13 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
       beforeEachRequire ['cell/opts/ViewBindings','cell/View'], (ViewBindings, @View)->
 
+      it "called after any registered event fires", ->
+        @view = new (@View.extend render: (__)-> __ '.mydiv', onclick:->)
+        spyOn @view, 'updateBinds'
+        expect(@view.updateBinds).not.toHaveBeenCalled()
+        browserTrigger @view.el.children[0], 'click'
+        expect(@view.updateBinds).toHaveBeenCalled()
+
       describe "Given multiple binds, when a bind updates due to another bind's update", ->
 
         beforeEach ->
@@ -133,6 +140,24 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
             @view.updateBinds()
             nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
 
+        describe 'when then and/or else are not specified', ->
+
+          beforeEach ->
+            @condition = true
+            @CellWithIf = @View.extend
+              _cellName: 'test'
+              render: (__)=> [
+                __ '.parent',
+                  __.if (=> @condition), {}
+              ]
+            @view = new @CellWithIf()
+
+          it 'renders nothing', ->
+            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"></div></div>'
+
+            @condition = false
+            @view.updateBinds()
+            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"></div></div>'
 
         describe 'when then and else return a node', ->
 

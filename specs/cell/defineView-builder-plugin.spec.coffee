@@ -9,7 +9,7 @@ define ['jquery'], ($)->
       waitFor = ->
         $fix = $ 'html', $('iframe',$fixture_container)[0].contentDocument
         $f = (sel)-> $ sel, $fix
-        if $f('body > *').length > 0 then cb $f
+        if $f('body > *').length > 1 then cb $f
         else setTimeout waitFor, 20
       waitFor()
 
@@ -23,7 +23,7 @@ define ['jquery'], ($)->
         $('#spec-fixture').empty()
 
       it "Should render Mock and MockNested Cells", ->
-        expect(@$f('body').html().trim()).
+        expect(@$f('body').html().trim().replace("<script async src='all.js'></script>",'')).
           toMatch /<div class="Mock" cell="Mock">Mock: <div class="MockNested" cell="MockNested">MockNested<\/div><\/div>/
 
       it "Should apply Mock css from all.css", ->

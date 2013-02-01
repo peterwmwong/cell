@@ -9,7 +9,9 @@ define(function() {
     });
     return describe('Ext.extend(func:function)', function() {
       beforeEach(function() {
-        return this.NewExt = this.Ext.extend(this.func = jasmine.createSpy('extend func'));
+        return this.NewExt = this.Ext.extend({
+          func: this.func = jasmine.createSpy('extend func')
+        });
       });
       it('returns an Ext class', function() {
         return expect((new this.NewExt) instanceof this.Ext).toBe(true);
@@ -24,13 +26,13 @@ define(function() {
         it('sets @options', function() {
           return expect(this.newext.options).toBe(this.options);
         });
-        describe('@run( element )', function() {
+        describe('@run( element, view )', function() {
           beforeEach(function() {
-            return this.newext.run(this.element = {});
+            return this.newext.run((this.element = {}), (this.view = {}));
           });
-          return it('calls func( element, @options, @getValue ), with this set properly', function() {
+          return it('calls func( element, @options, @getValue, view ), with this set properly', function() {
             expect(this.func.callCount).toBe(1);
-            expect(this.func).toHaveBeenCalledWith(this.element, this.options, this.newext.getValue);
+            expect(this.func).toHaveBeenCalledWith(this.element, this.options, this.newext.getValue, this.view);
             return expect(this.func.calls[0].object).toBe(this.newext);
           });
         });
@@ -38,18 +40,6 @@ define(function() {
           var nonFunc, _i, _len, _ref, _results;
           beforeEach(function() {
             return this.callback = jasmine.createSpy('callback');
-          });
-          describe('when value is a function', function() {
-            beforeEach(function() {
-              var _this = this;
-              this.value = {};
-              return this.newext.getValue((function() {
-                return _this.value;
-              }), this.callback);
-            });
-            return it('calls callback( value() )', function() {
-              return expect(this.callback).toHaveBeenCalledWith(this.value);
-            });
           });
           _ref = [0, void 0, null, 'test string', {}];
           _results = [];

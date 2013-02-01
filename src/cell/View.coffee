@@ -1,10 +1,11 @@
 define [
-  'dom/mutate'
+  'util/type'
   'dom/data'
   'dom/events'
-], (mutate, data, events)->
+  'cell/Model'
+], (type, data, events, Model)->
 
-  isArray = Array.isArray or (o)-> Object::toString.call(o) is "[object Array]"
+  noop = ->
 
   __ = (viewOrHAML, optionsOrFirstChild)->
     children =
@@ -31,7 +32,8 @@ define [
 
         for k,v of options
           if match = /^on(\w+)/.exec k
-            events.bind parent, match[1], v
+            v.viewHandler = true
+            events.on parent, match[1], v, @
           else
             @_renderAttr(k,v,parent)
           
@@ -47,26 +49,35 @@ define [
     thenElse[if condition then 'then' else 'else']?()
 
   __.each = (col,renderer)->
-    renderer item, i, col for item,i in col
+    if col
+      length = col.length
+      i=-1
+      results = []
+      while ++i < length
+        results.push (
+          if renderer.prototype instanceof View
+            new renderer(model: col[i]).el
+          else
+            renderer col[i], i, col
+        )
+    results
+          
+  View = Model.extend
+    constructor: (@options={})->
+      @model = @options.model
+      delete @options.model
+      @collection = @options.collection
+      delete @options.collection
+      @_constructor()
+      @_render_el()
+      return
 
-  View = (@options)->
-    @options ?= {}
-    @_constructor()
-    @_render_el()
-    return
-
-  View:: =
-    beforeRender: ->
+    beforeRender: noop
     render_el: (__)-> document.createElement 'div'
-    render: ->
-    afterRender: ->
+    render: noop
+    afterRender: noop
 
     __: __
-
-    remove: ->
-      mutate.remove @el
-      delete @el
-      return
 
     _constructor: ->
       __ = View::__
@@ -94,7 +105,7 @@ define [
       if n.nodeType in [1,3]
         rendered.push parent.insertBefore n, insertBeforeNode
 
-      else if isArray n
+      else if type.isA n
         @_renderChildren n, parent, insertBeforeNode, rendered
 
       else
@@ -103,24 +114,6 @@ define [
 
     _renderChildren: (nodes, parent, insertBeforeNode=null, rendered=[])->
       return rendered unless nodes?
-      nodes = [nodes] unless isArray nodes
+      nodes = [nodes] unless type.isA nodes
       @_renderChild(n, parent, insertBeforeNode, rendered) for n in nodes when n?
       rendered
-
-  View.extend = (proto)->
-    SuperView = this
-
-    NewView = (options)->
-      SuperView.call @, options
-      return
-    NewView.extend = SuperView.extend
-
-    Surrogate = ->
-    Surrogate:: = SuperView::
-    NewView:: = new Surrogate()
-    if proto
-      NewView::[k] = v for k,v of proto
-    NewView
-
-  View
-  

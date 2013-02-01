@@ -1,14 +1,15 @@
 define [
+  'util/type'
   'cell/View'
   'cell/Ext'
-], (View, Ext)->
+  'cell/ModelSpy'
+], (type, View, Ext, ModelSpy)->
   
   bind = (f,o)-> -> f.call o
-  isBind = (o)-> typeof o is 'function'
 
   Ext::getValue = (v,callback)->
-    if isBind v
-      @view._binds.push new ExtBind callback, (bind v, @view), @
+    if type.isF v
+      new ExtBind callback, (bind v, @view), @
     else
       callback.call @, v
     return
@@ -16,6 +17,10 @@ define [
   Bind = (@parent, @getValue)->
   Bind:: =
     constructor: Bind
+    go: BindGo = (view, rendered)->
+      @render view, rendered if @needRender()
+      return
+
     getRenderValue: -> @value
     needRender: BindNeedRender = ->
       if (value = @getValue()) isnt @value
@@ -31,9 +36,10 @@ define [
       return
 
   ExtBind = (@cb, @getValue, @ext)->
-    @cb.call @ext, @value = @getValue()
+    ModelSpy.spy (-> @cb.call @ext, @value = @getValue()), @go
     return
   ExtBind:: =
+    go: BindGo
     needRender: BindNeedRender
     render: ->
       @cb.call @ext, @value
@@ -126,61 +132,36 @@ define [
   __ = View::__
   orig__if = __.if
   __.if = (condition,thenElse)->
-    if isBind condition
+    if type.isF condition
       new IfBind undefined, condition, thenElse.then, thenElse.else
     else
       orig__if.call @, condition, thenElse
 
   orig__each = __.each
   __.each = (col,renderer)->
-    if isBind col
+    if type.isF col
       new EachBind undefined, col, renderer
     else
       orig__each.call @, col, renderer
 
-  orig_constructor = View::_constructor
-  View::_constructor = ->
-    @_binds = []
-    orig_constructor.call @
-    return
-
   orig_renderAttr = View::_renderAttr
   View::_renderAttr = (k, v, parent)->
-    if isBind v
-      @_binds.push binding = new AttrBind parent, k, (bind v, @)
-      binding.needRender()
-      binding.render @
+    if type.isF v
+      (new AttrBind parent, k, (bind v, @)).go()
     else
       orig_renderAttr k, v, parent
     return
 
   orig_renderChild = View::_renderChild
   View::_renderChild = (n, parent, insertBeforeNode, rendered)->
-    if isBind n
+    if type.isF n
       n = new Bind parent, (bind n, @)
 
     if (n instanceof Bind) or (n instanceof EachBind)
-      @_binds.push n
       n.parent = parent
-      n.needRender()
-      n.render @, rendered
+      n.go @, rendered
     else
       orig_renderChild.call @, n, parent, insertBeforeNode, rendered
     return
 
-  orig_remove = View::remove
-  View::remove = ->
-    delete @_binds
-    orig_remove.call @
-    return
-
-  View::updateBinds = ->
-    i = 0
-    change = true
-    while change and (i++ < 10)
-      change = false
-      for b in @_binds
-        if b.needRender()
-          change = true
-          b.render @
-    return
+  return

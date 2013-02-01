@@ -3,7 +3,7 @@ define [
   'dom/class'
 ], (Ext,cls)->
 
-  Ext.extend (element, classHash, getValue)->
+  Ext.extend func: (element, classHash, getValue)->
     return unless classHash and classHash.constructor is Object
     for k,v of classHash then do(k)->
       getValue v, (value)->

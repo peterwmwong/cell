@@ -11,10 +11,10 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
       this.events = events;
       this.addMatchers(matchers);
       this.element = node('div');
-      return _ref = this.events, this.bind = _ref.bind, this.unbind = _ref.unbind, _ref;
+      return _ref = this.events, this.on = _ref.on, this.off = _ref.off, _ref;
     });
-    describe('bind', function() {
-      it('should bind to window on hashchange', function() {
+    describe('on( element:DOMNode, type:string, handler:function, ctx?:object)', function() {
+      it('should on to window on hashchange', function() {
         var eventFn, handler, window;
         eventFn = void 0;
         window = {
@@ -30,30 +30,17 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
           detachEvent: function() {}
         };
         handler = jasmine.createSpy('onHashChange');
-        this.events.bind(window, 'hashchange', handler);
+        this.events.on(window, 'hashchange', handler);
         eventFn({
           type: 'hashchange'
         });
         return expect(handler).toHaveBeenCalled();
       });
-      it('should bind to all events separated by space', function() {
-        var callback;
-        callback = jasmine.createSpy('callback');
-        this.events.bind(this.element, 'click keypress', callback);
-        this.events.bind(this.element, 'click', callback);
-        browserTrigger(this.element, 'click');
-        expect(callback).toHaveBeenCalled();
-        expect(callback.callCount).toBe(2);
-        callback.reset();
-        browserTrigger(this.element, 'keypress');
-        expect(callback).toHaveBeenCalled();
-        return expect(callback.callCount).toBe(1);
-      });
       it('should set event.target on IE', function() {
         var called,
           _this = this;
         called = false;
-        this.events.bind(this.element, 'click', function(event) {
+        this.events.on(this.element, 'click', function(event) {
           expect(event.target).toBe(_this.element);
           return called = true;
         });
@@ -61,7 +48,7 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
         return expect(called).toBe(true);
       });
       it('should have event.isDefaultPrevented method', function() {
-        this.events.bind(this.element, 'click', function(e) {
+        this.events.on(this.element, 'click', function(e) {
           return expect(function() {
             expect(e.isDefaultPrevented()).toBe(false);
             e.preventDefault();
@@ -69,6 +56,11 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
           }).not.toThrow();
         });
         return browserTrigger(this.element, 'click');
+      });
+      it('should call handler with this set to ctx if ctx provided', function() {
+        this.events.on(this.element, 'click', (this.handler = jasmine.createSpy('click')), (this.ctx = {}));
+        browserTrigger(this.element, 'click');
+        return expect(this.handler.calls[0].object).toBe(this.ctx);
       });
       return describe('mouseenter-mouseleave', function() {
         beforeEach(function() {
@@ -78,10 +70,10 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
           this.root.appendChild(this.parent = node('p'));
           this.parent.appendChild(this.child = node('span'));
           this.root.appendChild(this.sibling = node('ul'));
-          this.events.bind(this.parent, 'mouseenter', function() {
+          this.events.on(this.parent, 'mouseenter', function() {
             return _this.log += 'parentEnter';
           });
-          this.events.bind(this.parent, 'mouseleave', function() {
+          this.events.on(this.parent, 'mouseleave', function() {
             return _this.log += 'parentLeave';
           });
           this.parent.mouseover = function() {
@@ -90,10 +82,10 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
           this.parent.mouseout = function() {
             return browserTrigger(_this.parent, 'mouseout');
           };
-          this.events.bind(this.child, 'mouseenter', function() {
+          this.events.on(this.child, 'mouseenter', function() {
             return _this.log += 'childEnter';
           });
-          this.events.bind(this.child, 'mouseleave', function() {
+          this.events.on(this.child, 'mouseleave', function() {
             return _this.log += 'childLeave';
           });
           this.child.mouseover = function() {
@@ -119,25 +111,25 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
         });
       });
     });
-    return describe('unbind', function() {
+    return describe('off', function() {
       it('should do nothing when no listener was registered with bound', function() {
-        this.events.unbind(this.element);
-        this.events.unbind(this.element, 'click');
-        return this.events.unbind(this.element, 'click', function() {});
+        this.events.off(this.element);
+        this.events.off(this.element, 'click');
+        return this.events.off(this.element, 'click', function() {});
       });
       it('should deregister all listeners', function() {
         var clickSpy, mouseoverSpy;
         clickSpy = jasmine.createSpy('click');
         mouseoverSpy = jasmine.createSpy('mouseover');
-        this.bind(this.element, 'click', clickSpy);
-        this.bind(this.element, 'mouseover', mouseoverSpy);
+        this.on(this.element, 'click', clickSpy);
+        this.on(this.element, 'mouseover', mouseoverSpy);
         browserTrigger(this.element, 'click');
         expect(clickSpy).toHaveBeenCalledOnce();
         browserTrigger(this.element, 'mouseover');
         expect(mouseoverSpy).toHaveBeenCalledOnce();
         clickSpy.reset();
         mouseoverSpy.reset();
-        this.unbind(this.element);
+        this.off(this.element);
         browserTrigger(this.element, 'click');
         expect(clickSpy).not.toHaveBeenCalled();
         browserTrigger(this.element, 'mouseover');
@@ -147,41 +139,41 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
         var clickSpy, mouseoverSpy;
         clickSpy = jasmine.createSpy('click');
         mouseoverSpy = jasmine.createSpy('mouseover');
-        this.bind(this.element, 'click', clickSpy);
-        this.bind(this.element, 'mouseover', mouseoverSpy);
+        this.on(this.element, 'click', clickSpy);
+        this.on(this.element, 'mouseover', mouseoverSpy);
         browserTrigger(this.element, 'click');
         expect(clickSpy).toHaveBeenCalledOnce();
         browserTrigger(this.element, 'mouseover');
         expect(mouseoverSpy).toHaveBeenCalledOnce();
         clickSpy.reset();
         mouseoverSpy.reset();
-        this.unbind(this.element, 'click');
+        this.off(this.element, 'click');
         browserTrigger(this.element, 'click');
         expect(clickSpy).not.toHaveBeenCalled();
         browserTrigger(this.element, 'mouseover');
         expect(mouseoverSpy).toHaveBeenCalledOnce();
         mouseoverSpy.reset();
-        this.unbind(this.element, 'mouseover');
+        this.off(this.element, 'mouseover');
         browserTrigger(this.element, 'mouseover');
         return expect(mouseoverSpy).not.toHaveBeenCalled();
       });
-      return it('should deregister specific listener', function() {
+      return it('should deregister a specific listener', function() {
         var clickSpy1, clickSpy2;
         clickSpy1 = jasmine.createSpy('click1');
         clickSpy2 = jasmine.createSpy('click2');
-        this.bind(this.element, 'click', clickSpy1);
-        this.bind(this.element, 'click', clickSpy2);
+        this.on(this.element, 'click', clickSpy1);
+        this.on(this.element, 'click', clickSpy2);
         browserTrigger(this.element, 'click');
         expect(clickSpy1).toHaveBeenCalledOnce();
         expect(clickSpy2).toHaveBeenCalledOnce();
         clickSpy1.reset();
         clickSpy2.reset();
-        this.unbind(this.element, 'click', clickSpy1);
+        this.off(this.element, 'click', clickSpy1);
         browserTrigger(this.element, 'click');
         expect(clickSpy1).not.toHaveBeenCalled();
         expect(clickSpy2).toHaveBeenCalledOnce();
         clickSpy2.reset();
-        this.unbind(this.element, 'click', clickSpy2);
+        this.off(this.element, 'click', clickSpy2);
         browserTrigger(this.element, 'click');
         return expect(clickSpy2).not.toHaveBeenCalled();
       });

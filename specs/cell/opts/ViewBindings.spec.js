@@ -10,6 +10,19 @@ define(['../../utils/spec-utils'], function(_arg) {
       beforeEachRequire(['cell/opts/ViewBindings', 'cell/View'], function(ViewBindings, View) {
         this.View = View;
       });
+      it("called after any registered event fires", function() {
+        this.view = new (this.View.extend({
+          render: function(__) {
+            return __('.mydiv', {
+              onclick: function() {}
+            });
+          }
+        }));
+        spyOn(this.view, 'updateBinds');
+        expect(this.view.updateBinds).not.toHaveBeenCalled();
+        browserTrigger(this.view.el.children[0], 'click');
+        return expect(this.view.updateBinds).toHaveBeenCalled();
+      });
       describe("Given multiple binds, when a bind updates due to another bind's update", function() {
         beforeEach(function() {
           this.view = new this.View();
@@ -139,6 +152,29 @@ define(['../../utils/spec-utils'], function(_arg) {
             this.condition = false;
             this.view.updateBinds();
             return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>');
+          });
+        });
+        describe('when then and/or else are not specified', function() {
+          beforeEach(function() {
+            var _this = this;
+            this.condition = true;
+            this.CellWithIf = this.View.extend({
+              _cellName: 'test',
+              render: function(__) {
+                return [
+                  __('.parent', __["if"]((function() {
+                    return _this.condition;
+                  }), {}))
+                ];
+              }
+            });
+            return this.view = new this.CellWithIf();
+          });
+          return it('renders nothing', function() {
+            nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"></div></div>');
+            this.condition = false;
+            this.view.updateBinds();
+            return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"></div></div>');
           });
         });
         return describe('when then and else return a node', function() {

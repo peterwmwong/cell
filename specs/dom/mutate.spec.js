@@ -20,7 +20,7 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
       return it('should remove event listeners on element removal', function() {
         var log;
         log = [];
-        this.events.bind(this.span, 'click', function() {
+        this.events.on(this.span, 'click', function() {
           return log.push('click');
         });
         browserTrigger(this.span, 'click');

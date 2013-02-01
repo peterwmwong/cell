@@ -3,7 +3,7 @@ define -> ({beforeEachRequire})->
 
   describe 'Ext.extend(func:function)', ->
     beforeEach ->
-      @NewExt = @Ext.extend @func = jasmine.createSpy 'extend func'
+      @NewExt = @Ext.extend func: @func = jasmine.createSpy 'extend func'
 
     it 'returns an Ext class', ->
       expect((new @NewExt) instanceof @Ext).toBe true
@@ -18,27 +18,18 @@ define -> ({beforeEachRequire})->
       it 'sets @options', ->
         expect(@newext.options).toBe @options
 
-      describe '@run( element )', ->
+      describe '@run( element, view )', ->
         beforeEach ->
-          @newext.run @element = {}
+          @newext.run (@element = {}), (@view = {})
 
-        it 'calls func( element, @options, @getValue ), with this set properly', ->
+        it 'calls func( element, @options, @getValue, view ), with this set properly', ->
           expect(@func.callCount).toBe 1
-          expect(@func).toHaveBeenCalledWith @element, @options, @newext.getValue
+          expect(@func).toHaveBeenCalledWith @element, @options, @newext.getValue, @view
           expect(@func.calls[0].object).toBe @newext
 
       describe '@getValue( value:any, callback:function )', ->
         beforeEach ->
           @callback = jasmine.createSpy 'callback'
-
-        describe 'when value is a function', ->
-          beforeEach ->
-            @value = {}
-            @newext.getValue (=>@value), @callback
-
-          it 'calls callback( value() )', ->
-            expect(@callback).toHaveBeenCalledWith @value
-
 
         for nonFunc in [0,undefined,null,'test string',{}] then do(nonFunc)->
           describe "when value is NOT a function (#{nonFunc} : #{typeof nonFunc})", ->

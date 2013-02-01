@@ -18,7 +18,7 @@ define [
 
       it 'should remove event listeners on element removal', ->
         log = []
-        @events.bind @span, 'click', -> log.push 'click'
+        @events.on @span, 'click', -> log.push 'click'
         browserTrigger @span, 'click'
         expect(log).toEqual ['click']
 

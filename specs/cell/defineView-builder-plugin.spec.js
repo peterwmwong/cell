@@ -13,7 +13,7 @@ define(['jquery'], function($) {
         $f = function(sel) {
           return $(sel, $fix);
         };
-        if ($f('body > *').length > 0) {
+        if ($f('body > *').length > 1) {
           return cb($f);
         } else {
           return setTimeout(waitFor, 20);
@@ -38,7 +38,7 @@ define(['jquery'], function($) {
         return $('#spec-fixture').empty();
       });
       it("Should render Mock and MockNested Cells", function() {
-        return expect(this.$f('body').html().trim()).toMatch(/<div class="Mock" cell="Mock">Mock: <div class="MockNested" cell="MockNested">MockNested<\/div><\/div>/);
+        return expect(this.$f('body').html().trim().replace("<script async src='all.js'></script>", '')).toMatch(/<div class="Mock" cell="Mock">Mock: <div class="MockNested" cell="MockNested">MockNested<\/div><\/div>/);
       });
       it("Should apply Mock css from all.css", function() {
         return expect(this.$f('.Mock').css('color')).toBe('rgb(0, 0, 255)');
