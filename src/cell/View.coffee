@@ -73,7 +73,7 @@ define [
       return
 
     beforeRender: noop
-    render_el: (__)-> document.createElement 'div'
+    render_el: -> document.createElement 'div'
     render: noop
     afterRender: noop
 

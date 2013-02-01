@@ -62,7 +62,7 @@ define(['util/type', 'dom/data', 'dom/events', 'cell/Model'], function(type, dat
       this._render_el();
     },
     beforeRender: noop,
-    render_el: function(__) {
+    render_el: function() {
       return document.createElement('div');
     },
     render: noop,
