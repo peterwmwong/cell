@@ -89,7 +89,7 @@ define(function() {
         });
         return it('fires one "change:b" event', function() {
           expect(this.on_change_spy.argsForCall.length).toBe(1);
-          return expect(this.on_change_spy).toHaveBeenCalledWith('change:b', 'new b value', 'b val');
+          return expect(this.on_change_spy).toHaveBeenCalledWith('change:b', this.model, 'new b value', 'b val');
         });
       });
       describe('when overwriting with the same value', function() {
@@ -143,7 +143,7 @@ define(function() {
         var change_handler;
         this.model.onChangeAndDo('a', (change_handler = jasmine.createSpy('change_handler')));
         expect(change_handler.argsForCall.length).toBe(1);
-        return expect(change_handler).toHaveBeenCalledWith('initial:a', 'a val');
+        return expect(change_handler).toHaveBeenCalledWith('initial:a', this.model, 'a val');
       });
       return it('calls change_handler when key is changed', function() {
         var change_handler;
@@ -151,7 +151,7 @@ define(function() {
         change_handler.reset();
         this.model.set('a', 'a new val');
         expect(change_handler.argsForCall.length).toBe(1);
-        return expect(change_handler).toHaveBeenCalledWith('change:a', 'a new val', 'a val');
+        return expect(change_handler).toHaveBeenCalledWith('change:a', this.model, 'a new val', 'a val');
       });
     });
   };

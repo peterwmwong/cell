@@ -1,6 +1,6 @@
-define ['utils'], (utils)->
+define ['util/fn','util/extend'], (fn,extend)->
   Ext = (@options={})->
-    @getValue = utils.bind @getValue, @
+    @getValue = fn.bind @getValue, @
     return
   Ext:: =
     getValue: (v,callback)->
@@ -11,5 +11,5 @@ define ['utils'], (utils)->
       @func element, @options, @getValue, view
       return
 
-  Ext.extend = utils.extend
+  Ext.extend = extend
   Ext

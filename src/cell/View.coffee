@@ -1,12 +1,11 @@
 define [
-  'utils'
-  'dom/mutate'
+  'util/type'
   'dom/data'
   'dom/events'
-], (utils, mutate, data, events)->
+  'cell/Model'
+], (type, data, events, Model)->
 
   noop = ->
-  isArray = Array.isArray or (o)-> Object::toString.call(o) is "[object Array]"
 
   __ = (viewOrHAML, optionsOrFirstChild)->
     children =
@@ -63,26 +62,22 @@ define [
         )
     results
           
+  View = Model.extend
+    constructor: (@options={})->
+      @model = @options.model
+      delete @options.model
+      @collection = @options.collection
+      delete @options.collection
+      @_constructor()
+      @_render_el()
+      return
 
-  View = (@options={})->
-    @model = @options.model
-    delete @options.model
-    @_constructor()
-    @_render_el()
-    return
-
-  View:: =
     beforeRender: noop
     render_el: (__)-> document.createElement 'div'
     render: noop
     afterRender: noop
 
     __: __
-
-    remove: ->
-      mutate.remove @el
-      delete @el
-      return
 
     _constructor: ->
       __ = View::__
@@ -110,7 +105,7 @@ define [
       if n.nodeType in [1,3]
         rendered.push parent.insertBefore n, insertBeforeNode
 
-      else if isArray n
+      else if type.isA n
         @_renderChildren n, parent, insertBeforeNode, rendered
 
       else
@@ -119,10 +114,6 @@ define [
 
     _renderChildren: (nodes, parent, insertBeforeNode=null, rendered=[])->
       return rendered unless nodes?
-      nodes = [nodes] unless isArray nodes
+      nodes = [nodes] unless type.isA nodes
       @_renderChild(n, parent, insertBeforeNode, rendered) for n in nodes when n?
       rendered
-
-  View.extend = utils.extend
-  View
-  

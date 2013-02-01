@@ -1,8 +1,8 @@
 define [
-  'utils'
+  'util/ev'
   'dom/browser'
   'dom/data'
-], (utils, browser, data)->
+], (ev, browser, data)->
 
   addEventListenerFn =
     if window.document.addEventListener
@@ -133,7 +133,7 @@ define [
 
     if type?
       if fn?
-        utils.evrm events[type], fn, 0
+        ev.rm events[type], fn, 0
       else
         removeEventListenerFn element, type, events[type]
         delete events[type]

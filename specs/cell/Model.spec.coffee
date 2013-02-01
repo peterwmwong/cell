@@ -75,7 +75,7 @@ define -> ({beforeEachRequire})->
 
       it 'fires one "change:b" event', ->
         expect(@on_change_spy.argsForCall.length).toBe 1
-        expect(@on_change_spy).toHaveBeenCalledWith 'change:b', 'new b value', 'b val'
+        expect(@on_change_spy).toHaveBeenCalledWith 'change:b', @model, 'new b value', 'b val'
 
 
     describe 'when overwriting with the same value', ->
@@ -118,11 +118,11 @@ define -> ({beforeEachRequire})->
     it 'calls change_handler with current value of key', ->
       @model.onChangeAndDo 'a', (change_handler = jasmine.createSpy 'change_handler')
       expect(change_handler.argsForCall.length).toBe 1
-      expect(change_handler).toHaveBeenCalledWith 'initial:a', 'a val'
+      expect(change_handler).toHaveBeenCalledWith 'initial:a', @model, 'a val'
 
     it 'calls change_handler when key is changed', ->
       @model.onChangeAndDo 'a', (change_handler = jasmine.createSpy 'change_handler')
       change_handler.reset()
       @model.set 'a', 'a new val'
       expect(change_handler.argsForCall.length).toBe 1
-      expect(change_handler).toHaveBeenCalledWith 'change:a', 'a new val', 'a val'
+      expect(change_handler).toHaveBeenCalledWith 'change:a', @model, 'a new val', 'a val'

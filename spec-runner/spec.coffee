@@ -26,7 +26,7 @@ define ['jquery'], ($)->
                 paths:
                   cell: '../src/cell'
                   dom: '../src/dom'
-                  utils: '../src/utils'
+                  util: '../src/util'
 
               ctx = window.require.s.contexts[ctxName]
               

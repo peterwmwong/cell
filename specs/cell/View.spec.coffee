@@ -17,6 +17,13 @@ define ['../utils/spec-utils'], ({node,browserTrigger})->
         expect(view.model).toBe model
         expect(view.options.model).toBeUndefined()
 
+      it 'sets @collection, if options.collection exists', ->
+        View = @View.extend()
+        collection = {}
+        view = new View {collection}
+        expect(view.collection).toBe collection
+        expect(view.options.collection).toBeUndefined()
+
       describe 'sets @el', ->
 
         beforeEach ->
@@ -49,33 +56,3 @@ define ['../utils/spec-utils'], ({node,browserTrigger})->
             'render'
             'afterRender'
           ]
-
-    describe '@remove()', ->
-      beforeEach ->
-        @clickHandler = jasmine.createSpy 'click'
-        View = @View.extend
-          render: (__)=> [
-            __ '.clickable', onclick: @clickHandler
-          ]
-        @parent = node 'div'
-        @view = new View
-        @parent.appendChild @view.el
-
-      it 'removes event handlers', ->
-        clickable = @view.el.children[0]
-        browserTrigger clickable, 'click'
-        expect(@clickHandler).toHaveBeenCalled()
-
-        @clickHandler.reset()
-        @view.remove()
-
-        browserTrigger clickable, 'click'
-        expect(@clickHandler).not.toHaveBeenCalled()
-
-      it 'removes @el from parent', ->
-        @view.remove()
-        expect(@parent.children.length).toBe 0
-
-      it 'removes @el itself', ->
-        @view.remove()
-        expect(@view.el).toBeUndefined()

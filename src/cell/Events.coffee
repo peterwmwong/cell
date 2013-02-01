@@ -1,28 +1,28 @@
-define ['utils'], (utils)->
+define ['util/type','util/extend','util/ev'], (type, extend, ev)->
 
   Events = ->
     @_e = any: []
     return
 
-  Events.extend = utils.extend
+  Events.extend = extend
   Events:: =
     constructor: Events
 
-    # (type, fn)
-    # (type, fn, ctx)
-    on: (type, fn, ctx)->
-      if (utils.isS type) and (utils.isF fn)
-        (@_e[type] or= []).push [fn,ctx]
+    # (event, fn)
+    # (event, fn, ctx)
+    on: (event, fn, ctx)->
+      if (type.isS event) and (type.isF fn)
+        (@_e[event] or= []).push [fn,ctx]
         true
 
-    # (type, fn)
-    # (type, fn, ctx)
+    # (event, fn)
+    # (event, fn, ctx)
     # (undefined, fn)
     # (undefined, fn, ctx)
     # (undefined, undefined, ctx)
-    off: (type, fn, ctx)->
+    off: (event, fn, ctx)->
       eventsHash =
-        if type? then type: @_e[type]
+        if event? then type: @_e[event]
         else @_e
 
       if fn?
@@ -34,17 +34,17 @@ define ['utils'], (utils)->
 
       else return
 
-      for type of eventsHash when events = eventsHash[type]
-        utils.evrm events, fn, ctx
+      for event of eventsHash when events = eventsHash[event]
+        ev.rm events, fn, ctx
 
       return
 
-    trigger: (type, args...)->
-      allHandlers = @_e['any'].concat @_e[type] or []
+    trigger: (event, args...)->
+      allHandlers = @_e['any'].concat @_e[event] or []
       if i = allHandlers.length
         while i--
           h = allHandlers[i]
-          h[0].apply h[1], [type].concat args
+          h[0].apply h[1], [event].concat args
       return
 
   Events
