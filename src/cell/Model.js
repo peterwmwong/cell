@@ -29,6 +29,14 @@ define(['util/hash', 'util/type', 'cell/Events'], function(hash, type, Events) {
     constructor: function(attributes) {
       this._a = attributes || {};
     },
+    attributes: function() {
+      var attr, result;
+      result = {};
+      for (attr in this._a) {
+        result[attr] = this._a[attr];
+      }
+      return result;
+    },
     get: function(key) {
       spy.add(this, key);
       return this._a[key];

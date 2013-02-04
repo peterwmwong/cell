@@ -18,8 +18,14 @@ define ['util/hash','util/type','cell/Events'], (hash, type, Events)->
   
   Model = Events.extend
     constructor: (attributes)->
-      @_a= attributes or {}
+      @_a = attributes or {}
       return
+
+    attributes: ->
+      result = {}
+      for attr of @_a
+        result[attr] = @_a[attr]
+      result
 
     get: (key)->
       spy.add @, key

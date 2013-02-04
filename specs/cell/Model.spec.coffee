@@ -15,11 +15,10 @@ define -> ({beforeEachRequire})->
 
     describe 'when initial_hash is NOT undefined', ->
       beforeEach ->
-        @model =
-          new @Model
-            a: 'a val'
-            b: 'b val'
-            c: 'c val'
+        @model = new @Model
+          a: 'a val'
+          b: 'b val'
+          c: 'c val'
 
       it 'current attributes are same as initial_hash', ->
         expect(@model.get k).toBe(v) for k,v of {
@@ -34,6 +33,24 @@ define -> ({beforeEachRequire})->
 
       it 'current attributes are same as initial_hash', ->
         expect(@model._a).toEqual({})
+
+  describe '@attributes()', ->
+    beforeEach ->
+      @model = new @Model
+        a: 'a val'
+        b: 'b val'
+        c: 'c val'
+
+    it 'returns a copied object of all attributes', ->
+      attrs = @model.attributes()
+      expect(attrs).toEqual
+        a: 'a val'
+        b: 'b val'
+        c: 'c val'
+
+      attrs.a = 'a val 2'
+      expect(@model.get 'a').toBe 'a val'
+
 
   describe '@get(key)', ->
     beforeEach ->

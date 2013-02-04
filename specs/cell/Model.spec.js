@@ -41,6 +41,26 @@ define(function() {
         });
       });
     });
+    describe('@attributes()', function() {
+      beforeEach(function() {
+        return this.model = new this.Model({
+          a: 'a val',
+          b: 'b val',
+          c: 'c val'
+        });
+      });
+      return it('returns a copied object of all attributes', function() {
+        var attrs;
+        attrs = this.model.attributes();
+        expect(attrs).toEqual({
+          a: 'a val',
+          b: 'b val',
+          c: 'c val'
+        });
+        attrs.a = 'a val 2';
+        return expect(this.model.get('a')).toBe('a val');
+      });
+    });
     describe('@get(key)', function() {
       beforeEach(function() {
         return this.model = new this.Model({
