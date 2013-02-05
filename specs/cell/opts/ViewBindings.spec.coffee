@@ -14,6 +14,34 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
         @view.set 'test', 'test val'
         @__ = @view.__
 
+
+      describe '__.each( collection, view:View )', ->
+
+        beforeEach ->
+          items = [
+            {name:'a'}
+            {name:'b'}
+            {name:'c'}
+          ]
+
+          ChildView = @View.extend
+            _cellName: 'Child'
+            render: (__)-> @model.name
+
+          ParentView = @View.extend
+            _cellName: 'Parent'
+            render: (__)-> __.each (-> items), ChildView
+
+          @result = new ParentView().el
+
+        it 'when many is non-empty array', ->
+          nodeHTMLEquals @result,
+            '<div cell="Parent" class="Parent">'+
+            '<div cell="Child" class="Child">a</div>'+
+            '<div cell="Child" class="Child">b</div>'+
+            '<div cell="Child" class="Child">c</div>'+
+            '</div>'
+
       describe 'when a bind is passed as the condition to __.each(collection, renderer:function)', ->
 
         describe 'when renderer returns an array of nodes', ->

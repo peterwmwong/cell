@@ -77,7 +77,11 @@ define [
         len=value.length
         while ++i<len
           unless prevItemEl = (itemhash.shift key = (hash item = value[i]))
-            prevItemEl = itemRenderer item
+            prevItemEl = 
+              if itemRenderer.prototype instanceof View
+                new itemRenderer(model: item).el
+              else
+                itemRenderer item
           
           newItemHash.push key, prevItemEl
           newEls.push prevItemEl

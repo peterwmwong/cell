@@ -15,6 +15,38 @@ define(['../../utils/spec-utils'], function(_arg) {
         this.view.set('test', 'test val');
         return this.__ = this.view.__;
       });
+      describe('__.each( collection, view:View )', function() {
+        beforeEach(function() {
+          var ChildView, ParentView, items;
+          items = [
+            {
+              name: 'a'
+            }, {
+              name: 'b'
+            }, {
+              name: 'c'
+            }
+          ];
+          ChildView = this.View.extend({
+            _cellName: 'Child',
+            render: function(__) {
+              return this.model.name;
+            }
+          });
+          ParentView = this.View.extend({
+            _cellName: 'Parent',
+            render: function(__) {
+              return __.each((function() {
+                return items;
+              }), ChildView);
+            }
+          });
+          return this.result = new ParentView().el;
+        });
+        return it('when many is non-empty array', function() {
+          return nodeHTMLEquals(this.result, '<div cell="Parent" class="Parent">' + '<div cell="Child" class="Child">a</div>' + '<div cell="Child" class="Child">b</div>' + '<div cell="Child" class="Child">c</div>' + '</div>');
+        });
+      });
       describe('when a bind is passed as the condition to __.each(collection, renderer:function)', function() {
         return describe('when renderer returns an array of nodes', function() {
           beforeEach(function() {

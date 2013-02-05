@@ -83,7 +83,9 @@ define(['util/hash', 'util/type', 'cell/util/spy', 'cell/View', 'cell/Ext'], fun
         len = value.length;
         while (++i < len) {
           if (!(prevItemEl = itemhash.shift(key = hash(item = value[i])))) {
-            prevItemEl = itemRenderer(item);
+            prevItemEl = itemRenderer.prototype instanceof View ? new itemRenderer({
+              model: item
+            }).el : itemRenderer(item);
           }
           newItemHash.push(key, prevItemEl);
           newEls.push(prevItemEl);
