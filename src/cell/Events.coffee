@@ -1,7 +1,7 @@
 define ['util/type','util/extend','util/ev'], (type, extend, ev)->
 
   Events = ->
-    @_e = any: []
+    @_e = all: []
     return
 
   Events.extend = extend
@@ -40,7 +40,7 @@ define ['util/type','util/extend','util/ev'], (type, extend, ev)->
       return
 
     trigger: (event, args...)->
-      allHandlers = @_e['any'].concat @_e[event] or []
+      allHandlers = @_e.all.concat @_e[event] or []
       if i = allHandlers.length
         while i--
           h = allHandlers[i]

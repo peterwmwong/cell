@@ -1,186 +1,139 @@
 define [
+  'util/hash'
+  'util/type'
+  'cell/util/spy'
   'cell/View'
   'cell/Ext'
-], (View, Ext)->
-  
+], (hash, {isF:isExpr}, {watch}, View, Ext)->
+
   bind = (f,o)-> -> f.call o
-  isBind = (o)-> typeof o is 'function'
 
   Ext::getValue = (v,callback)->
-    if isBind v
-      @view._binds.push new ExtBind callback, (bind v, @view), @
+    if isExpr v
+      watch (bind v, @view), (value)=>
+        callback.call @, value
+        return
     else
       callback.call @, v
     return
 
-  Bind = (@parent, @getValue)->
-  Bind:: =
-    constructor: Bind
-    getRenderValue: -> @value
-    needRender: BindNeedRender = ->
-      if (value = @getValue()) isnt @value
-        @value = value
-        true
-    render: (view, rendered)->
-      renderValue = @getRenderValue()
-      renderValue = [document.createTextNode ''] unless renderValue?
-      nodes = view._renderChildren renderValue, @parent, (@nodes and @nodes[0])
-      @parent.removeChild n for n in @nodes if @nodes
-      @nodes = nodes
-      rendered.push n for n in nodes if rendered
-      return
+  render = (parent, view, renderValue, prevNodes)->
+    renderValue = [document.createTextNode ''] unless renderValue?
+    newNodes = view._renderChildren renderValue, parent, prevNodes[0]
+    i=-1
+    len=prevNodes.length
+    parent.removeChild prevNodes[i] while ++i<len
+    newNodes
 
-  ExtBind = (@cb, @getValue, @ext)->
-    @cb.call @ext, @value = @getValue()
+  Bind = (view, expr)->
+    @r = (parent)->
+      nodes = []
+      watch (bind expr, view), (renderValue)->
+        nodes = render parent,
+          view
+          renderValue
+          nodes
+        return
+      return
     return
-  ExtBind:: =
-    needRender: BindNeedRender
-    render: ->
-      @cb.call @ext, @value
-      return
 
-  IfBind = (@parent, @getValue, thn, els)->
-    @getRenderValue = -> if @value then (thn and thn()) else (els and els())
+  IfBind = (view, cond, thnElse)->
+    @r = (parent)->
+      nodes = []
+      watch (bind cond, view), (condValue)->
+        nodes = render parent,
+          view
+          if condValue then thnElse.then?() else thnElse.else?()
+          nodes
+        return
+      return
     return
-  IfBind:: = Bind::
-
-  AttrBind = (@parent, @attr, @getValue)->
-  AttrBind:: =
-    needRender: BindNeedRender
-    render: ->
-      @parent.setAttribute @attr, @value
-      return
-
-  hashuid = 0
-  nextuid = -> (++hashuid).toString 36
-  hashkey = (obj)->
-    (objType = typeof obj) + ':' +
-      if (objType is 'object') and (obj isnt null)
-        obj.$$hashkey or= nextuid()
-      else
-        obj
 
   HashQueue = ->
-    @hash = {}
+    @h = {}
     return
 
   HashQueue:: =
     push: (key,val)->
-      entry = (@hash[key] or= [])
+      entry = (@h[key] or= [])
       entry.push val
       return
     shift: (key)->
-      if entry = @hash[key]
+      if entry = @h[key]
         if entry.lengh is 1
-          delete @hash[key]
+          delete @h[key]
           entry[0]
         else
           entry.shift()
 
-  EachBind = (@parent, @getValue, @itemRenderer)->
-    @itemhash = new HashQueue
+  EachBind = (view, expr, itemRenderer)->
+    itemhash = new HashQueue
+    @r = (parent)->
+      watch (bind expr, view), (value)->
+        newEls = []
+        newItemHash = new HashQueue
+
+        i=-1
+        len=value.length
+        while ++i<len
+          unless prevItemEl = (itemhash.shift key = (hash item = value[i]))
+            prevItemEl = itemRenderer item
+          
+          newItemHash.push key, prevItemEl
+          newEls.push prevItemEl
+
+        # Remove the elements for the itmes that were removed from the collection
+        for key, items of itemhash.h
+          i=-1
+          len=items.length
+          while ++i<len
+            parent.removeChild items[i]
+        itemhash = newItemHash
+
+        # Add the elements for the current items
+        i=-1
+        len=newEls.length
+        while ++i<len
+          parent.appendChild newEls[i]
+        return
+      return
     return
 
-  EachBind:: =
-    constructor: EachBind
-    needRender: ->
-      value = @getValue() or []
+  EachBind::constructor = IfBind::constructor = Bind
 
-      # Quick change checks
-      unless change = ((not @value?) or @value.length isnt value.length)
-
-        # Deep change check (check each item)
-        i = @value.length
-        while --i >= 0
-          break if value[i] isnt @value[i]
-        change = (i >= 0)
-
-      if change
-        @value = [].slice.call value
-        true
-      else
-        false
-
-    render: ->
-      newEls = []
-      newItemHash = new HashQueue
-
-      for item in @value
-        key = hashkey item
-        unless prevItemEl = @itemhash.shift key
-          prevItemEl = @itemRenderer item
-        
-        newItemHash.push key, prevItemEl
-        newEls.push prevItemEl
-
-      # Remove the elements for the itmes that were removed from the collection
-      for key, items of @itemhash.hash
-        for itemEl in items
-          @parent.removeChild itemEl
-      @itemhash = newItemHash
-
-      # Add the elements for the current items
-      @parent.appendChild el for el in newEls
-      return
-    
   __ = View::__
   orig__if = __.if
   __.if = (condition,thenElse)->
-    if isBind condition
-      new IfBind undefined, condition, thenElse.then, thenElse.else
+    if isExpr condition
+      new IfBind @view, condition, thenElse
     else
       orig__if.call @, condition, thenElse
 
   orig__each = __.each
   __.each = (col,renderer)->
-    if isBind col
-      new EachBind undefined, col, renderer
+    if isExpr col
+      new EachBind @view, col, renderer
     else
       orig__each.call @, col, renderer
 
-  orig_constructor = View::_constructor
-  View::_constructor = ->
-    @_binds = []
-    orig_constructor.call @
-    return
-
   orig_renderAttr = View::_renderAttr
   View::_renderAttr = (k, v, parent)->
-    if isBind v
-      @_binds.push binding = new AttrBind parent, k, (bind v, @)
-      binding.needRender()
-      binding.render @
+    if isExpr v
+      watch (bind v, @), (value)->
+        parent.setAttribute k, value
+        return
     else
       orig_renderAttr k, v, parent
     return
 
   orig_renderChild = View::_renderChild
   View::_renderChild = (n, parent, insertBeforeNode, rendered)->
-    if isBind n
-      n = new Bind parent, (bind n, @)
+    n = new Bind @, n if isExpr n
 
-    if (n instanceof Bind) or (n instanceof EachBind)
-      @_binds.push n
-      n.parent = parent
-      n.needRender()
-      n.render @, rendered
+    if n.constructor is Bind
+      n.r parent
+
     else
       orig_renderChild.call @, n, parent, insertBeforeNode, rendered
-    return
 
-  orig_remove = View::remove
-  View::remove = ->
-    delete @_binds
-    orig_remove.call @
-    return
-
-  View::updateBinds = ->
-    i = 0
-    change = true
-    while change and (i++ < 10)
-      change = false
-      for b in @_binds
-        if b.needRender()
-          change = true
-          b.render @
     return

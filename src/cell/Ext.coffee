@@ -8,7 +8,7 @@ define ['util/fn','util/extend'], (fn,extend)->
       return
       
     run: (element, @view)->
-      @func element, @options, @getValue, view
+      @func element, @options, @getValue, @view
       return
 
   Ext.extend = extend

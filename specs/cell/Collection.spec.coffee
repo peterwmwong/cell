@@ -239,6 +239,9 @@ define -> ({beforeEachRequire})->
       ]
       @col = new @Collection @initialModels
 
+      @allEvents = jasmine.createSpy 'all'
+      @col.on 'all', @allEvents
+
     describe '@add( model:Model, index?:number )', ->
       beforeEach ->
         @model = new @Model c: 2
@@ -249,11 +252,23 @@ define -> ({beforeEachRequire})->
         expect(@col.at 1).toBe @initialModels[1]
         expect(@col.at 2).toBe @model
 
+        expect(@allEvents.callCount).toBe 1
+        expect(@allEvents.calls[0].args[0]).toBe 'add'
+        expect(@allEvents.calls[0].args[1]).toEqual [@model]
+        expect(@allEvents.calls[0].args[2]).toBe @col
+        expect(@allEvents.calls[0].args[3]).toBe 2
+
       it 'when index is specified, adds model before index', ->
         @col.add @model, 1
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @model
         expect(@col.at 2).toBe @initialModels[1]
+
+        expect(@allEvents.callCount).toBe 1
+        expect(@allEvents.calls[0].args[0]).toBe 'add'
+        expect(@allEvents.calls[0].args[1]).toEqual [@model]
+        expect(@allEvents.calls[0].args[2]).toBe @col
+        expect(@allEvents.calls[0].args[3]).toBe 1
 
     describe '@add( model:Object )', ->
       beforeEach ->
@@ -268,6 +283,12 @@ define -> ({beforeEachRequire})->
         expect(@model instanceof @Model).toBe true
         expect(@model.attributes()).toEqual c: 2
 
+        expect(@allEvents.callCount).toBe 1
+        expect(@allEvents.calls[0].args[0]).toBe 'add'
+        expect(@allEvents.calls[0].args[1]).toEqual [@model]
+        expect(@allEvents.calls[0].args[2]).toBe @col
+        expect(@allEvents.calls[0].args[3]).toBe 2
+
       it 'when index is specified, adds model before index', ->
         @col.add @modelObj, 1
         expect(@col.at 0).toBe @initialModels[0]
@@ -277,6 +298,12 @@ define -> ({beforeEachRequire})->
         expect(@model.attributes()).toEqual c: 2
 
         expect(@col.at 2).toBe @initialModels[1]
+
+        expect(@allEvents.callCount).toBe 1
+        expect(@allEvents.calls[0].args[0]).toBe 'add'
+        expect(@allEvents.calls[0].args[1]).toEqual [@model]
+        expect(@allEvents.calls[0].args[2]).toBe @col
+        expect(@allEvents.calls[0].args[3]).toBe 1
 
     describe '@add( model:Array<Model>, index?:number )', ->
       beforeEach ->
@@ -292,12 +319,24 @@ define -> ({beforeEachRequire})->
         expect(@col.at 2).toBe @models[0]
         expect(@col.at 3).toBe @models[1]
 
+        expect(@allEvents.callCount).toBe 1
+        expect(@allEvents.calls[0].args[0]).toBe 'add'
+        expect(@allEvents.calls[0].args[1]).toEqual @models
+        expect(@allEvents.calls[0].args[2]).toBe @col
+        expect(@allEvents.calls[0].args[3]).toBe 2
+
       it 'when index is specified, adds model before index', ->
         @col.add @models, 1
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @models[0]
         expect(@col.at 2).toBe @models[1]
         expect(@col.at 3).toBe @initialModels[1]
+
+        expect(@allEvents.callCount).toBe 1
+        expect(@allEvents.calls[0].args[0]).toBe 'add'
+        expect(@allEvents.calls[0].args[1]).toEqual @models
+        expect(@allEvents.calls[0].args[2]).toBe @col
+        expect(@allEvents.calls[0].args[3]).toBe 1
 
     describe '@add( model:Array<Object>, index?:number )', ->
 
@@ -315,6 +354,12 @@ define -> ({beforeEachRequire})->
           expect(@model instanceof @Model).toBe true
           expect(@model.attributes()).toEqual obj
 
+        expect(@allEvents.callCount).toBe 1
+        expect(@allEvents.calls[0].args[0]).toBe 'add'
+        expect(@allEvents.calls[0].args[1]).toEqual [@col.at(2), @col.at(3)]
+        expect(@allEvents.calls[0].args[2]).toBe @col
+        expect(@allEvents.calls[0].args[3]).toBe 2
+
       it 'when index is undefined, adds model as last entry', ->
         @col.add @modelObjs, 1
         expect(@col.at 0).toBe @initialModels[0]
@@ -327,6 +372,12 @@ define -> ({beforeEachRequire})->
 
         expect(@col.at 3).toBe @initialModels[1]
 
+        expect(@allEvents.callCount).toBe 1
+        expect(@allEvents.calls[0].args[0]).toBe 'add'
+        expect(@allEvents.calls[0].args[1]).toEqual [@col.at(1), @col.at(2)]
+        expect(@allEvents.calls[0].args[2]).toBe @col
+        expect(@allEvents.calls[0].args[3]).toBe 1
+
   describe '@remove( modelOrArray:[Model or Array<Model>] )', ->
     beforeEach ->
       @initialModels = [
@@ -335,6 +386,9 @@ define -> ({beforeEachRequire})->
         new @Model c: 2
       ]
       @col = new @Collection @initialModels
+
+      @allEvents = jasmine.createSpy 'all'
+      @col.on 'all', @allEvents
 
     describe '@remove( model:Model )', ->
       beforeEach ->
@@ -345,19 +399,30 @@ define -> ({beforeEachRequire})->
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[2]
 
+        expect(@allEvents.callCount).toBe 1
+        expect(@allEvents.calls[0].args[0]).toBe 'remove'
+        expect(@allEvents.calls[0].args[1]).toEqual [@initialModels[1]]
+        expect(@allEvents.calls[0].args[2]).toBe @col
+        expect(@allEvents.calls[0].args[3]).toEqual [1]
+
       it 'if model is NOT part of collection, it does nothing', ->
+        @allEvents.reset()
         @col.remove new @Model a: 0
         expect(@col.length()).toBe 2
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[2]
+        expect(@allEvents.callCount).toBe 0
 
       it 'if collection is empty, does nothing', ->
+        @allEvents.reset()
         @emptyCol = new @Collection
         @emptyCol.remove new @Model a: 0
         expect(@emptyCol.length()).toBe 0
+        expect(@allEvents.callCount).toBe 0
 
     describe '@remove( array:Array<Model> )', ->
       beforeEach ->
+        @allEvents.reset()
         @col.remove [
           @initialModels[2]
           (new @Model a: 0)
@@ -368,10 +433,18 @@ define -> ({beforeEachRequire})->
         expect(@col.length()).toBe 1
         expect(@col.at 0).toBe @initialModels[1]
 
+        expect(@allEvents.callCount).toBe 1
+        expect(@allEvents.calls[0].args[0]).toBe 'remove'
+        expect(@allEvents.calls[0].args[1]).toEqual [@initialModels[2],@initialModels[0]]
+        expect(@allEvents.calls[0].args[2]).toBe @col
+        expect(@allEvents.calls[0].args[3]).toEqual [2,0]
+
       it 'if collection is empty, does nothing', ->
         @emptyCol = new @Collection
+        @allEvents.reset()
         @emptyCol.remove [
           new @Model a: 0
           new @Model b: 1
         ]
         expect(@emptyCol.length()).toBe 0
+        expect(@allEvents.callCount).toBe 0

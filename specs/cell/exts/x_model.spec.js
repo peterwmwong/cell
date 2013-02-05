@@ -6,10 +6,11 @@ define(['../../utils/spec-utils'], function(_arg) {
   return function(_arg1) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
-    beforeEachRequire(['cell/opts/ViewExts', 'cell/opts/ViewBindings', 'cell/View', 'cell/exts/x_model'], function(ViewExts, ViewBindings, View, x_model) {
+    beforeEachRequire(['cell/opts/ViewExts', 'cell/opts/ViewBindings', 'cell/View', 'cell/Model', 'cell/exts/x_model'], function(ViewExts, ViewBindings, View, Model, x_model) {
       this.ViewExts = ViewExts;
       this.ViewBindings = ViewBindings;
       this.View = View;
+      this.Model = Model;
       this.x_model = x_model;
     });
     return describe('x_model( model_attr:string )', function() {
@@ -26,10 +27,10 @@ define(['../../utils/spec-utils'], function(_arg) {
             ];
           }
         });
-        this.model = {
+        this.model = new this.Model({
           text: 'text value',
           check: true
-        };
+        });
         return this.view = new this.NewView({
           model: this.model
         });
@@ -43,14 +44,14 @@ define(['../../utils/spec-utils'], function(_arg) {
         text = this.view.el.children[0];
         text.value = 'new text value';
         browserTrigger(text, 'change');
-        expect(this.model).toEqual({
+        expect(this.model.attributes()).toEqual({
           text: 'new text value',
           check: true
         });
         checkbox = this.view.el.children[1];
         checkbox.checked = false;
         browserTrigger(checkbox, 'change');
-        return expect(this.model).toEqual({
+        return expect(this.model.attributes()).toEqual({
           text: 'new text value',
           check: false
         });
@@ -59,12 +60,10 @@ define(['../../utils/spec-utils'], function(_arg) {
         var checkbox, text;
         text = this.view.el.children[0];
         checkbox = this.view.el.children[1];
-        this.model.text = 'new text value';
-        this.view.updateBinds();
+        this.model.set('text', 'new text value');
         expect(text.value).toBe('new text value');
         expect(checkbox.checked).toBe(true);
-        this.model.check = false;
-        this.view.updateBinds();
+        this.model.set('check', false);
         expect(text.value).toBe('new text value');
         return expect(checkbox.checked).toBe(false);
       });

@@ -120,8 +120,8 @@ define -> ({beforeEachRequire})->
       @customHandler.reset()
       @customHandlerWithContext.reset()
 
-    it 'when type is "any", calls handler upon any triggering', ->
-      @events.on 'any', (anyHandler = jasmine.createSpy 'any'), (anyCtx = {})
+    it 'when type is "all", calls handler upon any triggering', ->
+      @events.on 'all', (anyHandler = jasmine.createSpy 'all'), (anyCtx = {})
 
       @events.trigger 'blah', (arg1 = {}), (arg2 = {}), (arg3 = {})
       expect(anyHandler).toHaveBeenCalledWith 'blah', arg1, arg2, arg3

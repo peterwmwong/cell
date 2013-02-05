@@ -5,7 +5,7 @@ define(['util/type', 'util/extend', 'util/ev'], function(type, extend, ev) {
   var Events;
   Events = function() {
     this._e = {
-      any: []
+      all: []
     };
   };
   Events.extend = extend;
@@ -42,7 +42,7 @@ define(['util/type', 'util/extend', 'util/ev'], function(type, extend, ev) {
     trigger: function() {
       var allHandlers, args, event, h, i;
       event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      allHandlers = this._e['any'].concat(this._e[event] || []);
+      allHandlers = this._e.all.concat(this._e[event] || []);
       if (i = allHandlers.length) {
         while (i--) {
           h = allHandlers[i];

@@ -346,7 +346,9 @@ define(function() {
             b: 1
           })
         ];
-        return this.col = new this.Collection(this.initialModels);
+        this.col = new this.Collection(this.initialModels);
+        this.allEvents = jasmine.createSpy('all');
+        return this.col.on('all', this.allEvents);
       });
       describe('@add( model:Model, index?:number )', function() {
         beforeEach(function() {
@@ -358,13 +360,23 @@ define(function() {
           this.col.add(this.model);
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.initialModels[1]);
-          return expect(this.col.at(2)).toBe(this.model);
+          expect(this.col.at(2)).toBe(this.model);
+          expect(this.allEvents.callCount).toBe(1);
+          expect(this.allEvents.calls[0].args[0]).toBe('add');
+          expect(this.allEvents.calls[0].args[1]).toEqual([this.model]);
+          expect(this.allEvents.calls[0].args[2]).toBe(this.col);
+          return expect(this.allEvents.calls[0].args[3]).toBe(2);
         });
         return it('when index is specified, adds model before index', function() {
           this.col.add(this.model, 1);
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.model);
-          return expect(this.col.at(2)).toBe(this.initialModels[1]);
+          expect(this.col.at(2)).toBe(this.initialModels[1]);
+          expect(this.allEvents.callCount).toBe(1);
+          expect(this.allEvents.calls[0].args[0]).toBe('add');
+          expect(this.allEvents.calls[0].args[1]).toEqual([this.model]);
+          expect(this.allEvents.calls[0].args[2]).toBe(this.col);
+          return expect(this.allEvents.calls[0].args[3]).toBe(1);
         });
       });
       describe('@add( model:Object )', function() {
@@ -379,9 +391,14 @@ define(function() {
           expect(this.col.at(1)).toBe(this.initialModels[1]);
           this.model = this.col.at(2);
           expect(this.model instanceof this.Model).toBe(true);
-          return expect(this.model.attributes()).toEqual({
+          expect(this.model.attributes()).toEqual({
             c: 2
           });
+          expect(this.allEvents.callCount).toBe(1);
+          expect(this.allEvents.calls[0].args[0]).toBe('add');
+          expect(this.allEvents.calls[0].args[1]).toEqual([this.model]);
+          expect(this.allEvents.calls[0].args[2]).toBe(this.col);
+          return expect(this.allEvents.calls[0].args[3]).toBe(2);
         });
         return it('when index is specified, adds model before index', function() {
           this.col.add(this.modelObj, 1);
@@ -391,7 +408,12 @@ define(function() {
           expect(this.model.attributes()).toEqual({
             c: 2
           });
-          return expect(this.col.at(2)).toBe(this.initialModels[1]);
+          expect(this.col.at(2)).toBe(this.initialModels[1]);
+          expect(this.allEvents.callCount).toBe(1);
+          expect(this.allEvents.calls[0].args[0]).toBe('add');
+          expect(this.allEvents.calls[0].args[1]).toEqual([this.model]);
+          expect(this.allEvents.calls[0].args[2]).toBe(this.col);
+          return expect(this.allEvents.calls[0].args[3]).toBe(1);
         });
       });
       describe('@add( model:Array<Model>, index?:number )', function() {
@@ -409,14 +431,24 @@ define(function() {
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.initialModels[1]);
           expect(this.col.at(2)).toBe(this.models[0]);
-          return expect(this.col.at(3)).toBe(this.models[1]);
+          expect(this.col.at(3)).toBe(this.models[1]);
+          expect(this.allEvents.callCount).toBe(1);
+          expect(this.allEvents.calls[0].args[0]).toBe('add');
+          expect(this.allEvents.calls[0].args[1]).toEqual(this.models);
+          expect(this.allEvents.calls[0].args[2]).toBe(this.col);
+          return expect(this.allEvents.calls[0].args[3]).toBe(2);
         });
         return it('when index is specified, adds model before index', function() {
           this.col.add(this.models, 1);
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.models[0]);
           expect(this.col.at(2)).toBe(this.models[1]);
-          return expect(this.col.at(3)).toBe(this.initialModels[1]);
+          expect(this.col.at(3)).toBe(this.initialModels[1]);
+          expect(this.allEvents.callCount).toBe(1);
+          expect(this.allEvents.calls[0].args[0]).toBe('add');
+          expect(this.allEvents.calls[0].args[1]).toEqual(this.models);
+          expect(this.allEvents.calls[0].args[2]).toBe(this.col);
+          return expect(this.allEvents.calls[0].args[3]).toBe(1);
         });
       });
       return describe('@add( model:Array<Object>, index?:number )', function() {
@@ -430,20 +462,23 @@ define(function() {
           ];
         });
         it('when index is undefined, adds model as last entry', function() {
-          var i, obj, _i, _len, _ref, _results;
+          var i, obj, _i, _len, _ref;
           this.col.add(this.modelObjs);
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.initialModels[1]);
           i = 2;
           _ref = this.modelObjs;
-          _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             obj = _ref[_i];
             this.model = this.col.at(i++);
             expect(this.model instanceof this.Model).toBe(true);
-            _results.push(expect(this.model.attributes()).toEqual(obj));
+            expect(this.model.attributes()).toEqual(obj);
           }
-          return _results;
+          expect(this.allEvents.callCount).toBe(1);
+          expect(this.allEvents.calls[0].args[0]).toBe('add');
+          expect(this.allEvents.calls[0].args[1]).toEqual([this.col.at(2), this.col.at(3)]);
+          expect(this.allEvents.calls[0].args[2]).toBe(this.col);
+          return expect(this.allEvents.calls[0].args[3]).toBe(2);
         });
         return it('when index is undefined, adds model as last entry', function() {
           var i, obj, _i, _len, _ref;
@@ -457,7 +492,12 @@ define(function() {
             expect(this.model instanceof this.Model).toBe(true);
             expect(this.model.attributes()).toEqual(obj);
           }
-          return expect(this.col.at(3)).toBe(this.initialModels[1]);
+          expect(this.col.at(3)).toBe(this.initialModels[1]);
+          expect(this.allEvents.callCount).toBe(1);
+          expect(this.allEvents.calls[0].args[0]).toBe('add');
+          expect(this.allEvents.calls[0].args[1]).toEqual([this.col.at(1), this.col.at(2)]);
+          expect(this.allEvents.calls[0].args[2]).toBe(this.col);
+          return expect(this.allEvents.calls[0].args[3]).toBe(1);
         });
       });
     });
@@ -472,7 +512,9 @@ define(function() {
             c: 2
           })
         ];
-        return this.col = new this.Collection(this.initialModels);
+        this.col = new this.Collection(this.initialModels);
+        this.allEvents = jasmine.createSpy('all');
+        return this.col.on('all', this.allEvents);
       });
       describe('@remove( model:Model )', function() {
         beforeEach(function() {
@@ -481,26 +523,36 @@ define(function() {
         it('removes Model', function() {
           expect(this.col.length()).toBe(2);
           expect(this.col.at(0)).toBe(this.initialModels[0]);
-          return expect(this.col.at(1)).toBe(this.initialModels[2]);
+          expect(this.col.at(1)).toBe(this.initialModels[2]);
+          expect(this.allEvents.callCount).toBe(1);
+          expect(this.allEvents.calls[0].args[0]).toBe('remove');
+          expect(this.allEvents.calls[0].args[1]).toEqual([this.initialModels[1]]);
+          expect(this.allEvents.calls[0].args[2]).toBe(this.col);
+          return expect(this.allEvents.calls[0].args[3]).toEqual([1]);
         });
         it('if model is NOT part of collection, it does nothing', function() {
+          this.allEvents.reset();
           this.col.remove(new this.Model({
             a: 0
           }));
           expect(this.col.length()).toBe(2);
           expect(this.col.at(0)).toBe(this.initialModels[0]);
-          return expect(this.col.at(1)).toBe(this.initialModels[2]);
+          expect(this.col.at(1)).toBe(this.initialModels[2]);
+          return expect(this.allEvents.callCount).toBe(0);
         });
         return it('if collection is empty, does nothing', function() {
+          this.allEvents.reset();
           this.emptyCol = new this.Collection;
           this.emptyCol.remove(new this.Model({
             a: 0
           }));
-          return expect(this.emptyCol.length()).toBe(0);
+          expect(this.emptyCol.length()).toBe(0);
+          return expect(this.allEvents.callCount).toBe(0);
         });
       });
       return describe('@remove( array:Array<Model> )', function() {
         beforeEach(function() {
+          this.allEvents.reset();
           return this.col.remove([
             this.initialModels[2], new this.Model({
               a: 0
@@ -509,10 +561,16 @@ define(function() {
         });
         it('removes all models in array that are part of the collection', function() {
           expect(this.col.length()).toBe(1);
-          return expect(this.col.at(0)).toBe(this.initialModels[1]);
+          expect(this.col.at(0)).toBe(this.initialModels[1]);
+          expect(this.allEvents.callCount).toBe(1);
+          expect(this.allEvents.calls[0].args[0]).toBe('remove');
+          expect(this.allEvents.calls[0].args[1]).toEqual([this.initialModels[2], this.initialModels[0]]);
+          expect(this.allEvents.calls[0].args[2]).toBe(this.col);
+          return expect(this.allEvents.calls[0].args[3]).toEqual([2, 0]);
         });
         return it('if collection is empty, does nothing', function() {
           this.emptyCol = new this.Collection;
+          this.allEvents.reset();
           this.emptyCol.remove([
             new this.Model({
               a: 0
@@ -520,7 +578,8 @@ define(function() {
               b: 1
             })
           ]);
-          return expect(this.emptyCol.length()).toBe(0);
+          expect(this.emptyCol.length()).toBe(0);
+          return expect(this.allEvents.callCount).toBe(0);
         });
       });
     });

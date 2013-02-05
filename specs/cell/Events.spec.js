@@ -121,9 +121,9 @@ define(function() {
         this.customHandler.reset();
         return this.customHandlerWithContext.reset();
       });
-      return it('when type is "any", calls handler upon any triggering', function() {
+      return it('when type is "all", calls handler upon any triggering', function() {
         var anyCtx, anyHandler, arg1, arg2, arg3;
-        this.events.on('any', (anyHandler = jasmine.createSpy('any')), (anyCtx = {}));
+        this.events.on('all', (anyHandler = jasmine.createSpy('all')), (anyCtx = {}));
         this.events.trigger('blah', (arg1 = {}), (arg2 = {}), (arg3 = {}));
         expect(anyHandler).toHaveBeenCalledWith('blah', arg1, arg2, arg3);
         return expect(anyHandler.calls[0].object).toBe(anyCtx);

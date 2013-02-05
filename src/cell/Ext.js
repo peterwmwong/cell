@@ -12,7 +12,7 @@ define(['util/fn', 'util/extend'], function(fn, extend) {
     },
     run: function(element, view) {
       this.view = view;
-      this.func(element, this.options, this.getValue, view);
+      this.func(element, this.options, this.getValue, this.view);
     }
   };
   Ext.extend = extend;

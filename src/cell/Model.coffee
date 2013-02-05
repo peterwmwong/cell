@@ -1,34 +1,23 @@
-define ['util/hash','util/type','cell/Events'], (hash, type, Events)->
+define [
+  'util/type'
+  'cell/Events'
+  'cell/util/spy'
+], (type, Events, spy)->
 
-  spy =
-    add: (model, key)->
-      if @l
-        unless entry = @l[hashkey =  hash model]
-          entry = @l[hashkey] = model: model, props: {}
-        entry.props[key] = 1
-
-    start: ->
-      @l = {}
-      return
-
-    stop: ->
-      log = @l
-      @l = undefined
-      log
-  
   Model = Events.extend
     constructor: (attributes)->
       @_a = attributes or {}
       return
 
     attributes: ->
+      @_s()
       result = {}
       for attr of @_a
         result[attr] = @_a[attr]
       result
 
     get: (key)->
-      spy.add @, key
+      @_s key
       @_a[key]
 
     set: (key, value)->
@@ -42,5 +31,6 @@ define ['util/hash','util/type','cell/Events'], (hash, type, Events)->
         cb "initial:#{key}", @, @get key
       return
 
-  Model._spy = spy
+    _s: spy.addModel
+
   Model

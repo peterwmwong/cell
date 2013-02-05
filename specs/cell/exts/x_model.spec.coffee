@@ -3,8 +3,9 @@ define ['../../utils/spec-utils'], ({node,browserTrigger})-> ({beforeEachRequire
     'cell/opts/ViewExts'
     'cell/opts/ViewBindings'
     'cell/View'
+    'cell/Model'
     'cell/exts/x_model'
-  ], (@ViewExts, @ViewBindings, @View, @x_model)->
+  ], (@ViewExts, @ViewBindings, @View, @Model, @x_model)->
 
   describe 'x_model( model_attr:string )', ->
     beforeEach ->
@@ -13,7 +14,7 @@ define ['../../utils/spec-utils'], ({node,browserTrigger})-> ({beforeEachRequire
           __ 'input', (@x_model 'text'), type: 'text'
           __ 'input', (@x_model 'check'), type: 'checkbox'
         ]
-      @model =
+      @model = new @Model
         text: 'text value'
         check: true
       @view = new @NewView model: @model
@@ -27,14 +28,14 @@ define ['../../utils/spec-utils'], ({node,browserTrigger})-> ({beforeEachRequire
       text = @view.el.children[0]
       text.value = 'new text value'
       browserTrigger text, 'change'
-      expect(@model).toEqual
+      expect(@model.attributes()).toEqual
         text: 'new text value'
         check: true
 
       checkbox = @view.el.children[1]
       checkbox.checked = false
       browserTrigger checkbox, 'change'
-      expect(@model).toEqual
+      expect(@model.attributes()).toEqual
         text: 'new text value'
         check: false
 
@@ -42,12 +43,10 @@ define ['../../utils/spec-utils'], ({node,browserTrigger})-> ({beforeEachRequire
       text = @view.el.children[0]
       checkbox = @view.el.children[1]
 
-      @model.text = 'new text value'
-      @view.updateBinds()
+      @model.set 'text', 'new text value'
       expect(text.value).toBe 'new text value'
       expect(checkbox.checked).toBe true
 
-      @model.check = false
-      @view.updateBinds()
+      @model.set 'check', false
       expect(text.value).toBe 'new text value'
       expect(checkbox.checked).toBe false

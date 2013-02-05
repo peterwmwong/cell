@@ -23,11 +23,10 @@ define(['dom/events', 'cell/Ext'], function(events, Ext) {
       if ((this.el.tagName === 'INPUT') && (modelEl = ModelElement[this.el.type.toLowerCase()])) {
         this.ea = modelEl.g;
         events.on(this.el, 'change', function() {
-          view.model[ma] = this.el[this.ea];
-          view.updateBinds;
+          view.model.set(ma, this.el[this.ea]);
         }, this);
         getValue((function() {
-          return this.model[ma];
+          return this.model.get(ma);
         }), modelEl.s);
       }
     }

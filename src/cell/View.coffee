@@ -6,6 +6,7 @@ define [
 ], (type, data, events, Model)->
 
   noop = ->
+  d = document
 
   __ = (viewOrHAML, optionsOrFirstChild)->
     children =
@@ -20,7 +21,7 @@ define [
     if typeof viewOrHAML is 'string'
       if m = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/.exec(viewOrHAML)
         # Tag
-        parent = document.createElement m[1] or 'div'
+        parent = d.createElement m[1] or 'div'
 
         # id
         if m[3]
@@ -32,7 +33,6 @@ define [
 
         for k,v of options
           if match = /^on(\w+)/.exec k
-            v.viewHandler = true
             events.on parent, match[1], v, @
           else
             @_renderAttr(k,v,parent)
@@ -68,23 +68,22 @@ define [
       delete @options.model
       @collection = @options.collection
       delete @options.collection
-      @_constructor()
+
+      __ = View::__
+      _ = @__ = => __.apply @, arguments
+      _.if = __.if
+      _.each = __.each
+      _.view = @
+
       @_render_el()
       return
 
     beforeRender: noop
-    render_el: -> document.createElement 'div'
+    render_el: -> d.createElement 'div'
     render: noop
     afterRender: noop
 
     __: __
-
-    _constructor: ->
-      __ = View::__
-      @__ = => __.apply @, arguments
-      @__.if = __.if
-      @__.each = __.each
-      return
 
     _render_el: ->
       @beforeRender()
@@ -109,7 +108,7 @@ define [
         @_renderChildren n, parent, insertBeforeNode, rendered
 
       else
-        rendered.push parent.insertBefore document.createTextNode(n), insertBeforeNode
+        rendered.push parent.insertBefore d.createTextNode(n), insertBeforeNode
       return
 
     _renderChildren: (nodes, parent, insertBeforeNode=null, rendered=[])->
