@@ -172,6 +172,7 @@ define ->
           toArray: -> @col.toArray()
           each: -> @col.each ->
           map: -> @col.map ->
+          filterBy: -> @col.filterBy a: 1
           reduce: -> @col.reduce 0, ->
 
         for methodName, access of methodAccess then do(methodName,access)->

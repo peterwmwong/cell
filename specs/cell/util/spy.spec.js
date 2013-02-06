@@ -221,6 +221,11 @@ define(function() {
           map: function() {
             return this.col.map(function() {});
           },
+          filterBy: function() {
+            return this.col.filterBy({
+              a: 1
+            });
+          },
           reduce: function() {
             return this.col.reduce(0, function() {});
           }
