@@ -1,11 +1,10 @@
 define ['../../utils/spec-utils'], ({node,browserTrigger})-> ({beforeEachRequire})->
   beforeEachRequire [
     'cell/opts/ViewExts'
-    'cell/opts/ViewBindings'
     'cell/View'
     'cell/Model'
     'cell/exts/x_model'
-  ], (@ViewExts, @ViewBindings, @View, @Model, @x_model)->
+  ], (@ViewExts, @View, @Model, @x_model)->
 
   describe 'x_model( model_attr:string )', ->
     beforeEach ->

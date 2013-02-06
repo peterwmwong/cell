@@ -6,9 +6,8 @@ define(['../../utils/spec-utils'], function(_arg) {
   return function(_arg1) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
-    beforeEachRequire(['cell/opts/ViewExts', 'cell/opts/ViewBindings', 'cell/View', 'cell/Model', 'cell/exts/x_model'], function(ViewExts, ViewBindings, View, Model, x_model) {
+    beforeEachRequire(['cell/opts/ViewExts', 'cell/View', 'cell/Model', 'cell/exts/x_model'], function(ViewExts, View, Model, x_model) {
       this.ViewExts = ViewExts;
-      this.ViewBindings = ViewBindings;
       this.View = View;
       this.Model = Model;
       this.x_model = x_model;

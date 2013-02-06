@@ -5,11 +5,10 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
     describe 'Passing Bindings (functions) to __', ->
 
       beforeEachRequire [
-        'cell/opts/ViewBindings'
         'cell/View'
         'cell/Model'
         'cell/Collection'
-      ], (ViewBindings, @View, @Model, @Collection)->
+      ], (@View, @Model, @Collection)->
         @view = new @View()
         @view.set 'test', 'test val'
         @__ = @view.__

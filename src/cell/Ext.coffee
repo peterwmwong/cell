@@ -1,10 +1,22 @@
-define ['util/fn','util/extend'], (fn,extend)->
+define [
+  'util/type'
+  'util/fn'
+  'util/extend'
+  'cell/util/spy'
+], (type,fn,extend,spy)->
+
   Ext = (@options={})->
     @getValue = fn.bind @getValue, @
     return
+
   Ext:: =
     getValue: (v,callback)->
-      callback.call @, v
+      if type.isF v
+        spy.watch (fn.bind v, @view), (value)=>
+          callback.call @, value
+          return
+      else
+        callback.call @, v
       return
       
     run: (element, @view)->

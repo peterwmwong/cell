@@ -11,7 +11,7 @@ define [
       'c'
       'd'
       "this._s();"+
-      "if(f==null){return}"+
+      "if(f==null)return;"+
       "var i=-1,t=this,l=t.length(),e#{before or ''};"+
       "while(++i<l){"+
         "e=t._i[i];"+
@@ -19,15 +19,11 @@ define [
       "}"+
       (after or '')
 
-  Events.extend
+  Collection = Events.extend
 
     constructor: (array)->
       @_i = []
       @add array
-      return
-
-    readOnly: ->
-      @_ro = true
       return
 
     model: Model
@@ -49,12 +45,25 @@ define [
       @_s()
       @_i.slice()
 
-    each:    iter 'if(f.call(c,e,i,t)===!1){i=l}'
+    each:    iter 'if(f.call(c,e,i,t)===!1)i=l'
     map:     iter 'r.push(f.call(c,e,i,t))', ',r=[]', 'return r'
-    reduce:  iter 'f=c.call(d,f,e,i,t);', '', 'return f'
+    reduce:  iter 'f=c.call(d,f,e,i,t)', '', 'return f'
+    filterBy:
+      iter (
+        'for(k in f)'+
+          'if((v=f[k])==null||v===(x=e._a[k])||(typeof v=="function"&&v(x)))'+
+            'r.push(e)'
+      ), ',k,v,x,r=[]', 'return r'
+
+    pipe: (pipes)->
+      cur = @
+      for pipe in pipes
+        if type.isA (cur = pipe.run cur)
+          cur = new Collection cur
+      cur
 
     add: (models,index)->
-      if models and not @_ro
+      if models
         models = 
           if type.isA models
             models.slice()
@@ -71,7 +80,7 @@ define [
       return
 
     remove: (models)->
-      if models and not @_ro
+      if models
         models = [models] unless type.isA models
 
         i=-1

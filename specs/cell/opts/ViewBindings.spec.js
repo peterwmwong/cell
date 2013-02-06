@@ -7,7 +7,7 @@ define(['../../utils/spec-utils'], function(_arg) {
     var beforeEachRequire;
     beforeEachRequire = _arg1.beforeEachRequire;
     return describe('Passing Bindings (functions) to __', function() {
-      beforeEachRequire(['cell/opts/ViewBindings', 'cell/View', 'cell/Model', 'cell/Collection'], function(ViewBindings, View, Model, Collection) {
+      beforeEachRequire(['cell/View', 'cell/Model', 'cell/Collection'], function(View, Model, Collection) {
         this.View = View;
         this.Model = Model;
         this.Collection = Collection;

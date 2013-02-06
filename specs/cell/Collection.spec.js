@@ -51,28 +51,89 @@ define(function() {
         });
       });
     });
-    describe('@readOnly()', function() {
+    describe('@filterBy( modelDesc:object )', function() {
       beforeEach(function() {
         this.models = [
           new this.Model({
             a: 0
           }), new this.Model({
-            b: 1
+            a: 1
           }), new this.Model({
-            c: 2
+            a: 2
+          }), new this.Model({
+            a: 3
+          }), new this.Model({
+            a: 4
+          })
+        ];
+        return this.col = new this.Collection(this.models);
+      });
+      it("only includes models who's attributes strictly equal to modelDesc", function() {
+        this.result = this.col.filterBy({
+          a: 2
+        });
+        expect(this.result.length).toBe(1);
+        return expect(this.result[0]).toEqual(this.models[2]);
+      });
+      return it("if a modelDesc's attribute is function, matches on the truthy return of function", function() {
+        this.result = this.col.filterBy({
+          a: function(a) {
+            return a % 2;
+          }
+        });
+        expect(this.result.length).toBe(2);
+        expect(this.result[0]).toEqual(this.models[1]);
+        return expect(this.result[1]).toEqual(this.models[3]);
+      });
+    });
+    describe('@pipe( pipes:Array<Pipe> )', function() {
+      beforeEach(function() {
+        var pipe1, pipe2,
+          _this = this;
+        this.models = [
+          new this.Model({
+            a: 0
+          }), new this.Model({
+            a: 1
+          }), new this.Model({
+            a: 2
+          }), new this.Model({
+            a: 3
+          }), new this.Model({
+            a: 4
           })
         ];
         this.col = new this.Collection(this.models);
-        return this.col.readOnly();
+        pipe1 = {
+          run: function(input) {
+            return input.reduce([], function(c, m) {
+              if (m.get('a') % 2) {
+                c.push(m);
+              }
+              return c;
+            });
+          }
+        };
+        pipe2 = {
+          run: function(input) {
+            return input.map(function(m) {
+              return {
+                b: m.get('a') * 100
+              };
+            });
+          }
+        };
+        return this.result = this.col.pipe([pipe1, pipe2]);
       });
-      return it('if readOnly is true, @add and @remove() do nothing', function() {
-        expect(this.col.length()).toBe(3);
-        this.col.add({
-          d: 3
+      return it('returns index if model exists in Collection, otherwise -1', function() {
+        expect(this.result instanceof this.Collection).toBe(true);
+        expect(this.result.length()).toBe(2);
+        expect(this.result.at(0).attributes()).toEqual({
+          b: 100
         });
-        expect(this.col.length()).toBe(3);
-        this.col.remove(this.col.at(0));
-        return expect(this.col.length()).toBe(3);
+        return expect(this.result.at(1).attributes()).toEqual({
+          b: 300
+        });
       });
     });
     describe('@indexOf( model:Model )', function() {

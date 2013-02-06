@@ -36,22 +36,54 @@ define -> ({beforeEachRequire})->
         expect(@col.at(1).attributes()).toEqual b: 1
 
 
-  describe '@readOnly()', ->
+  describe '@filterBy( modelDesc:object )', ->
     beforeEach ->
       @models = [
         new @Model a: 0
-        new @Model b: 1
-        new @Model c: 2
+        new @Model a: 1
+        new @Model a: 2
+        new @Model a: 3
+        new @Model a: 4
       ]
       @col = new @Collection @models
-      @col.readOnly()
 
-    it 'if readOnly is true, @add and @remove() do nothing', ->
-      expect(@col.length()).toBe 3
-      @col.add d:3
-      expect(@col.length()).toBe 3
-      @col.remove @col.at 0
-      expect(@col.length()).toBe 3
+    it "only includes models who's attributes strictly equal to modelDesc", ->
+      @result = @col.filterBy a: 2
+      expect(@result.length).toBe 1
+      expect(@result[0]).toEqual @models[2]
+
+
+    it "if a modelDesc's attribute is function, matches on the truthy return of function", ->
+      @result = @col.filterBy a:(a)->a%2
+      expect(@result.length).toBe 2
+      expect(@result[0]).toEqual @models[1]
+      expect(@result[1]).toEqual @models[3]
+
+
+  describe '@pipe( pipes:Array<Pipe> )', ->
+    beforeEach ->
+      @models = [
+        new @Model a: 0
+        new @Model a: 1
+        new @Model a: 2
+        new @Model a: 3
+        new @Model a: 4
+      ]
+      @col = new @Collection @models
+      # pipe1 = run: (input)=> m for m in input.toArray() when m.get('a') % 2
+      # pipe1 = run: (input)=> input.filterBy a:(a)-> a % 2
+      pipe1 = run: (input)=> input.reduce [], (c, m)->
+        c.push m if m.get('a') % 2
+        c
+      pipe2 = run: (input)=> input.map (m)-> b: m.get('a')*100
+          
+      @result = @col.pipe [pipe1, pipe2]
+
+    it 'returns index if model exists in Collection, otherwise -1', ->
+      expect(@result instanceof @Collection).toBe true
+      expect(@result.length()).toBe 2
+      expect(@result.at(0).attributes()).toEqual b: 100
+      expect(@result.at(1).attributes()).toEqual b: 300
 
   describe '@indexOf( model:Model )', ->
     beforeEach ->
