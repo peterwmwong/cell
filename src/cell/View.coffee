@@ -146,7 +146,6 @@ define [
   __.each = (col,renderer)->
     if col
       if col instanceof Collection
-        debugger
         collection = col
         col = -> collection.toArray()
 
@@ -209,8 +208,6 @@ define [
 
     _renderChild: (n, parent, insertBeforeNode, rendered)->
       n = new Bind @, n if isF n
-
-      debugger
 
       if n.constructor is Bind
         n.r parent

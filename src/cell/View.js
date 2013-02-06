@@ -142,7 +142,6 @@ define(['util/hash', 'util/type', 'dom/data', 'dom/events', 'cell/Model', 'cell/
     var collection, i, length, results;
     if (col) {
       if (col instanceof Collection) {
-        debugger;
         collection = col;
         col = function() {
           return collection.toArray();
@@ -212,7 +211,6 @@ define(['util/hash', 'util/type', 'dom/data', 'dom/events', 'cell/Model', 'cell/
       if (isF(n)) {
         n = new Bind(this, n);
       }
-      debugger;
       if (n.constructor === Bind) {
         n.r(parent);
       } else if ((_ref = n.nodeType) === 1 || _ref === 3) {
