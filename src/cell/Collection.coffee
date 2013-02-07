@@ -51,7 +51,7 @@ define [
     filterBy:
       iter (
         'for(k in f)'+
-          'if((v=f[k])==null||v===(x=e._a[k])||(typeof v=="function"&&v(x)))'+
+          'if((v=f[k])==null||v===(x=e.get(k))||(typeof v=="function"&&v(x)))'+
             'r.push(e)'
       ), ',k,v,x,r=[]', 'return r'
 

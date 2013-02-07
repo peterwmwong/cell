@@ -202,6 +202,27 @@ define ['../../utils/spec-utils'], ({waitOne})->
             expect(@callback).toHaveBeenCalledWith 'a value'
             expect(@callback.callCount).toBe 1
 
+      describe "When func accesses a Collection using filterBy() (Model attribute access is implied)", ->
+        beforeEach ->
+          @col = new @Collection [
+            {x:'x val'}
+            {y:'y val'}
+          ]
+          @func = jasmine.createSpy('func').andCallFake => @col.filterBy x: 'x val'
+          @watch @func, @callback
+          @func.reset()
+          @callback.reset()
+
+        describe "and an accessed Model attribute changes", ->
+          beforeEach ->
+            @col.at(1).set 'x', 'x val 2'
+
+          it "calls callback with result of func", ->
+            waitOne ->
+              expect(@func).toHaveBeenCalled()
+              expect(@func.callCount).toBe 1
+              expect(@callback.calls[0].args[0][0]).toBe @col.at 0
+              expect(@callback.callCount).toBe 1
 
       describe "When func accesses a Collection", ->
         beforeEach ->

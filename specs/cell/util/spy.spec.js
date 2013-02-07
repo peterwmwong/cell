@@ -258,6 +258,39 @@ define(['../../utils/spec-utils'], function(_arg) {
           });
         });
       });
+      describe("When func accesses a Collection using filterBy() (Model attribute access is implied)", function() {
+        beforeEach(function() {
+          var _this = this;
+          this.col = new this.Collection([
+            {
+              x: 'x val'
+            }, {
+              y: 'y val'
+            }
+          ]);
+          this.func = jasmine.createSpy('func').andCallFake(function() {
+            return _this.col.filterBy({
+              x: 'x val'
+            });
+          });
+          this.watch(this.func, this.callback);
+          this.func.reset();
+          return this.callback.reset();
+        });
+        return describe("and an accessed Model attribute changes", function() {
+          beforeEach(function() {
+            return this.col.at(1).set('x', 'x val 2');
+          });
+          return it("calls callback with result of func", function() {
+            return waitOne(function() {
+              expect(this.func).toHaveBeenCalled();
+              expect(this.func.callCount).toBe(1);
+              expect(this.callback.calls[0].args[0][0]).toBe(this.col.at(0));
+              return expect(this.callback.callCount).toBe(1);
+            });
+          });
+        });
+      });
       return describe("When func accesses a Collection", function() {
         var access, methodAccess, methodName, _results;
         beforeEach(function() {

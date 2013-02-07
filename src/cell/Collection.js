@@ -30,7 +30,7 @@ define(['cell/Events', 'util/type', 'cell/Model', 'cell/util/spy'], function(Eve
     each: iter('if(f.call(c,e,i,t)===!1)i=l'),
     map: iter('r.push(f.call(c,e,i,t))', ',r=[]', 'return r'),
     reduce: iter('f=c.call(d,f,e,i,t)', '', 'return f'),
-    filterBy: iter('for(k in f)' + 'if((v=f[k])==null||v===(x=e._a[k])||(typeof v=="function"&&v(x)))' + 'r.push(e)', ',k,v,x,r=[]', 'return r'),
+    filterBy: iter('for(k in f)' + 'if((v=f[k])==null||v===(x=e.get(k))||(typeof v=="function"&&v(x)))' + 'r.push(e)', ',k,v,x,r=[]', 'return r'),
     pipe: function(pipes) {
       var cur, pipe, _i, _len;
       cur = this;
