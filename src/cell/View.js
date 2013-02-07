@@ -38,7 +38,7 @@ define(['util/hash', 'util/type', 'dom/data', 'dom/events', 'cell/Model', 'cell/
       var nodes;
       nodes = [];
       watch(bind(cond, view), function(condValue) {
-        nodes = render(parent, view, condValue ? typeof thnElse.then === "function" ? thnElse.then() : void 0 : typeof thnElse["else"] === "function" ? thnElse["else"]() : void 0, nodes);
+        nodes = render(parent, view, view.__["if"](condValue, thnElse), nodes);
       });
     };
   };
@@ -131,11 +131,11 @@ define(['util/hash', 'util/type', 'dom/data', 'dom/events', 'cell/Model', 'cell/
     }
   };
   __["if"] = function(condition, thenElse) {
-    var _name;
+    var _ref;
     if (isF(condition)) {
       return new IfBind(this.view, condition, thenElse);
     } else {
-      return typeof thenElse[_name = condition ? 'then' : 'else'] === "function" ? thenElse[_name]() : void 0;
+      return (_ref = thenElse[condition ? 'then' : 'else']) != null ? _ref.call(this.view) : void 0;
     }
   };
   __.each = function(col, renderer) {

@@ -112,16 +112,18 @@ define(['../../utils/spec-utils'], function(_arg) {
             });
             this.CellWithIf = this.View.extend({
               _cellName: 'test',
+              thenKey: 'thenValue',
+              elseKey: 'elseValue',
               render: function(__) {
                 return [
                   __('.parent', __["if"]((function() {
                     return _this.model.get('condition');
                   }), {
                     then: function() {
-                      return [__('.then1'), __('.then2')];
+                      return [__('.then1', this.thenKey), __('.then2')];
                     },
                     "else": function() {
-                      return [__('.else1'), __('.else2')];
+                      return [__('.else1', this.elseKey), __('.else2')];
                     }
                   }))
                 ];
@@ -130,12 +132,12 @@ define(['../../utils/spec-utils'], function(_arg) {
             return this.view = new this.CellWithIf();
           });
           it('renders initially correctly', function() {
-            return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>');
+            return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="then1">thenValue</div><div class="then2"></div></div></div>');
           });
           return it('renders after change correctly', function() {
             this.model.set('condition', false);
             return waitOne(function() {
-              return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>');
+              return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="else1">elseValue</div><div class="else2"></div></div></div>');
             });
           });
         });

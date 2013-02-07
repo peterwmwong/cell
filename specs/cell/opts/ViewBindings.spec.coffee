@@ -92,15 +92,17 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
             @model = new @Model condition: true
             @CellWithIf = @View.extend
               _cellName: 'test'
+              thenKey: 'thenValue'
+              elseKey: 'elseValue'
               render: (__)=> [
                 __ '.parent',
                   __.if (=> @model.get 'condition'),
                     then: -> [
-                      __ '.then1'
+                      __ '.then1', @thenKey
                       __ '.then2'
                     ]
                     else: -> [
-                      __ '.else1'
+                      __ '.else1', @elseKey
                       __ '.else2'
                     ]
               ]
@@ -108,12 +110,12 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
           it 'renders initially correctly', ->
             nodeHTMLEquals @view.el,
-              '<div cell="test" class="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>'
+              '<div cell="test" class="test"><div class="parent"><div class="then1">thenValue</div><div class="then2"></div></div></div>'
 
           it 'renders after change correctly', ->
             @model.set 'condition', false
             waitOne ->
-              nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
+              nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else1">elseValue</div><div class="else2"></div></div></div>'
 
         describe 'when then and/or else are not specified', ->
 

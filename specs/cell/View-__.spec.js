@@ -148,12 +148,12 @@ define(['../utils/spec-utils'], function(_arg) {
           this.thenNode = node('div');
           this.elseNode = node('span');
           return this.thenElse = {
-            then: function() {
+            then: jasmine.createSpy('then').andCallFake(function() {
               return _this.thenNode;
-            },
-            "else": function() {
+            }),
+            "else": jasmine.createSpy('else').andCallFake(function() {
               return _this.elseNode;
-            }
+            })
           };
         });
         it('when condition is truthy, renders then', function() {
@@ -166,7 +166,7 @@ define(['../utils/spec-utils'], function(_arg) {
           }
           return _results;
         });
-        return it('when condition is falsy, renders else', function() {
+        it('when condition is falsy, renders else', function() {
           var falsy, _i, _len, _ref, _results;
           _ref = [false, 0, '', void 0, null];
           _results = [];
@@ -175,6 +175,12 @@ define(['../utils/spec-utils'], function(_arg) {
             _results.push(expect(this.__["if"](falsy, this.thenElse)).toEqual(this.elseNode));
           }
           return _results;
+        });
+        return it('calls then and else with View as `this`', function() {
+          this.__["if"](true, this.thenElse);
+          expect(this.thenElse.then.calls[0].object).toBe(this.view);
+          this.__["if"](false, this.thenElse);
+          return expect(this.thenElse["else"].calls[0].object).toBe(this.view);
         });
       });
       return describe('when then/else returns an array of nodes', function() {

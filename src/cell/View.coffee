@@ -38,7 +38,7 @@ define [
       watch (bind cond, view), (condValue)->
         nodes = render parent,
           view
-          if condValue then thnElse.then?() else thnElse.else?()
+          (view.__.if condValue, thnElse)
           nodes
         return
       return
@@ -141,7 +141,7 @@ define [
     if isF condition
       new IfBind @view, condition, thenElse
     else
-      thenElse[if condition then 'then' else 'else']?()
+      thenElse[if condition then 'then' else 'else']?.call @view
 
   __.each = (col,renderer)->
     if col

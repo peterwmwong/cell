@@ -169,8 +169,8 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
           @thenNode = node 'div'
           @elseNode = node 'span'
           @thenElse =
-            then: => @thenNode
-            else: => @elseNode
+            then: jasmine.createSpy('then').andCallFake => @thenNode
+            else: jasmine.createSpy('else').andCallFake => @elseNode
 
         it 'when condition is truthy, renders then', ->
           for truthy in [true,1,'1',[],{}]
@@ -180,6 +180,12 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
           for falsy in [false,0,'',undefined,null]
             expect(@__.if(falsy, @thenElse)).toEqual @elseNode
 
+        it 'calls then and else with View as `this`', ->
+          @__.if true, @thenElse
+          expect(@thenElse.then.calls[0].object).toBe @view
+
+          @__.if false, @thenElse
+          expect(@thenElse.else.calls[0].object).toBe @view
 
       describe 'when then/else returns an array of nodes', ->
 
