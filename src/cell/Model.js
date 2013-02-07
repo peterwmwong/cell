@@ -20,10 +20,13 @@ define(['util/type', 'cell/Events', 'cell/util/spy'], function(type, Events, spy
       return this._a[key];
     },
     set: function(key, value) {
-      var old_value;
+      var collection, event, old_value;
       if ((type.isS(key)) && (this._a[key] !== value)) {
         old_value = this._a[key];
-        this.trigger("change:" + key, this, (this._a[key] = value), old_value);
+        this.trigger((event = "change:" + key), this, (this._a[key] = value), old_value);
+        if (collection = this.collection) {
+          collection.trigger(event, this, value, old_value);
+        }
         return true;
       }
     },

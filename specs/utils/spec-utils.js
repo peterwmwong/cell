@@ -38,6 +38,19 @@ define(['jquery'], function($) {
     }
   };
   return exports = {
+    waitOne: function(expectCallback) {
+      var done;
+      done = false;
+      runs(function() {
+        return setTimeout((function() {
+          return done = true;
+        }), 1);
+      });
+      waitsFor(function() {
+        return done;
+      });
+      return runs(expectCallback);
+    },
     browserTrigger: function(element, type, keys) {
       var evnt, fakeProcessDefault, finalProcessDefault, originalPreventDefault, pressed, ret, _ref;
       if (element && !element.nodeName) {

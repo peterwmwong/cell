@@ -26,7 +26,9 @@ define(function() {
         return it('creates a Collection with models already added', function() {
           expect(this.col.length()).toBe(2);
           expect(this.col.at(0)).toBe(this.models[0]);
-          return expect(this.col.at(1)).toBe(this.models[1]);
+          expect(this.col.at(1)).toBe(this.models[1]);
+          expect(this.col.at(0).collection).toBe(this.col);
+          return expect(this.col.at(1).collection).toBe(this.col);
         });
       });
       return describe('@constructor( models:Array<Object> )', function() {
@@ -45,9 +47,11 @@ define(function() {
           expect(this.col.at(0).attributes()).toEqual({
             a: 0
           });
-          return expect(this.col.at(1).attributes()).toEqual({
+          expect(this.col.at(1).attributes()).toEqual({
             b: 1
           });
+          expect(this.col.at(0).collection).toBe(this.col);
+          return expect(this.col.at(1).collection).toBe(this.col);
         });
       });
     });
@@ -422,6 +426,7 @@ define(function() {
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.initialModels[1]);
           expect(this.col.at(2)).toBe(this.model);
+          expect(this.col.at(2).collection).toBe(this.col);
           expect(this.allEvents.callCount).toBe(1);
           expect(this.allEvents.calls[0].args[0]).toBe('add');
           expect(this.allEvents.calls[0].args[1]).toEqual([this.model]);
@@ -432,6 +437,7 @@ define(function() {
           this.col.add(this.model, 1);
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.model);
+          expect(this.col.at(1).collection).toBe(this.col);
           expect(this.col.at(2)).toBe(this.initialModels[1]);
           expect(this.allEvents.callCount).toBe(1);
           expect(this.allEvents.calls[0].args[0]).toBe('add');
@@ -455,6 +461,7 @@ define(function() {
           expect(this.model.attributes()).toEqual({
             c: 2
           });
+          expect(this.model.collection).toBe(this.col);
           expect(this.allEvents.callCount).toBe(1);
           expect(this.allEvents.calls[0].args[0]).toBe('add');
           expect(this.allEvents.calls[0].args[1]).toEqual([this.model]);
@@ -469,6 +476,7 @@ define(function() {
           expect(this.model.attributes()).toEqual({
             c: 2
           });
+          expect(this.model.collection).toBe(this.col);
           expect(this.col.at(2)).toBe(this.initialModels[1]);
           expect(this.allEvents.callCount).toBe(1);
           expect(this.allEvents.calls[0].args[0]).toBe('add');
@@ -492,7 +500,9 @@ define(function() {
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.initialModels[1]);
           expect(this.col.at(2)).toBe(this.models[0]);
+          expect(this.col.at(2).collection).toBe(this.col);
           expect(this.col.at(3)).toBe(this.models[1]);
+          expect(this.col.at(3).collection).toBe(this.col);
           expect(this.allEvents.callCount).toBe(1);
           expect(this.allEvents.calls[0].args[0]).toBe('add');
           expect(this.allEvents.calls[0].args[1]).toEqual(this.models);
@@ -503,7 +513,9 @@ define(function() {
           this.col.add(this.models, 1);
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.models[0]);
+          expect(this.col.at(1).collection).toBe(this.col);
           expect(this.col.at(2)).toBe(this.models[1]);
+          expect(this.col.at(2).collection).toBe(this.col);
           expect(this.col.at(3)).toBe(this.initialModels[1]);
           expect(this.allEvents.callCount).toBe(1);
           expect(this.allEvents.calls[0].args[0]).toBe('add');
@@ -534,6 +546,7 @@ define(function() {
             this.model = this.col.at(i++);
             expect(this.model instanceof this.Model).toBe(true);
             expect(this.model.attributes()).toEqual(obj);
+            expect(this.model.collection).toBe(this.col);
           }
           expect(this.allEvents.callCount).toBe(1);
           expect(this.allEvents.calls[0].args[0]).toBe('add');
@@ -552,6 +565,7 @@ define(function() {
             this.model = this.col.at(i++);
             expect(this.model instanceof this.Model).toBe(true);
             expect(this.model.attributes()).toEqual(obj);
+            expect(this.model.collection).toBe(this.col);
           }
           expect(this.col.at(3)).toBe(this.initialModels[1]);
           expect(this.allEvents.callCount).toBe(1);
@@ -582,6 +596,7 @@ define(function() {
           return this.col.remove(this.initialModels[1]);
         });
         it('removes Model', function() {
+          expect(this.initialModels[1].collection).toBeUndefined();
           expect(this.col.length()).toBe(2);
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.initialModels[2]);
@@ -599,7 +614,12 @@ define(function() {
           expect(this.col.length()).toBe(2);
           expect(this.col.at(0)).toBe(this.initialModels[0]);
           expect(this.col.at(1)).toBe(this.initialModels[2]);
-          return expect(this.allEvents.callCount).toBe(0);
+          expect(this.allEvents.callCount).toBe(0);
+          this.col2 = this.Collection([new this.Model]);
+          this.col.remove(this.col2.at(0));
+          expect(this.col.length()).toBe(2);
+          expect(this.col2.length()).toBe(1);
+          return expect(this.col2.at(0).collection).toBe(this.col2);
         });
         return it('if collection is empty, does nothing', function() {
           this.allEvents.reset();
@@ -623,6 +643,8 @@ define(function() {
         it('removes all models in array that are part of the collection', function() {
           expect(this.col.length()).toBe(1);
           expect(this.col.at(0)).toBe(this.initialModels[1]);
+          expect(this.initialModels[0].collection).toBeUndefined();
+          expect(this.initialModels[2].collection).toBeUndefined();
           expect(this.allEvents.callCount).toBe(1);
           expect(this.allEvents.calls[0].args[0]).toBe('remove');
           expect(this.allEvents.calls[0].args[1]).toEqual([this.initialModels[2], this.initialModels[0]]);

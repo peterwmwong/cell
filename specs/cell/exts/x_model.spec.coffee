@@ -1,4 +1,4 @@
-define ['../../utils/spec-utils'], ({node,browserTrigger})-> ({beforeEachRequire})->
+define ['../../utils/spec-utils'], ({node,browserTrigger,waitOne})-> ({beforeEachRequire})->
   beforeEachRequire [
     'cell/opts/ViewExts'
     'cell/View'
@@ -38,14 +38,19 @@ define ['../../utils/spec-utils'], ({node,browserTrigger})-> ({beforeEachRequire
         text: 'new text value'
         check: false
 
-    it 'model -> view', ->
-      text = @view.el.children[0]
-      checkbox = @view.el.children[1]
+    describe 'model -> view', ->
+      beforeEach ->
+        @text = @view.el.children[0]
+        @checkbox = @view.el.children[1]
 
-      @model.set 'text', 'new text value'
-      expect(text.value).toBe 'new text value'
-      expect(checkbox.checked).toBe true
+      it 'text', ->
+        @model.set 'text', 'new text value'
+        waitOne ->
+          expect(@text.value).toBe 'new text value'
+          expect(@checkbox.checked).toBe true
 
-      @model.set 'check', false
-      expect(text.value).toBe 'new text value'
-      expect(checkbox.checked).toBe false
+      it 'check', ->
+        @model.set 'check', false
+        waitOne ->
+          expect(@text.value).toBe 'text value'
+          expect(@checkbox.checked).toBe false

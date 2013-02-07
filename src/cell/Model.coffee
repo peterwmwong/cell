@@ -23,7 +23,10 @@ define [
     set: (key, value)->
       if (type.isS key) and (@_a[key] isnt value)
         old_value = @_a[key]
-        @trigger "change:#{key}", @, (@_a[key] = value), old_value
+        @trigger (event = "change:#{key}"), @, (@_a[key] = value), old_value
+
+        if collection = @collection
+          collection.trigger event, @, value, old_value
         true
 
     onChangeAndDo: (key, cb, ctx)->

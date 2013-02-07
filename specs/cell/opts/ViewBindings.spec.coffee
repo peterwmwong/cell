@@ -1,4 +1,4 @@
-define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})->
+define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger,waitOne})->
 
   ({beforeEachRequire})->
 
@@ -74,12 +74,14 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
               @collection.add new @Model a: 4
 
             it 'renders after change correctly', ->
-              nodeHTMLEquals @view.el,
-                '<div cell="test" class="test"><div class="parent"><div class="item2"></div><div class="item3"></div><div class="item4"></div></div></div>'
+              waitOne ->
+                nodeHTMLEquals @view.el,
+                  '<div cell="test" class="test"><div class="parent"><div class="item2"></div><div class="item3"></div><div class="item4"></div></div></div>'
 
             it "doesn't rerender previous items", ->
-              expect(@view.el.children[0].children[0]).toBe @item2
-              expect(@view.el.children[0].children[1]).toBe @item3
+              waitOne ->
+                expect(@view.el.children[0].children[0]).toBe @item2
+                expect(@view.el.children[0].children[1]).toBe @item3
 
 
       describe 'when a bind is passed as the condition to __.if(condition, {then:function, else:function})', ->
@@ -110,7 +112,8 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
           it 'renders after change correctly', ->
             @model.set 'condition', false
-            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
+            waitOne ->
+              nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
 
         describe 'when then and/or else are not specified', ->
 
@@ -144,11 +147,13 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
             @view = new @CellWithIf()
 
           it 'renders initially correctly', ->
-            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="then"></div></div></div>'
+            waitOne ->
+              nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="then"></div></div></div>'
 
           it 'renders after change correctly', ->
             @model.set 'condition', false
-            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else"></div></div></div>'
+            waitOne ->
+              nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else"></div></div></div>'
 
       describe 'when a bind is passed as an attribute', ->
 
@@ -164,7 +169,8 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
             @view.set 'test', 'test val2'
 
           it "automatically sets the element's attribute to the new binding's value", ->
-            expect(@node.getAttribute 'data-custom').toBe 'test val2'
+            waitOne ->
+              expect(@node.getAttribute 'data-custom').toBe 'test val2'
 
 
       describe "when the attribute is a on* event handler", ->
@@ -195,7 +201,8 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
                 @view.set 'test', ref_value_after
 
               it "automatically rerenders child correctly", ->
-                nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html_after}AFTER</div>"
+                waitOne ->
+                  nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html_after}AFTER</div>"
 
 
         describe "when the binding's value is undefined", ->
@@ -215,7 +222,8 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
               @view.set 'test', 'something'
 
             it "automatically rerenders child correctly", ->
-              nodeHTMLEquals @node, "<div class=\"parent\">BEFOREsomethingAFTER</div>"
+              waitOne ->
+                nodeHTMLEquals @node, "<div class=\"parent\">BEFOREsomethingAFTER</div>"
 
 
         describe_render_reference

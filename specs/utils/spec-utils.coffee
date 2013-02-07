@@ -30,6 +30,12 @@ define ['jquery'], ($)->
         if element.nodeName then element.nodeName else element[0].nodeName
 
   exports =
+    waitOne: (expectCallback)->
+      done = false
+      runs -> setTimeout (-> done = true), 1
+      waitsFor -> done
+      runs expectCallback
+
     browserTrigger: (element, type, keys)->
       element = element[0] if element and not element.nodeName
       return unless element

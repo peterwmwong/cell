@@ -70,6 +70,7 @@ define(['cell/Events', 'util/type', 'cell/Model', 'cell/util/spy'], function(Eve
         while (++i < len) {
           model = models[i];
           if ((index = this.indexOf(model)) > -1) {
+            delete model.collection;
             removedModels.push(model);
             indices.push(index);
             this._i.splice(index, 1);
@@ -81,11 +82,9 @@ define(['cell/Events', 'util/type', 'cell/Model', 'cell/util/spy'], function(Eve
       }
     },
     _toM: function(o) {
-      if (o instanceof this.model) {
-        return o;
-      } else {
-        return new Model(o);
-      }
+      o = o instanceof this.model ? o : new Model(o);
+      o.collection = this;
+      return o;
     },
     _s: spy.addCol
   });

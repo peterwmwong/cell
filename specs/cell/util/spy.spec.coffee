@@ -1,4 +1,4 @@
-define ->
+define ['../../utils/spec-utils'], ({waitOne})->
   ({beforeEachRequire})->
 
     beforeEachRequire [
@@ -12,17 +12,21 @@ define ->
       beforeEach ->
         @value = {}
         @callback = jasmine.createSpy 'callback'
-        
+
       describe "When func does NOT access any Model or Collection", ->
         beforeEach ->
           @func = jasmine.createSpy('func').andReturn @value
           @watch @func, @callback
 
         it 'call callback with result of func', ->
-          expect(@func).toHaveBeenCalled()
-          expect(@func.callCount).toBe 1
-          expect(@callback).toHaveBeenCalledWith @value
-          expect(@callback.callCount).toBe 1
+          done = false
+          runs -> setTimeout (-> done = true), 1
+          waitsFor -> done
+          runs ->
+            expect(@func).toHaveBeenCalled()
+            expect(@func.callCount).toBe 1
+            expect(@callback).toHaveBeenCalledWith @value
+            expect(@callback.callCount).toBe 1
 
       describe "When func accesses a Model's attributes()", ->
         beforeEach ->
@@ -42,9 +46,10 @@ define ->
             @model.set 'a', 2
 
           it 'calls callback with result of func', ->
-            expect(@func.callCount).toBe 1
-            expect(@callback).toHaveBeenCalledWith @model.attributes()
-            expect(@callback.callCount).toBe 1
+            waitOne ->
+              expect(@func.callCount).toBe 1
+              expect(@callback).toHaveBeenCalledWith @model.attributes()
+              expect(@callback.callCount).toBe 1
 
 
       describe "When func accesses a Model's attributes() and a property", ->
@@ -67,9 +72,10 @@ define ->
             @model.set 'a', 2
 
           it 'calls callback with result of func', ->
-            expect(@func.callCount).toBe 1
-            expect(@callback).toHaveBeenCalledWith @model.attributes()
-            expect(@callback.callCount).toBe 1
+            waitOne ->
+              expect(@func.callCount).toBe 1
+              expect(@callback).toHaveBeenCalledWith @model.attributes()
+              expect(@callback.callCount).toBe 1
 
 
       describe "When func accesses multiple Models", ->
@@ -93,9 +99,10 @@ define ->
             @model1.set 'a', 2
 
           it 'calls callback with result of func', ->
-            expect(@func.callCount).toBe 1
-            expect(@callback).toHaveBeenCalledWith 2
-            expect(@callback.callCount).toBe 1
+            waitOne ->
+              expect(@func.callCount).toBe 1
+              expect(@callback).toHaveBeenCalledWith 2
+              expect(@callback.callCount).toBe 1
 
         describe 'when the other accessed model property changes', ->
           beforeEach ->
@@ -104,9 +111,10 @@ define ->
             @model2.set 'b', 3
 
           it 'calls callback with result of func', ->
-            expect(@func.callCount).toBe 1
-            expect(@callback).toHaveBeenCalledWith 3
-            expect(@callback.callCount).toBe 1
+            waitOne ->
+              expect(@func.callCount).toBe 1
+              expect(@callback).toHaveBeenCalledWith 3
+              expect(@callback.callCount).toBe 1
 
       describe "When func accesses a Model's properties", ->
         beforeEach ->
@@ -131,10 +139,11 @@ define ->
             @model.set 'a', 2
 
           it 'calls callback with result of func', ->
-            expect(@func).toHaveBeenCalled()
-            expect(@func.callCount).toBe 1
-            expect(@callback).toHaveBeenCalledWith 2
-            expect(@callback.callCount).toBe 1
+            waitOne ->
+              expect(@func).toHaveBeenCalled()
+              expect(@func.callCount).toBe 1
+              expect(@callback).toHaveBeenCalledWith 2
+              expect(@callback.callCount).toBe 1
 
           describe 'when another accessed model property changes', ->
             beforeEach ->
@@ -143,10 +152,11 @@ define ->
               @model.set 'c', 'y'
 
             it 'calls callback with result of func', ->
-              expect(@func).toHaveBeenCalled()
-              expect(@func.callCount).toBe 1
-              expect(@callback).toHaveBeenCalledWith 2
-              expect(@callback.callCount).toBe 1
+              waitOne ->
+                expect(@func).toHaveBeenCalled()
+                expect(@func.callCount).toBe 1
+                expect(@callback).toHaveBeenCalledWith 2
+                expect(@callback.callCount).toBe 1
 
         describe 'when another model property changes or other non-relevant events occur', ->
           beforeEach ->
@@ -159,11 +169,46 @@ define ->
             expect(@func).not.toHaveBeenCalled()
             expect(@callback).not.toHaveBeenCalled()
 
+
+      describe "When func accesses a Model part of a Collection", ->
+        beforeEach ->
+          @col = new @Collection [
+            {x:'x val'}
+            {y:'y val'}
+          ]
+          @model0 = @col.at 0
+          @model1 = @col.at 1
+
+          @func = jasmine.createSpy('func').andCallFake => @col.at(0).get 'x'
+          @watch @func, @callback
+          
+          @func.reset()
+          @callback.reset()
+
+        it 'calls func when an accessed a Model attribute changes in a Collection', ->
+          @model1.set 'x', 'a value'
+          waitOne ->
+            expect(@func).toHaveBeenCalled()
+            expect(@func.callCount).toBe 1
+            expect(@callback).toHaveBeenCalledWith 'x val'
+            expect(@callback.callCount).toBe 1
+
+
+        it 'calls func when an accessed a Model attribute changes in a Collection of another Model', ->
+          @model0.set 'x', 'a value'
+          waitOne ->
+            expect(@func).toHaveBeenCalled()
+            expect(@func.callCount).toBe 1
+            expect(@callback).toHaveBeenCalledWith 'a value'
+            expect(@callback.callCount).toBe 1
+
+
       describe "When func accesses a Collection", ->
         beforeEach ->
-          @col = new @Collection 
-            x:'x val'
-            y:'y val'
+          @col = new @Collection [
+            {x:'x val'}
+            {y:'y val'}
+          ]
 
         methodAccess =
           at: -> @col.at 0
@@ -198,7 +243,8 @@ define ->
                   changeFunc.call @
 
                 it 'calls callback with result of func', ->
-                  expect(@func).toHaveBeenCalled()
-                  expect(@func.callCount).toBe 1
-                  expect(@callback).toHaveBeenCalledWith 2
-                  expect(@callback.callCount).toBe 1
+                  waitOne ->
+                    expect(@func).toHaveBeenCalled()
+                    expect(@func.callCount).toBe 1
+                    expect(@callback).toHaveBeenCalledWith 2
+                    expect(@callback.callCount).toBe 1

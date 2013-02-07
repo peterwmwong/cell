@@ -24,6 +24,8 @@ define -> ({beforeEachRequire})->
         expect(@col.length()).toBe 2
         expect(@col.at 0).toBe @models[0]
         expect(@col.at 1).toBe @models[1]
+        expect(@col.at(0).collection).toBe @col
+        expect(@col.at(1).collection).toBe @col
 
     describe '@constructor( models:Array<Object> )', ->
       beforeEach ->
@@ -34,6 +36,8 @@ define -> ({beforeEachRequire})->
         expect(@col.length()).toBe 2
         expect(@col.at(0).attributes()).toEqual a: 0
         expect(@col.at(1).attributes()).toEqual b: 1
+        expect(@col.at(0).collection).toBe @col
+        expect(@col.at(1).collection).toBe @col
 
 
   describe '@filterBy( modelDesc:object )', ->
@@ -283,6 +287,7 @@ define -> ({beforeEachRequire})->
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[1]
         expect(@col.at 2).toBe @model
+        expect(@col.at(2).collection).toBe @col
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'add'
@@ -294,6 +299,7 @@ define -> ({beforeEachRequire})->
         @col.add @model, 1
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @model
+        expect(@col.at(1).collection).toBe @col
         expect(@col.at 2).toBe @initialModels[1]
 
         expect(@allEvents.callCount).toBe 1
@@ -314,6 +320,7 @@ define -> ({beforeEachRequire})->
         @model = @col.at 2
         expect(@model instanceof @Model).toBe true
         expect(@model.attributes()).toEqual c: 2
+        expect(@model.collection).toBe @col
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'add'
@@ -328,6 +335,7 @@ define -> ({beforeEachRequire})->
         @model = @col.at 1
         expect(@model instanceof @Model).toBe true
         expect(@model.attributes()).toEqual c: 2
+        expect(@model.collection).toBe @col
 
         expect(@col.at 2).toBe @initialModels[1]
 
@@ -349,7 +357,9 @@ define -> ({beforeEachRequire})->
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[1]
         expect(@col.at 2).toBe @models[0]
+        expect(@col.at(2).collection).toBe @col
         expect(@col.at 3).toBe @models[1]
+        expect(@col.at(3).collection).toBe @col
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'add'
@@ -361,7 +371,9 @@ define -> ({beforeEachRequire})->
         @col.add @models, 1
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @models[0]
+        expect(@col.at(1).collection).toBe @col
         expect(@col.at 2).toBe @models[1]
+        expect(@col.at(2).collection).toBe @col
         expect(@col.at 3).toBe @initialModels[1]
 
         expect(@allEvents.callCount).toBe 1
@@ -385,6 +397,7 @@ define -> ({beforeEachRequire})->
           @model = @col.at i++
           expect(@model instanceof @Model).toBe true
           expect(@model.attributes()).toEqual obj
+          expect(@model.collection).toBe @col
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'add'
@@ -401,6 +414,7 @@ define -> ({beforeEachRequire})->
           @model = @col.at i++
           expect(@model instanceof @Model).toBe true
           expect(@model.attributes()).toEqual obj
+          expect(@model.collection).toBe @col
 
         expect(@col.at 3).toBe @initialModels[1]
 
@@ -427,6 +441,7 @@ define -> ({beforeEachRequire})->
         @col.remove @initialModels[1]
 
       it 'removes Model', ->
+        expect(@initialModels[1].collection).toBeUndefined()
         expect(@col.length()).toBe 2
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[2]
@@ -444,6 +459,12 @@ define -> ({beforeEachRequire})->
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[2]
         expect(@allEvents.callCount).toBe 0
+
+        @col2 = @Collection [new @Model]
+        @col.remove @col2.at(0)
+        expect(@col.length()).toBe 2
+        expect(@col2.length()).toBe 1
+        expect(@col2.at(0).collection).toBe @col2
 
       it 'if collection is empty, does nothing', ->
         @allEvents.reset()
@@ -464,6 +485,9 @@ define -> ({beforeEachRequire})->
       it 'removes all models in array that are part of the collection', ->
         expect(@col.length()).toBe 1
         expect(@col.at 0).toBe @initialModels[1]
+
+        expect(@initialModels[0].collection).toBeUndefined()
+        expect(@initialModels[2].collection).toBeUndefined()
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'remove'

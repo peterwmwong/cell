@@ -65,10 +65,8 @@ define [
     add: (models,index)->
       if models
         models = 
-          if type.isA models
-            models.slice()
-          else
-            [models]
+          if type.isA models then models.slice()
+          else [models]
 
         i=-1
         len = models.length
@@ -90,6 +88,7 @@ define [
         while ++i < len
           model = models[i]
           if (index = @indexOf model) > -1
+            delete model.collection
             removedModels.push model
             indices.push index
             @_i.splice index, 1
@@ -98,5 +97,10 @@ define [
           @trigger 'remove', removedModels, @, indices
       return
 
-    _toM: (o)-> if o instanceof @model then o else new Model o
+    _toM: (o)->
+      o =
+        if o instanceof @model then o
+        else new Model o
+      o.collection = @
+      o
     _s: spy.addCol

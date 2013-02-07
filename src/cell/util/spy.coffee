@@ -1,9 +1,5 @@
 define ['util/hash'], (hash)->
 
-  onChange = ->
-    try @cb @expr()
-    return
-
   log = false
 
   addCol: ->
@@ -12,30 +8,42 @@ define ['util/hash'], (hash)->
       
   addModel: (key)->
     if log
-      unless entry = log.m[hashkey =  hash @]
-        entry = log.m[hashkey] = m: @, props: {}
-      entry.props[key] = 1
+      for k, obj of {m: @, d: @collection} when obj
+        unless entry = log[k][hashkey = hash obj]
+          entry = log[k][hashkey] = m: obj, p: {}
+        entry.p[key] = 1
     return
 
   watch: (expr, cb)->
-    context = {expr,cb}
-
-    log = m:{}, c:{}
+    log = m:{}, c:{}, d:{}
 
     try value = expr()
 
     accesslog = log
     log = false
 
-    for modelHashKey, m of accesslog.m
-      if (props = m.props)[undefined]
-        m.m.on 'all', onChange, context
-      else
-        for p of props
-          m.m.on "change:#{p}", onChange, context
+    called = false
+    onChange = ->
+      unless called
+        called = true
+        setTimeout (->
+          called = false
+          try cb expr()
+          return
+        ), 0
+      return
 
-    for collectionHashKey, c of accesslog.c
-      c.on "all", onChange, context
+    for _, logs of {0:accesslog.m,1:accesslog.d}
+      for _, m of logs
+        if (props = m.p)[undefined]
+          m.m.on 'all', onChange
+        else
+          for p of props
+            m.m.on "change:#{p}", onChange
+
+    for _, c of accesslog.c
+      c.on 'add', onChange
+      c.on 'remove', onChange
 
     cb value
 
