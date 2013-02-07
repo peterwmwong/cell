@@ -1,6 +1,16 @@
 TODO
 ====
 
+NEW: Handle access changing expressions
+---------------------------------------
+
+    render_el: (__)-> [
+      __ '.mydiv', ->
+        if @get 'switch' then @get 'one'
+        else @get 'two'
+    ]
+
+
 NEW: Pipes
 ----------
 
