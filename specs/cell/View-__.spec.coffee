@@ -215,7 +215,9 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
       it 'when many is non-empty array', ->
         result = @__.each @items, @eachRenderer
         expect(@eachRenderer.callCount).toEqual 3
-        expect(@eachRenderer.calls[i].args).toEqual [item,i,@items] for item,i in @items
+        for item,i in @items
+          expect(@eachRenderer.calls[i].args).toEqual [item,i,@items]
+          expect(@eachRenderer.calls[i].object).toBe @view
         nodeHTMLEquals result[0], '<div>a</div>'
         nodeHTMLEquals result[1], '<div>b</div>'
         nodeHTMLEquals result[2], '<div>c</div>'

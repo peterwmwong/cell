@@ -29,7 +29,8 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
           ParentView = @View.extend
             _cellName: 'Parent'
-            render: (__)-> __.each (-> items), ChildView
+            items: items
+            render: (__)-> __.each (-> @items), ChildView
 
           @result = new ParentView().el
 
@@ -54,16 +55,17 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
             @collection = new @Collection @models
             @CellWithEach = @View.extend
               _cellName: 'test'
+              eachKey: 'eachValue'
               render: (__)=> [
                 __ '.parent',
                   __.each (=> @collection.map (m)-> m.get 'a'), (value)->
-                    __ ".item#{value}"
+                    __ ".item#{value}", @eachKey
               ]
             @view = new @CellWithEach()
 
           it 'renders initially correctly', ->
             nodeHTMLEquals @view.el,
-              '<div cell="test" class="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>'
+              '<div cell="test" class="test"><div class="parent"><div class="item1">eachValue</div><div class="item2">eachValue</div><div class="item3">eachValue</div></div></div>'
 
           describe 'when collection changes', ->
 
@@ -76,7 +78,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
             it 'renders after change correctly', ->
               waitOne ->
                 nodeHTMLEquals @view.el,
-                  '<div cell="test" class="test"><div class="parent"><div class="item2"></div><div class="item3"></div><div class="item4"></div></div></div>'
+                  '<div cell="test" class="test"><div class="parent"><div class="item2">eachValue</div><div class="item3">eachValue</div><div class="item4">eachValue</div></div></div>'
 
             it "doesn't rerender previous items", ->
               waitOne ->

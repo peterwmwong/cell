@@ -77,7 +77,7 @@ define(['util/hash', 'util/type', 'dom/data', 'dom/events', 'cell/Model', 'cell/
           if (!(prevItemEl = itemhash.shift(key = hash(item = value[i])))) {
             prevItemEl = itemRenderer.prototype instanceof View ? new itemRenderer({
               model: item
-            }).el : itemRenderer(item);
+            }).el : itemRenderer.call(view, item);
           }
           newItemHash.push(key, prevItemEl);
           newEls.push(prevItemEl);
@@ -156,7 +156,7 @@ define(['util/hash', 'util/type', 'dom/data', 'dom/events', 'cell/Model', 'cell/
         while (++i < length) {
           results.push((renderer.prototype instanceof View ? new renderer({
             model: col[i]
-          }).el : renderer(col[i], i, col)));
+          }).el : renderer.call(this.view, col[i], i, col)));
         }
         return results;
       }

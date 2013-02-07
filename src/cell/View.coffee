@@ -76,7 +76,7 @@ define [
               if itemRenderer.prototype instanceof View
                 new itemRenderer(model: item).el
               else
-                itemRenderer item
+                itemRenderer.call view, item
           
           newItemHash.push key, prevItemEl
           newEls.push prevItemEl
@@ -160,7 +160,7 @@ define [
             if renderer.prototype instanceof View
               new renderer(model: col[i]).el
             else
-              renderer col[i], i, col
+              renderer.call @view, col[i], i, col
           )
         results
           

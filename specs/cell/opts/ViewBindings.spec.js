@@ -35,9 +35,10 @@ define(['../../utils/spec-utils'], function(_arg) {
           });
           ParentView = this.View.extend({
             _cellName: 'Parent',
+            items: items,
             render: function(__) {
               return __.each((function() {
-                return items;
+                return this.items;
               }), ChildView);
             }
           });
@@ -63,6 +64,7 @@ define(['../../utils/spec-utils'], function(_arg) {
             this.collection = new this.Collection(this.models);
             this.CellWithEach = this.View.extend({
               _cellName: 'test',
+              eachKey: 'eachValue',
               render: function(__) {
                 return [
                   __('.parent', __.each((function() {
@@ -70,7 +72,7 @@ define(['../../utils/spec-utils'], function(_arg) {
                       return m.get('a');
                     });
                   }), function(value) {
-                    return __(".item" + value);
+                    return __(".item" + value, this.eachKey);
                   }))
                 ];
               }
@@ -78,7 +80,7 @@ define(['../../utils/spec-utils'], function(_arg) {
             return this.view = new this.CellWithEach();
           });
           it('renders initially correctly', function() {
-            return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>');
+            return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="item1">eachValue</div><div class="item2">eachValue</div><div class="item3">eachValue</div></div></div>');
           });
           return describe('when collection changes', function() {
             beforeEach(function() {
@@ -91,7 +93,7 @@ define(['../../utils/spec-utils'], function(_arg) {
             });
             it('renders after change correctly', function() {
               return waitOne(function() {
-                return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="item2"></div><div class="item3"></div><div class="item4"></div></div></div>');
+                return nodeHTMLEquals(this.view.el, '<div cell="test" class="test"><div class="parent"><div class="item2">eachValue</div><div class="item3">eachValue</div><div class="item4">eachValue</div></div></div>');
               });
             });
             return it("doesn't rerender previous items", function() {

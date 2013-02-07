@@ -224,6 +224,7 @@ define(['../utils/spec-utils'], function(_arg) {
         for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
           item = _ref[i];
           expect(this.eachRenderer.calls[i].args).toEqual([item, i, this.items]);
+          expect(this.eachRenderer.calls[i].object).toBe(this.view);
         }
         nodeHTMLEquals(result[0], '<div>a</div>');
         nodeHTMLEquals(result[1], '<div>b</div>');
