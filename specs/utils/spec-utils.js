@@ -44,7 +44,7 @@ define(['jquery'], function($) {
       runs(function() {
         return setTimeout((function() {
           return done = true;
-        }), 1);
+        }), 17);
       });
       waitsFor(function() {
         return done;

@@ -47,8 +47,8 @@ define(['../utils/spec-utils'], function(_arg) {
             beforeRender: function() {
               return _this.log.push('beforeRender');
             },
-            render_el: function() {
-              _this.log.push('render_el');
+            renderEl: function() {
+              _this.log.push('renderEl');
               return _this.el;
             },
             render: function(__) {
@@ -61,15 +61,15 @@ define(['../utils/spec-utils'], function(_arg) {
           });
           return this.view = new this.NewView();
         });
-        it('calls View::render_el() to set @el', function() {
+        it('calls View::renderEl() to set @el', function() {
           return expect(this.view.el).toBe(this.el);
         });
         it('calls View::render() to set contents of @el', function() {
           expect(this.view.el.children.length).toBe(1);
           return expect(this.view.el.children[0]).toEqual(this.childEl);
         });
-        return it('calls functions in this order: beforeRender(), render_el(), render() and finally afterRender()', function() {
-          return expect(this.log).toEqual(['beforeRender', 'render_el', 'render', 'afterRender']);
+        return it('calls functions in this order: beforeRender(), renderEl(), render() and finally afterRender()', function() {
+          return expect(this.log).toEqual(['beforeRender', 'renderEl', 'render', 'afterRender']);
         });
       });
     });

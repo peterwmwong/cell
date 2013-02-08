@@ -1,23 +1,26 @@
 define [
   'util/hash'
   'util/type'
+  'util/fn'
   'dom/data'
   'dom/events'
   'cell/Model'
   'cell/Collection'
   'cell/util/spy'
-], (hash, {isA,isF}, data, events, Model, Collection, {watch})->
+], (hash, {isA,isF}, fn, data, events, Model, Collection, {watch})->
 
   bind = (f,o)-> -> f.call o
   noop = ->
   d = document
 
+  removeChildren = (parent,children)->
+    parent.removeChild node while (node = children.pop())
+    return
+
   render = (parent, view, renderValue, prevNodes)->
     renderValue = [d.createTextNode ''] unless renderValue?
-    newNodes = view._renderChildren renderValue, parent, prevNodes[0]
-    i=-1
-    len=prevNodes.length
-    parent.removeChild prevNodes[i] while ++i<len
+    newNodes = view._rcs renderValue, parent, prevNodes[0]
+    removeChildren parent, prevNodes
     newNodes
 
   Bind = (view, expr)->
@@ -82,11 +85,8 @@ define [
           newEls.push prevItemEl
 
         # Remove the elements for the itmes that were removed from the collection
-        for key, items of itemhash.h
-          i=-1
-          len=items.length
-          while ++i<len
-            parent.removeChild items[i]
+        for key of itemhash.h
+          removeChildren parent, itemhash.h[key]
         itemhash = newItemHash
 
         # Add the elements for the current items
@@ -127,14 +127,19 @@ define [
           if match = /^on(\w+)/.exec k
             events.on parent, match[1], v, @
           else
-            @_renderAttr(k,v,parent)
+            if isF v
+              watch (bind v, @), do(k)-> (value)->
+                parent.setAttribute k, value
+                return
+            else
+              parent.setAttribute k, v
           
     # View
     else if viewOrHAML and viewOrHAML.prototype instanceof View
       parent = new viewOrHAML(options).el
 
     if parent
-      @_renderChildren children, parent
+      @_rcs children, parent
       parent
 
   __.if = (condition,thenElse)->
@@ -146,8 +151,7 @@ define [
   __.each = (col,renderer)->
     if col
       if col instanceof Collection
-        collection = col
-        col = -> collection.toArray()
+        col = bind col.toArray, col
 
       if isF col
         new EachBind @view, col, renderer
@@ -165,48 +169,41 @@ define [
         results
           
   View = Model.extend
-    constructor: (@options={})->
-      @model = @options.model
-      delete @options.model
-      @collection = @options.collection
-      delete @options.collection
+    constructor: (options)->
+      options = options or {}
+      @model = options.model
+      @collection = options.collection
+      delete options.model
+      delete options.collection
+      @options = options
 
       __ = View::__
-      _ = @__ = => __.apply @, arguments
+      _ = @__ = fn.bind __, @
       _.if = __.if
       _.each = __.each
       _.view = @
 
-      @_render_el()
+      @_re()
       return
 
     beforeRender: noop
-    render_el: -> d.createElement 'div'
+    renderEl: -> d.createElement 'div'
     render: noop
     afterRender: noop
 
     __: __
 
-    _render_el: ->
+    _re: ->
       @beforeRender()
-      @el = @render_el @__
-      @el.className = if (cls = @el.className) then (cls+' '+@_cellName) else @_cellName
-      data.set @el, 'cellRef', @
-      @el.setAttribute 'cell', @_cellName
-      @_renderChildren (@render @__), @el
+      @el = el = @renderEl @__
+      el.className = if (cls = el.className) then (cls+' '+@_cellName) else @_cellName
+      data.set el, 'cellRef', @
+      el.setAttribute 'cell', @_cellName
+      @_rcs (@render @__), el
       @afterRender()
       return
 
-    _renderAttr: (k,v,parent)->
-      if isF v
-        watch (bind v, @), (value)->
-          parent.setAttribute k, value
-          return
-      else
-        parent.setAttribute k, v
-      return
-
-    _renderChild: (n, parent, insertBeforeNode, rendered)->
+    _rc: (n, parent, insertBeforeNode, rendered)->
       n = new Bind @, n if isF n
 
       if n.constructor is Bind
@@ -216,14 +213,14 @@ define [
         rendered.push parent.insertBefore n, insertBeforeNode
 
       else if isA n
-        @_renderChildren n, parent, insertBeforeNode, rendered
+        @_rcs n, parent, insertBeforeNode, rendered
 
       else
         rendered.push parent.insertBefore d.createTextNode(n), insertBeforeNode
       return
 
-    _renderChildren: (nodes, parent, insertBeforeNode=null, rendered=[])->
+    _rcs: (nodes, parent, insertBeforeNode=null, rendered=[])->
       return rendered unless nodes?
       nodes = [nodes] unless isA nodes
-      @_renderChild(n, parent, insertBeforeNode, rendered) for n in nodes when n?
+      @_rc(n, parent, insertBeforeNode, rendered) for n in nodes when n?
       rendered

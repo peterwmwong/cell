@@ -32,8 +32,8 @@ define ['../utils/spec-utils'], ({node,browserTrigger})->
           @log = []
           @NewView = @View.extend
             beforeRender: => @log.push 'beforeRender'
-            render_el: =>
-              @log.push 'render_el'
+            renderEl: =>
+              @log.push 'renderEl'
               @el
             render: (__)=>
               @log.push 'render'
@@ -42,17 +42,17 @@ define ['../utils/spec-utils'], ({node,browserTrigger})->
               @log.push 'afterRender'
           @view = new @NewView()
 
-        it 'calls View::render_el() to set @el', ->
+        it 'calls View::renderEl() to set @el', ->
           expect(@view.el).toBe @el
 
         it 'calls View::render() to set contents of @el', ->
           expect(@view.el.children.length).toBe 1
           expect(@view.el.children[0]).toEqual @childEl
 
-        it 'calls functions in this order: beforeRender(), render_el(), render() and finally afterRender()', ->
+        it 'calls functions in this order: beforeRender(), renderEl(), render() and finally afterRender()', ->
           expect(@log).toEqual [
             'beforeRender'
-            'render_el'
+            'renderEl'
             'render'
             'afterRender'
           ]
