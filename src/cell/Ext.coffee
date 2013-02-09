@@ -5,23 +5,24 @@ define [
   'cell/util/spy'
 ], (type,fn,extend,spy)->
 
-  Ext = (@options={})->
-    @getValue = fn.bind @getValue, @
+  getValue = (v,callback)->
+    _callback = (value)=>
+      callback.call @, value
+      return
+
+    if type.isF v
+      spy.watch (fn.bind v, @view), _callback
+    else
+      _callback v
     return
 
-  Ext:: =
-    getValue: (v,callback)->
-      if type.isF v
-        spy.watch (fn.bind v, @view), (value)=>
-          callback.call @, value
-          return
-      else
-        callback.call @, v
-      return
-      
-    run: (element, @view)->
-      @func element, @options, @getValue, @view
-      return
+  Ext = (@options={})->
+    @getValue = fn.bind getValue, @
+    return
+
+  Ext::run = (element, view)->
+    @func element, @options, @getValue, @view = view
+    return
 
   Ext.extend = extend
   Ext

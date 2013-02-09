@@ -6,8 +6,9 @@ define [
   'dom/events'
   'cell/Model'
   'cell/Collection'
+  'cell/Ext'
   'cell/util/spy'
-], (hash, {isA,isF}, fn, data, events, Model, Collection, {watch})->
+], (hash, {isA,isF,isS}, fn, data, events, Model, Collection, Ext, {watch})->
 
   bind = (f,o)-> -> f.call o
   noop = ->
@@ -101,16 +102,18 @@ define [
   EachBind::constructor = IfBind::constructor = Bind
 
   __ = (viewOrHAML, optionsOrFirstChild)->
-    children =
-      [].slice.call arguments,
-        if optionsOrFirstChild and optionsOrFirstChild.constructor is Object
-          options = optionsOrFirstChild
-          2
-        else
-          1
+    children = [].slice.call arguments, 1
+    i = -1
+    len = children.length
+    while ++i < len
+      break unless children[i] instanceof Ext
+
+    exts = children.splice 0, i
+    if children.length and children[0].constructor is Object
+      options = children.shift()
 
     # HAML
-    if typeof viewOrHAML is 'string'
+    if isS viewOrHAML
       if m = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/.exec(viewOrHAML)
         # Tag
         parent = d.createElement m[1] or 'div'
@@ -139,6 +142,8 @@ define [
       parent = new viewOrHAML(options).el
 
     if parent
+      while ext = exts.pop()
+        ext.run parent, @
       @_rcs children, parent
       parent
 
@@ -196,9 +201,10 @@ define [
     _re: ->
       @beforeRender()
       @el = el = @renderEl @__
-      el.className = if (cls = el.className) then (cls+' '+@_cellName) else @_cellName
+      cellName = @_cellName
+      el.className = if (cls = el.className) then (cls+' '+cellName) else cellName
       data.set el, 'cellRef', @
-      el.setAttribute 'cell', @_cellName
+      el.setAttribute 'cell', cellName
       @_rcs (@render @__), el
       @afterRender()
       return
