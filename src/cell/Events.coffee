@@ -1,5 +1,10 @@
 define ['util/type','util/extend','util/ev'], (type, extend, ev)->
 
+  triggerHandlers = (handlers, event, args)->
+    while (h = handlers.pop())
+      h[0].apply h[1], [event].concat args
+    return
+
   Events = ->
     @_e = all: []
     return
@@ -11,9 +16,10 @@ define ['util/type','util/extend','util/ev'], (type, extend, ev)->
     # (event, fn)
     # (event, fn, ctx)
     on: (event, fn, ctx)->
-      if (type.isS event) and (type.isF fn)
-        (@_e[event] or= []).push [fn,ctx]
-        true
+      if @_e
+        if (type.isS event) and (type.isF fn)
+          (@_e[event] or= []).push [fn,ctx]
+          true
 
     # (event, fn)
     # (event, fn, ctx)
@@ -21,30 +27,39 @@ define ['util/type','util/extend','util/ev'], (type, extend, ev)->
     # (undefined, fn, ctx)
     # (undefined, undefined, ctx)
     off: (event, fn, ctx)->
-      eventsHash =
-        if event? then type: @_e[event]
-        else @_e
+      if @_e
+        eventsHash =
+          if event? then type: @_e[event]
+          else @_e
 
-      if fn?
-        ctx = 0 if `ctx == null`
+        if fn?
+          ctx = 0 if `ctx == null`
 
-      else if ctx?
-        fn = ctx
-        ctx = 1
+        else if ctx?
+          fn = ctx
+          ctx = 1
 
-      else return
+        else return
 
-      for event of eventsHash when events = eventsHash[event]
-        ev.rm events, fn, ctx
+        for event of eventsHash when events = eventsHash[event]
+          ev.rm events, fn, ctx
 
       return
 
     trigger: (event, args...)->
-      allHandlers = @_e.all.concat @_e[event] or []
-      if i = allHandlers.length
-        while i--
-          h = allHandlers[i]
-          h[0].apply h[1], [event].concat args
+      if @_e
+        # allHandlers = @_e.all.concat @_e[event] or []
+        # if i = allHandlers.length
+        #   while i--
+        #     h = allHandlers[i]
+        #     h[0].apply h[1], [event].concat args
+        triggerHandlers (@_e.all.concat @_e[event] or []), event, args
+      return
+
+    destroy: ->
+      if events = @_e
+        delete @_e
+        triggerHandlers events.all.concat(events.destroy or []), 'destroy', @
       return
 
   Events

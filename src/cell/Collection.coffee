@@ -10,6 +10,7 @@ define [
       'f'
       'c'
       'd'
+      "if(this._i){"+
       "this._s();"+
       "if(f==null)return;"+
       "var i=-1,t=this,l=t.length(),e#{before or ''};"+
@@ -17,7 +18,9 @@ define [
         "e=t._i[i];"+
         str+
       "}"+
-      (after or '')
+      (after or '')+
+      "}"
+
 
   Collection = Events.extend
 
@@ -29,21 +32,25 @@ define [
     model: Model
 
     at: (index)->
-      @_s()
-      @_i[index]
+      if @_i
+        @_s()
+        @_i[index]
 
     length: ->
-      @_s()
-      @_i.length
+      if @_i
+        @_s()
+        @_i.length
 
     indexOf:
       if Array::indexOf then (model)->
-        @_s()
-        @_i.indexOf model
+        if @_i
+          @_s()
+          @_i.indexOf model
       else (iter 'if(e===f){return i}','','return -1')
     toArray: ->
-      @_s()
-      @_i.slice()
+      if @_i
+        @_s()
+        @_i.slice()
 
     each:    iter 'if(f.call(c,e,i,t)===!1)i=l'
     map:     iter 'r.push(f.call(c,e,i,t))', ',r=[]', 'return r'
@@ -56,14 +63,15 @@ define [
       ), ',k,v,x,r=[]', 'return r'
 
     pipe: (pipes)->
-      cur = @
-      for pipe in pipes
-        if type.isA (cur = pipe.run cur)
-          cur = new Collection cur
-      cur
+      if @_i
+        cur = @
+        for pipe in pipes
+          if type.isA (cur = pipe.run cur)
+            cur = new Collection cur
+        cur
 
     add: (models,index)->
-      if models
+      if @_i and models
         models = 
           if type.isA models then models.slice()
           else [models]
@@ -78,7 +86,7 @@ define [
       return
 
     remove: (models)->
-      if models
+      if @_i and models
         models = [models] unless type.isA models
 
         i=-1
@@ -95,6 +103,12 @@ define [
 
         if indices.length
           @trigger 'remove', removedModels, @, indices
+      return
+
+    destroy: ->
+      if @_i
+        Events::destroy.call @
+        delete @_i
       return
 
     _toM: (o)->

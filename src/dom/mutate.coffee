@@ -1,7 +1,11 @@
 define ['dom/data'], (data)->
   dealloc = (element)->
     data.remove element
-    dealloc(child) for child in element.children
+    children = element.children
+    len = children.length
+    i=-1
+    while ++i < len
+      dealloc children[i]
     return
 
   remove: (element)->

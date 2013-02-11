@@ -4,9 +4,31 @@ define(function() {
   return function(_arg) {
     var beforeEachRequire;
     beforeEachRequire = _arg.beforeEachRequire;
-    beforeEachRequire(['cell/Model', 'cell/Collection'], function(Model, Collection) {
+    beforeEachRequire(['cell/Model', 'cell/Collection', 'cell/Events'], function(Model, Collection, Events) {
       this.Model = Model;
       this.Collection = Collection;
+      this.Events = Events;
+    });
+    describe('@destroy()', function() {
+      beforeEach(function() {
+        this.col = new this.Collection([
+          {
+            a: 'a val'
+          }, {
+            b: 'b val'
+          }, {
+            c: 'c val'
+          }
+        ]);
+        spyOn(this.Events.prototype, 'destroy');
+        return this.col.destroy();
+      });
+      it('removes all Models', function() {
+        return expect(this.col.length()).toBeUndefined();
+      });
+      return it('removes all listeners', function() {
+        return expect(this.Events.prototype.destroy).toHaveBeenCalled();
+      });
     });
     describe('@constructor( array?:Array<Model or Object> )', function() {
       describe('@constructor()', function() {

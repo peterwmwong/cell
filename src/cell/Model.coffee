@@ -10,28 +10,38 @@ define [
       return
 
     attributes: ->
-      @_s()
-      result = {}
-      for attr of @_a
-        result[attr] = @_a[attr]
-      result
+      if @_a
+        @_s()
+        result = {}
+        for attr of @_a
+          result[attr] = @_a[attr]
+        result
 
     get: (key)->
-      @_s key
-      @_a[key]
+      if @_a
+        @_s key
+        @_a[key]
 
     set: (key, value)->
-      if (type.isS key) and (@_a[key] isnt value)
-        old_value = @_a[key]
-        @trigger (event = "change:#{key}"), @, (@_a[key] = value), old_value
+      if @_a
+        if (type.isS key) and (@_a[key] isnt value)
+          old_value = @_a[key]
+          @trigger (event = "change:#{key}"), @, (@_a[key] = value), old_value
 
-        if collection = @collection
-          collection.trigger event, @, value, old_value
-        true
+          if collection = @collection
+            collection.trigger event, @, value, old_value
+          true
 
     onChangeAndDo: (key, cb, ctx)->
-      if @on "change:#{key}", cb, ctx
-        cb "initial:#{key}", @, @get key
+      if @_a
+        if @on "change:#{key}", cb, ctx
+          cb "initial:#{key}", @, @get key
+      return
+
+    destroy: ->
+      if @_a
+        Events::destroy.call @
+        delete @_a
       return
 
     _s: spy.addModel

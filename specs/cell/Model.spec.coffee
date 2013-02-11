@@ -9,7 +9,24 @@ define -> ({beforeEachRequire})->
     {}
   ]
 
-  beforeEachRequire ['cell/Model'], (@Model)->
+  beforeEachRequire ['cell/Model', 'cell/Events'], (@Model, @Events)->
+
+
+  describe '@destroy()', ->
+    beforeEach ->
+      @model = new @Model
+        a: 'a val'
+        b: 'b val'
+        c: 'c val'
+      spyOn @Events.prototype, 'destroy'
+      @model.destroy()
+
+
+    it 'removes all attributes', ->
+      expect(@model.get k).toBeUndefined() for k in ['a', 'b', 'c']
+
+    it 'removes all listeners', ->
+      expect(@Events::destroy).toHaveBeenCalled()
 
   describe '@constructor(initial_hash)', ->
 

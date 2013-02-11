@@ -8,31 +8,45 @@ define(['util/type', 'cell/Events', 'cell/util/spy'], function(type, Events, spy
     },
     attributes: function() {
       var attr, result;
-      this._s();
-      result = {};
-      for (attr in this._a) {
-        result[attr] = this._a[attr];
+      if (this._a) {
+        this._s();
+        result = {};
+        for (attr in this._a) {
+          result[attr] = this._a[attr];
+        }
+        return result;
       }
-      return result;
     },
     get: function(key) {
-      this._s(key);
-      return this._a[key];
+      if (this._a) {
+        this._s(key);
+        return this._a[key];
+      }
     },
     set: function(key, value) {
       var collection, event, old_value;
-      if ((type.isS(key)) && (this._a[key] !== value)) {
-        old_value = this._a[key];
-        this.trigger((event = "change:" + key), this, (this._a[key] = value), old_value);
-        if (collection = this.collection) {
-          collection.trigger(event, this, value, old_value);
+      if (this._a) {
+        if ((type.isS(key)) && (this._a[key] !== value)) {
+          old_value = this._a[key];
+          this.trigger((event = "change:" + key), this, (this._a[key] = value), old_value);
+          if (collection = this.collection) {
+            collection.trigger(event, this, value, old_value);
+          }
+          return true;
         }
-        return true;
       }
     },
     onChangeAndDo: function(key, cb, ctx) {
-      if (this.on("change:" + key, cb, ctx)) {
-        cb("initial:" + key, this, this.get(key));
+      if (this._a) {
+        if (this.on("change:" + key, cb, ctx)) {
+          cb("initial:" + key, this, this.get(key));
+        }
+      }
+    },
+    destroy: function() {
+      if (this._a) {
+        Events.prototype.destroy.call(this);
+        delete this._a;
       }
     },
     _s: spy.addModel

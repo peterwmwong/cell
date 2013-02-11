@@ -3,7 +3,7 @@
 define(['cell/Events', 'util/type', 'cell/Model', 'cell/util/spy'], function(Events, type, Model, spy) {
   var Collection, iter;
   iter = function(str, before, after) {
-    return Function.call(void 0, 'f', 'c', 'd', "this._s();" + "if(f==null)return;" + ("var i=-1,t=this,l=t.length(),e" + (before || '') + ";") + "while(++i<l){" + "e=t._i[i];" + str + "}" + (after || ''));
+    return Function.call(void 0, 'f', 'c', 'd', "if(this._i){" + "this._s();" + "if(f==null)return;" + ("var i=-1,t=this,l=t.length(),e" + (before || '') + ";") + "while(++i<l){" + "e=t._i[i];" + str + "}" + (after || '') + "}");
   };
   return Collection = Events.extend({
     constructor: function(array) {
@@ -12,20 +12,28 @@ define(['cell/Events', 'util/type', 'cell/Model', 'cell/util/spy'], function(Eve
     },
     model: Model,
     at: function(index) {
-      this._s();
-      return this._i[index];
+      if (this._i) {
+        this._s();
+        return this._i[index];
+      }
     },
     length: function() {
-      this._s();
-      return this._i.length;
+      if (this._i) {
+        this._s();
+        return this._i.length;
+      }
     },
     indexOf: Array.prototype.indexOf ? function(model) {
-      this._s();
-      return this._i.indexOf(model);
+      if (this._i) {
+        this._s();
+        return this._i.indexOf(model);
+      }
     } : iter('if(e===f){return i}', '', 'return -1'),
     toArray: function() {
-      this._s();
-      return this._i.slice();
+      if (this._i) {
+        this._s();
+        return this._i.slice();
+      }
     },
     each: iter('if(f.call(c,e,i,t)===!1)i=l'),
     map: iter('r.push(f.call(c,e,i,t))', ',r=[]', 'return r'),
@@ -33,18 +41,20 @@ define(['cell/Events', 'util/type', 'cell/Model', 'cell/util/spy'], function(Eve
     filterBy: iter('for(k in f)' + 'if((v=f[k])==null||v===(x=e.get(k))||(typeof v=="function"&&v(x)))' + 'r.push(e)', ',k,v,x,r=[]', 'return r'),
     pipe: function(pipes) {
       var cur, pipe, _i, _len;
-      cur = this;
-      for (_i = 0, _len = pipes.length; _i < _len; _i++) {
-        pipe = pipes[_i];
-        if (type.isA((cur = pipe.run(cur)))) {
-          cur = new Collection(cur);
+      if (this._i) {
+        cur = this;
+        for (_i = 0, _len = pipes.length; _i < _len; _i++) {
+          pipe = pipes[_i];
+          if (type.isA((cur = pipe.run(cur)))) {
+            cur = new Collection(cur);
+          }
         }
+        return cur;
       }
-      return cur;
     },
     add: function(models, index) {
       var i, len;
-      if (models) {
+      if (this._i && models) {
         models = type.isA(models) ? models.slice() : [models];
         i = -1;
         len = models.length;
@@ -59,7 +69,7 @@ define(['cell/Events', 'util/type', 'cell/Model', 'cell/util/spy'], function(Eve
     },
     remove: function(models) {
       var i, index, indices, len, model, removedModels;
-      if (models) {
+      if (this._i && models) {
         if (!type.isA(models)) {
           models = [models];
         }
@@ -79,6 +89,12 @@ define(['cell/Events', 'util/type', 'cell/Model', 'cell/util/spy'], function(Eve
         if (indices.length) {
           this.trigger('remove', removedModels, this, indices);
         }
+      }
+    },
+    destroy: function() {
+      if (this._i) {
+        Events.prototype.destroy.call(this);
+        delete this._i;
       }
     },
     _toM: function(o) {

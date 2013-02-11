@@ -4,11 +4,12 @@ define [
   'util/fn'
   'dom/data'
   'dom/events'
+  'dom/mutate'
   'cell/Model'
   'cell/Collection'
   'cell/Ext'
   'cell/util/spy'
-], (hash, {isA,isF,isS}, fn, data, events, Model, Collection, Ext, {watch})->
+], (hash, {isA,isF,isS}, fn, data, events, mutate, Model, Collection, Ext, {watch})->
 
   bind = (f,o)-> -> f.call o
   noop = ->
@@ -188,7 +189,14 @@ define [
       _.each = __.each
       _.view = @
 
-      @_re()
+      @beforeRender()
+      @el = el = @renderEl _
+      cellName = @_cellName
+      el.className = if (cls = el.className) then (cls+' '+cellName) else cellName
+      data.set el, 'cellRef', @
+      el.setAttribute 'cell', cellName
+      @_rcs (@render @__), el
+      @afterRender()
       return
 
     beforeRender: noop
@@ -198,15 +206,12 @@ define [
 
     __: __
 
-    _re: ->
-      @beforeRender()
-      @el = el = @renderEl @__
-      cellName = @_cellName
-      el.className = if (cls = el.className) then (cls+' '+cellName) else cellName
-      data.set el, 'cellRef', @
-      el.setAttribute 'cell', cellName
-      @_rcs (@render @__), el
-      @afterRender()
+    destroy: ->
+      if @el
+        Events::destroy.call @
+        unwatch @
+        mutate.remove @el
+        delete @el
       return
 
     _rc: (n, parent, insertBeforeNode, rendered)->
