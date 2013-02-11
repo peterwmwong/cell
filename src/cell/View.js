@@ -180,12 +180,7 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
   return View = Model.extend({
     constructor: function(options) {
       var cellName, cls, el, _;
-      options = options || {};
-      this.model = options.model;
-      this.collection = options.collection;
-      delete options.model;
-      delete options.collection;
-      this.options = options;
+      this.options = options ? (this.model = options.model, this.collection = options.collection, delete options.model, delete options.collection, options) : {};
       __ = View.prototype.__;
       _ = this.__ = fn.bind(__, this);
       _["if"] = __["if"];

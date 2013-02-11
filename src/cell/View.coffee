@@ -176,12 +176,14 @@ define [
           
   View = Model.extend
     constructor: (options)->
-      options = options or {}
-      @model = options.model
-      @collection = options.collection
-      delete options.model
-      delete options.collection
-      @options = options
+      @options =
+        if options
+          @model = options.model
+          @collection = options.collection
+          delete options.model
+          delete options.collection
+          options
+        else {}
 
       __ = View::__
       _ = @__ = fn.bind __, @
