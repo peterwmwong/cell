@@ -9,7 +9,7 @@ define [
   'cell/Collection'
   'cell/Ext'
   'cell/util/spy'
-], (hash, {isA,isF,isS}, fn, data, events, mutate, Model, Collection, Ext, {watch})->
+], (hash, {isA,isF,isS}, fn, data, events, mutate, Model, Collection, Ext, {watch,unwatch})->
 
   bind = (f,o)-> -> f.call o
   noop = ->
@@ -28,7 +28,7 @@ define [
   Bind = (view, expr)->
     @r = (parent)->
       nodes = []
-      watch (bind expr, view), (renderValue)->
+      watch hash(view), (bind expr, view), (renderValue)->
         nodes = render parent,
           view
           renderValue
@@ -40,7 +40,7 @@ define [
   IfBind = (view, cond, thnElse)->
     @r = (parent)->
       nodes = []
-      watch (bind cond, view), (condValue)->
+      watch hash(view), (bind cond, view), (condValue)->
         nodes = render parent,
           view
           (view.__.if condValue, thnElse)
@@ -69,7 +69,7 @@ define [
   EachBind = (view, expr, itemRenderer)->
     itemhash = new HashQueue
     @r = (parent)->
-      watch (bind expr, view), (value)->
+      watch hash(view), (bind expr, view), (value)->
         newEls = []
         newItemHash = new HashQueue
 
@@ -132,7 +132,7 @@ define [
             events.on parent, match[1], v, @
           else
             if isF v
-              watch (bind v, @), do(k)-> (value)->
+              watch hash(@), (bind v, @), do(k)-> (value)->
                 parent.setAttribute k, value
                 return
             else
@@ -210,8 +210,8 @@ define [
 
     destroy: ->
       if @el
-        Events::destroy.call @
-        unwatch @
+        Model::destroy.call @
+        unwatch hash @
         mutate.remove @el
         delete @el
       return

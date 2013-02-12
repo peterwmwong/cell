@@ -5,6 +5,7 @@ define ['util/hash'], (hash)->
   doAfter = window.requestAnimationFrame or (f)-> setTimeout f, 0
   onChangeCalled = false
   allChanges = {}
+  watches = {}
 
   _onChange = ->
     onChangeCalled = false
@@ -34,8 +35,18 @@ define ['util/hash'], (hash)->
         entry.p[key] = 1
     return
 
-  watch: (e, f)->
-    context = {e,f}
+  unwatch: (key)->
+    if w = watches[key]
+      for watch in w
+        for key, observed of watch.w
+          observed.off undefined, undefined, watch
+    return
+
+  watch: (key, e, f)->
+    unless w = watches[key]
+      w = watches[key] = []
+    w.push context = {e,f,w:{}}
+    
     log = m:{}, c:{}, d:{}
 
     try value = e()
@@ -44,14 +55,16 @@ define ['util/hash'], (hash)->
     log = false
 
     for _, logs of {0:accesslog.m,1:accesslog.d}
-      for _, m of logs
+      for key, m of logs
+        context.w[key] = m.m
         if (props = m.p)[undefined]
           m.m.on 'all', onChange, context
         else
           for p of props
             m.m.on "change:#{p}", onChange, context
 
-    for _, c of accesslog.c
+    for key, c of accesslog.c
+      context.w[key] = c
       c.on 'add', onChange, context
       c.on 'remove', onChange, context
 

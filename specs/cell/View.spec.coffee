@@ -1,6 +1,6 @@
-define ['../utils/spec-utils'], ({node,browserTrigger})->
+define ['../utils/spec-utils'], ({node,browserTrigger,nodeHTMLEquals,waitOne})->
   ({beforeEachRequire})->
-    beforeEachRequire ['cell/View'], (@View)->
+    beforeEachRequire ['cell/View','cell/Model','cell/Collection'], (@View, @Model, @Collection)->
 
     describe 'View( options?:object )', ->
 
@@ -56,3 +56,53 @@ define ['../utils/spec-utils'], ({node,browserTrigger})->
             'render'
             'afterRender'
           ]
+
+    describe '@destroy()', ->
+      beforeEach ->
+        @model = new @Model a: 'a val'
+        @col = new @Collection [new @Model b: 'b val']
+        @TestView = @View.extend
+          _cellName: 'Test'
+          render: (__)-> [
+            __ '.model', onclick:@onclick, (-> @model.get 'a')
+            __.each @collection, (item)->
+              __ '.item', (-> item.get 'b')
+          ]
+          onclick: jasmine.createSpy 'click'
+
+        @view = new @TestView
+          collection: @col
+          model: @model
+        @el = @view.el
+
+      it 'removes @el from view', ->
+        @view.destroy()
+        expect(@view.el).toBeUndefined()
+
+      it 'removes Model/Collection listeners', ->
+        nodeHTMLEquals @el,
+          '<div cell="Test" class="Test">'+
+            '<div class="model">a val</div>'+
+            '<div class="item">b val</div>'+
+          '</div>'
+        
+        @view.destroy()
+        @model.set 'a', 'a val 2'
+        @col.add new @Model b: '2 b val'
+
+        waitOne ->
+          nodeHTMLEquals @el,
+            '<div cell="Test" class="Test">'+
+              '<div class="model">a val</div>'+
+              '<div class="item">b val</div>'+
+            '</div>'
+
+      it 'removes DOM event listeners', ->
+        browserTrigger @el.children[0], 'click'
+        expect(@view.onclick).toHaveBeenCalled()
+        @view.onclick.reset()
+
+        @view.destroy()
+        browserTrigger @el.children[0], 'click'
+
+        expect(@view.onclick).not.toHaveBeenCalled()

@@ -7,8 +7,53 @@ define ['../../utils/spec-utils'], ({waitOne})->
       'cell/util/spy'
     ], (@Model, @Collection, @spy)->
       @watch = @spy.watch
+      @unwatch = @spy.unwatch
 
-    describe '@watch( func:function, callback:function )', ->
+    describe '@unwatch( key:string )', ->
+      beforeEach ->
+        @model = new @Model a:1, b:{}, c:'x'
+        @callback = jasmine.createSpy 'callback'
+        @func = jasmine.createSpy('func').andCallFake => @model.attributes()
+
+        @callback2 = jasmine.createSpy 'callback'
+        @func2 = jasmine.createSpy('func').andCallFake => @model.attributes()
+
+        @watch 'key', @func, @callback
+        @watch 'key2', @func2, @callback2
+
+        @callback.reset()
+        @func.reset()
+        @callback2.reset()
+        @func2.reset()
+
+      it 'removes all watched expressions registered under key', ->
+        @unwatch 'key'
+        @model.set 'a', 2
+        waitOne ->
+          expect(@callback).not.toHaveBeenCalled()
+          expect(@func).not.toHaveBeenCalled()
+          expect(@callback2).toHaveBeenCalled()
+          expect(@func2).toHaveBeenCalled()
+
+      it 'removes all watched expressions registered ONLY under key', ->
+        @unwatch 'key2'
+        @model.set 'a', 2
+        waitOne ->
+          expect(@callback).toHaveBeenCalled()
+          expect(@func).toHaveBeenCalled()
+          expect(@callback2).not.toHaveBeenCalled()
+          expect(@func2).not.toHaveBeenCalled()
+
+      it 'does nothing if key has no watches', ->
+        @unwatch 'bogus key'
+        @model.set 'a', 2
+        waitOne ->
+          expect(@callback).toHaveBeenCalled()
+          expect(@func).toHaveBeenCalled()
+          expect(@callback2).toHaveBeenCalled()
+          expect(@func2).toHaveBeenCalled()
+
+    describe '@watch( func:function, callback:function, key:string )', ->
       beforeEach ->
         @value = {}
         @callback = jasmine.createSpy 'callback'
@@ -16,7 +61,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
       describe "When func does NOT access any Model or Collection", ->
         beforeEach ->
           @func = jasmine.createSpy('func').andReturn @value
-          @watch @func, @callback
+          @watch 'key', @func, @callback
 
         it 'call callback with result of func', ->
           done = false
@@ -32,7 +77,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
         beforeEach ->
           @model = new @Model a:1, b:{}, c:'x'
           @func = jasmine.createSpy('func').andCallFake => @model.attributes()
-          @watch @func, @callback
+          @watch 'key', @func, @callback
 
         it 'call @callback with result of func', ->
           expect(@func.callCount).toBe 1
@@ -58,7 +103,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
           @func = jasmine.createSpy('func').andCallFake =>
             @model.get 'a'
             @model.attributes()
-          @watch @func, @callback
+          @watch 'key', @func, @callback
 
         it 'call @callback with result of func', ->
           expect(@func.callCount).toBe 1
@@ -85,7 +130,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
           @func = jasmine.createSpy('func').andCallFake =>
             @model1.get 'a'
             @model2.get 'b'
-          @watch @func, @callback
+          @watch 'key', @func, @callback
 
         it 'call @callback with result of func', ->
           expect(@func.callCount).toBe 1
@@ -124,7 +169,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
             @model.get 'c'
             @model.get 'a'
 
-          @watch @func, @callback
+          @watch 'key', @func, @callback
 
         it 'call @callback with result of func', ->
           expect(@func).toHaveBeenCalled()
@@ -179,8 +224,9 @@ define ['../../utils/spec-utils'], ({waitOne})->
           @model0 = @col.at 0
           @model1 = @col.at 1
 
-          @func = jasmine.createSpy('func').andCallFake => @col.at(0).get 'x'
-          @watch @func, @callback
+          @func = jasmine.createSpy('func').andCallFake =>
+            @col.at(0).get 'x'
+          @watch 'key', @func, @callback
           
           @func.reset()
           @callback.reset()
@@ -195,6 +241,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
 
 
         it 'calls func when an accessed a Model attribute changes in a Collection of another Model', ->
+          debugger
           @model0.set 'x', 'a value'
           waitOne ->
             expect(@func).toHaveBeenCalled()
@@ -209,7 +256,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
             {y:'y val'}
           ]
           @func = jasmine.createSpy('func').andCallFake => @col.filterBy x: 'x val'
-          @watch @func, @callback
+          @watch 'key', @func, @callback
           @func.reset()
           @callback.reset()
 
@@ -249,7 +296,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
                 access.call @
                 result++
 
-              @watch @func, @callback
+              @watch 'key', @func, @callback
               @callback.reset()
               @func.reset()
 

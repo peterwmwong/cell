@@ -10,9 +10,64 @@ define(['../../utils/spec-utils'], function(_arg) {
       this.Model = Model;
       this.Collection = Collection;
       this.spy = spy;
-      return this.watch = this.spy.watch;
+      this.watch = this.spy.watch;
+      return this.unwatch = this.spy.unwatch;
     });
-    return describe('@watch( func:function, callback:function )', function() {
+    describe('@unwatch( key:string )', function() {
+      beforeEach(function() {
+        var _this = this;
+        this.model = new this.Model({
+          a: 1,
+          b: {},
+          c: 'x'
+        });
+        this.callback = jasmine.createSpy('callback');
+        this.func = jasmine.createSpy('func').andCallFake(function() {
+          return _this.model.attributes();
+        });
+        this.callback2 = jasmine.createSpy('callback');
+        this.func2 = jasmine.createSpy('func').andCallFake(function() {
+          return _this.model.attributes();
+        });
+        this.watch('key', this.func, this.callback);
+        this.watch('key2', this.func2, this.callback2);
+        this.callback.reset();
+        this.func.reset();
+        this.callback2.reset();
+        return this.func2.reset();
+      });
+      it('removes all watched expressions registered under key', function() {
+        this.unwatch('key');
+        this.model.set('a', 2);
+        return waitOne(function() {
+          expect(this.callback).not.toHaveBeenCalled();
+          expect(this.func).not.toHaveBeenCalled();
+          expect(this.callback2).toHaveBeenCalled();
+          return expect(this.func2).toHaveBeenCalled();
+        });
+      });
+      it('removes all watched expressions registered ONLY under key', function() {
+        this.unwatch('key2');
+        this.model.set('a', 2);
+        return waitOne(function() {
+          expect(this.callback).toHaveBeenCalled();
+          expect(this.func).toHaveBeenCalled();
+          expect(this.callback2).not.toHaveBeenCalled();
+          return expect(this.func2).not.toHaveBeenCalled();
+        });
+      });
+      return it('does nothing if key has no watches', function() {
+        this.unwatch('bogus key');
+        this.model.set('a', 2);
+        return waitOne(function() {
+          expect(this.callback).toHaveBeenCalled();
+          expect(this.func).toHaveBeenCalled();
+          expect(this.callback2).toHaveBeenCalled();
+          return expect(this.func2).toHaveBeenCalled();
+        });
+      });
+    });
+    return describe('@watch( func:function, callback:function, key:string )', function() {
       beforeEach(function() {
         this.value = {};
         return this.callback = jasmine.createSpy('callback');
@@ -20,7 +75,7 @@ define(['../../utils/spec-utils'], function(_arg) {
       describe("When func does NOT access any Model or Collection", function() {
         beforeEach(function() {
           this.func = jasmine.createSpy('func').andReturn(this.value);
-          return this.watch(this.func, this.callback);
+          return this.watch('key', this.func, this.callback);
         });
         return it('call callback with result of func', function() {
           var done;
@@ -52,7 +107,7 @@ define(['../../utils/spec-utils'], function(_arg) {
           this.func = jasmine.createSpy('func').andCallFake(function() {
             return _this.model.attributes();
           });
-          return this.watch(this.func, this.callback);
+          return this.watch('key', this.func, this.callback);
         });
         it('call @callback with result of func', function() {
           expect(this.func.callCount).toBe(1);
@@ -86,7 +141,7 @@ define(['../../utils/spec-utils'], function(_arg) {
             _this.model.get('a');
             return _this.model.attributes();
           });
-          return this.watch(this.func, this.callback);
+          return this.watch('key', this.func, this.callback);
         });
         it('call @callback with result of func', function() {
           expect(this.func.callCount).toBe(1);
@@ -121,7 +176,7 @@ define(['../../utils/spec-utils'], function(_arg) {
             _this.model1.get('a');
             return _this.model2.get('b');
           });
-          return this.watch(this.func, this.callback);
+          return this.watch('key', this.func, this.callback);
         });
         it('call @callback with result of func', function() {
           expect(this.func.callCount).toBe(1);
@@ -169,7 +224,7 @@ define(['../../utils/spec-utils'], function(_arg) {
             _this.model.get('c');
             return _this.model.get('a');
           });
-          return this.watch(this.func, this.callback);
+          return this.watch('key', this.func, this.callback);
         });
         it('call @callback with result of func', function() {
           expect(this.func).toHaveBeenCalled();
@@ -235,7 +290,7 @@ define(['../../utils/spec-utils'], function(_arg) {
           this.func = jasmine.createSpy('func').andCallFake(function() {
             return _this.col.at(0).get('x');
           });
-          this.watch(this.func, this.callback);
+          this.watch('key', this.func, this.callback);
           this.func.reset();
           return this.callback.reset();
         });
@@ -249,7 +304,7 @@ define(['../../utils/spec-utils'], function(_arg) {
           });
         });
         return it('calls func when an accessed a Model attribute changes in a Collection of another Model', function() {
-          this.model0.set('x', 'a value');
+          debugger;          this.model0.set('x', 'a value');
           return waitOne(function() {
             expect(this.func).toHaveBeenCalled();
             expect(this.func.callCount).toBe(1);
@@ -273,7 +328,7 @@ define(['../../utils/spec-utils'], function(_arg) {
               x: 'x val'
             });
           });
-          this.watch(this.func, this.callback);
+          this.watch('key', this.func, this.callback);
           this.func.reset();
           return this.callback.reset();
         });
@@ -344,7 +399,7 @@ define(['../../utils/spec-utils'], function(_arg) {
                   access.call(_this);
                   return result++;
                 });
-                this.watch(this.func, this.callback);
+                this.watch('key', this.func, this.callback);
                 this.callback.reset();
                 return this.func.reset();
               });

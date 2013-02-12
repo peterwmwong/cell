@@ -1,9 +1,10 @@
 define [
+  'util/hash'
   'util/type'
   'util/fn'
   'util/extend'
   'cell/util/spy'
-], (type,fn,extend,spy)->
+], (hash, type,fn,extend,spy)->
 
   getValue = (v,callback)->
     _callback = (value)=>
@@ -11,7 +12,7 @@ define [
       return
 
     if type.isF v
-      spy.watch (fn.bind v, @view), _callback
+      spy.watch hash(@view), (fn.bind v, @view), _callback
     else
       _callback v
     return
