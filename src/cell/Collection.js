@@ -3,7 +3,7 @@
 define(['cell/Events', 'util/type', 'cell/Model', 'cell/util/spy'], function(Events, type, Model, spy) {
   var Collection, iter;
   iter = function(str, before, after) {
-    return Function.call(void 0, 'f', 'c', 'd', "if(this._i){" + "this._s();" + "if(f==null)return;" + ("var i=-1,t=this,l=t.length(),e" + (before || '') + ";") + "while(++i<l){" + "e=t._i[i];" + str + "}" + (after || '') + "}");
+    return Function.call(void 0, 'f', 'c', 'd', "if(this._i){" + "this._s();" + "if(f==null)return;" + ("var i=-1,t=this,l=t.length(),e" + (before || '') + ";") + "while(++i<l){" + "e=t._i[i];" + str + ("}" + (after || '') + "}"));
   };
   return Collection = Events.extend({
     constructor: function(array) {

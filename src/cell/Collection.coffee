@@ -17,9 +17,7 @@ define [
       "while(++i<l){"+
         "e=t._i[i];"+
         str+
-      "}"+
-      (after or '')+
-      "}"
+      "}#{after or ''}}"
 
 
   Collection = Events.extend

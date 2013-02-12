@@ -19,6 +19,7 @@ define -> ({beforeEachRequire})->
         b: 'b val'
         c: 'c val'
       @col = new @Collection [@model]
+      @col.on 'remove', (@remove = jasmine.createSpy 'remove')
       spyOn @Events.prototype, 'destroy'
       @model.destroy()
 
@@ -29,9 +30,9 @@ define -> ({beforeEachRequire})->
       expect(@Events::destroy).toHaveBeenCalled()
 
     it 'removes itself from owning collection', ->
+      expect(@remove).toHaveBeenCalled()
       expect(@col.length()).toBe 0
       expect(@model.collection).toBeUndefined()
-
 
   describe '@constructor(initial_hash)', ->
 

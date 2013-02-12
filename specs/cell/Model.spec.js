@@ -18,6 +18,7 @@ define(function() {
           c: 'c val'
         });
         this.col = new this.Collection([this.model]);
+        this.col.on('remove', (this.remove = jasmine.createSpy('remove')));
         spyOn(this.Events.prototype, 'destroy');
         return this.model.destroy();
       });
@@ -35,6 +36,7 @@ define(function() {
         return expect(this.Events.prototype.destroy).toHaveBeenCalled();
       });
       return it('removes itself from owning collection', function() {
+        expect(this.remove).toHaveBeenCalled();
         expect(this.col.length()).toBe(0);
         return expect(this.model.collection).toBeUndefined();
       });
