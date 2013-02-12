@@ -9,7 +9,7 @@ define -> ({beforeEachRequire})->
     {}
   ]
 
-  beforeEachRequire ['cell/Model', 'cell/Events'], (@Model, @Events)->
+  beforeEachRequire ['cell/Model', 'cell/Collection', 'cell/Events'], (@Model, @Collection, @Events)->
 
 
   describe '@destroy()', ->
@@ -18,15 +18,20 @@ define -> ({beforeEachRequire})->
         a: 'a val'
         b: 'b val'
         c: 'c val'
+      @col = new @Collection [@model]
       spyOn @Events.prototype, 'destroy'
       @model.destroy()
-
 
     it 'removes all attributes', ->
       expect(@model.get k).toBeUndefined() for k in ['a', 'b', 'c']
 
     it 'removes all listeners', ->
       expect(@Events::destroy).toHaveBeenCalled()
+
+    it 'removes itself from owning collection', ->
+      expect(@col.length()).toBe 0
+      expect(@model.collection).toBeUndefined()
+
 
   describe '@constructor(initial_hash)', ->
 

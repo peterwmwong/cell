@@ -5,8 +5,9 @@ define(function() {
     var NON_STRINGS, beforeEachRequire;
     beforeEachRequire = _arg.beforeEachRequire;
     NON_STRINGS = [void 0, null, 5, (function() {}), [], {}];
-    beforeEachRequire(['cell/Model', 'cell/Events'], function(Model, Events) {
+    beforeEachRequire(['cell/Model', 'cell/Collection', 'cell/Events'], function(Model, Collection, Events) {
       this.Model = Model;
+      this.Collection = Collection;
       this.Events = Events;
     });
     describe('@destroy()', function() {
@@ -16,6 +17,7 @@ define(function() {
           b: 'b val',
           c: 'c val'
         });
+        this.col = new this.Collection([this.model]);
         spyOn(this.Events.prototype, 'destroy');
         return this.model.destroy();
       });
@@ -29,8 +31,12 @@ define(function() {
         }
         return _results;
       });
-      return it('removes all listeners', function() {
+      it('removes all listeners', function() {
         return expect(this.Events.prototype.destroy).toHaveBeenCalled();
+      });
+      return it('removes itself from owning collection', function() {
+        expect(this.col.length()).toBe(0);
+        return expect(this.model.collection).toBeUndefined();
       });
     });
     describe('@constructor(initial_hash)', function() {

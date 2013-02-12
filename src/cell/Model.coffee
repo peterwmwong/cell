@@ -41,6 +41,7 @@ define [
     destroy: ->
       if @_a
         Events::destroy.call @
+        @collection.remove [@] if @collection
         delete @_a
       return
 

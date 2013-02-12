@@ -46,6 +46,9 @@ define(['util/type', 'cell/Events', 'cell/util/spy'], function(type, Events, spy
     destroy: function() {
       if (this._a) {
         Events.prototype.destroy.call(this);
+        if (this.collection) {
+          this.collection.remove([this]);
+        }
         delete this._a;
       }
     },
