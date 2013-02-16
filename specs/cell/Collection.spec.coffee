@@ -244,7 +244,7 @@ define -> ({beforeEachRequire})->
           expect(func.calls[i].object).toBe thisObject
 
 
-  describe '@reduce( func:function, initialValue:any, thisObject?:any )', ->
+  describe '@reduce( initialValue:any, func:function, thisObject?:any )', ->
     beforeEach ->
       @models = [
         new @Model a: 0

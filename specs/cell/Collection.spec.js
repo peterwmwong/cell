@@ -368,7 +368,7 @@ define(function() {
         });
       });
     });
-    describe('@reduce( func:function, initialValue:any, thisObject?:any )', function() {
+    describe('@reduce( initialValue:any, func:function, thisObject?:any )', function() {
       beforeEach(function() {
         this.models = [
           new this.Model({
