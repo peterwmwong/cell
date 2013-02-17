@@ -1,10 +1,6 @@
 TODO
 ====
 
-NEW: {Model,Collection,View}::destroy()
----------------------------------------
-
-
 NEW: Handle access changing expressions
 ---------------------------------------
 

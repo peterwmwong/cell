@@ -11,7 +11,7 @@ define ['util/hash'], (hash)->
     logObjMap[key] = obj
     return
 
-  doAfter = window.requestAnimationFrame or (f)-> setTimeout f, 0
+  doAfter = window.requestAnimationFrame or setTimeout
   allChanges = {}
   watches = {}
 

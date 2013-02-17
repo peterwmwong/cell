@@ -8,9 +8,7 @@ define(['util/hash'], function(hash) {
     ((entry = log[key = hash(obj)]) ? entry : log[key] = {})[event] = 1;
     logObjMap[key] = obj;
   };
-  doAfter = window.requestAnimationFrame || function(f) {
-    return setTimeout(f, 0);
-  };
+  doAfter = window.requestAnimationFrame || setTimeout;
   allChanges = {};
   watches = {};
   _onChange = function() {

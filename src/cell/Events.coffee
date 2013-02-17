@@ -48,11 +48,6 @@ define ['util/type','util/extend','util/ev'], (type, extend, ev)->
 
     trigger: (event, args...)->
       if @_e
-        # allHandlers = @_e.all.concat @_e[event] or []
-        # if i = allHandlers.length
-        #   while i--
-        #     h = allHandlers[i]
-        #     h[0].apply h[1], [event].concat args
         triggerHandlers (@_e.all.concat @_e[event] or []), event, args
       return
 
