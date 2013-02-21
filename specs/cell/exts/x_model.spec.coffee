@@ -16,7 +16,6 @@ define ['../../utils/spec-utils'], ({node,browserTrigger,waitOne,msie})-> ({befo
         text: 'text value'
         check: true
       @view = new @NewView model: @model
-      @domFixture.appendChild @view.el
 
     it 'should render model attribute value to inputs', ->
       expect(@view.el.children[0].value).toBe 'text value'

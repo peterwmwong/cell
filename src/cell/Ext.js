@@ -3,20 +3,15 @@
 define(['util/hash', 'util/type', 'util/fn', 'util/extend', 'cell/util/spy'], function(hash, type, fn, extend, spy) {
   var Ext, getValue;
   getValue = function(v, callback) {
-    var _callback,
-      _this = this;
-    _callback = function(value) {
-      callback.call(_this, value);
-    };
     if (type.isF(v)) {
-      spy.watch(hash(this.view), fn.bind(v, this.view), _callback);
+      spy.watch(hash(this.view), fn.b0(v, this.view), fn.b1(callback, this));
     } else {
-      _callback(v);
+      callback.call(this, v);
     }
   };
   Ext = function(options) {
     this.options = options != null ? options : {};
-    this.getValue = fn.bind(getValue, this);
+    this.getValue = fn.b2(getValue, this);
   };
   Ext.prototype.run = function(element, view) {
     this.func(element, this.options, this.getValue, this.view = view);

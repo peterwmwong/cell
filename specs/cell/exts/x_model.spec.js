@@ -29,10 +29,9 @@ define(['../../utils/spec-utils'], function(_arg) {
           text: 'text value',
           check: true
         });
-        this.view = new this.NewView({
+        return this.view = new this.NewView({
           model: this.model
         });
-        return this.domFixture.appendChild(this.view.el);
       });
       it('should render model attribute value to inputs', function() {
         expect(this.view.el.children[0].value).toBe('text value');

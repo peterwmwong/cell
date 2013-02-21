@@ -11,7 +11,6 @@ define [
   'cell/util/spy'
 ], (hash, {isA,isF,isS}, fn, data, events, mutate, Model, Collection, Ext, {watch,unwatch})->
 
-  bind = (f,o)-> -> f.call o
   noop = ->
   d = document
 
@@ -28,7 +27,7 @@ define [
   Bind = (view, expr)->
     @r = (parent)->
       nodes = []
-      watch hash(view), (bind expr, view), (renderValue)->
+      watch hash(view), (fn.b0 expr, view), (renderValue)->
         nodes = render parent,
           view
           renderValue
@@ -40,7 +39,7 @@ define [
   IfBind = (view, cond, thnElse)->
     @r = (parent)->
       nodes = []
-      watch hash(view), (bind cond, view), (condValue)->
+      watch hash(view), (fn.b0 cond, view), (condValue)->
         nodes = render parent,
           view
           (view.__.if condValue, thnElse)
@@ -69,7 +68,7 @@ define [
   EachBind = (view, expr, itemRenderer)->
     itemhash = new HashQueue
     @r = (parent)->
-      watch hash(view), (bind expr, view), (value)->
+      watch hash(view), (fn.b0 expr, view), (value)->
         newEls = []
         newItemHash = new HashQueue
 
@@ -138,7 +137,7 @@ define [
             events.on parent, match[1], v, @
           else
             if isF v
-              watch hash(@), (bind v, @), do(k)-> (value)->
+              watch hash(@), (fn.b0 v, @), do(k)-> (value)->
                 parent.setAttribute k, value
                 return
             else
@@ -163,7 +162,7 @@ define [
   __.each = (col,renderer)->
     if col
       if col instanceof Collection
-        col = bind col.toArray, col
+        col = fn.b0 col.toArray, col
 
       if isF col
         new EachBind @view, col, renderer
@@ -192,7 +191,7 @@ define [
         else {}
 
       __ = View::__
-      _ = @__ = fn.bind __, @
+      _ = @__ = fn.b __, @
       _.if = __.if
       _.each = __.each
       _.view = @

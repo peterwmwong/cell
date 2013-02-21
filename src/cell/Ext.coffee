@@ -7,18 +7,14 @@ define [
 ], (hash, type,fn,extend,spy)->
 
   getValue = (v,callback)->
-    _callback = (value)=>
-      callback.call @, value
-      return
-
     if type.isF v
-      spy.watch hash(@view), (fn.bind v, @view), _callback
+      spy.watch hash(@view), (fn.b0 v, @view), (fn.b1 callback, @)
     else
-      _callback v
+      callback.call @, v
     return
 
   Ext = (@options={})->
-    @getValue = fn.bind getValue, @
+    @getValue = fn.b2 getValue, @
     return
 
   Ext::run = (element, view)->
