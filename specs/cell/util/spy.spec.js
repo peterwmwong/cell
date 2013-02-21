@@ -304,7 +304,7 @@ define(['../../utils/spec-utils'], function(_arg) {
           });
         });
         return it('calls func when an accessed a Model attribute changes in a Collection of another Model', function() {
-          debugger;          this.model0.set('x', 'a value');
+          this.model0.set('x', 'a value');
           return waitOne(function() {
             expect(this.func).toHaveBeenCalled();
             expect(this.func.callCount).toBe(1);

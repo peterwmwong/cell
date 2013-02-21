@@ -180,6 +180,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
       describe "when the attribute is a on* event handler", ->
         it "doesn't think it's a bind", ->
           @node = @__ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
+          @domFixture.appendChild @node
           expect(@clickHandler).not.toHaveBeenCalled()
           browserTrigger @node, 'click'
           expect(@clickHandler).toHaveBeenCalled()
@@ -232,9 +233,9 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
         describe_render_reference
           value_type: 'DOMNode'
-          ref_value: node 'a'
+          ref_value: node 'span'
           ref_value_after: node 'b'
-          expected_child_html: '<a></a>'
+          expected_child_html: '<span></span>'
           expected_child_html_after: '<b></b>'
 
         describe_render_reference

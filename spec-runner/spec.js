@@ -2,8 +2,9 @@
 var __slice = [].slice;
 
 define(['jquery'], function($) {
-  var ctx_name_salt;
+  var ctx_name_salt, domFixture;
   ctx_name_salt = 0;
+  domFixture = document.getElementById('spec-fixture');
   return {
     load: function(name, req, load, config) {
       return req([name], function(Spec) {
@@ -21,6 +22,7 @@ define(['jquery'], function($) {
                 }
                 beforeEach(function() {
                   var ctxName, dep_modules, prereqdep_modules;
+                  this.domFixture = domFixture;
                   specRequire = window.require.config({
                     context: ctxName = "specs" + (ctx_name_salt++),
                     baseUrl: '/specs/',
@@ -60,6 +62,7 @@ define(['jquery'], function($) {
                   });
                 });
                 return afterEach(function() {
+                  domFixture.innerHTML = '';
                   if (ctx) {
                     $("[data-requirecontext='" + ctx.contextName + "']").remove();
                     return delete window.require.s.contexts[ctx.contextName];

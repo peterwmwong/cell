@@ -241,7 +241,6 @@ define ['../../utils/spec-utils'], ({waitOne})->
 
 
         it 'calls func when an accessed a Model attribute changes in a Collection of another Model', ->
-          debugger
           @model0.set 'x', 'a value'
           waitOne ->
             expect(@func).toHaveBeenCalled()

@@ -1,6 +1,19 @@
 TODO
 ====
 
+FIX: IE7 & IE8
+--------------
+
+IE8
+  - cell/defineView-builder-plugin
+  - x_model
+    - checked attribute
+
+IE7
+  - spec-utils@nodeToHTML()
+    - writes out all attributes (TOO MANY!)
+      - onclick, onactivate, onafterupdate, etc.
+
 NEW: Handle access changing expressions
 ---------------------------------------
 

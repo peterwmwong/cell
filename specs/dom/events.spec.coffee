@@ -9,6 +9,7 @@ define [
     ], (@events)->
       @addMatchers matchers
       @element = node 'div'
+      @domFixture.appendChild @element
       {@on,@off} = @events
 
     describe 'on( element:DOMNode, type:string, handler:function, ctx?:object)', ->

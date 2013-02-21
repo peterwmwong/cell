@@ -234,6 +234,7 @@ define(['../../utils/spec-utils'], function(_arg) {
           this.node = this.__('.bound', {
             onclick: this.clickHandler = jasmine.createSpy('click')
           });
+          this.domFixture.appendChild(this.node);
           expect(this.clickHandler).not.toHaveBeenCalled();
           browserTrigger(this.node, 'click');
           return expect(this.clickHandler).toHaveBeenCalled();
@@ -289,9 +290,9 @@ define(['../../utils/spec-utils'], function(_arg) {
         });
         describe_render_reference({
           value_type: 'DOMNode',
-          ref_value: node('a'),
+          ref_value: node('span'),
           ref_value_after: node('b'),
-          expected_child_html: '<a></a>',
+          expected_child_html: '<span></span>',
           expected_child_html_after: '<b></b>'
         });
         describe_render_reference({

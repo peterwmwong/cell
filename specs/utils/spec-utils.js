@@ -18,10 +18,14 @@ define(['jquery'], function($) {
   };
   msie = Number((/msie (\d+)/.exec(navigator.userAgent.toLowerCase()) || [])[1]);
   lowercase = function(s) {
-    return s.toLowerCase();
+    if (s) {
+      return s.toLowerCase();
+    }
   };
   uppercase = function(s) {
-    return s.toUpperCase();
+    if (s) {
+      return s.toUpperCase();
+    }
   };
   nodeName_ = msie < 9 ? function(element) {
     element = element.nodeName ? element : element[0];
@@ -156,7 +160,11 @@ define(['jquery'], function($) {
       return document.createElement(tag);
     },
     nodeHTMLEquals: nodeHTMLEquals = function(node, expectedHTML) {
-      expect(node instanceof HTMLElement).toBe(true);
+      if (msie < 9) {
+        expect(node && typeof node === "object" && node.nodeType === 1 && typeof node.nodeName === "string").toBe(true);
+      } else {
+        expect(node instanceof HTMLElement).toBe(true);
+      }
       return expect(nodeToHTML(node)).toBe(expectedHTML);
     },
     nodeToHTML: nodeToHTML = function(node) {
@@ -170,7 +178,7 @@ define(['jquery'], function($) {
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               attr = _ref[_i];
-              if (attr.name !== 'cellcid') {
+              if (attr.specified && !/^dom-\d+/.test(attr.name)) {
                 _results.push(attr);
               }
             }
