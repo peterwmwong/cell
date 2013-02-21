@@ -9,17 +9,39 @@ define -> ({beforeEachRequire})->
     {}
   ]
 
-  beforeEachRequire ['cell/Model'], (@Model)->
+  beforeEachRequire ['cell/Model', 'cell/Collection', 'cell/Events'], (@Model, @Collection, @Events)->
+
+
+  describe '@destroy()', ->
+    beforeEach ->
+      @model = new @Model
+        a: 'a val'
+        b: 'b val'
+        c: 'c val'
+      @col = new @Collection [@model]
+      @col.on 'remove', (@remove = jasmine.createSpy 'remove')
+      spyOn @Events.prototype, 'destroy'
+      @model.destroy()
+
+    it 'removes all attributes', ->
+      expect(@model.get k).toBeUndefined() for k in ['a', 'b', 'c']
+
+    it 'removes all listeners', ->
+      expect(@Events::destroy).toHaveBeenCalled()
+
+    it 'removes itself from owning collection', ->
+      expect(@remove).toHaveBeenCalled()
+      expect(@col.length()).toBe 0
+      expect(@model.collection).toBeUndefined()
 
   describe '@constructor(initial_hash)', ->
 
     describe 'when initial_hash is NOT undefined', ->
       beforeEach ->
-        @model =
-          new @Model
-            a: 'a val'
-            b: 'b val'
-            c: 'c val'
+        @model = new @Model
+          a: 'a val'
+          b: 'b val'
+          c: 'c val'
 
       it 'current attributes are same as initial_hash', ->
         expect(@model.get k).toBe(v) for k,v of {
@@ -34,6 +56,24 @@ define -> ({beforeEachRequire})->
 
       it 'current attributes are same as initial_hash', ->
         expect(@model._a).toEqual({})
+
+  describe '@attributes()', ->
+    beforeEach ->
+      @model = new @Model
+        a: 'a val'
+        b: 'b val'
+        c: 'c val'
+
+    it 'returns a copied object of all attributes', ->
+      attrs = @model.attributes()
+      expect(attrs).toEqual
+        a: 'a val'
+        b: 'b val'
+        c: 'c val'
+
+      attrs.a = 'a val 2'
+      expect(@model.get 'a').toBe 'a val'
+
 
   describe '@get(key)', ->
     beforeEach ->

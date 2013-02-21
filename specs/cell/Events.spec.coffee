@@ -2,6 +2,42 @@ define -> ({beforeEachRequire})->
 
   beforeEachRequire ['cell/Events'], (@Events)->
 
+  describe '@destroy()', ->
+    beforeEach ->
+      @events = new @Events
+      @events.on 'custom', (@handler = jasmine.createSpy 'custom'), (@ctx = {})
+      @events.on 'custom', (@handler2 = jasmine.createSpy 'custom (2)'), @ctx
+      @events.on 'custom', @handler, (@ctx2 = {})
+      @events.on 'custom2', (@handler2), @ctx
+
+      @events.on 'destroy', (@destroyHandler = jasmine.createSpy 'destroy'), (@ctxDestroy = {})
+
+      @events.destroy()
+      @events.trigger 'custom'
+      @events.trigger 'custom2'
+
+    it 'should unregister all matching handlers', ->
+      expect(@handler).not.toHaveBeenCalled()
+      expect(@handler2).not.toHaveBeenCalled()
+
+    it 'should trigger destroy handlers', ->
+      expect(@destroyHandler.callCount).toBe 1
+      expect(@destroyHandler.calls[0].object).toBe @ctxDestroy
+      expect(@destroyHandler).toHaveBeenCalledWith 'destroy', @events
+
+    describe 'calling destroy again', ->
+      beforeEach ->
+        @handler.reset()
+        @handler2.reset()
+        @destroyHandler.reset()
+        @events.destroy()
+
+      it 'should not call any handlers', ->
+        expect(@destroyHandler).not.toHaveBeenCalled()
+        expect(@handler).not.toHaveBeenCalled()
+        expect(@handler2).not.toHaveBeenCalled()
+
+
   describe '@off( type?:string, fn?:function, ctx?:object )', ->
     beforeEach ->
       @events = new @Events
@@ -120,8 +156,8 @@ define -> ({beforeEachRequire})->
       @customHandler.reset()
       @customHandlerWithContext.reset()
 
-    it 'when type is "any", calls handler upon any triggering', ->
-      @events.on 'any', (anyHandler = jasmine.createSpy 'any'), (anyCtx = {})
+    it 'when type is "all", calls handler upon any triggering', ->
+      @events.on 'all', (anyHandler = jasmine.createSpy 'all'), (anyCtx = {})
 
       @events.trigger 'blah', (arg1 = {}), (arg2 = {}), (arg3 = {})
       expect(anyHandler).toHaveBeenCalledWith 'blah', arg1, arg2, arg3

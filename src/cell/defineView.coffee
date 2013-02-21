@@ -10,7 +10,7 @@ define ['cell/View'], (View)->
       el.href = req.toUrl name+".css"
       el.rel = 'stylesheet'
       el.type = 'text/css'
-      document.head.appendChild el
+      (document.head or document.getElementsByTagName('head')[0]).appendChild el
 
     load (proto)->
       proto or= {}

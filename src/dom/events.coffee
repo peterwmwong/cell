@@ -55,19 +55,8 @@ define [
         return event.defaultPrevented
 
       if evs = events[type or event.type]
-        hasViewHandler = false
         for fc in evs
-          hasViewHandler or= fc[0].viewHandler
           fc[0].call (fc[1] or element), event
-
-        # Search for the nearest cell to updateBinds
-        if hasViewHandler
-          cur = element
-          while cur
-            if cell = data.get cur, 'cellRef'
-              cell.updateBinds?()
-              break
-            cur = cur.parentNode
 
       # Remove monkey-patched methods (IE),
       # as they would cause memory leaks in IE8.
@@ -126,18 +115,13 @@ define [
     return
   
   off: (element, type, fn)->
-    handle = data.get element, 'handle'
-    events = data.get element, 'events'
-
-    return unless handle # no listeners registered
-
-    if type?
-      if fn?
-        ev.rm events[type], fn, 0
+    if events = data.get element, 'events'
+      if type?
+        if fn?
+          ev.rm events[type], fn, 0
+        else
+          removeEventListenerFn element, type, events[type]
+          delete events[type]
       else
-        removeEventListenerFn element, type, events[type]
-        delete events[type]
-    else
-      DOMUnbindAllEvents element, events
-
+        DOMUnbindAllEvents element, events
     return

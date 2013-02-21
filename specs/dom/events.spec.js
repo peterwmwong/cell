@@ -11,6 +11,7 @@ define(['../utils/spec-utils', '../utils/spec-matchers'], function(_arg, matcher
       this.events = events;
       this.addMatchers(matchers);
       this.element = node('div');
+      this.domFixture.appendChild(this.element);
       return _ref = this.events, this.on = _ref.on, this.off = _ref.off, _ref;
     });
     describe('on( element:DOMNode, type:string, handler:function, ctx?:object)', function() {

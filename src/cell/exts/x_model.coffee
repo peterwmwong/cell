@@ -12,7 +12,7 @@ define [
     checkbox:
       g: 'checked'
       s: (value)->
-        @el[@ea] = not not value
+        @el[@ea] = (not not value)
         return
 
   Ext.extend
@@ -22,9 +22,8 @@ define [
         events.on @el,
           'change'
           ->
-            view.model[ma] = @el[@ea]
-            view.updateBinds
+            view.model.set ma, @el[@ea]
             return
           @
-        getValue (-> @model[ma]), modelEl.s
+        getValue (-> @model.get ma), modelEl.s
       return

@@ -1,30 +1,80 @@
 TODO
 ====
 
-NEW: Collection
----------------
+FIX: IE7 & IE8
+--------------
 
-NEW: Targetted Bindings (The JDAM of bindings)
-----------------------------------------------------
+IE8
+  - cell/defineView-builder-plugin
+  - x_model
+    - checked attribute
 
-Convert open ended "unguided" bindings into smart targetted agents of changes.
+IE7
+  - spec-utils@nodeToHTML()
+    - writes out all attributes (TOO MANY!)
+      - onclick, onactivate, onafterupdate, etc.
 
-### Problem
+NEW: Handle access changing expressions
+---------------------------------------
 
-With current bindings, we don't really know what might trigger a change in it's value.
-We make educated guesses when...
-- View.model changes ('any' event)
-- View event handlers are triggered (ex. onclick)
+    render_el: (__)-> [
+      __ '.mydiv', ->
+        if @get 'switch' then @get 'one'
+        else @get 'two'
+    ]
 
-...but even then we have to rip through the whole list of binds, determine a change in value,
-and, at the very least, do it all over again if there is a change in value (a bind can change
-another bind's value). At worst we do this TEN FRIGGGIN TIMES.
 
-We can do better.
+NEW: Pipes
+----------
 
-### Solution
+Input and Output.
+Takes a Collection input and outputs another Collection.  Can be used for any type of transformation like, but not limited to: filtering, sorting, mapping, and reducing.
+It allows for *nix style pipeing of data:
 
-Binds will be smart and know exactly which Model/Collection to listen to, and even better, know exactly which property of a Model triggers a change in value.
+    # *nix piping
+    > Collection | Filter | Sort | Page
+
+    # cell piping
+    Collection.pipe Filter(), Sort(), Page()
+
+A Pipe has 2 forms whole and incremental.
+
+### Pipe
+
+Just a function.
+
+    # Simple passthrough pipe
+    passthrough = (input)-> input.toArray()
+
+### Smart Pipe
+
+For large, high performance, and active collections.
+A pipeline of Whole Pipes can be very costly calculate. And when a collection changes (add, remove), starting from scratch and executing each pipe could make it piping impractical if changes occur frequently.
+
+Smart Pipes to the rescue.
+
+If the input collection changes (add,remove), the first pipe is notified and can choose to operate on just the small subset that has changed.  This may or may not effect it's output.  If no changes are made to first pipe's output, then no other downstream pipe's are notified.  If there changes are made, the next pipe is notified of only the changes.
+
+    # Simple passthrough pipe
+    Passthrough = Pipe.extend
+
+      constructor: ->
+        # Smart Pipe's are Model's that store the options passed in on instantiation
+        # You can listen to changes to these options and change the output as necessary
+        # Ex. Filtering of list changes based on user input
+        @on 'any', ->
+
+      onReset: -> @output.reset @input
+
+      onAdd: (item, index)-> @output.add item, index
+
+      onRemove: (item, index)-> @output.remove index
+
+    # Smart Pipes can be passed an options hash
+    inputCollection.pipe passthrough = Passthrough option1:'value 1'
+
+    # Change a pipe's options
+    passthrough.set 'option1', 'value 2'
 
 
 BUG: __.if() and __.each() need to call with view as `this`

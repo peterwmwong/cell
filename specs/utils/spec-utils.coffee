@@ -14,11 +14,11 @@ define ['jquery'], ($)->
         -1
 
   msie = Number((/msie (\d+)/.exec(navigator.userAgent.toLowerCase()) or [])[1])
-  lowercase = (s)-> s.toLowerCase()
-  uppercase = (s)-> s.toUpperCase()
+  lowercase = (s)-> if s then s.toLowerCase()
+  uppercase = (s)-> if s then s.toUpperCase()
 
   nodeName_ =
-    if(msie < 9)
+    if msie<9
       (element)->
         element = if element.nodeName then element else element[0]
         if element.scopeName and element.scopeName isnt 'HTML'
@@ -30,6 +30,14 @@ define ['jquery'], ($)->
         if element.nodeName then element.nodeName else element[0].nodeName
 
   exports =
+    msie: msie,
+
+    waitOne: (expectCallback)->
+      done = false
+      runs -> setTimeout (-> done = true), 17
+      waitsFor -> done
+      runs expectCallback
+
     browserTrigger: (element, type, keys)->
       element = element[0] if element and not element.nodeName
       return unless element
@@ -124,7 +132,10 @@ define ['jquery'], ($)->
     node: (tag)-> document.createElement tag
 
     nodeHTMLEquals: nodeHTMLEquals = (node, expectedHTML)->
-      expect(node instanceof HTMLElement).toBe true
+      if msie<9
+        expect(node and typeof node is "object" and node.nodeType is 1 and typeof node.nodeName is "string").toBe true
+      else
+        expect(node instanceof HTMLElement).toBe true
       expect(nodeToHTML(node)).toBe expectedHTML
 
     nodeToHTML: nodeToHTML = (node)->
@@ -136,7 +147,7 @@ define ['jquery'], ($)->
         if node.attributes.length > 0
 
           # Omit the @cellCid attribute as it is generated
-          list = (for attr in node.attributes when attr.name isnt 'cellcid' then attr)
+          list = (for attr in node.attributes when attr.specified and not /^dom-\d+/.test(attr.name) then attr)
 
           # Sort attributes as order is not guaranteed to be the
           # same on each browser

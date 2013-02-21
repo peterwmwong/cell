@@ -4,6 +4,3 @@
 *.DS_Store
 
 node_modules/*
-!node_modules/requirejs/
-node_modules/requirejs/*
-!node_modules/requirejs/require.js

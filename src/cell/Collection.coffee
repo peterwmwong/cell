@@ -1,38 +1,118 @@
 define [
-  'util/type'
   'cell/Events'
+  'util/type'
   'cell/Model'
-], (type,Events,Model)->
+  'cell/util/spy'
+], (Events,type,Model,spy)->
 
-  filterMatch = (matcher, attr)->
-    return false for k of matcher when (expected_value = matcher[k])? and (expected_value isnt attr[k])
-    true
+  iter = (str,before,after)->
+    Function.call undefined,
+      'f'
+      'c'
+      'd'
+      "if(this._i){"+
+      "this._s();"+
+      "if(f==null)return;"+
+      "var i=-1,t=this,l=t.length(),e#{before or ''};"+
+      "while(++i<l){"+
+        "e=t._i[i];"+
+        str+
+      "}#{after or ''}}"
 
-  Events.extend
+
+  Collection = Events.extend
+
     constructor: (array)->
-      @_i = array or []
+      @_i = []
+      @add array
       return
 
     model: Model
 
-    # TODO TEST
-    add: (models)->
-      if models
-        models = [models] unless type.isA models
-        len = models.length
-        i=-1
-        while ++i < len
-          model =
-            if (item = models[i]) instanceof Model then item
-            else new @model item
+    at: (index)->
+      if @_i
+        @_s()
+        @_i[index]
 
+    length: ->
+      if @_i
+        @_s()
+        @_i.length
+
+    indexOf:
+      if Array::indexOf then (model)->
+        if @_i
+          @_s()
+          @_i.indexOf model
+      else (iter 'if(e===f){return i}','','return -1')
+    toArray: ->
+      if @_i
+        @_s()
+        @_i.slice()
+
+    each:    iter 'if(f.call(c,e,i,t)===!1)i=l'
+    map:     iter 'r.push(f.call(c,e,i,t))', ',r=[]', 'return r'
+    reduce:  iter 'f=c.call(d,f,e,i,t)', '', 'return f'
+    filterBy:
+      iter (
+        'for(k in f)'+
+          'if((v=f[k])==null||v===(x=e.get(k))||(typeof v=="function"&&v(x)))'+
+            'r.push(e)'
+      ), ',k,v,x,r=[]', 'return r'
+
+    pipe: (pipes)->
+      if @_i
+        cur = @
+        for pipe in pipes
+          if type.isA (cur = pipe.run cur)
+            cur = new Collection cur
+        cur
+
+    add: (models,index)->
+      if @_i and models
+        models = 
+          if type.isA models then models.slice()
+          else [models]
+
+        i=-1
+        len = models.length
+        index = @length() unless index?
+        while ++i < len
+          @_i.splice index++, 0, (models[i] = @_toM models[i])
+
+        @trigger 'add', models, @, index-len
       return
 
-    # TODO TEST
-    filterBy: (matcherHash)->
-      return cur_items unless len = (cur_items = @_i).length
-      i=-1
-      (item while ++i < len when filterMatch matcherHash, (item = cur_items[i]))
+    remove: (models)->
+      if @_i and models
+        models = [models] unless type.isA models
 
-    # TODO TEST
-    length: -> @_i.length
+        i=-1
+        len = models.length
+        removedModels = []
+        indices = []
+        while ++i < len
+          model = models[i]
+          if (index = @indexOf model) > -1
+            delete model.collection
+            removedModels.push model
+            indices.push index
+            @_i.splice index, 1
+
+        if indices.length
+          @trigger 'remove', removedModels, @, indices
+      return
+
+    destroy: ->
+      if @_i
+        Events::destroy.call @
+        delete @_i
+      return
+
+    _toM: (o)->
+      o =
+        if o instanceof @model then o
+        else new Model o
+      o.collection = @
+      o
+    _s: spy.addCol

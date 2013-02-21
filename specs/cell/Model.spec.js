@@ -5,8 +5,41 @@ define(function() {
     var NON_STRINGS, beforeEachRequire;
     beforeEachRequire = _arg.beforeEachRequire;
     NON_STRINGS = [void 0, null, 5, (function() {}), [], {}];
-    beforeEachRequire(['cell/Model'], function(Model) {
+    beforeEachRequire(['cell/Model', 'cell/Collection', 'cell/Events'], function(Model, Collection, Events) {
       this.Model = Model;
+      this.Collection = Collection;
+      this.Events = Events;
+    });
+    describe('@destroy()', function() {
+      beforeEach(function() {
+        this.model = new this.Model({
+          a: 'a val',
+          b: 'b val',
+          c: 'c val'
+        });
+        this.col = new this.Collection([this.model]);
+        this.col.on('remove', (this.remove = jasmine.createSpy('remove')));
+        spyOn(this.Events.prototype, 'destroy');
+        return this.model.destroy();
+      });
+      it('removes all attributes', function() {
+        var k, _i, _len, _ref, _results;
+        _ref = ['a', 'b', 'c'];
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          k = _ref[_i];
+          _results.push(expect(this.model.get(k)).toBeUndefined());
+        }
+        return _results;
+      });
+      it('removes all listeners', function() {
+        return expect(this.Events.prototype.destroy).toHaveBeenCalled();
+      });
+      return it('removes itself from owning collection', function() {
+        expect(this.remove).toHaveBeenCalled();
+        expect(this.col.length()).toBe(0);
+        return expect(this.model.collection).toBeUndefined();
+      });
     });
     describe('@constructor(initial_hash)', function() {
       describe('when initial_hash is NOT undefined', function() {
@@ -39,6 +72,26 @@ define(function() {
         return it('current attributes are same as initial_hash', function() {
           return expect(this.model._a).toEqual({});
         });
+      });
+    });
+    describe('@attributes()', function() {
+      beforeEach(function() {
+        return this.model = new this.Model({
+          a: 'a val',
+          b: 'b val',
+          c: 'c val'
+        });
+      });
+      return it('returns a copied object of all attributes', function() {
+        var attrs;
+        attrs = this.model.attributes();
+        expect(attrs).toEqual({
+          a: 'a val',
+          b: 'b val',
+          c: 'c val'
+        });
+        attrs.a = 'a val 2';
+        return expect(this.model.get('a')).toBe('a val');
       });
     });
     describe('@get(key)', function() {

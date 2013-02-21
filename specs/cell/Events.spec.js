@@ -7,6 +7,41 @@ define(function() {
     beforeEachRequire(['cell/Events'], function(Events) {
       this.Events = Events;
     });
+    describe('@destroy()', function() {
+      beforeEach(function() {
+        this.events = new this.Events;
+        this.events.on('custom', (this.handler = jasmine.createSpy('custom')), (this.ctx = {}));
+        this.events.on('custom', (this.handler2 = jasmine.createSpy('custom (2)')), this.ctx);
+        this.events.on('custom', this.handler, (this.ctx2 = {}));
+        this.events.on('custom2', this.handler2, this.ctx);
+        this.events.on('destroy', (this.destroyHandler = jasmine.createSpy('destroy')), (this.ctxDestroy = {}));
+        this.events.destroy();
+        this.events.trigger('custom');
+        return this.events.trigger('custom2');
+      });
+      it('should unregister all matching handlers', function() {
+        expect(this.handler).not.toHaveBeenCalled();
+        return expect(this.handler2).not.toHaveBeenCalled();
+      });
+      it('should trigger destroy handlers', function() {
+        expect(this.destroyHandler.callCount).toBe(1);
+        expect(this.destroyHandler.calls[0].object).toBe(this.ctxDestroy);
+        return expect(this.destroyHandler).toHaveBeenCalledWith('destroy', this.events);
+      });
+      return describe('calling destroy again', function() {
+        beforeEach(function() {
+          this.handler.reset();
+          this.handler2.reset();
+          this.destroyHandler.reset();
+          return this.events.destroy();
+        });
+        return it('should not call any handlers', function() {
+          expect(this.destroyHandler).not.toHaveBeenCalled();
+          expect(this.handler).not.toHaveBeenCalled();
+          return expect(this.handler2).not.toHaveBeenCalled();
+        });
+      });
+    });
     describe('@off( type?:string, fn?:function, ctx?:object )', function() {
       beforeEach(function() {
         this.events = new this.Events;
@@ -121,9 +156,9 @@ define(function() {
         this.customHandler.reset();
         return this.customHandlerWithContext.reset();
       });
-      return it('when type is "any", calls handler upon any triggering', function() {
+      return it('when type is "all", calls handler upon any triggering', function() {
         var anyCtx, anyHandler, arg1, arg2, arg3;
-        this.events.on('any', (anyHandler = jasmine.createSpy('any')), (anyCtx = {}));
+        this.events.on('all', (anyHandler = jasmine.createSpy('all')), (anyCtx = {}));
         this.events.trigger('blah', (arg1 = {}), (arg2 = {}), (arg3 = {}));
         expect(anyHandler).toHaveBeenCalledWith('blah', arg1, arg2, arg3);
         return expect(anyHandler.calls[0].object).toBe(anyCtx);

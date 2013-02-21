@@ -13,7 +13,7 @@ define(['cell/View'], function(View) {
         el.href = req.toUrl(name + ".css");
         el.rel = 'stylesheet';
         el.type = 'text/css';
-        document.head.appendChild(el);
+        (document.head || document.getElementsByTagName('head')[0]).appendChild(el);
       }
       load(function(proto) {
         proto || (proto = {});

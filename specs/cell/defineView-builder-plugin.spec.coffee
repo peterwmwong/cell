@@ -1,5 +1,7 @@
-define ['jquery'], ($)->
-  ->
+define [
+  'jquery'
+  '../utils/spec-utils'
+  ], ($,{nodeToHTML,msie})-> ->
     load_fixture = (iframe_src, cb)->
       $fixture_container = $ '#spec-fixture'
       $fixture_container
@@ -23,16 +25,20 @@ define ['jquery'], ($)->
         $('#spec-fixture').empty()
 
       it "Should render Mock and MockNested Cells", ->
-        expect(@$f('body').html().trim().replace("<script async src='all.js'></script>",'')).
-          toMatch /<div class="Mock" cell="Mock">Mock: <div class="MockNested" cell="MockNested">MockNested<\/div><\/div>/
+        expect(nodeToHTML @$f('body')[0]).
+          toMatch /<div cell="Mock" class="Mock">Mock: <div cell="MockNested" class="MockNested">MockNested<\/div><\/div>/
 
       it "Should apply Mock css from all.css", ->
-        expect(@$f('.Mock').css('color')).
-          toBe 'rgb(0, 0, 255)'
+        expect(@$f('.Mock').css('color')).toBe (
+          if msie < 9 then '#00f'
+          else 'rgb(0, 0, 255)'
+        )
 
       it "Should apply MockNested css from all.css", ->
-        expect(@$f('.MockNested').css('color')).
-          toBe 'rgb(255, 0, 0)'
+        expect(@$f('.MockNested').css('color')).toBe (
+          if msie < 9 then '#f00'
+          else 'rgb(255, 0, 0)'
+        )
 
       it "Should NOT attach <link> for Mock.css", ->
         expect(@$f('head > link[href*="Mock.css"]').length).toBe 0

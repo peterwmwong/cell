@@ -9,12 +9,21 @@
   <script src="../support/jasmine/jasmine-html.js"></script>
   <script src="../src/require.js"></script>
   <script src="spec_modules_config.js"></script>
+<!--[if lte IE 8]>
+<script src="../support/json3.min.js"></script>
+<![endif]-->
 </head>
 <body>
-  <div id='spec-fixture' style='width:0px; height:0px; overflow:hidden'></div>
+  <div id='spec-fixture' style='width:0px;height:0px;visibility:hidden;'></div>
 </body>
+<!--[if lte IE 8]>
 <script>
-  if (/(\?|&)watch/.test(location.search)) {
-    document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>');
-  }</script>
+  window.$$disableLiveReload = true;
+</script>
+<![endif]-->
+<script>
+if (window.$$disableLiveReload !== true) {
+  document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>');
+}
+</script>
 </html>

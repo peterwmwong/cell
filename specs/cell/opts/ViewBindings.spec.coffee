@@ -1,112 +1,89 @@
-define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})->
+define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger,waitOne})->
 
   ({beforeEachRequire})->
 
-    describe '@updateBinds()', ->
-
-      beforeEachRequire ['cell/opts/ViewBindings','cell/View'], (ViewBindings, @View)->
-
-      it "called after any registered event fires", ->
-        @view = new (@View.extend render: (__)-> __ '.mydiv', onclick:->)
-        spyOn @view, 'updateBinds'
-        expect(@view.updateBinds).not.toHaveBeenCalled()
-        browserTrigger @view.el.children[0], 'click'
-        expect(@view.updateBinds).toHaveBeenCalled()
-
-      describe "Given multiple binds, when a bind updates due to another bind's update", ->
-
-        beforeEach ->
-          @view = new @View()
-          @view.count = -1
-          @__ = @view.__
-
-          @bind1 = jasmine.createSpy('bind1').andCallFake ->
-            ++@count if @count is 0
-            @count
-
-          @oneEl = @__ '.one', @bind1
-
-          @bind2 = jasmine.createSpy('bind2').andCallFake ->
-            ++@count if @count is 1
-            @count
-          @twoEl = @__ '.two', @bind2
-
-          # Binds are called during rendering
-          @bind1.reset()
-          @bind2.reset()
-
-          @view.count = 0
-          @view.updateBinds()
-
-        it 'Calls binds 3 times (1 - updateBinds(), 2 - bind1 changed, 3 - bind2 changed)', ->
-          expect(@bind1.callCount).toBe 3
-          expect(@bind2.callCount).toBe 3
-          expect(@oneEl.innerHTML).toBe '2'
-          expect(@twoEl.innerHTML).toBe '2'
-
-      describe "when a bind continues to update", ->
-
-        beforeEach ->
-          @view = new @View()
-          @view.count = -1
-          @__ = @view.__
-
-          @bind1 = jasmine.createSpy('bind1').andCallFake -> ++@count
-          @oneEl = @__ '.one', @bind1
-
-          # Binds are called during rendering
-          @bind1.reset()
-          
-          @view.count = 0
-          @view.updateBinds()
-
-        it 'max out after 10 tries', ->
-          expect(@bind1.callCount).toBe 10
-          expect(@view.count).toBe 10
-          expect(@oneEl.innerHTML).toBe '10'
-
     describe 'Passing Bindings (functions) to __', ->
 
-      beforeEachRequire ['cell/opts/ViewBindings','cell/View'], (ViewBindings, @View)->
+      beforeEachRequire [
+        'cell/View'
+        'cell/Model'
+        'cell/Collection'
+      ], (@View, @Model, @Collection)->
         @view = new @View()
-        @view.test = 'test val'
+        @view.set 'test', 'test val'
         @__ = @view.__
+
+
+      describe '__.each( collection, view:View )', ->
+
+        beforeEach ->
+          items = [
+            {name:'a'}
+            {name:'b'}
+            {name:'c'}
+          ]
+
+          ChildView = @View.extend
+            _cellName: 'Child'
+            render: (__)-> @model.name
+
+          ParentView = @View.extend
+            _cellName: 'Parent'
+            items: items
+            render: (__)-> __.each (-> @items), ChildView
+
+          @result = new ParentView().el
+
+        it 'when many is non-empty array', ->
+          nodeHTMLEquals @result,
+            '<div cell="Parent" class="Parent">'+
+            '<div cell="Child" class="Child">a</div>'+
+            '<div cell="Child" class="Child">b</div>'+
+            '<div cell="Child" class="Child">c</div>'+
+            '</div>'
 
       describe 'when a bind is passed as the condition to __.each(collection, renderer:function)', ->
 
         describe 'when renderer returns an array of nodes', ->
 
           beforeEach ->
-            @collection = [1,2,3]
+            @models = [
+              new @Model a: 1
+              new @Model a: 2
+              new @Model a: 3
+            ]
+            @collection = new @Collection @models
             @CellWithEach = @View.extend
               _cellName: 'test'
+              eachKey: 'eachValue'
               render: (__)=> [
                 __ '.parent',
-                  __.each (=> @collection), (item)->
-                    __ ".item#{item}"
+                  __.each (=> @collection.map (m)-> m.get 'a'), (value)->
+                    __ ".item#{value}", @eachKey
               ]
             @view = new @CellWithEach()
 
           it 'renders initially correctly', ->
             nodeHTMLEquals @view.el,
-              '<div cell="test" class="test"><div class="parent"><div class="item1"></div><div class="item2"></div><div class="item3"></div></div></div>'
+              '<div cell="test" class="test"><div class="parent"><div class="item1">eachValue</div><div class="item2">eachValue</div><div class="item3">eachValue</div></div></div>'
 
-          describe 'when collection changes and updateBinds() is called', ->
+          describe 'when collection changes', ->
 
             beforeEach ->
               @item2 = @view.el.children[0].children[1]
               @item3 = @view.el.children[0].children[2]
-              @collection.shift()
-              @collection.push 4
-              @view.updateBinds()
+              @collection.remove @collection.at 0
+              @collection.add new @Model a: 4
 
             it 'renders after change correctly', ->
-              nodeHTMLEquals @view.el,
-                '<div cell="test" class="test"><div class="parent"><div class="item2"></div><div class="item3"></div><div class="item4"></div></div></div>'
+              waitOne ->
+                nodeHTMLEquals @view.el,
+                  '<div cell="test" class="test"><div class="parent"><div class="item2">eachValue</div><div class="item3">eachValue</div><div class="item4">eachValue</div></div></div>'
 
             it "doesn't rerender previous items", ->
-              expect(@view.el.children[0].children[0]).toBe @item2
-              expect(@view.el.children[0].children[1]).toBe @item3
+              waitOne ->
+                expect(@view.el.children[0].children[0]).toBe @item2
+                expect(@view.el.children[0].children[1]).toBe @item3
 
 
       describe 'when a bind is passed as the condition to __.if(condition, {then:function, else:function})', ->
@@ -114,18 +91,20 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
         describe 'when then and else return array of nodes', ->
 
           beforeEach ->
-            @condition = true
+            @model = new @Model condition: true
             @CellWithIf = @View.extend
               _cellName: 'test'
+              thenKey: 'thenValue'
+              elseKey: 'elseValue'
               render: (__)=> [
                 __ '.parent',
-                  __.if (=> @condition),
+                  __.if (=> @model.get 'condition'),
                     then: -> [
-                      __ '.then1'
+                      __ '.then1', @thenKey
                       __ '.then2'
                     ]
                     else: -> [
-                      __ '.else1'
+                      __ '.else1', @elseKey
                       __ '.else2'
                     ]
               ]
@@ -133,75 +112,75 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
           it 'renders initially correctly', ->
             nodeHTMLEquals @view.el,
-              '<div cell="test" class="test"><div class="parent"><div class="then1"></div><div class="then2"></div></div></div>'
+              '<div cell="test" class="test"><div class="parent"><div class="then1">thenValue</div><div class="then2"></div></div></div>'
 
           it 'renders after change correctly', ->
-            @condition = false
-            @view.updateBinds()
-            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else1"></div><div class="else2"></div></div></div>'
+            @model.set 'condition', false
+            waitOne ->
+              nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else1">elseValue</div><div class="else2"></div></div></div>'
 
         describe 'when then and/or else are not specified', ->
 
           beforeEach ->
-            @condition = true
+            @model = new @Model condition: true
             @CellWithIf = @View.extend
               _cellName: 'test'
               render: (__)=> [
                 __ '.parent',
-                  __.if (=> @condition), {}
+                  __.if (=> @model.get 'condition'), {}
               ]
             @view = new @CellWithIf()
 
           it 'renders nothing', ->
             nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"></div></div>'
-
-            @condition = false
-            @view.updateBinds()
+            @model.set 'condition', false
             nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"></div></div>'
 
         describe 'when then and else return a node', ->
 
           beforeEach ->
-            @condition = true
+            @model = new @Model condition: true
             @CellWithIf = @View.extend
               _cellName: 'test'
               render: (__)=> [
                 __ '.parent',
-                  __.if (=> @condition),
+                  __.if (=> @model.get 'condition'),
                     then: -> __ '.then'
                     else: -> __ '.else'
               ]
             @view = new @CellWithIf()
 
           it 'renders initially correctly', ->
-            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="then"></div></div></div>'
+            waitOne ->
+              nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="then"></div></div></div>'
 
           it 'renders after change correctly', ->
-            @condition = false
-            @view.updateBinds()
-            nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else"></div></div></div>'
+            @model.set 'condition', false
+            waitOne ->
+              nodeHTMLEquals @view.el, '<div cell="test" class="test"><div class="parent"><div class="else"></div></div></div>'
 
       describe 'when a bind is passed as an attribute', ->
 
         beforeEach ->
-          @node = @__ '.bound', 'data-custom':(-> @test), 'non-bind': 'constant value'
+          @node = @__ '.bound', 'data-custom':(-> @get 'test'), 'non-bind': 'constant value'
 
-        it "sets bindings's value to the element's attribute", ->
+        it "sets binding's value to the element's attribute", ->
           expect(@node.getAttribute 'data-custom').toBe 'test val'
           expect(@node.getAttribute 'non-bind').toBe 'constant value'
 
-        describe "when the bindings's value changes and @updateBinds() is called", ->
+        describe "when the binding's value changes and @updateBinds() is called", ->
           beforeEach ->
-            @view.test = 'test val2'
-            @view.updateBinds()
+            @view.set 'test', 'test val2'
 
           it "automatically sets the element's attribute to the new binding's value", ->
-            expect(@node.getAttribute 'data-custom').toBe 'test val2'
+            waitOne ->
+              expect(@node.getAttribute 'data-custom').toBe 'test val2'
 
 
       describe "when the attribute is a on* event handler", ->
         it "doesn't think it's a bind", ->
           @node = @__ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
+          @domFixture.appendChild @node
           expect(@clickHandler).not.toHaveBeenCalled()
           browserTrigger @node, 'click'
           expect(@clickHandler).toHaveBeenCalled()
@@ -210,53 +189,53 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
         describe_render_reference = ({value_type, ref_value, ref_value_after, expected_child_html, expected_child_html_after})->
 
-          describe "when the bindings's value is of type #{value_type}", ->
+          describe "when the binding's value is of type #{value_type}", ->
 
             beforeEach ->
-              @view.test = ref_value
+              @view.set 'test', ref_value
               @node = @__ '.parent',
                 'BEFORE'
-                -> @test
+                -> @get 'test'
                 'AFTER'
 
             it "child is rendered correctly", ->
               nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html}AFTER</div>"
 
-            describe "when the bindings's value changes and @updateBinds() is called", ->
+            describe "when the binding's value changes", ->
               beforeEach ->
-                @view.test = ref_value_after
-                @view.updateBinds()
+                @view.set 'test', ref_value_after
 
               it "automatically rerenders child correctly", ->
-                nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html_after}AFTER</div>"
+                waitOne ->
+                  nodeHTMLEquals @node, "<div class=\"parent\">BEFORE#{expected_child_html_after}AFTER</div>"
 
 
-        describe "when the bindings's value is undefined", ->
+        describe "when the binding's value is undefined", ->
 
           beforeEach ->
-            @view.test = undefined
+            @view.set 'test', undefined
             @node = @__ '.parent',
               'BEFORE'
-              -> @test
+              -> @get 'test'
               'AFTER'
 
           it "child is rendered correctly", ->
             nodeHTMLEquals @node, "<div class=\"parent\">BEFOREAFTER</div>"
 
-          describe "when the bindings's value changes and @updateBinds() is called", ->
+          describe "when the binding's value changes and @updateBinds() is called", ->
             beforeEach ->
-              @view.test = 'something'
-              @view.updateBinds()
+              @view.set 'test', 'something'
 
             it "automatically rerenders child correctly", ->
-              nodeHTMLEquals @node, "<div class=\"parent\">BEFOREsomethingAFTER</div>"
+              waitOne ->
+                nodeHTMLEquals @node, "<div class=\"parent\">BEFOREsomethingAFTER</div>"
 
 
         describe_render_reference
           value_type: 'DOMNode'
-          ref_value: node 'a'
+          ref_value: node 'span'
           ref_value_after: node 'b'
-          expected_child_html: '<a></a>'
+          expected_child_html: '<span></span>'
           expected_child_html_after: '<b></b>'
 
         describe_render_reference

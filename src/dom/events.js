@@ -18,7 +18,7 @@ define(['util/ev', 'dom/browser', 'dom/data'], function(ev, browser, data) {
   createEventHandler = function(element, events) {
     var eventHandler;
     eventHandler = function(event, type) {
-      var cell, cur, evs, fc, hasViewHandler, prevent, _i, _len;
+      var evs, fc, prevent, _i, _len;
       if (!event.preventDefault) {
         event.preventDefault = function() {
           event.returnValue = false;
@@ -44,23 +44,9 @@ define(['util/ev', 'dom/browser', 'dom/data'], function(ev, browser, data) {
         return event.defaultPrevented;
       };
       if (evs = events[type || event.type]) {
-        hasViewHandler = false;
         for (_i = 0, _len = evs.length; _i < _len; _i++) {
           fc = evs[_i];
-          hasViewHandler || (hasViewHandler = fc[0].viewHandler);
           fc[0].call(fc[1] || element, event);
-        }
-        if (hasViewHandler) {
-          cur = element;
-          while (cur) {
-            if (cell = data.get(cur, 'cellRef')) {
-              if (typeof cell.updateBinds === "function") {
-                cell.updateBinds();
-              }
-              break;
-            }
-            cur = cur.parentNode;
-          }
         }
       }
       if (browser.msie <= 8) {
@@ -120,21 +106,18 @@ define(['util/ev', 'dom/browser', 'dom/data'], function(ev, browser, data) {
       eventFns.push([fn, ctx]);
     },
     off: function(element, type, fn) {
-      var events, handle;
-      handle = data.get(element, 'handle');
-      events = data.get(element, 'events');
-      if (!handle) {
-        return;
-      }
-      if (type != null) {
-        if (fn != null) {
-          ev.rm(events[type], fn, 0);
+      var events;
+      if (events = data.get(element, 'events')) {
+        if (type != null) {
+          if (fn != null) {
+            ev.rm(events[type], fn, 0);
+          } else {
+            removeEventListenerFn(element, type, events[type]);
+            delete events[type];
+          }
         } else {
-          removeEventListenerFn(element, type, events[type]);
-          delete events[type];
+          DOMUnbindAllEvents(element, events);
         }
-      } else {
-        DOMUnbindAllEvents(element, events);
       }
     }
   };

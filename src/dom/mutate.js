@@ -3,12 +3,13 @@
 define(['dom/data'], function(data) {
   var dealloc;
   dealloc = function(element) {
-    var child, _i, _len, _ref;
+    var children, i, len;
     data.remove(element);
-    _ref = element.children;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      child = _ref[_i];
-      dealloc(child);
+    children = element.children;
+    len = children.length;
+    i = -1;
+    while (++i < len) {
+      dealloc(children[i]);
     }
   };
   return {

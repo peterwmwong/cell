@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * @license r.js 2.1.3 Copyright (c) 2010-2012, The Dojo Foundation All Rights Reserved.
+ * @license r.js 2.1.4 Copyright (c) 2010-2012, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
  * see: http://github.com/jrburke/requirejs for details
  */
@@ -22,7 +22,7 @@ var requirejs, require, define;
 
     var fileName, env, fs, vm, path, exec, rhinoContext, dir, nodeRequire,
         nodeDefine, exists, reqMain, loadedOptimizedLib, existsForNode,
-        version = '2.1.3',
+        version = '2.1.4',
         jsSuffixRegExp = /\.js$/,
         commandOption = '',
         useLibLoaded = {},
@@ -124,7 +124,7 @@ var requirejs, require, define;
     }
 
     /** vim: et:ts=4:sw=4:sts=4
- * @license RequireJS 2.1.3 Copyright (c) 2010-2012, The Dojo Foundation All Rights Reserved.
+ * @license RequireJS 2.1.4 Copyright (c) 2010-2012, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
  * see: http://github.com/jrburke/requirejs for details
  */
@@ -137,7 +137,7 @@ var requirejs, require, define;
 (function (global) {
     var req, s, head, baseElement, dataMain, src,
         interactiveScript, currentlyAddingScript, mainScript, subPath,
-        version = '2.1.3',
+        version = '2.1.4',
         commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg,
         cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g,
         jsSuffixRegExp = /\.js$/,
@@ -14630,7 +14630,7 @@ define('uglifyjs2', ['exports', 'source-map', 'logger'], function (exports, MOZ_
                 return "\r";
 
               case 116:
-                return "  ";
+                return "    ";
 
               case 98:
                 return "\b";
@@ -23189,12 +23189,6 @@ define('build', function (require) {
             if (!config.out) {
                 throw new Error('"out" option missing.');
             }
-            if (config.cssPrefix) {
-                //Make sure cssPrefix ends in a slash
-                config.cssPrefix = endsWithSlash(config.cssPrefix);
-            } else {
-                config.cssPrefix = '';
-            }
         }
         if (!config.cssIn && !config.baseUrl) {
             //Just use the current directory as the baseUrl
@@ -23282,6 +23276,14 @@ define('build', function (require) {
             if (!cfg.optimizeCss) {
                 config.optimizeCss = "none";
             }
+        }
+
+        //Normalize cssPrefix
+        if (config.cssPrefix) {
+            //Make sure cssPrefix ends in a slash
+            config.cssPrefix = endsWithSlash(config.cssPrefix);
+        } else {
+            config.cssPrefix = '';
         }
 
         //Cycle through modules and combine any local stubModules with

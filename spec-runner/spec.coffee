@@ -1,5 +1,6 @@
 define ['jquery'], ($)->
   ctx_name_salt = 0
+  domFixture = document.getElementById 'spec-fixture'
 
   load: (name, req, load, config)->
     
@@ -19,6 +20,8 @@ define ['jquery'], ($)->
               prereqDeps = undefined
 
             beforeEach ->
+              @domFixture = domFixture
+              
               # Create a new require context for each spec describe/it
               specRequire = window.require.config
                 context: ctxName = "specs#{ctx_name_salt++}"
@@ -41,6 +44,8 @@ define ['jquery'], ($)->
               runs -> cb.apply this, dep_modules
             
             afterEach ->
+              domFixture.innerHTML = ''
+
               # Remove all modules loaded from context
               if ctx
                 $("[data-requirecontext='#{ctx.contextName}']").remove()
