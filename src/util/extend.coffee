@@ -1,11 +1,13 @@
 define ->
+  constructorProp = 'constructor'
+
   (proto)->
     Parent = @
 
     Child = (options)->
       return new Child(options) unless @ instanceof Child
       Parent.call @, options
-      proto.constructor.call @, options if proto and proto.constructor
+      proto[constructorProp].call @, options if proto and proto[constructorProp]
       return
     Child.extend = Parent.extend
 
@@ -15,6 +17,6 @@ define ->
     if proto
       Child::[k] = proto[k] for k of proto
       # Just for you IE8
-      if proto.constructor
-        Child::constructor = proto.constructor
+      if proto[constructorProp]
+        Child::[constructorProp] = proto[constructorProp]
     Child
