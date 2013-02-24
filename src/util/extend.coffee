@@ -14,4 +14,7 @@ define ->
     Child:: = new Surrogate()
     if proto
       Child::[k] = proto[k] for k of proto
+      # Just for you IE8
+      if proto.constructor
+        Child::constructor = proto.constructor
     Child

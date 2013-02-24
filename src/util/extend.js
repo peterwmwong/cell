@@ -21,6 +21,9 @@ define(function() {
       for (k in proto) {
         Child.prototype[k] = proto[k];
       }
+      if (proto.constructor) {
+        Child.prototype.constructor = proto.constructor;
+      }
     }
     return Child;
   };
