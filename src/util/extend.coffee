@@ -1,5 +1,6 @@
 define ->
-  constructorProp = 'constructor'
+  constrProp = 'constructor'
+  protoProp = 'prototype'
 
   (proto)->
     Parent = @
@@ -7,16 +8,16 @@ define ->
     Child = (options)->
       return new Child(options) unless @ instanceof Child
       Parent.call @, options
-      proto[constructorProp].call @, options if proto and proto[constructorProp]
+      proto[constrProp].call @, options if proto and proto[constrProp]
       return
     Child.extend = Parent.extend
 
     Surrogate = ->
-    Surrogate:: = Parent::
-    Child:: = new Surrogate()
+    Surrogate[protoProp] = Parent[protoProp]
+    Child[protoProp] = new Surrogate()
     if proto
-      Child::[k] = proto[k] for k of proto
+      Child[protoProp][k] = proto[k] for k of proto
       # Just for you IE8
-      if proto[constructorProp]
-        Child::[constructorProp] = proto[constructorProp]
+      if proto[constrProp]
+        Child[protoProp][constrProp] = proto[constrProp]
     Child

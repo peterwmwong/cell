@@ -11,6 +11,8 @@ define [
   'cell/util/spy'
 ], (hash, {isA,isF,isS}, fn, data, events, mutate, Model, Collection, Ext, {watch,unwatch})->
 
+  protoProp = 'prototype'
+  constrProp = 'constructor'
   noop = ->
   d = document
 
@@ -52,7 +54,7 @@ define [
     @h = {}
     return
 
-  HashQueue:: =
+  HashQueue[protoProp] =
     push: (key,val)->
       entry = (@h[key] or= [])
       entry.push val
@@ -77,7 +79,7 @@ define [
         while ++i<len
           unless prevItemEl = (itemhash.shift key = (hash item = value[i]))
             prevItemEl = 
-              if itemRenderer.prototype instanceof View
+              if itemRenderer[protoProp] instanceof View
                 new itemRenderer(model: item).el
               else
                 itemRenderer.call view, item
@@ -99,7 +101,7 @@ define [
       return
     return
 
-  EachBind::constructor = IfBind::constructor = Bind
+  EachBind[protoProp][constrProp] = IfBind[protoProp][constrProp] = Bind
 
   __ = (viewOrHAML, optionsOrFirstChild)->
     children = [].slice.call arguments, 1
@@ -110,7 +112,7 @@ define [
 
     exts = children.splice 0, i
     options =
-      if children.length and children[0].constructor is Object
+      if children.length and children[0][constrProp] is Object
         children.shift()
       else
         {}
@@ -144,7 +146,7 @@ define [
               parent.setAttribute k, v
           
     # View
-    else if viewOrHAML and viewOrHAML.prototype instanceof View
+    else if viewOrHAML and viewOrHAML[protoProp] instanceof View
       parent = new viewOrHAML(options).el
 
     if parent
@@ -172,7 +174,7 @@ define [
         results = []
         while ++i < length
           results.push (
-            if renderer.prototype instanceof View
+            if renderer[protoProp] instanceof View
               new renderer(model: col[i]).el
             else
               renderer.call @view, col[i], i, col
@@ -190,7 +192,7 @@ define [
           options
         else {}
 
-      __ = View::__
+      __ = View[protoProp].__
       _ = @__ = fn.b __, @
       _.if = __.if
       _.each = __.each
@@ -215,7 +217,7 @@ define [
 
     destroy: ->
       if @el
-        Model::destroy.call @
+        Model[protoProp].destroy.call @
         unwatch hash @
         mutate.remove @el
         delete @el
@@ -224,7 +226,7 @@ define [
     _rc: (n, parent, insertBeforeNode, rendered)->
       n = new Bind @, n if isF n
 
-      if n.constructor is Bind
+      if n[constrProp] is Bind
         n.r parent
        # Is Element or Text Node
       else if n.nodeType in [1,3]
