@@ -3,8 +3,9 @@
 define(['jquery', '../utils/spec-utils'], function($, _arg) {
   var msie, nodeToHTML;
   nodeToHTML = _arg.nodeToHTML, msie = _arg.msie;
-  return function() {
-    var load_fixture;
+  return function(_arg1) {
+    var beforeEachRequire, load_fixture;
+    beforeEachRequire = _arg1.beforeEachRequire;
     load_fixture = function(iframe_src, cb) {
       var $fixture_container, waitFor;
       $fixture_container = $('#spec-fixture');
@@ -23,6 +24,48 @@ define(['jquery', '../utils/spec-utils'], function($, _arg) {
       };
       return waitFor();
     };
+    describe('@repathCSSRelativeURL(cssContents, cssFilePath, baseUrl)', function() {
+      beforeEach(function() {
+        var _this = this;
+        window.process = {
+          versions: {
+            node: '0.8.11'
+          }
+        };
+        return window.require.nodeRequire = function(dep) {
+          if (dep === 'path') {
+            return _this.path = {
+              dirname: jasmine.createSpy('path.dirname').andCallFake(function(a) {
+                return "path_dirname(" + a + ")";
+              }),
+              join: jasmine.createSpy('path.join').andCallFake(function(a, b) {
+                return "path_join(" + a + "," + b + ")";
+              }),
+              relative: jasmine.createSpy('path.relative').andCallFake(function(a, b) {
+                return "path_relative(" + a + "," + b + ")";
+              })
+            };
+          }
+        };
+      });
+      afterEach(function() {
+        delete window.process;
+        return delete window.require.nodeRequire;
+      });
+      beforeEachRequire(['cell/defineView-builder-plugin'], function(defineViewPlugin) {
+        this.defineViewPlugin = defineViewPlugin;
+      });
+      return it("repath relative url()'s to be rooted to the project", function() {
+        var baseUrl, cssContents, cssFilePath, result;
+        cssContents = ".hasRelativeURL1 {\n  background-image: url('./three/img.png');\n}\n.hasRelativeURL2 {\n  background-image:url(three/img.png);\n}\n.hasRelativeURL3 {\n  background-image: \turl(\"three/img.png\");\n}\n.hasAbsoluteURL1 {\n  background-image: url('/abs/img.png');\n}\n.hasAbsoluteURL1 {\n  background-image: url('https://www.google.com/images/srpr/logo3w.png');\n}";
+        cssFilePath = '/one/two/cssFile.css';
+        baseUrl = '/one/';
+        result = this.defineViewPlugin.repathCSSRelativeURL(cssContents, cssFilePath, baseUrl);
+        return expect(result).toEqual((function() {
+          return ".hasRelativeURL1 {\n  background-image: url('path_relative(/one/,path_join(path_dirname(/one/two/cssFile.css),./three/img.png))');\n}\n.hasRelativeURL2 {\n  background-image: url('path_relative(/one/,path_join(path_dirname(/one/two/cssFile.css),three/img.png))');\n}\n.hasRelativeURL3 {\n  background-image: url('path_relative(/one/,path_join(path_dirname(/one/two/cssFile.css),three/img.png))');\n}\n.hasAbsoluteURL1 {\n  background-image: url('/abs/img.png');\n}\n.hasAbsoluteURL1 {\n  background-image: url('https://www.google.com/images/srpr/logo3w.png');\n}";
+        })());
+      });
+    });
     return describe('A single JS and single CSS are created correctly', function() {
       beforeEach(function() {
         this.$f = void 0;
@@ -44,6 +87,9 @@ define(['jquery', '../utils/spec-utils'], function($, _arg) {
       });
       it("Should apply Mock css from all.css", function() {
         return expect(this.$f('.Mock').css('color')).toBe((msie < 9 ? '#00f' : 'rgb(0, 0, 255)'));
+      });
+      it("Should repath CSS urls", function() {
+        return expect(this.$f('.MockNested').css('background-image')).toMatch(/specs\/fixtures\/defineView-builder-plugin\/dir\/logo.png/);
       });
       it("Should apply MockNested css from all.css", function() {
         return expect(this.$f('.MockNested').css('color')).toBe((msie < 9 ? '#f00' : 'rgb(255, 0, 0)'));
