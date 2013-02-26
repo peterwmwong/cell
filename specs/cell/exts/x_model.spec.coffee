@@ -8,50 +8,99 @@ define ['../../utils/spec-utils'], ({node,browserTrigger,waitOne,msie})-> ({befo
   describe 'x_model( model_attr:string )', ->
     beforeEach ->
       @NewView = @View.extend
-        render: (__)=> [
-          __ 'input', (@x_model 'text'), type: 'text'
-          __ 'input', (@x_model 'check'), type: 'checkbox'
+        render: (_)=> [
+          @v_textarea = _ 'textarea', (@x_model 'textarea'),
+          @v_text = _ 'input', (@x_model 'text'), type: 'text'
+          @v_checkbox = _ 'input', (@x_model 'check'), type: 'checkbox'
+          @v_select = _ 'select', (@x_model 'select'),
+            _ 'option', value: 'one'
+            _ 'option', value: 'two'
+            _ 'option', value: 'three'
         ]
       @model = new @Model
+        textarea: 'textarea value'
         text: 'text value'
         check: true
+        select: 'one'
       @view = new @NewView model: @model
 
     it 'should render model attribute value to inputs', ->
-      expect(@view.el.children[0].value).toBe 'text value'
-      expect(@view.el.children[1].checked).toBe true
+      expect(@v_textarea.value).toBe 'textarea value'
+      expect(@v_text.value).toBe 'text value'
+      expect(@v_checkbox.checked).toBe true
+      expect(@v_select.value).toBe 'one'
 
-    it 'view -> model', ->
-      text = @view.el.children[0]
-      text.value = 'new text value'
-      browserTrigger text, 'change'
-      expect(@model.attributes()).toEqual
-        text: 'new text value'
-        check: true
+    describe 'view -> model', ->
 
-      checkbox = @view.el.children[1]
-      if msie < 9
-        checkbox.defaultChecked = false
-      else
-        checkbox.checked = false
-      browserTrigger checkbox, 'change'
-      expect(@model.attributes()).toEqual
-        text: 'new text value'
-        check: false
+      it 'text', ->
+        @v_text.value = 'new text value'
+        browserTrigger @v_text, 'change'
+        expect(@model.attributes()).toEqual
+          textarea: 'textarea value'
+          text: 'new text value'
+          check: true
+          select: 'one'
+
+      it 'checkbox', ->
+        if msie < 9
+          @v_checkbox.defaultChecked = false
+        else
+          @v_checkbox.checked = false
+        browserTrigger @v_checkbox, 'change'
+        expect(@model.attributes()).toEqual
+          textarea: 'textarea value'
+          text: 'text value'
+          check: false
+          select: 'one'
+
+      it 'select', ->
+        @v_select.value = 'three'
+        browserTrigger @v_select, 'change'
+        expect(@model.attributes()).toEqual
+          textarea: 'textarea value'
+          text: 'text value'
+          check: true
+          select: 'three'
+
+      it 'textarea', ->
+        @v_textarea.value = 'new textarea value'
+        browserTrigger @v_textarea, 'change'
+        expect(@model.attributes()).toEqual
+          textarea: 'new textarea value'
+          text: 'text value'
+          check: true
+          select: 'one'
 
     describe 'model -> view', ->
-      beforeEach ->
-        @text = @view.el.children[0]
-        @checkbox = @view.el.children[1]
 
       it 'text', ->
         @model.set 'text', 'new text value'
         waitOne ->
-          expect(@text.value).toBe 'new text value'
-          expect(@checkbox.checked).toBe true
+          expect(@v_text.value).toBe 'new text value'
+          expect(@v_textarea.value).toBe 'textarea value'
+          expect(@v_checkbox.checked).toBe true
+          expect(@v_select.value).toBe 'one'
 
-      it 'check', ->
+      it 'checkbox', ->
         @model.set 'check', false
         waitOne ->
-          expect(@text.value).toBe 'text value'
-          expect(@checkbox.checked).toBe false
+          expect(@v_text.value).toBe 'text value'
+          expect(@v_textarea.value).toBe 'textarea value'
+          expect(@v_checkbox.checked).toBe false
+          expect(@v_select.value).toBe 'one'
+
+      it 'select', ->
+        @model.set 'select', 'three'
+        waitOne ->
+          expect(@v_text.value).toBe 'text value'
+          expect(@v_textarea.value).toBe 'textarea value'
+          expect(@v_checkbox.checked).toBe true
+          expect(@v_select.value).toBe 'three'
+
+      it 'textarea', ->
+        @model.set 'textarea', 'new textarea value'
+        waitOne ->
+          expect(@v_text.value).toBe 'text value'
+          expect(@v_textarea.value).toBe 'new textarea value'
+          expect(@v_checkbox.checked).toBe true
+          expect(@v_select.value).toBe 'one'

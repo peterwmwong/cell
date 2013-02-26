@@ -15,66 +15,119 @@ define(['../../utils/spec-utils'], function(_arg) {
       beforeEach(function() {
         var _this = this;
         this.NewView = this.View.extend({
-          render: function(__) {
+          render: function(_) {
             return [
-              __('input', _this.x_model('text'), {
+              _this.v_textarea = _('textarea', _this.x_model('textarea'), _this.v_text = _('input', _this.x_model('text'), {
                 type: 'text'
-              }), __('input', _this.x_model('check'), {
+              })), _this.v_checkbox = _('input', _this.x_model('check'), {
                 type: 'checkbox'
-              })
+              }), _this.v_select = _('select', _this.x_model('select'), _('option', {
+                value: 'one'
+              }), _('option', {
+                value: 'two'
+              }), _('option', {
+                value: 'three'
+              }))
             ];
           }
         });
         this.model = new this.Model({
+          textarea: 'textarea value',
           text: 'text value',
-          check: true
+          check: true,
+          select: 'one'
         });
         return this.view = new this.NewView({
           model: this.model
         });
       });
       it('should render model attribute value to inputs', function() {
-        expect(this.view.el.children[0].value).toBe('text value');
-        return expect(this.view.el.children[1].checked).toBe(true);
+        expect(this.v_textarea.value).toBe('textarea value');
+        expect(this.v_text.value).toBe('text value');
+        expect(this.v_checkbox.checked).toBe(true);
+        return expect(this.v_select.value).toBe('one');
       });
-      it('view -> model', function() {
-        var checkbox, text;
-        text = this.view.el.children[0];
-        text.value = 'new text value';
-        browserTrigger(text, 'change');
-        expect(this.model.attributes()).toEqual({
-          text: 'new text value',
-          check: true
+      describe('view -> model', function() {
+        it('text', function() {
+          this.v_text.value = 'new text value';
+          browserTrigger(this.v_text, 'change');
+          return expect(this.model.attributes()).toEqual({
+            textarea: 'textarea value',
+            text: 'new text value',
+            check: true,
+            select: 'one'
+          });
         });
-        checkbox = this.view.el.children[1];
-        if (msie < 9) {
-          checkbox.defaultChecked = false;
-        } else {
-          checkbox.checked = false;
-        }
-        browserTrigger(checkbox, 'change');
-        return expect(this.model.attributes()).toEqual({
-          text: 'new text value',
-          check: false
+        it('checkbox', function() {
+          if (msie < 9) {
+            this.v_checkbox.defaultChecked = false;
+          } else {
+            this.v_checkbox.checked = false;
+          }
+          browserTrigger(this.v_checkbox, 'change');
+          return expect(this.model.attributes()).toEqual({
+            textarea: 'textarea value',
+            text: 'text value',
+            check: false,
+            select: 'one'
+          });
+        });
+        it('select', function() {
+          this.v_select.value = 'three';
+          browserTrigger(this.v_select, 'change');
+          return expect(this.model.attributes()).toEqual({
+            textarea: 'textarea value',
+            text: 'text value',
+            check: true,
+            select: 'three'
+          });
+        });
+        return it('textarea', function() {
+          this.v_textarea.value = 'new textarea value';
+          browserTrigger(this.v_textarea, 'change');
+          return expect(this.model.attributes()).toEqual({
+            textarea: 'new textarea value',
+            text: 'text value',
+            check: true,
+            select: 'one'
+          });
         });
       });
       return describe('model -> view', function() {
-        beforeEach(function() {
-          this.text = this.view.el.children[0];
-          return this.checkbox = this.view.el.children[1];
-        });
         it('text', function() {
           this.model.set('text', 'new text value');
           return waitOne(function() {
-            expect(this.text.value).toBe('new text value');
-            return expect(this.checkbox.checked).toBe(true);
+            expect(this.v_text.value).toBe('new text value');
+            expect(this.v_textarea.value).toBe('textarea value');
+            expect(this.v_checkbox.checked).toBe(true);
+            return expect(this.v_select.value).toBe('one');
           });
         });
-        return it('check', function() {
+        it('checkbox', function() {
           this.model.set('check', false);
           return waitOne(function() {
-            expect(this.text.value).toBe('text value');
-            return expect(this.checkbox.checked).toBe(false);
+            expect(this.v_text.value).toBe('text value');
+            expect(this.v_textarea.value).toBe('textarea value');
+            expect(this.v_checkbox.checked).toBe(false);
+            return expect(this.v_select.value).toBe('one');
+          });
+        });
+        it('select', function() {
+          this.model.set('select', 'three');
+          return waitOne(function() {
+            expect(this.v_text.value).toBe('text value');
+            expect(this.v_textarea.value).toBe('textarea value');
+            expect(this.v_checkbox.checked).toBe(true);
+            return expect(this.v_select.value).toBe('three');
+          });
+        });
+        return it('textarea', function() {
+          this.model.set('textarea', 'new textarea value');
+          return waitOne(function() {
+            expect(this.v_text.value).toBe('text value');
+            expect(this.v_textarea.value).toBe('new textarea value');
+            expect(this.v_checkbox.checked).toBe(true);
+            return expect(this.v_select.value).toBe('one');
           });
         });
       });

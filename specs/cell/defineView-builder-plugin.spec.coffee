@@ -15,68 +15,67 @@ define [
         else setTimeout waitFor, 20
       waitFor()
 
+    if isNaN(msie)
+      describe '@repathCSSRelativeURL(cssContents, cssFilePath, baseUrl)', ->
+        beforeEach ->
+          window.process =
+            versions:
+              node: '0.8.11'
 
-    describe '@repathCSSRelativeURL(cssContents, cssFilePath, baseUrl)', ->
+          window.require.nodeRequire = (dep)=>
+            if dep is 'path'
+              @path =
+                dirname: jasmine.createSpy('path.dirname').andCallFake (a)-> "path_dirname(#{a})"
+                join: jasmine.createSpy('path.join').andCallFake (a,b)-> "path_join(#{a},#{b})"
+                relative: jasmine.createSpy('path.relative').andCallFake (a,b)-> "path_relative(#{a},#{b})"
 
-      beforeEach ->
-        window.process =
-          versions:
-            node: '0.8.11'
+        afterEach ->
+          delete window.process
+          delete window.require.nodeRequire
 
-        window.require.nodeRequire = (dep)=>
-          if dep is 'path'
-            @path =
-              dirname: jasmine.createSpy('path.dirname').andCallFake (a)-> "path_dirname(#{a})"
-              join: jasmine.createSpy('path.join').andCallFake (a,b)-> "path_join(#{a},#{b})"
-              relative: jasmine.createSpy('path.relative').andCallFake (a,b)-> "path_relative(#{a},#{b})"
+        beforeEachRequire ['cell/defineView-builder-plugin'], (@defineViewPlugin)->
 
-      afterEach ->
-        delete window.process
-        delete window.require.nodeRequire
+        it "repath relative url()'s to be rooted to the project", ->
+          cssContents =
+            """
+            .hasRelativeURL1 {
+              background-image: url('./three/img.png');
+            }
+            .hasRelativeURL2 {
+              background-image:url(three/img.png);
+            }
+            .hasRelativeURL3 {
+              background-image: \turl("three/img.png");
+            }
+            .hasAbsoluteURL1 {
+              background-image: url('/abs/img.png');
+            }
+            .hasAbsoluteURL1 {
+              background-image: url('https://www.google.com/images/srpr/logo3w.png');
+            }
+            """
+          cssFilePath = '/one/two/cssFile.css'
+          baseUrl = '/one/'
+          result = @defineViewPlugin.repathCSSRelativeURL cssContents, cssFilePath, baseUrl
 
-      beforeEachRequire ['cell/defineView-builder-plugin'], (@defineViewPlugin)->
-
-      it "repath relative url()'s to be rooted to the project", ->
-        cssContents =
-          """
-          .hasRelativeURL1 {
-            background-image: url('./three/img.png');
-          }
-          .hasRelativeURL2 {
-            background-image:url(three/img.png);
-          }
-          .hasRelativeURL3 {
-            background-image: \turl("three/img.png");
-          }
-          .hasAbsoluteURL1 {
-            background-image: url('/abs/img.png');
-          }
-          .hasAbsoluteURL1 {
-            background-image: url('https://www.google.com/images/srpr/logo3w.png');
-          }
-          """
-        cssFilePath = '/one/two/cssFile.css'
-        baseUrl = '/one/'
-        result = @defineViewPlugin.repathCSSRelativeURL cssContents, cssFilePath, baseUrl
-
-        expect(result).toEqual do->
-          """
-          .hasRelativeURL1 {
-            background-image: url('path_relative(/one/,path_join(path_dirname(/one/two/cssFile.css),./three/img.png))');
-          }
-          .hasRelativeURL2 {
-            background-image: url('path_relative(/one/,path_join(path_dirname(/one/two/cssFile.css),three/img.png))');
-          }
-          .hasRelativeURL3 {
-            background-image: url('path_relative(/one/,path_join(path_dirname(/one/two/cssFile.css),three/img.png))');
-          }
-          .hasAbsoluteURL1 {
-            background-image: url('/abs/img.png');
-          }
-          .hasAbsoluteURL1 {
-            background-image: url('https://www.google.com/images/srpr/logo3w.png');
-          }
-          """
+          expect(result).toEqual do->
+            """
+            .hasRelativeURL1 {
+              background-image: url('path_relative(/one/,path_join(path_dirname(/one/two/cssFile.css),./three/img.png))');
+            }
+            .hasRelativeURL2 {
+              background-image: url('path_relative(/one/,path_join(path_dirname(/one/two/cssFile.css),three/img.png))');
+            }
+            .hasRelativeURL3 {
+              background-image: url('path_relative(/one/,path_join(path_dirname(/one/two/cssFile.css),three/img.png))');
+            }
+            .hasAbsoluteURL1 {
+              background-image: url('/abs/img.png');
+            }
+            .hasAbsoluteURL1 {
+              background-image: url('https://www.google.com/images/srpr/logo3w.png');
+            }
+            """
 
 
     describe 'A single JS and single CSS are created correctly', ->
