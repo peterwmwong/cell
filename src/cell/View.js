@@ -70,10 +70,10 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
         var i, item, key, len, newEls, newItemHash, prevItemEl;
         newEls = [];
         newItemHash = new HashQueue;
-        i = -1;
+        i = 0;
         len = value.length;
-        while (++i < len) {
-          if (!(prevItemEl = itemhash.shift(key = hash(item = value[i])))) {
+        while (i < len) {
+          if (!(prevItemEl = itemhash.shift(key = hash(item = value[i++])))) {
             prevItemEl = itemRenderer[protoProp] instanceof View ? new itemRenderer({
               model: item
             }).el : itemRenderer.call(view, item);
@@ -85,17 +85,17 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
           removeChildren(parent, itemhash.h[key]);
         }
         itemhash = newItemHash;
-        i = -1;
+        i = 0;
         len = newEls.length;
-        while (++i < len) {
-          parent.appendChild(newEls[i]);
+        while (i < len) {
+          parent.appendChild(newEls[i++]);
         }
       });
     };
   };
   EachBind[protoProp][constrProp] = IfBind[protoProp][constrProp] = Bind;
   __ = function(viewOrHAML, optionsOrFirstChild) {
-    var children, classes, ext, exts, i, k, len, m, match, options, parent, v;
+    var children, classes, exts, i, k, len, m, match, options, parent, v;
     children = [].slice.call(arguments, 1);
     i = -1;
     len = children.length;
@@ -137,10 +137,11 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
       parent = new viewOrHAML(options).el;
     }
     if (parent) {
-      while (ext = exts.pop()) {
-        ext.run(parent, this);
-      }
       this._rcs(children, parent);
+      i = exts.length;
+      while (i--) {
+        exts[i].run(parent, this);
+      }
       return parent;
     }
   };
@@ -153,7 +154,7 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
     }
   };
   __.each = function(col, renderer) {
-    var i, length, results;
+    var i, len, results;
     if (col) {
       if (col instanceof Collection) {
         col = fn.b0(col.toArray, col);
@@ -161,10 +162,10 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
       if (isF(col)) {
         return new EachBind(this.view, col, renderer);
       } else {
-        length = col.length;
+        len = col.length;
         i = -1;
         results = [];
-        while (++i < length) {
+        while (++i < len) {
           results.push((renderer[protoProp] instanceof View ? new renderer({
             model: col[i]
           }).el : renderer.call(this.view, col[i], i, col)));

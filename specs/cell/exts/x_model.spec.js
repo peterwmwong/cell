@@ -22,9 +22,9 @@ define(['../../utils/spec-utils'], function(_arg) {
               })), _this.v_checkbox = _('input', _this.x_model('check'), {
                 type: 'checkbox'
               }), _this.v_select = _('select', _this.x_model('select'), _('option', {
-                value: 'one'
-              }), _('option', {
                 value: 'two'
+              }), _('option', {
+                value: 'one'
               }), _('option', {
                 value: 'three'
               }))

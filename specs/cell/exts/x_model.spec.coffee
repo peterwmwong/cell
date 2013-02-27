@@ -13,8 +13,8 @@ define ['../../utils/spec-utils'], ({node,browserTrigger,waitOne,msie})-> ({befo
           @v_text = _ 'input', (@x_model 'text'), type: 'text'
           @v_checkbox = _ 'input', (@x_model 'check'), type: 'checkbox'
           @v_select = _ 'select', (@x_model 'select'),
-            _ 'option', value: 'one'
             _ 'option', value: 'two'
+            _ 'option', value: 'one'
             _ 'option', value: 'three'
         ]
       @model = new @Model

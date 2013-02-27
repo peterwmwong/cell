@@ -74,10 +74,10 @@ define [
         newEls = []
         newItemHash = new HashQueue
 
-        i=-1
+        i=0
         len=value.length
-        while ++i<len
-          unless prevItemEl = (itemhash.shift key = (hash item = value[i]))
+        while i<len
+          unless prevItemEl = (itemhash.shift key = (hash item = value[i++]))
             prevItemEl = 
               if itemRenderer[protoProp] instanceof View
                 new itemRenderer(model: item).el
@@ -93,10 +93,10 @@ define [
         itemhash = newItemHash
 
         # Add the elements for the current items
-        i=-1
+        i=0
         len=newEls.length
-        while ++i<len
-          parent.appendChild newEls[i]
+        while i<len
+          parent.appendChild newEls[i++]
         return
       return
     return
@@ -150,9 +150,10 @@ define [
       parent = new viewOrHAML(options).el
 
     if parent
-      while ext = exts.pop()
-        ext.run parent, @
       @_rcs children, parent
+      i = exts.length
+      while i--
+        exts[i].run parent, @
       parent
 
   __.if = (condition,thenElse)->
@@ -169,10 +170,10 @@ define [
       if isF col
         new EachBind @view, col, renderer
       else
-        length = col.length
+        len = col.length
         i=-1
         results = []
-        while ++i < length
+        while ++i < len
           results.push (
             if renderer[protoProp] instanceof View
               new renderer(model: col[i]).el
