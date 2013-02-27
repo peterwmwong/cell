@@ -103,6 +103,13 @@ define [
 
   EachBind[protoProp][constrProp] = IfBind[protoProp][constrProp] = Bind
 
+  setElAttribute = (el, key, value)->
+    if key is 'innerHTML'
+      el.innerHTML = value
+    else
+      el.setAttribute key, value
+    return
+
   __ = (viewOrHAML, optionsOrFirstChild)->
     children = [].slice.call arguments, 1
     i = -1
@@ -140,10 +147,10 @@ define [
           else
             if isF v
               watch hash(@), (fn.b0 v, @), do(k)-> (value)->
-                parent.setAttribute k, value
+                setElAttribute parent, k, value
                 return
             else
-              parent.setAttribute k, v
+              setElAttribute parent, k, v
           
     # View
     else if viewOrHAML and viewOrHAML[protoProp] instanceof View

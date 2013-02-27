@@ -1,6 +1,21 @@
 TODO
 ====
 
+NEW: View::watch
+----------------
+
+    define (require)->
+      require('cell/defineView!')
+        render: -> ...
+        afterRender: ->
+          @watch (->...), (value)->
+
+    # Possible implementation
+    View::watch = (expr, cb)->
+      watch (hash @), expr, (fn.fb1 cb, @)
+      return
+
+
 NEW: Handle access changing expressions
 ---------------------------------------
 

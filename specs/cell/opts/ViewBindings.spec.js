@@ -13,6 +13,7 @@ define(['../../utils/spec-utils'], function(_arg) {
         this.Collection = Collection;
         this.view = new this.View();
         this.view.set('test', 'test val');
+        this.view.set('testInnerHTML', 'test innerHTML');
         return this.__ = this.view.__;
       });
       describe('__.each( collection, view:View )', function() {
@@ -211,8 +212,14 @@ define(['../../utils/spec-utils'], function(_arg) {
             'data-custom': (function() {
               return this.get('test');
             }),
-            'non-bind': 'constant value'
+            'non-bind': 'constant value',
+            innerHTML: (function() {
+              return this.get('testInnerHTML');
+            })
           });
+        });
+        it("when innerHTML is specified as an attribute, sets the innerHTML", function() {
+          return expect(this.node.innerHTML).toBe('test innerHTML');
         });
         it("sets binding's value to the element's attribute", function() {
           expect(this.node.getAttribute('data-custom')).toBe('test val');
@@ -220,11 +227,17 @@ define(['../../utils/spec-utils'], function(_arg) {
         });
         return describe("when the binding's value changes and @updateBinds() is called", function() {
           beforeEach(function() {
-            return this.view.set('test', 'test val2');
+            this.view.set('test', 'test val2');
+            return this.view.set('testInnerHTML', 'test innerHTML 2');
           });
-          return it("automatically sets the element's attribute to the new binding's value", function() {
+          it("automatically sets the element's attribute to the new binding's value", function() {
             return waitOne(function() {
               return expect(this.node.getAttribute('data-custom')).toBe('test val2');
+            });
+          });
+          return it("when innerHTML is specified as an attribute, sets the innerHTML", function() {
+            return waitOne(function() {
+              return expect(this.node.innerHTML).toBe('test innerHTML 2');
             });
           });
         });

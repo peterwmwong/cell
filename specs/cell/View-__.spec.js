@@ -82,6 +82,13 @@ define(['../utils/spec-utils'], function(_arg) {
           'data-custom2': 'myattr2'
         }
       ], '<p class="myclass myclass2 myclass3" data-custom="myattr" data-custom2="myattr2" id="myid"></p>');
+      it_renders("selector:String, attrHash:Object (innerHTML as a property)", [
+        'p#myid.myclass.myclass2', {
+          "class": 'myclass3',
+          'data-custom': 'myattr',
+          innerHTML: '<b>wompa</b>'
+        }
+      ], '<p class="myclass myclass2 myclass3" data-custom="myattr" id="myid"><b>wompa</b></p>');
       describe("on* event handlers", function() {
         return it('registers event handler', function() {
           this.node = this.__('.bound', {

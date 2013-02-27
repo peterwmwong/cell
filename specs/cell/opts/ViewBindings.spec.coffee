@@ -11,6 +11,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
       ], (@View, @Model, @Collection)->
         @view = new @View()
         @view.set 'test', 'test val'
+        @view.set 'testInnerHTML', 'test innerHTML'
         @__ = @view.__
 
 
@@ -162,7 +163,10 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
       describe 'when a bind is passed as an attribute', ->
 
         beforeEach ->
-          @node = @__ '.bound', 'data-custom':(-> @get 'test'), 'non-bind': 'constant value'
+          @node = @__ '.bound', 'data-custom':(-> @get 'test'), 'non-bind': 'constant value', innerHTML: (-> @get 'testInnerHTML')
+
+        it "when innerHTML is specified as an attribute, sets the innerHTML", ->
+          expect(@node.innerHTML).toBe 'test innerHTML'
 
         it "sets binding's value to the element's attribute", ->
           expect(@node.getAttribute 'data-custom').toBe 'test val'
@@ -171,11 +175,15 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
         describe "when the binding's value changes and @updateBinds() is called", ->
           beforeEach ->
             @view.set 'test', 'test val2'
+            @view.set 'testInnerHTML', 'test innerHTML 2'
 
           it "automatically sets the element's attribute to the new binding's value", ->
             waitOne ->
               expect(@node.getAttribute 'data-custom').toBe 'test val2'
 
+          it "when innerHTML is specified as an attribute, sets the innerHTML", ->
+            waitOne ->
+              expect(@node.innerHTML).toBe 'test innerHTML 2'
 
       describe "when the attribute is a on* event handler", ->
         it "doesn't think it's a bind", ->
