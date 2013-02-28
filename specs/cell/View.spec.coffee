@@ -57,6 +57,26 @@ define ['../utils/spec-utils'], ({node,browserTrigger,nodeHTMLEquals,waitOne})->
             'afterRender'
           ]
 
+    describe '@watch( expression:function, callback:function )', ->
+      beforeEach ->
+        @model = new @Model a: 'a val'
+        @view = new @View model: @model
+        @view.watch (->@model.get 'a'), @callback = jasmine.createSpy 'callback'
+
+      it 'calls callback with value and `this` set to the view', ->
+        expect(@callback).toHaveBeenCalledWith 'a val'
+        expect(@callback.calls[0].object).toBe @view
+
+      describe 'when model value is changed', ->
+        beforeEach ->
+          @callback.reset()
+          @model.set 'a', 'a val 2'
+
+        it 'calls callback with new value and `this` set to the view', ->
+          waitOne ->
+            expect(@callback).toHaveBeenCalledWith 'a val 2'
+            expect(@callback.calls[0].object).toBe @view
+
     describe '@destroy()', ->
       beforeEach ->
         @model = new @Model a: 'a val'
@@ -73,6 +93,8 @@ define ['../utils/spec-utils'], ({node,browserTrigger,nodeHTMLEquals,waitOne})->
         @view = new @TestView
           collection: @col
           model: @model
+
+        @view.watch (-> @model.get 'a'), (@watchCallback = jasmine.createSpy 'watchCallback')
         @el = @view.el
 
       it 'removes @el from view', ->
@@ -106,3 +128,10 @@ define ['../utils/spec-utils'], ({node,browserTrigger,nodeHTMLEquals,waitOne})->
         browserTrigger @el.children[0], 'click'
 
         expect(@view.onclick).not.toHaveBeenCalled()
+
+      it 'removes watch listeners', ->
+        @watchCallback.reset()
+        @view.destroy()
+        @model.set 'a', 'a val 3'
+        waitOne ->
+          expect(@watchCallback).not.toHaveBeenCalled()

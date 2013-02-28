@@ -75,6 +75,35 @@ define(['../utils/spec-utils'], function(_arg) {
         });
       });
     });
+    describe('@watch( expression:function, callback:function )', function() {
+      beforeEach(function() {
+        this.model = new this.Model({
+          a: 'a val'
+        });
+        this.view = new this.View({
+          model: this.model
+        });
+        return this.view.watch((function() {
+          return this.model.get('a');
+        }), this.callback = jasmine.createSpy('callback'));
+      });
+      it('calls callback with value and `this` set to the view', function() {
+        expect(this.callback).toHaveBeenCalledWith('a val');
+        return expect(this.callback.calls[0].object).toBe(this.view);
+      });
+      return describe('when model value is changed', function() {
+        beforeEach(function() {
+          this.callback.reset();
+          return this.model.set('a', 'a val 2');
+        });
+        return it('calls callback with new value and `this` set to the view', function() {
+          return waitOne(function() {
+            expect(this.callback).toHaveBeenCalledWith('a val 2');
+            return expect(this.callback.calls[0].object).toBe(this.view);
+          });
+        });
+      });
+    });
     return describe('@destroy()', function() {
       beforeEach(function() {
         this.model = new this.Model({
@@ -106,6 +135,9 @@ define(['../utils/spec-utils'], function(_arg) {
           collection: this.col,
           model: this.model
         });
+        this.view.watch((function() {
+          return this.model.get('a');
+        }), (this.watchCallback = jasmine.createSpy('watchCallback')));
         return this.el = this.view.el;
       });
       it('removes @el from view', function() {
@@ -123,13 +155,21 @@ define(['../utils/spec-utils'], function(_arg) {
           return nodeHTMLEquals(this.el, '<div cell="Test" class="Test">' + '<div class="model">a val</div>' + '<div class="item">b val</div>' + '</div>');
         });
       });
-      return it('removes DOM event listeners', function() {
+      it('removes DOM event listeners', function() {
         browserTrigger(this.el.children[0], 'click');
         expect(this.view.onclick).toHaveBeenCalled();
         this.view.onclick.reset();
         this.view.destroy();
         browserTrigger(this.el.children[0], 'click');
         return expect(this.view.onclick).not.toHaveBeenCalled();
+      });
+      return it('removes watch listeners', function() {
+        this.watchCallback.reset();
+        this.view.destroy();
+        this.model.set('a', 'a val 3');
+        return waitOne(function() {
+          return expect(this.watchCallback).not.toHaveBeenCalled();
+        });
       });
     });
   };

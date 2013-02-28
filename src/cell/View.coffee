@@ -191,35 +191,40 @@ define [
           
   View = Model.extend
     constructor: (options)->
-      @options =
+      t = @
+      t.options =
         if options
-          @model = options.model
-          @collection = options.collection
+          t.model = options.model
+          t.collection = options.collection
           delete options.model
           delete options.collection
           options
         else {}
 
       __ = View[protoProp].__
-      _ = @__ = fn.b __, @
+      _ = t.__ = fn.b __, t
       _.if = __.if
       _.each = __.each
-      _.view = @
+      _.view = t
 
-      @beforeRender()
-      @el = el = @renderEl _
-      cellName = @_cellName
+      t.beforeRender()
+      t.el = el = t.renderEl _
+      cellName = t._cellName
       el.className = if (cls = el.className) then (cls+' '+cellName) else cellName
-      data.set el, 'cellRef', @
+      data.set el, 'cellRef', t
       el.setAttribute 'cell', cellName
-      @_rcs (@render @__), el
-      @afterRender()
+      t._rcs (t.render @__), el
+      t.afterRender()
       return
 
     beforeRender: noop
     renderEl: -> d.createElement 'div'
     render: noop
     afterRender: noop
+
+    watch: (expr,callback)->
+      watch hash(@), fn.b0(expr,@), fn.b1(callback,@)
+      return
 
     __: __
 

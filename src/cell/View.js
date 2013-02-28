@@ -183,21 +183,22 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
   };
   return View = Model.extend({
     constructor: function(options) {
-      var cellName, cls, el, _;
-      this.options = options ? (this.model = options.model, this.collection = options.collection, delete options.model, delete options.collection, options) : {};
+      var cellName, cls, el, t, _;
+      t = this;
+      t.options = options ? (t.model = options.model, t.collection = options.collection, delete options.model, delete options.collection, options) : {};
       __ = View[protoProp].__;
-      _ = this.__ = fn.b(__, this);
+      _ = t.__ = fn.b(__, t);
       _["if"] = __["if"];
       _.each = __.each;
-      _.view = this;
-      this.beforeRender();
-      this.el = el = this.renderEl(_);
-      cellName = this._cellName;
+      _.view = t;
+      t.beforeRender();
+      t.el = el = t.renderEl(_);
+      cellName = t._cellName;
       el.className = (cls = el.className) ? cls + ' ' + cellName : cellName;
-      data.set(el, 'cellRef', this);
+      data.set(el, 'cellRef', t);
       el.setAttribute('cell', cellName);
-      this._rcs(this.render(this.__), el);
-      this.afterRender();
+      t._rcs(t.render(this.__), el);
+      t.afterRender();
     },
     beforeRender: noop,
     renderEl: function() {
@@ -205,6 +206,9 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
     },
     render: noop,
     afterRender: noop,
+    watch: function(expr, callback) {
+      watch(hash(this), fn.b0(expr, this), fn.b1(callback, this));
+    },
     __: __,
     destroy: function() {
       if (this.el) {
