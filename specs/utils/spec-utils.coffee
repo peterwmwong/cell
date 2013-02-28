@@ -90,7 +90,10 @@ define ['jquery'], ($)->
         ret
 
       else
-        evnt = document.createEvent 'MouseEvents'
+        isKeyEvent = (type in ['keypress','keydown','keyup'])
+        evnt = document.createEvent do->
+          if isKeyEvent then 'KeyboardEvent'
+          else 'MouseEvents'
         originalPreventDefault = evnt.preventDefault
         fakeProcessDefault = true
         finalProcessDefault = undefined
@@ -99,7 +102,25 @@ define ['jquery'], ($)->
           fakeProcessDefault = false
           originalPreventDefault.apply evnt, arguments
 
-        evnt.initMouseEvent(type, true, true, window, 0, 0, 0, 0, 0, pressed('ctrl'), pressed('alt'), pressed('shift'), pressed('meta'), 0, element)
+        if isKeyEvent
+          initMethod =
+            if evnt.initKeyboardEvent then 'initKeyboardEvent'
+            else 'initKeyEvent'
+          evnt[initMethod].call evnt,
+            type             #  in DOMString typeArg,
+            true             #  in boolean canBubbleArg,
+            true             #  in boolean cancelableArg,
+            null             #  in nsIDOMAbstractView viewArg,  Specifies UIEvent.view. This value may be null.
+            false            #  in boolean ctrlKeyArg,
+            false            #  in boolean altKeyArg,
+            false            #  in boolean shiftKeyArg,
+            false            #  in boolean metaKeyArg,
+            9                #  in unsigned long keyCodeArg,
+            0                #  in unsigned long charCodeArg
+
+        # Default to mouse event
+        else
+          evnt.initMouseEvent(type, true, true, window, 0, 0, 0, 0, 0, pressed('ctrl'), pressed('alt'), pressed('shift'), pressed('meta'), 0, element)
 
         element.dispatchEvent evnt
         finalProcessDefault = fakeProcessDefault

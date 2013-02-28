@@ -5,19 +5,25 @@ define(['dom/events', 'cell/Ext'], function(events, Ext) {
   ModelElement = {
     input: {
       text: text = {
+        e: 'keyup',
         g: 'value',
         s: function(value) {
           this.el[this.ea] = value;
         }
       },
       checkbox: {
+        e: 'change',
         g: 'checked',
         s: function(value) {
           this.el[this.ea] = !!value;
         }
       }
     },
-    select: text,
+    select: {
+      e: 'change',
+      g: text.g,
+      s: text.s
+    },
     textarea: text
   };
   return Ext.extend({
@@ -31,7 +37,7 @@ define(['dom/events', 'cell/Ext'], function(events, Ext) {
       }
       if (modelEl) {
         this.ea = modelEl.g;
-        events.on(el, 'change', function() {
+        events.on(el, modelEl.e, function() {
           view.model.set(ma, el[modelEl.g]);
         });
         getValue((function() {

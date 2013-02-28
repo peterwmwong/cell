@@ -34,7 +34,7 @@ define ['../../utils/spec-utils'], ({node,browserTrigger,waitOne,msie})-> ({befo
 
       it 'text', ->
         @v_text.value = 'new text value'
-        browserTrigger @v_text, 'change'
+        browserTrigger @v_text, 'keyup'
         expect(@model.attributes()).toEqual
           textarea: 'textarea value'
           text: 'new text value'
@@ -64,7 +64,7 @@ define ['../../utils/spec-utils'], ({node,browserTrigger,waitOne,msie})-> ({befo
 
       it 'textarea', ->
         @v_textarea.value = 'new textarea value'
-        browserTrigger @v_textarea, 'change'
+        browserTrigger @v_textarea, 'keyup'
         expect(@model.attributes()).toEqual
           textarea: 'new textarea value'
           text: 'text value'

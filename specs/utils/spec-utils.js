@@ -57,7 +57,7 @@ define(['jquery'], function($) {
       return runs(expectCallback);
     },
     browserTrigger: function(element, type, keys) {
-      var evnt, fakeProcessDefault, finalProcessDefault, originalPreventDefault, pressed, ret, _ref;
+      var evnt, fakeProcessDefault, finalProcessDefault, initMethod, isKeyEvent, originalPreventDefault, pressed, ret, _ref;
       if (element && !element.nodeName) {
         element = element[0];
       }
@@ -106,7 +106,14 @@ define(['jquery'], function($) {
         }
         return ret;
       } else {
-        evnt = document.createEvent('MouseEvents');
+        isKeyEvent = (type === 'keypress' || type === 'keydown' || type === 'keyup');
+        evnt = document.createEvent((function() {
+          if (isKeyEvent) {
+            return 'KeyboardEvent';
+          } else {
+            return 'MouseEvents';
+          }
+        })());
         originalPreventDefault = evnt.preventDefault;
         fakeProcessDefault = true;
         finalProcessDefault = void 0;
@@ -114,7 +121,12 @@ define(['jquery'], function($) {
           fakeProcessDefault = false;
           return originalPreventDefault.apply(evnt, arguments);
         };
-        evnt.initMouseEvent(type, true, true, window, 0, 0, 0, 0, 0, pressed('ctrl'), pressed('alt'), pressed('shift'), pressed('meta'), 0, element);
+        if (isKeyEvent) {
+          initMethod = evnt.initKeyboardEvent ? 'initKeyboardEvent' : 'initKeyEvent';
+          evnt[initMethod].call(evnt, type, true, true, null, false, false, false, false, 9, 0);
+        } else {
+          evnt.initMouseEvent(type, true, true, window, 0, 0, 0, 0, 0, pressed('ctrl'), pressed('alt'), pressed('shift'), pressed('meta'), 0, element);
+        }
         element.dispatchEvent(evnt);
         finalProcessDefault = fakeProcessDefault;
         return finalProcessDefault;

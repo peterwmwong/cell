@@ -50,7 +50,7 @@ define(['../../utils/spec-utils'], function(_arg) {
       describe('view -> model', function() {
         it('text', function() {
           this.v_text.value = 'new text value';
-          browserTrigger(this.v_text, 'change');
+          browserTrigger(this.v_text, 'keyup');
           return expect(this.model.attributes()).toEqual({
             textarea: 'textarea value',
             text: 'new text value',
@@ -84,7 +84,7 @@ define(['../../utils/spec-utils'], function(_arg) {
         });
         return it('textarea', function() {
           this.v_textarea.value = 'new textarea value';
-          browserTrigger(this.v_textarea, 'change');
+          browserTrigger(this.v_textarea, 'keyup');
           return expect(this.model.attributes()).toEqual({
             textarea: 'new textarea value',
             text: 'text value',

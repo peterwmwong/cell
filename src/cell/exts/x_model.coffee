@@ -6,16 +6,21 @@ define [
   ModelElement =
     input:
       text: text =
+        e: 'keyup'
         g: 'value'
         s: (value)->
           @el[@ea] = value
           return
       checkbox:
+        e: 'change'
         g: 'checked'
         s: (value)->
           @el[@ea] = not not value
           return
-    select: text
+    select:
+      e: 'change'
+      g: text.g
+      s: text.s
     textarea: text
 
   Ext.extend
@@ -25,7 +30,7 @@ define [
 
       if modelEl
         @ea = modelEl.g
-        events.on el, 'change', ->
+        events.on el, modelEl.e, ->
           view.model.set ma, el[modelEl.g]
           return
         getValue (-> @model.get ma), modelEl.s
