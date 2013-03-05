@@ -1,8 +1,29 @@
 TODO
 ====
 
-NEW: x_model onkeypress
------------------------
+NEW: config.outcss (function or string)
+---------------------------------------
+
+This would allow r.js builds to customize the output of the combined CSS
+
+NEW: cell/Model entry iteration
+-------------------------------
+
+    model.each (key, value)->
+    model.map (key, value)->
+    model.reduce (sum, key, value)->
+
+
+NEW: defineView! @extends:SuperClass
+------------------------------------
+
+    require('defineView!').extend
+      extends: require 'BaseView'
+      render: (_)-> [...]
+
+
+!!! Make sure element's class has both the SuperClass and SubClass
+
 
 NEW: Handle access changing expressions
 ---------------------------------------
