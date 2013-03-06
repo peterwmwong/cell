@@ -1,0 +1,9 @@
+.MockNested {
+  color: #F00;
+  background-image: url('dir/logo.png');
+  width: 500px;
+  height: 500px;
+}
+.Mock {
+  color: #00F
+}

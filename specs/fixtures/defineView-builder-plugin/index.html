@@ -1,8 +1,18 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>cell-plugin-builder fixture</title>
-    <link href="all.css" rel="stylesheet" type="text/css">
-  </head>
-  <body><script async src='all.js'></script></body>
+<head>
+  <title>cell-plugin-builder fixture</title>
+</head>
+<body>
+  <script>
+  (function(){
+    var css = /css=([^&]*)/.exec(window.location)[1];
+    var js = /js=([^&]*)/.exec(window.location)[1];
+    document.write(
+      '<link href="'+css+'.css" rel="stylesheet" type="text/css" />'+
+      '<script async src="'+js+'.js"></'+'script>'
+    );
+  })();
+  </script>
+</body>
 </html>

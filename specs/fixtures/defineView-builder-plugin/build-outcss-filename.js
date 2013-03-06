@@ -2,7 +2,8 @@
   mainConfigFile: 'config.js',
   name: '../../../src/almond',
   optimize: 'uglify2',
-  out: 'all.js',
+  outcss: 'all-outcss-filename.css',
+  out: 'all-outjs-filename.js',
   wrap: {
     end: "require('App');"
   }

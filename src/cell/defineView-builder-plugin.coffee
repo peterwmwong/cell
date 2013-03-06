@@ -17,6 +17,7 @@ define ->
     return
 
   outcssfile = undefined
+  outcssfunc = undefined
   configBaseUrl = undefined
 
   Cstack = []
@@ -44,7 +45,7 @@ define ->
 
   write: (pName, mName, write)->
     ++writeCount
-    if outcssfile? and Cstack.length > 0 and Cstack.length is writeCount
+    if (outcssfile? or outcssfunc?) and (Cstack.length > 0) and (Cstack.length is writeCount)
       allcss = ''
       preinstalls = {}
 
@@ -56,7 +57,10 @@ define ->
           return
 
       write ";window.__installedViews = #{JSON.stringify preinstalls};"
-      put outcssfile, allcss
+      if outcssfile?
+        put outcssfile, allcss
+
+      outcssfunc? allcss
     return
   
   load: do->
@@ -64,8 +68,14 @@ define ->
     (name, req, onLoad, config)->
       configBaseUrl = config.baseUrl
 
-      if not outcssfile? and (match = /(.*)\.\w*/.exec config?.out) and match[1]
+      if typeof config.outcss is 'function'
+        outcssfunc = config.outcss
+      else if typeof config.outcss is 'string'
+        outcssfile = path.join configBaseUrl, config.outcss
+
+      if (not outcssfile?) and (typeof config?.out is 'string') and (match = /(.*)\.\w*/.exec config?.out) and match[1]
         outcssfile = match[1]+'.css'
+
       Cstack.push name: name, cssurl: req.toUrl "#{name}.css"
       onLoad()
       req ['cell/View']

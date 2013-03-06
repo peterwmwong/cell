@@ -4,7 +4,7 @@ define(['jquery', '../utils/spec-utils'], function($, _arg) {
   var msie, nodeToHTML;
   nodeToHTML = _arg.nodeToHTML, msie = _arg.msie;
   return function(_arg1) {
-    var beforeEachRequire, load_fixture;
+    var beforeEachRequire, describe_builder_spec, load_fixture;
     beforeEachRequire = _arg1.beforeEachRequire;
     load_fixture = function(iframe_src, cb) {
       var $fixture_container, waitFor;
@@ -16,7 +16,7 @@ define(['jquery', '../utils/spec-utils'], function($, _arg) {
         $f = function(sel) {
           return $(sel, $fix);
         };
-        if ($f('body > *').length > 1) {
+        if ($f('body > .Mock').length > 0) {
           return cb($f);
         } else {
           return setTimeout(waitFor, 20);
@@ -68,40 +68,47 @@ define(['jquery', '../utils/spec-utils'], function($, _arg) {
         });
       });
     }
-    return describe('A single JS and single CSS are created correctly', function() {
-      beforeEach(function() {
-        this.$f = void 0;
-        runs(function() {
-          var _this = this;
-          return load_fixture('../specs/fixtures/defineView-builder-plugin/index.html', function($f) {
-            _this.$f = $f;
+    describe_builder_spec = function(desc, cssFname, jsFname) {
+      return describe(desc, function() {
+        return describe('A single JS and single CSS are created correctly', function() {
+          beforeEach(function() {
+            this.$f = void 0;
+            runs(function() {
+              var _this = this;
+              return load_fixture("../specs/fixtures/defineView-builder-plugin/index.html?css=" + cssFname + "&js=" + jsFname, function($f) {
+                _this.$f = $f;
+              });
+            });
+            return waitsFor(function() {
+              return this.$f != null;
+            });
+          });
+          afterEach(function() {
+            return $('#spec-fixture').empty();
+          });
+          it("Should render Mock and MockNested Cells", function() {
+            return expect(nodeToHTML(this.$f('body')[0])).toMatch(/<div cell="Mock" class="Mock">Mock: <div cell="MockNested" class="MockNested">MockNested<\/div><\/div>/);
+          });
+          it("Should apply Mock css from all.css", function() {
+            return expect(this.$f('.Mock').css('color')).toBe((msie < 9 ? '#00f' : 'rgb(0, 0, 255)'));
+          });
+          it("Should repath CSS urls", function() {
+            return expect(this.$f('.MockNested').css('background-image')).toMatch(/specs\/fixtures\/defineView-builder-plugin\/dir\/logo.png/);
+          });
+          it("Should apply MockNested css from all.css", function() {
+            return expect(this.$f('.MockNested').css('color')).toBe((msie < 9 ? '#f00' : 'rgb(255, 0, 0)'));
+          });
+          it("Should NOT attach <link> for Mock.css", function() {
+            return expect(this.$f('head > link[href*="Mock.css"]').length).toBe(0);
+          });
+          return it("Should NOT attach <link> for MockNested.css", function() {
+            return expect(this.$f('head > link[href*="MockNested.css"]').length).toBe(0);
           });
         });
-        return waitsFor(function() {
-          return this.$f != null;
-        });
       });
-      afterEach(function() {
-        return $('#spec-fixture').empty();
-      });
-      it("Should render Mock and MockNested Cells", function() {
-        return expect(nodeToHTML(this.$f('body')[0])).toMatch(/<div cell="Mock" class="Mock">Mock: <div cell="MockNested" class="MockNested">MockNested<\/div><\/div>/);
-      });
-      it("Should apply Mock css from all.css", function() {
-        return expect(this.$f('.Mock').css('color')).toBe((msie < 9 ? '#00f' : 'rgb(0, 0, 255)'));
-      });
-      it("Should repath CSS urls", function() {
-        return expect(this.$f('.MockNested').css('background-image')).toMatch(/specs\/fixtures\/defineView-builder-plugin\/dir\/logo.png/);
-      });
-      it("Should apply MockNested css from all.css", function() {
-        return expect(this.$f('.MockNested').css('color')).toBe((msie < 9 ? '#f00' : 'rgb(255, 0, 0)'));
-      });
-      it("Should NOT attach <link> for Mock.css", function() {
-        return expect(this.$f('head > link[href*="Mock.css"]').length).toBe(0);
-      });
-      return it("Should NOT attach <link> for MockNested.css", function() {
-        return expect(this.$f('head > link[href*="MockNested.css"]').length).toBe(0);
-      });
-    });
+    };
+    describe_builder_spec('When a filename is specified in the r.js build "out" config', 'all', 'all');
+    describe_builder_spec('When a filename is specified in the r.js build "out" and "outcss" config', 'all-outcss-filename', 'all-outjs-filename');
+    return describe_builder_spec('When a function is specified in the r.js build "out" and "outcss" config', 'all-nodeBuild', 'all-nodeBuild');
   };
 });
