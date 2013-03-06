@@ -1,11 +1,6 @@
 TODO
 ====
 
-NEW: config.outcss (function or string)
----------------------------------------
-
-This would allow r.js builds to customize the output of the combined CSS
-
 NEW: cell/Model entry iteration
 -------------------------------
 
