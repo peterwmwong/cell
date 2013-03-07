@@ -112,7 +112,7 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
       }
     }
     exts = children.splice(0, i);
-    options = children.length && children[0][constrProp] === Object ? children.shift() : {};
+    options = children.length && children[0] && children[0][constrProp] === Object ? children.shift() : {};
     if (isS(viewOrHAML)) {
       if (m = /^(\w+)?(#([\w\-]+))?(\.[\w\.\-]+)?$/.exec(viewOrHAML)) {
         parent = d.createElement(m[1] || 'div');

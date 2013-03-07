@@ -119,7 +119,7 @@ define [
 
     exts = children.splice 0, i
     options =
-      if children.length and children[0][constrProp] is Object
+      if children.length and children[0] and children[0][constrProp] is Object
         children.shift()
       else
         {}

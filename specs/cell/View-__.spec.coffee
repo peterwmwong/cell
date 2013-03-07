@@ -100,6 +100,11 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
         ]]
         '<p class="myclass myclass2" id="myid"></p>'
 
+      it_renders 'selector:String, undefined',
+        [ 'p#myid.myclass.myclass2', undefined ]
+        '<p class="myclass myclass2" id="myid"></p>'
+        true
+
       it_renders "selector:String, attrHash:Object",
         [ 'p#myid.myclass.myclass2', class:'myclass3', 'data-custom':'myattr', 'data-custom2':'myattr2']
         '<p class="myclass myclass2 myclass3" data-custom="myattr" data-custom2="myattr2" id="myid"></p>'

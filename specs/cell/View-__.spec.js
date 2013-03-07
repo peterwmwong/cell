@@ -75,6 +75,7 @@ define(['../utils/spec-utils'], function(_arg) {
       it_renders('selector:String, children:String...', ['p#myid.myclass.myclass2', 'one', 'two', 'three'], '<p class="myclass myclass2" id="myid">onetwothree</p>');
       it_renders('selector:String, children...:[DOM Nodes, String, Number, Array]', ['p#myid.myclass.myclass2', [node('span'), 'hello', [node('table'), 'world', 5, [node('div')]], 0, node('b')]], '<p class="myclass myclass2" id="myid"><span></span>hello<table></table>world5<div></div>0<b></b></p>');
       it_renders('selector:String, children...:[undefined, null]', ['p#myid.myclass.myclass2', [void 0, null]], '<p class="myclass myclass2" id="myid"></p>');
+      it_renders('selector:String, undefined', ['p#myid.myclass.myclass2', void 0], '<p class="myclass myclass2" id="myid"></p>', true);
       it_renders("selector:String, attrHash:Object", [
         'p#myid.myclass.myclass2', {
           "class": 'myclass3',
