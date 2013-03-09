@@ -1,6 +1,31 @@
 TODO
 ====
 
+Revisit: spy.watch API
+----------------------
+
+## Problem
+
+Common code flows (from View and Ext) have come up when using spy.watch...
+
+- Is the value a function?
+  - if so...
+    - call spy.watch with...
+      - use the hash of the context as the key
+      - bound value to a context
+      - bound callback to the same context
+  - otherwise
+    - call callback with a context passing value as the only argument
+
+This causes the client code of spy.watch to declare dependencies on 'cell/util/fn' and 'cell/util/hash'.
+
+## Proposed Solution
+
+spy.watch should just do the above...
+
+    spy.watch watchFnOrValue, callbackFn, context
+
+
 Revisit: Ext API
 ----------------
 
@@ -24,6 +49,27 @@ Let's carry over design elements of the View API into Ext API.
 - Can Ext's have CSS associated with it like a View has?
   - x_model could style validity
 
+
+NEW: the model observed by x_model should be configurable
+---------------------------------------------------------
+
+### Problem
+
+There are cases the View doesn't have a @model and instead you'd like x_model to use the View itself as the model.
+
+### Proposed Solution
+
+    # an example View
+    define (require)->
+      x_model = require 'cell/exts/x_model'
+
+      require('defineView!')
+        beforeRender: ->
+          @set 'text', ''
+
+        render: (_)-> [
+          _ 'textarea', (x_model prop:'text', model:@)
+        ]
 
 NEW: cell/Model entry iteration
 -------------------------------
