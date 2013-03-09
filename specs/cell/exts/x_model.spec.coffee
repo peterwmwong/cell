@@ -5,6 +5,33 @@ define ['../../utils/spec-utils'], ({node,browserTrigger,waitOne,msie})-> ({befo
     'cell/exts/x_model'
   ], (@View, @Model, @x_model)->
 
+  describe 'x_model( model_attr:string, model:Model )', ->
+    beforeEach ->
+      x_model = @x_model
+      @NewView = @View.extend
+        beforeRender: ->
+          @set 'textarea', 'textarea value'
+
+        render: (_)-> [
+          _ 'textarea', (x_model 'textarea',  @)
+        ]
+      @view = new @NewView
+      @v_textarea = @view.el.children[0]
+
+    describe 'view -> model', ->
+
+      it 'textarea', ->
+        @v_textarea.value = 'new textarea value'
+        browserTrigger @v_textarea, 'keyup'
+        expect(@view.get('textarea')).toEqual 'new textarea value'
+
+    describe 'model -> view', ->
+
+      it 'textarea', ->
+        @view.set 'textarea', 'new textarea value'
+        waitOne ->
+          expect(@v_textarea.value).toBe 'new textarea value'
+
   describe 'x_model( model_attr:string )', ->
     beforeEach ->
       @NewView = @View.extend

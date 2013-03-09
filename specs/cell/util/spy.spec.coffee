@@ -72,7 +72,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
 
         it 'calls callback with result of func with callContext as `this`', ->
           expect(@func.callCount).toBe 1
-          expect(@func.calls[0].object).toBe @callContext
+          expect(@func.calls[0].object).toBe @context
           expect(@callback).toHaveBeenCalledWith @model.attributes()
           expect(@callback.callCount).toBe 1
           expect(@callback.calls[0].object).toBe @callContext
@@ -86,7 +86,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
           it 'calls callback with result of func', ->
             waitOne ->
               expect(@func.callCount).toBe 1
-              expect(@func.calls[0].object).toBe @callContext
+              expect(@func.calls[0].object).toBe @context
               expect(@callback).toHaveBeenCalledWith @model.attributes()
               expect(@callback.callCount).toBe 1
               expect(@callback.calls[0].object).toBe @callContext

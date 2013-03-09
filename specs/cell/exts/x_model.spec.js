@@ -11,6 +11,37 @@ define(['../../utils/spec-utils'], function(_arg) {
       this.Model = Model;
       this.x_model = x_model;
     });
+    describe('x_model( model_attr:string, model:Model )', function() {
+      beforeEach(function() {
+        var x_model;
+        x_model = this.x_model;
+        this.NewView = this.View.extend({
+          beforeRender: function() {
+            return this.set('textarea', 'textarea value');
+          },
+          render: function(_) {
+            return [_('textarea', x_model('textarea', this))];
+          }
+        });
+        this.view = new this.NewView;
+        return this.v_textarea = this.view.el.children[0];
+      });
+      describe('view -> model', function() {
+        return it('textarea', function() {
+          this.v_textarea.value = 'new textarea value';
+          browserTrigger(this.v_textarea, 'keyup');
+          return expect(this.view.get('textarea')).toEqual('new textarea value');
+        });
+      });
+      return describe('model -> view', function() {
+        return it('textarea', function() {
+          this.view.set('textarea', 'new textarea value');
+          return waitOne(function() {
+            return expect(this.v_textarea.value).toBe('new textarea value');
+          });
+        });
+      });
+    });
     return describe('x_model( model_attr:string )', function() {
       beforeEach(function() {
         var _this = this;

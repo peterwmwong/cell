@@ -33,12 +33,12 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
             constructor: @constr = jasmine.createSpy('constructor')
             b: @child_b = {}
             c: @child_c = {}
-          @child = new @Child()
+          @child = new @Child 1, 2, 3
 
         it 'creates an instanceof Parent', ->
           expect(@Child.prototype instanceof @Parent).toBe true
-          expect(@constr).toHaveBeenCalled()
-          expect(@Parent).toHaveBeenCalled()
+          expect(@constr).toHaveBeenCalledWith 1, 2, 3
+          expect(@Parent).toHaveBeenCalledWith 1, 2, 3
           expect(@Parent.callCount).toBe 1
           expect(@child instanceof @Parent).toBe true
 

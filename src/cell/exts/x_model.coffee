@@ -24,14 +24,21 @@ define [
     textarea: text
 
   Ext.extend
+    constructor: (@prop, @model)->
     render: ->
-      if modelEl = ModelElement[tag = @el.tagName.toLowerCase()]
-        modelEl = modelEl[@el.type] if tag is 'input'
+      el = @el
+      model = @model or @view.model
+      prop = @prop
+      
+      if modelEl = ModelElement[tag = el.tagName.toLowerCase()]
+        modelEl = modelEl[el.type] if tag is 'input'
 
       if modelEl
         @ea = modelEl.g
-        events.on @el, modelEl.e, =>
-          @view.model.set @options, @el[modelEl.g]
-          return
-        @watch (->@view.model.get @options), modelEl.s
+        events.on el,
+          modelEl.e,
+          ->
+            model.set prop, el[modelEl.g]
+            return
+        @watch (-> model.get prop), modelEl.s
       return

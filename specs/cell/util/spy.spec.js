@@ -90,7 +90,7 @@ define(['../../utils/spec-utils'], function(_arg) {
         });
         it('calls callback with result of func with callContext as `this`', function() {
           expect(this.func.callCount).toBe(1);
-          expect(this.func.calls[0].object).toBe(this.callContext);
+          expect(this.func.calls[0].object).toBe(this.context);
           expect(this.callback).toHaveBeenCalledWith(this.model.attributes());
           expect(this.callback.callCount).toBe(1);
           return expect(this.callback.calls[0].object).toBe(this.callContext);
@@ -104,7 +104,7 @@ define(['../../utils/spec-utils'], function(_arg) {
           return it('calls callback with result of func', function() {
             return waitOne(function() {
               expect(this.func.callCount).toBe(1);
-              expect(this.func.calls[0].object).toBe(this.callContext);
+              expect(this.func.calls[0].object).toBe(this.context);
               expect(this.callback).toHaveBeenCalledWith(this.model.attributes());
               expect(this.callback.callCount).toBe(1);
               return expect(this.callback.calls[0].object).toBe(this.callContext);

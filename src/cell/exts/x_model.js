@@ -27,21 +27,27 @@ define(['dom/events', 'cell/Ext'], function(events, Ext) {
     textarea: text
   };
   return Ext.extend({
+    constructor: function(prop, model) {
+      this.prop = prop;
+      this.model = model;
+    },
     render: function() {
-      var modelEl, tag,
-        _this = this;
-      if (modelEl = ModelElement[tag = this.el.tagName.toLowerCase()]) {
+      var el, model, modelEl, prop, tag;
+      el = this.el;
+      model = this.model || this.view.model;
+      prop = this.prop;
+      if (modelEl = ModelElement[tag = el.tagName.toLowerCase()]) {
         if (tag === 'input') {
-          modelEl = modelEl[this.el.type];
+          modelEl = modelEl[el.type];
         }
       }
       if (modelEl) {
         this.ea = modelEl.g;
-        events.on(this.el, modelEl.e, function() {
-          _this.view.model.set(_this.options, _this.el[modelEl.g]);
+        events.on(el, modelEl.e, function() {
+          model.set(prop, el[modelEl.g]);
         });
         this.watch((function() {
-          return this.view.model.get(this.options);
+          return model.get(prop);
         }), modelEl.s);
       }
     }

@@ -8,7 +8,7 @@ define(['cell/Ext', 'util/fn', 'util/type', 'dom/class'], function(Ext, fn, type
       opts = this.options;
       if (opts && opts.constructor === Object) {
         _fn = function(k) {
-          _this.watch((type.isF(v) ? fn.b0(v, _this.view) : v), function(value) {
+          _this.watch(v, function(value) {
             (value ? cls.add : cls.remove)(this.el, k);
           });
         };

@@ -5,10 +5,10 @@ define ->
   (proto)->
     Parent = @
 
-    Child = (options)->
-      return new Child(options) unless @ instanceof Child
-      Parent.call @, options
-      proto[constrProp].call @, options if proto and proto[constrProp]
+    Child = (options...)->
+      return new Child(options...) unless @ instanceof Child
+      Parent.apply @, options
+      proto[constrProp].apply @, options if proto and proto[constrProp]
       return
     Child.extend = Parent.extend
 

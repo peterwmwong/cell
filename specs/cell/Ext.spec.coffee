@@ -39,6 +39,7 @@ define ['../utils/spec-utils'], ({waitOne})-> ({beforeEachRequire})->
 
       describe '@watch( value:any, callback:function )', ->
         beforeEach ->
+          @newext.view = {}
           @callback = jasmine.createSpy 'callback'
 
         for nonFunc in [0,undefined,null,'test string',{}] then do(nonFunc)->
@@ -57,7 +58,7 @@ define ['../utils/spec-utils'], ({waitOne})-> ({beforeEachRequire})->
 
           it 'calls callback with what is returned from calling value', ->
             expect(@watchedFunc.callCount).toBe 1
-            expect(@watchedFunc.calls[0].object).toBe @newext
+            expect(@watchedFunc.calls[0].object).toBe @newext.view
 
             expect(@callback.callCount).toBe 1
             expect(@callback).toHaveBeenCalledWith 5
@@ -72,7 +73,7 @@ define ['../utils/spec-utils'], ({waitOne})-> ({beforeEachRequire})->
             it 'calls callback again with what is returned from calling value again', ->
               waitOne ->
                 expect(@watchedFunc.callCount).toBe 1
-                expect(@watchedFunc.calls[0].object).toBe @newext
+                expect(@watchedFunc.calls[0].object).toBe @newext.view
 
                 expect(@callback.callCount).toBe 1
                 expect(@callback).toHaveBeenCalledWith 6

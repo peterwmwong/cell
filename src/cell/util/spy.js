@@ -63,9 +63,9 @@ define(['util/hash', 'util/fn', 'util/type'], function(hash, fn, type) {
       if (!type.isF(e)) {
         f.call(callContext, e);
       } else {
-        key = hash(key);
-        e = fn.b0(e, callContext);
+        e = fn.b0(e, key);
         f = fn.b1(f, callContext);
+        key = hash(key);
         ((w = watches[key]) ? w : (watches[key] = [])).push(context = {
           e: e,
           f: f,

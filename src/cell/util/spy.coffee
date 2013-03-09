@@ -57,9 +57,9 @@ define [
       f.call callContext, e
 
     else
-      key = hash key
-      e = fn.b0 e, callContext
+      e = fn.b0 e, key
       f = fn.b1 f, callContext
+      key = hash key
 
       (
         if (w = watches[key]) then w

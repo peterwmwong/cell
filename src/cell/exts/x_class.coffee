@@ -10,7 +10,7 @@ define [
       opts = @options
       if opts and opts.constructor is Object
         for k,v of opts then do(k)=>
-          @watch (if type.isF(v) then fn.b0(v,@view) else v), (value)->
+          @watch v, (value)->
             (if value then cls.add else cls.remove) @el, k
             return
           return

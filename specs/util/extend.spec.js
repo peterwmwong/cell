@@ -40,12 +40,12 @@ define(['../utils/spec-utils'], function(_arg) {
             b: this.child_b = {},
             c: this.child_c = {}
           });
-          return this.child = new this.Child();
+          return this.child = new this.Child(1, 2, 3);
         });
         it('creates an instanceof Parent', function() {
           expect(this.Child.prototype instanceof this.Parent).toBe(true);
-          expect(this.constr).toHaveBeenCalled();
-          expect(this.Parent).toHaveBeenCalled();
+          expect(this.constr).toHaveBeenCalledWith(1, 2, 3);
+          expect(this.Parent).toHaveBeenCalledWith(1, 2, 3);
           expect(this.Parent.callCount).toBe(1);
           return expect(this.child instanceof this.Parent).toBe(true);
         });

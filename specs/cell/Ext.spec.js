@@ -49,6 +49,7 @@ define(['../utils/spec-utils'], function(_arg) {
         return describe('@watch( value:any, callback:function )', function() {
           var nonFunc, _fn, _i, _len, _ref;
           beforeEach(function() {
+            this.newext.view = {};
             return this.callback = jasmine.createSpy('callback');
           });
           _ref = [0, void 0, null, 'test string', {}];
@@ -79,7 +80,7 @@ define(['../utils/spec-utils'], function(_arg) {
             });
             it('calls callback with what is returned from calling value', function() {
               expect(this.watchedFunc.callCount).toBe(1);
-              expect(this.watchedFunc.calls[0].object).toBe(this.newext);
+              expect(this.watchedFunc.calls[0].object).toBe(this.newext.view);
               expect(this.callback.callCount).toBe(1);
               expect(this.callback).toHaveBeenCalledWith(5);
               return expect(this.callback.calls[0].object).toBe(this.newext);
@@ -93,7 +94,7 @@ define(['../utils/spec-utils'], function(_arg) {
               return it('calls callback again with what is returned from calling value again', function() {
                 return waitOne(function() {
                   expect(this.watchedFunc.callCount).toBe(1);
-                  expect(this.watchedFunc.calls[0].object).toBe(this.newext);
+                  expect(this.watchedFunc.calls[0].object).toBe(this.newext.view);
                   expect(this.callback.callCount).toBe(1);
                   expect(this.callback).toHaveBeenCalledWith(6);
                   return expect(this.callback.calls[0].object).toBe(this.newext);
