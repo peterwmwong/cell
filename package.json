@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "almond":"0.2.5",
-    "coffee-script": "~1.4.0",
+    "coffee-script": "~1.6.1",
     "connect": "~2.7.2",
     "requirejs": "2.1.4",
     "uglify-js": "~2.2.5"

@@ -3,9 +3,12 @@ define [
   'dom/class'
 ], (Ext,cls)->
 
-  Ext.extend func: (element, classHash, getValue)->
-    return unless classHash and classHash.constructor is Object
-    for k,v of classHash then do(k)->
-      getValue v, (value)->
-        (if value then cls.add else cls.remove) element, k
-    return
+  Ext.extend
+    render: ->
+      if @options and @options.constructor is Object
+        for k,v of @options then do(k)=>
+          @watch v, (value)->
+            (if value then cls.add else cls.remove) @el, k
+            return
+          return
+      return

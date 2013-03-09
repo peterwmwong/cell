@@ -26,30 +26,6 @@ spy.watch should just do the above...
     spy.watch watchFnOrValue, callbackFn, context
 
 
-Revisit: Ext API
-----------------
-
-### Problem
-
-The current Ext API seems very different in it's API design, than say View, Model, or Collection.
-
-### Proposed Solution
-
-Let's carry over design elements of the View API into Ext API.
-
-- `@render()` instead of `@func()`
-- Don't pass stuff into @render() function, instead attach stuff to instance and accessed through `this`
-  - `@el`
-  - `@view`
-  - `@options`
-  - `@watch` (instead of `getValue()`)
-
-### Outstanding questions
-
-- Can Ext's have CSS associated with it like a View has?
-  - x_model could style validity
-
-
 NEW: the model observed by x_model should be configurable
 ---------------------------------------------------------
 

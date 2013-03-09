@@ -8,8 +8,8 @@ define ['../../utils/spec-utils'], ({node})->
 
     describe 'modifies View.__() method signature ( viewOrSelector:[View, String], exts...:Ext, attrHash_or_options?:Object, children...:[DOMElement, String, Number, Array, jQuery] )', ->
       beforeEach ->
-        @x_test1 = @Ext.extend func: @x_test1_func = jasmine.createSpy 'x_test1_func'
-        @x_test2 = @Ext.extend func: @x_test2_func = jasmine.createSpy 'x_test2_func'
+        @x_test1 = @Ext.extend render: @x_test1_func = jasmine.createSpy 'x_test1_func'
+        @x_test2 = @Ext.extend render: @x_test2_func = jasmine.createSpy 'x_test2_func'
         @view = new @View
         @__ = @view.__
 
@@ -20,9 +20,9 @@ define ['../../utils/spec-utils'], ({node})->
             @x_test2_instance = @x_test2(@x_test2_options = {})
 
         it 'calls Ext.run(element) for each ext', ->
-          expect(@x_test1_func).toHaveBeenCalledWith @result, @x_test1_options, @x_test1_instance.getValue, @view
+          expect(@x_test1_func).toHaveBeenCalledWith()
           expect(@x_test1_func.callCount).toBe 1
-          expect(@x_test2_func).toHaveBeenCalledWith @result, @x_test2_options, @x_test2_instance.getValue, @view
+          expect(@x_test2_func).toHaveBeenCalledWith()
           expect(@x_test2_func.callCount).toBe 1
 
 
@@ -34,9 +34,9 @@ define ['../../utils/spec-utils'], ({node})->
             @options = a: 1
 
         it 'calls Ext.run(element) for each ext', ->
-          expect(@x_test1_func).toHaveBeenCalledWith @result, @x_test1_options, @x_test1_instance.getValue, @view
+          expect(@x_test1_func).toHaveBeenCalledWith()
           expect(@x_test1_func.callCount).toBe 1
-          expect(@x_test2_func).toHaveBeenCalledWith @result, @x_test2_options, @x_test2_instance.getValue, @view
+          expect(@x_test2_func).toHaveBeenCalledWith()
           expect(@x_test2_func.callCount).toBe 1
 
 
@@ -58,9 +58,9 @@ define ['../../utils/spec-utils'], ({node})->
             ])...
 
         it 'calls Ext.run(element) for each ext', ->
-          expect(@x_test1_func).toHaveBeenCalledWith @result, @x_test1_options, @x_test1_instance.getValue, @view
+          expect(@x_test1_func).toHaveBeenCalledWith()
           expect(@x_test1_func.callCount).toBe 1
-          expect(@x_test2_func).toHaveBeenCalledWith @result, @x_test2_options, @x_test2_instance.getValue, @view
+          expect(@x_test2_func).toHaveBeenCalledWith()
           expect(@x_test2_func.callCount).toBe 1
 
 
@@ -81,7 +81,7 @@ define ['../../utils/spec-utils'], ({node})->
             ])...
 
         it 'calls Ext.run(element) for each ext', ->
-          expect(@x_test1_func).toHaveBeenCalledWith @result, @x_test1_options, @x_test1_instance.getValue, @view
+          expect(@x_test1_func).toHaveBeenCalledWith()
           expect(@x_test1_func.callCount).toBe 1
-          expect(@x_test2_func).toHaveBeenCalledWith @result, @x_test2_options, @x_test2_instance.getValue, @view
+          expect(@x_test2_func).toHaveBeenCalledWith()
           expect(@x_test2_func.callCount).toBe 1
