@@ -34,7 +34,7 @@ define ['jquery'], ($)->
 
     waitOne: (expectCallback)->
       done = false
-      runs -> setTimeout (-> done = true), 17
+      runs -> setTimeout (-> done = true), 32
       waitsFor -> done
       runs expectCallback
 

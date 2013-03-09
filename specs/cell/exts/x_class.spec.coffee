@@ -8,7 +8,8 @@ define ['../../utils/spec-utils'], ({node,waitOne})-> ({beforeEachRequire})->
 
   describe 'x_class( classHash:object )', ->
     beforeEach ->
-      @model = new @Model a: true, b: false
+      @mockView =
+        model: new @Model a: true, b: false
       @element = node 'div'
       @element.className = 'one two three'
       @ext = @x_class
@@ -19,15 +20,15 @@ define ['../../utils/spec-utils'], ({node,waitOne})-> ({beforeEachRequire})->
         one: false
         two: true
         three: false
-        truthyExpression: => @model.get 'a'
-        falsyExpression: => @model.get 'b'
+        truthyExpression: -> @model.get 'a'
+        falsyExpression: -> @model.get 'b'
 
     it 'creates an Ext', ->
       expect(@ext instanceof @Ext).toBe true
 
     describe '@run( element:Element )', ->
       beforeEach ->
-        @ext.run @element
+        @ext.run @element, @mockView
 
       it 'applies truthy classes', ->
         expect(@cls.has @element, 'trueClass').toBe true
@@ -46,7 +47,7 @@ define ['../../utils/spec-utils'], ({node,waitOne})-> ({beforeEachRequire})->
 
       describe "when a expression's value changes", ->
         beforeEach ->
-          @model.set 'a', false
+          @mockView.model.set 'a', false
 
         it 'it automatically sets/unsets the class expression was bound to', ->
           waitOne ->

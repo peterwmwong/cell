@@ -29,7 +29,7 @@ define [
   Bind = (view, expr)->
     @r = (parent)->
       nodes = []
-      watch hash(view), (fn.b0 expr, view), (renderValue)->
+      watch view, expr, (renderValue)->
         nodes = render parent,
           view
           renderValue
@@ -41,7 +41,7 @@ define [
   IfBind = (view, cond, thnElse)->
     @r = (parent)->
       nodes = []
-      watch hash(view), (fn.b0 cond, view), (condValue)->
+      watch view, cond, (condValue)->
         nodes = render parent,
           view
           (view.__.if condValue, thnElse)
@@ -70,7 +70,7 @@ define [
   EachBind = (view, expr, itemRenderer)->
     itemhash = new HashQueue
     @r = (parent)->
-      watch hash(view), (fn.b0 expr, view), (value)->
+      watch view, expr, (value)->
         newEls = []
         newItemHash = new HashQueue
 
@@ -145,12 +145,9 @@ define [
           if match = /^on(\w+)/.exec k
             events.on parent, match[1], v, @
           else
-            if isF v
-              watch hash(@), (fn.b0 v, @), do(k)-> (value)->
-                setElAttribute parent, k, value
-                return
-            else
-              setElAttribute parent, k, v
+            watch @, v, do(k)-> (value)->
+              setElAttribute parent, k, value
+              return
           
     # View
     else if viewOrHAML and viewOrHAML[protoProp] instanceof View
@@ -223,7 +220,7 @@ define [
     afterRender: noop
 
     watch: (expr,callback)->
-      watch hash(@), fn.b0(expr,@), fn.b1(callback,@)
+      watch @, expr, callback
       return
 
     __: __
@@ -231,7 +228,7 @@ define [
     destroy: ->
       if @el
         Model[protoProp].destroy.call @
-        unwatch hash @
+        unwatch @
         mutate.remove @el
         delete @el
       return

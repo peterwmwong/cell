@@ -9,8 +9,9 @@ define ['../../utils/spec-utils'], ({waitOne})->
       @watch = @spy.watch
       @unwatch = @spy.unwatch
 
-    describe '@unwatch( key:string )', ->
+    describe '@unwatch( context:any )', ->
       beforeEach ->
+
         @model = new @Model a:1, b:{}, c:'x'
         @callback = jasmine.createSpy 'callback'
         @func = jasmine.createSpy('func').andCallFake => @model.attributes()
@@ -18,7 +19,8 @@ define ['../../utils/spec-utils'], ({waitOne})->
         @callback2 = jasmine.createSpy 'callback'
         @func2 = jasmine.createSpy('func').andCallFake => @model.attributes()
 
-        @watch 'key', @func, @callback
+        @context = 'key1'
+        @watch @context, @func, @callback
         @watch 'key2', @func2, @callback2
 
         @callback.reset()
@@ -27,7 +29,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
         @func2.reset()
 
       it 'removes all watched expressions registered under key', ->
-        @unwatch 'key'
+        @unwatch @context
         @model.set 'a', 2
         waitOne ->
           expect(@callback).not.toHaveBeenCalled()
@@ -53,36 +55,27 @@ define ['../../utils/spec-utils'], ({waitOne})->
           expect(@callback2).toHaveBeenCalled()
           expect(@func2).toHaveBeenCalled()
 
-    describe '@watch( func:function, callback:function, key:string )', ->
+    describe '@watch( context:any, func:function, callback:function, callContext?:any )', ->
       beforeEach ->
+        @context = {}
         @value = {}
         @callback = jasmine.createSpy 'callback'
 
-      describe "When func does NOT access any Model or Collection", ->
-        beforeEach ->
-          @func = jasmine.createSpy('func').andReturn @value
-          @watch 'key', @func, @callback
+      
+      describe "when callContext is specified", ->
 
-        it 'call callback with result of func', ->
-          done = false
-          runs -> setTimeout (-> done = true), 1
-          waitsFor -> done
-          runs ->
-            expect(@func).toHaveBeenCalled()
-            expect(@func.callCount).toBe 1
-            expect(@callback).toHaveBeenCalledWith @value
-            expect(@callback.callCount).toBe 1
-
-      describe "When func accesses a Model's attributes()", ->
         beforeEach ->
+          @callContext = {}
           @model = new @Model a:1, b:{}, c:'x'
           @func = jasmine.createSpy('func').andCallFake => @model.attributes()
-          @watch 'key', @func, @callback
+          @watch @context, @func, @callback, @callContext
 
-        it 'call @callback with result of func', ->
+        it 'calls callback with result of func with callContext as `this`', ->
           expect(@func.callCount).toBe 1
+          expect(@func.calls[0].object).toBe @callContext
           expect(@callback).toHaveBeenCalledWith @model.attributes()
           expect(@callback.callCount).toBe 1
+          expect(@callback.calls[0].object).toBe @callContext
 
         describe 'when the accessed model property changes', ->
           beforeEach ->
@@ -93,8 +86,53 @@ define ['../../utils/spec-utils'], ({waitOne})->
           it 'calls callback with result of func', ->
             waitOne ->
               expect(@func.callCount).toBe 1
+              expect(@func.calls[0].object).toBe @callContext
               expect(@callback).toHaveBeenCalledWith @model.attributes()
               expect(@callback.callCount).toBe 1
+              expect(@callback.calls[0].object).toBe @callContext
+
+      describe "When func does NOT access any Model or Collection", ->
+        beforeEach ->
+          @func = jasmine.createSpy('func').andReturn @value
+          @watch @context, @func, @callback
+
+        it 'call callback with result of func', ->
+          done = false
+          runs -> setTimeout (-> done = true), 1
+          waitsFor -> done
+          runs ->
+            expect(@func.callCount).toBe 1
+            expect(@func.calls[0].object).toBe @context
+            expect(@callback).toHaveBeenCalledWith @value
+            expect(@callback.callCount).toBe 1
+            expect(@callback.calls[0].object).toBe @context
+
+      describe "When func accesses a Model's attributes()", ->
+        beforeEach ->
+          @model = new @Model a:1, b:{}, c:'x'
+          @func = jasmine.createSpy('func').andCallFake => @model.attributes()
+          @watch @context, @func, @callback
+
+        it 'call @callback with result of func', ->
+          expect(@func.callCount).toBe 1
+          expect(@func.calls[0].object).toBe @context
+          expect(@callback).toHaveBeenCalledWith @model.attributes()
+          expect(@callback.callCount).toBe 1
+          expect(@callback.calls[0].object).toBe @context
+
+        describe 'when the accessed model property changes', ->
+          beforeEach ->
+            @func.reset()
+            @callback.reset()
+            @model.set 'a', 2
+
+          it 'calls callback with result of func', ->
+            waitOne ->
+              expect(@func.callCount).toBe 1
+              expect(@func.calls[0].object).toBe @context
+              expect(@callback).toHaveBeenCalledWith @model.attributes()
+              expect(@callback.callCount).toBe 1
+              expect(@callback.calls[0].object).toBe @context
 
 
       describe "When func accesses a Model's attributes() and a property", ->
@@ -103,12 +141,14 @@ define ['../../utils/spec-utils'], ({waitOne})->
           @func = jasmine.createSpy('func').andCallFake =>
             @model.get 'a'
             @model.attributes()
-          @watch 'key', @func, @callback
+          @watch @context, @func, @callback
 
         it 'call @callback with result of func', ->
           expect(@func.callCount).toBe 1
+          expect(@func.calls[0].object).toBe @context
           expect(@callback).toHaveBeenCalledWith @model.attributes()
           expect(@callback.callCount).toBe 1
+          expect(@callback.calls[0].object).toBe @context
 
         describe 'when the accessed model property changes', ->
           beforeEach ->
@@ -130,12 +170,14 @@ define ['../../utils/spec-utils'], ({waitOne})->
           @func = jasmine.createSpy('func').andCallFake =>
             @model1.get 'a'
             @model2.get 'b'
-          @watch 'key', @func, @callback
+          @watch @context, @func, @callback
 
         it 'call @callback with result of func', ->
           expect(@func.callCount).toBe 1
+          expect(@func.calls[0].object).toBe @context
           expect(@callback).toHaveBeenCalledWith 2
           expect(@callback.callCount).toBe 1
+          expect(@callback.calls[0].object).toBe @context
 
         describe 'when the accessed model property changes', ->
           beforeEach ->
@@ -146,8 +188,10 @@ define ['../../utils/spec-utils'], ({waitOne})->
           it 'calls callback with result of func', ->
             waitOne ->
               expect(@func.callCount).toBe 1
+              expect(@func.calls[0].object).toBe @context
               expect(@callback).toHaveBeenCalledWith 2
               expect(@callback.callCount).toBe 1
+              expect(@callback.calls[0].object).toBe @context
 
         describe 'when the other accessed model property changes', ->
           beforeEach ->
@@ -158,8 +202,10 @@ define ['../../utils/spec-utils'], ({waitOne})->
           it 'calls callback with result of func', ->
             waitOne ->
               expect(@func.callCount).toBe 1
+              expect(@func.calls[0].object).toBe @context
               expect(@callback).toHaveBeenCalledWith 3
               expect(@callback.callCount).toBe 1
+              expect(@callback.calls[0].object).toBe @context
 
       describe "When func accesses a Model's properties", ->
         beforeEach ->
@@ -169,13 +215,14 @@ define ['../../utils/spec-utils'], ({waitOne})->
             @model.get 'c'
             @model.get 'a'
 
-          @watch 'key', @func, @callback
+          @watch @context, @func, @callback
 
         it 'call @callback with result of func', ->
-          expect(@func).toHaveBeenCalled()
           expect(@func.callCount).toBe 1
+          expect(@func.calls[0].object).toBe @context
           expect(@callback).toHaveBeenCalledWith 1
           expect(@callback.callCount).toBe 1
+          expect(@callback.calls[0].object).toBe @context
 
         describe 'when the accessed model property changes', ->
           beforeEach ->
@@ -185,10 +232,11 @@ define ['../../utils/spec-utils'], ({waitOne})->
 
           it 'calls callback with result of func', ->
             waitOne ->
-              expect(@func).toHaveBeenCalled()
               expect(@func.callCount).toBe 1
+              expect(@func.calls[0].object).toBe @context
               expect(@callback).toHaveBeenCalledWith 2
               expect(@callback.callCount).toBe 1
+              expect(@callback.calls[0].object).toBe @context
 
           describe 'when another accessed model property changes', ->
             beforeEach ->
@@ -198,10 +246,11 @@ define ['../../utils/spec-utils'], ({waitOne})->
 
             it 'calls callback with result of func', ->
               waitOne ->
-                expect(@func).toHaveBeenCalled()
                 expect(@func.callCount).toBe 1
+                expect(@func.calls[0].object).toBe @context
                 expect(@callback).toHaveBeenCalledWith 2
                 expect(@callback.callCount).toBe 1
+                expect(@callback.calls[0].object).toBe @context
 
         describe 'when another model property changes or other non-relevant events occur', ->
           beforeEach ->
@@ -226,7 +275,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
 
           @func = jasmine.createSpy('func').andCallFake =>
             @col.at(0).get 'x'
-          @watch 'key', @func, @callback
+          @watch @context, @func, @callback
           
           @func.reset()
           @callback.reset()
@@ -234,19 +283,21 @@ define ['../../utils/spec-utils'], ({waitOne})->
         it 'calls func when an accessed a Model attribute changes in a Collection', ->
           @model1.set 'x', 'a value'
           waitOne ->
-            expect(@func).toHaveBeenCalled()
             expect(@func.callCount).toBe 1
+            expect(@func.calls[0].object).toBe @context
             expect(@callback).toHaveBeenCalledWith 'x val'
             expect(@callback.callCount).toBe 1
+            expect(@callback.calls[0].object).toBe @context
 
 
         it 'calls func when an accessed a Model attribute changes in a Collection of another Model', ->
           @model0.set 'x', 'a value'
           waitOne ->
-            expect(@func).toHaveBeenCalled()
             expect(@func.callCount).toBe 1
+            expect(@func.calls[0].object).toBe @context
             expect(@callback).toHaveBeenCalledWith 'a value'
             expect(@callback.callCount).toBe 1
+            expect(@callback.calls[0].object).toBe @context
 
       describe "When func accesses a Collection using filterBy() (Model attribute access is implied)", ->
         beforeEach ->
@@ -255,7 +306,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
             {y:'y val'}
           ]
           @func = jasmine.createSpy('func').andCallFake => @col.filterBy x: 'x val'
-          @watch 'key', @func, @callback
+          @watch @context, @func, @callback
           @func.reset()
           @callback.reset()
 
@@ -265,10 +316,11 @@ define ['../../utils/spec-utils'], ({waitOne})->
 
           it "calls callback with result of func", ->
             waitOne ->
-              expect(@func).toHaveBeenCalled()
               expect(@func.callCount).toBe 1
+              expect(@func.calls[0].object).toBe @context
               expect(@callback.calls[0].args[0][0]).toBe @col.at 0
               expect(@callback.callCount).toBe 1
+              expect(@callback.calls[0].object).toBe @context
 
       describe "When func accesses a Collection", ->
         beforeEach ->
@@ -295,7 +347,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
                 access.call @
                 result++
 
-              @watch 'key', @func, @callback
+              @watch @context, @func, @callback
               @callback.reset()
               @func.reset()
 
@@ -311,7 +363,8 @@ define ['../../utils/spec-utils'], ({waitOne})->
 
                 it 'calls callback with result of func', ->
                   waitOne ->
-                    expect(@func).toHaveBeenCalled()
                     expect(@func.callCount).toBe 1
+                    expect(@func.calls[0].object).toBe @context
                     expect(@callback).toHaveBeenCalledWith 2
                     expect(@callback.callCount).toBe 1
+                    expect(@callback.calls[0].object).toBe @context

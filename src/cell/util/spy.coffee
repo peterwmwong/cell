@@ -1,13 +1,13 @@
-define ['util/hash'], (hash)->
+define [
+  'util/hash'
+  'util/fn'
+  'util/type'
+], (hash,fn,type)->
 
   onChangeCalled = logObjMap = log = false
 
   addLog = (obj, event)->
-    (
-      if (entry = log[key = hash obj]) then entry
-      else log[key] = {}
-    )[event] = 1
-
+    (log[key = hash obj] or (log[key] = {}))[event] = 1
     logObjMap[key] = obj
     return
 
@@ -19,9 +19,9 @@ define ['util/hash'], (hash)->
     onChangeCalled = false
     changes = allChanges
     allChanges = {}
-    for key of changes
+    for key, context of changes
       # f(e())
-      changes[key].f changes[key].e()
+      context.f context.e()
     return
 
   onChange = ->
@@ -44,33 +44,43 @@ define ['util/hash'], (hash)->
     return
 
   unwatch: (key)->
-    if w = watches[key]
+    if w = watches[key = hash key]
       for watch in w
         for key, observed of watch.w
           observed.off undefined, undefined, watch
     return
 
-  watch: (key, e, f)->
-    (
-      if (w = watches[key]) then w
-      else (watches[key] = [])
-    ).push context = {e,f,w:{}}
-    
-    log = {}
-    logObjMap = {}
+  watch: (key, e, f, callContext)->
+    callContext or= key
 
-    try value = e()
+    unless type.isF e
+      f.call callContext, e
 
-    accesslog = log
-    accesslogObjMap = logObjMap
-    logObjMap = log = false
+    else
+      key = hash key
+      e = fn.b0 e, callContext
+      f = fn.b1 f, callContext
 
-    context.w = accesslogObjMap
-    for key of accesslog
-      obj = accesslogObjMap[key]
-      for event of accesslog[key]
-        obj.on event, onChange, context
+      (
+        if (w = watches[key]) then w
+        else (watches[key] = [])
+      ).push context = {e,f,w:{}}
+      
+      log = {}
+      logObjMap = {}
 
-    f value
+      try value = e()
+
+      accesslog = log
+      accesslogObjMap = logObjMap
+      logObjMap = log = false
+
+      context.w = accesslogObjMap
+      for key of accesslog
+        obj = accesslogObjMap[key]
+        for event of accesslog[key]
+          obj.on event, onChange, context
+
+      f value
 
     return

@@ -79,9 +79,10 @@ define(['../utils/spec-utils'], function(_arg) {
             });
             it('calls callback with what is returned from calling value', function() {
               expect(this.watchedFunc.callCount).toBe(1);
-              expect(this.watchedFunc).toHaveBeenCalledWith();
+              expect(this.watchedFunc.calls[0].object).toBe(this.newext);
               expect(this.callback.callCount).toBe(1);
-              return expect(this.callback).toHaveBeenCalledWith(5);
+              expect(this.callback).toHaveBeenCalledWith(5);
+              return expect(this.callback.calls[0].object).toBe(this.newext);
             });
             return describe('when watched value function changes (accessed Model/Collection changes)', function() {
               beforeEach(function() {
@@ -92,9 +93,10 @@ define(['../utils/spec-utils'], function(_arg) {
               return it('calls callback again with what is returned from calling value again', function() {
                 return waitOne(function() {
                   expect(this.watchedFunc.callCount).toBe(1);
-                  expect(this.watchedFunc).toHaveBeenCalledWith();
+                  expect(this.watchedFunc.calls[0].object).toBe(this.newext);
                   expect(this.callback.callCount).toBe(1);
-                  return expect(this.callback).toHaveBeenCalledWith(6);
+                  expect(this.callback).toHaveBeenCalledWith(6);
+                  return expect(this.callback.calls[0].object).toBe(this.newext);
                 });
               });
             });

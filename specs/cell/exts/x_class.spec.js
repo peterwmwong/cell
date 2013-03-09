@@ -14,11 +14,12 @@ define(['../../utils/spec-utils'], function(_arg) {
     });
     return describe('x_class( classHash:object )', function() {
       beforeEach(function() {
-        var _this = this;
-        this.model = new this.Model({
-          a: true,
-          b: false
-        });
+        this.mockView = {
+          model: new this.Model({
+            a: true,
+            b: false
+          })
+        };
         this.element = node('div');
         this.element.className = 'one two three';
         return this.ext = this.x_class({
@@ -30,10 +31,10 @@ define(['../../utils/spec-utils'], function(_arg) {
           two: true,
           three: false,
           truthyExpression: function() {
-            return _this.model.get('a');
+            return this.model.get('a');
           },
           falsyExpression: function() {
-            return _this.model.get('b');
+            return this.model.get('b');
           }
         });
       });
@@ -42,7 +43,7 @@ define(['../../utils/spec-utils'], function(_arg) {
       });
       return describe('@run( element:Element )', function() {
         beforeEach(function() {
-          return this.ext.run(this.element);
+          return this.ext.run(this.element, this.mockView);
         });
         it('applies truthy classes', function() {
           expect(this.cls.has(this.element, 'trueClass')).toBe(true);
@@ -61,7 +62,7 @@ define(['../../utils/spec-utils'], function(_arg) {
         });
         return describe("when a expression's value changes", function() {
           beforeEach(function() {
-            return this.model.set('a', false);
+            return this.mockView.model.set('a', false);
           });
           return it('it automatically sets/unsets the class expression was bound to', function() {
             return waitOne(function() {

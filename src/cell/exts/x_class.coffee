@@ -1,13 +1,16 @@
 define [
   'cell/Ext'
+  'util/fn'
+  'util/type'
   'dom/class'
-], (Ext,cls)->
+], (Ext,fn,type,cls)->
 
   Ext.extend
     render: ->
-      if @options and @options.constructor is Object
-        for k,v of @options then do(k)=>
-          @watch v, (value)->
+      opts = @options
+      if opts and opts.constructor is Object
+        for k,v of opts then do(k)=>
+          @watch (if type.isF(v) then fn.b0(v,@view) else v), (value)->
             (if value then cls.add else cls.remove) @el, k
             return
           return

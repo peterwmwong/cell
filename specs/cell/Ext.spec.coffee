@@ -57,10 +57,11 @@ define ['../utils/spec-utils'], ({waitOne})-> ({beforeEachRequire})->
 
           it 'calls callback with what is returned from calling value', ->
             expect(@watchedFunc.callCount).toBe 1
-            expect(@watchedFunc).toHaveBeenCalledWith()
+            expect(@watchedFunc.calls[0].object).toBe @newext
 
             expect(@callback.callCount).toBe 1
             expect(@callback).toHaveBeenCalledWith 5
+            expect(@callback.calls[0].object).toBe @newext
 
           describe 'when watched value function changes (accessed Model/Collection changes)', ->
             beforeEach ->
@@ -71,7 +72,8 @@ define ['../utils/spec-utils'], ({waitOne})-> ({beforeEachRequire})->
             it 'calls callback again with what is returned from calling value again', ->
               waitOne ->
                 expect(@watchedFunc.callCount).toBe 1
-                expect(@watchedFunc).toHaveBeenCalledWith()
+                expect(@watchedFunc.calls[0].object).toBe @newext
 
                 expect(@callback.callCount).toBe 1
                 expect(@callback).toHaveBeenCalledWith 6
+                expect(@callback.calls[0].object).toBe @newext

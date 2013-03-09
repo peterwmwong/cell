@@ -27,7 +27,7 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
     this.r = function(parent) {
       var nodes;
       nodes = [];
-      watch(hash(view), fn.b0(expr, view), function(renderValue) {
+      watch(view, expr, function(renderValue) {
         nodes = render(parent, view, renderValue, nodes);
       });
     };
@@ -36,7 +36,7 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
     this.r = function(parent) {
       var nodes;
       nodes = [];
-      watch(hash(view), fn.b0(cond, view), function(condValue) {
+      watch(view, cond, function(condValue) {
         nodes = render(parent, view, view.__["if"](condValue, thnElse), nodes);
       });
     };
@@ -66,7 +66,7 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
     var itemhash;
     itemhash = new HashQueue;
     this.r = function(parent) {
-      watch(hash(view), fn.b0(expr, view), function(value) {
+      watch(view, expr, function(value) {
         var i, item, key, len, newEls, newItemHash, prevItemEl;
         newEls = [];
         newItemHash = new HashQueue;
@@ -128,15 +128,11 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
           if (match = /^on(\w+)/.exec(k)) {
             events.on(parent, match[1], v, this);
           } else {
-            if (isF(v)) {
-              watch(hash(this), fn.b0(v, this), (function(k) {
-                return function(value) {
-                  setElAttribute(parent, k, value);
-                };
-              })(k));
-            } else {
-              setElAttribute(parent, k, v);
-            }
+            watch(this, v, (function(k) {
+              return function(value) {
+                setElAttribute(parent, k, value);
+              };
+            })(k));
           }
         }
       }
@@ -207,13 +203,13 @@ define(['util/hash', 'util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/muta
     render: noop,
     afterRender: noop,
     watch: function(expr, callback) {
-      watch(hash(this), fn.b0(expr, this), fn.b1(callback, this));
+      watch(this, expr, callback);
     },
     __: __,
     destroy: function() {
       if (this.el) {
         Model[protoProp].destroy.call(this);
-        unwatch(hash(this));
+        unwatch(this);
         mutate.remove(this.el);
         delete this.el;
       }
