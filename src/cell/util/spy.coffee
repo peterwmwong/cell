@@ -5,11 +5,13 @@ define [
 ], (hash,fn,type)->
 
   logStack = []
-  onChangeCalled = logObjMap = log = false
+  onChangeCalled = log = false
 
-  addLog = (obj, event)->
-    (log[key = hash obj] or (log[key] = {}))[event] = true
-    logObjMap[key] = obj
+  addLog = (obj, event, key)->
+    unless log.l[key = event + (key or hash obj)]
+      log.l[key] =
+        o:obj
+        e:event
     return
 
   doAfter = window.requestAnimationFrame or setTimeout
@@ -31,84 +33,63 @@ define [
     return
 
   evaluateAndMonitor = (context)->
-    logStack.push [log, logObjMap] if log
-    log = {}
-    logObjMap = {}
+    logStack.push log
+    log =
+      l: curLog = {}
+      c: {}
 
     value = context.e()
 
-    accesslog = log
-    accesslogObjMap = logObjMap
+    if prevLog = context.l
+      for eventKey of prevLog
+        if curLog[eventKey]
+          delete curLog[eventKey]
+        else
+          prevLog[eventKey].o.off prevLog[eventKey].e, undefined, context
 
-    if logStack.length
-      temp = logStack.pop()
-      log = temp[0]
-      logObjMap = temp[1]
-    else
-      logObjMap = log = false
+    for eventKey of curLog
+      curLog[eventKey].o.on curLog[eventKey].e, onChange, context
 
-    if prevlog = context.l
-      prevObjMap = context.w
-      removes = []
-      for key, events of prevlog
-        temp = accesslog[key]
-        for event of events
-          if temp and temp[event]
-            delete temp[event]
-          else
-            removes.push [key, event]
-
-      i=0
-      while keyEvent = removes[i++]
-        prevObjMap[keyEvent[0]].off keyEvent[1], undefined, context
-
-    context.l = accesslog
-    context.w = accesslogObjMap
-    for key of accesslog
-      obj = accesslogObjMap[key]
-      for event of accesslog[key]
-        obj.on event, onChange, context
+    context.l = curLog
+    log = logStack.pop()
 
     context.f value
     return
 
   addCol: ->
     if log
-      addLog @, 'add'
-      addLog @, 'remove'
+      log.c[colKey = hash @] = true
+      addLog @, 'add', colKey
+      addLog @, 'remove', colKey
     return
       
   addModel: (key)->
     if log
       addLog (
-        if (c = @collection) and logObjMap[hash c] then c
+        if ((c = @collection) and log.c[hash c]) then c
         else @
       ), (key and "change:#{key}" or 'all')
 
     return
 
   unwatch: (key)->
-    if w = watches[key = hash key]
-      for watch in w
-        for key, observed of watch.w
-          observed.off undefined, undefined, watch
+    if w = watches[hash key]
+      i=0
+      while (context = w[i++])
+        for key of context.l
+          context.l[key].o.off undefined, undefined, context
     return
 
-  watch: (key, e, f, callContext)->
-    callContext or= key
+  watch: (keyObj, e, f, callContext)->
+    callContext or= keyObj
 
     unless type.isF e
       f.call callContext, e
 
     else
-      obj = key
-      (
-        if (w = watches[key = hash key]) then w
-        else (watches[key] = [])
-      ).push context =
-        e: fn.b0 e, obj
+      (watches[key = hash keyObj] or (watches[key] = [])).push context =
+        e: fn.b0 e, keyObj
         f: fn.b1 f, callContext
-        w:{}
 
       evaluateAndMonitor context
 

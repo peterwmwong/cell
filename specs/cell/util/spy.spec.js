@@ -464,7 +464,7 @@ define(['../../utils/spec-utils'], function(_arg) {
           this.func.reset();
           return this.callback.reset();
         });
-        it('calls func when an accessed a Model attribute changes in a Collection', function() {
+        it('calls func when an accessed Model attribute changes in a Collection', function() {
           this.model1.set('x', 'a value');
           return waitOne(function() {
             expect(this.func.callCount).toBe(1);
@@ -474,7 +474,7 @@ define(['../../utils/spec-utils'], function(_arg) {
             return expect(this.callback.calls[0].object).toBe(this.context);
           });
         });
-        return it('calls func when an accessed a Model attribute changes in a Collection of another Model', function() {
+        return it('calls func when an accessed Model attribute changes in a Collection of another Model', function() {
           this.model0.set('x', 'a value');
           return waitOne(function() {
             expect(this.func.callCount).toBe(1);

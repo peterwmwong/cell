@@ -366,11 +366,10 @@ define ['../../utils/spec-utils'], ({waitOne})->
           @func = jasmine.createSpy('func').andCallFake =>
             @col.at(0).get 'x'
           @watch @context, @func, @callback
-          
           @func.reset()
           @callback.reset()
 
-        it 'calls func when an accessed a Model attribute changes in a Collection', ->
+        it 'calls func when an accessed Model attribute changes in a Collection', ->
           @model1.set 'x', 'a value'
           waitOne ->
             expect(@func.callCount).toBe 1
@@ -380,7 +379,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
             expect(@callback.calls[0].object).toBe @context
 
 
-        it 'calls func when an accessed a Model attribute changes in a Collection of another Model', ->
+        it 'calls func when an accessed Model attribute changes in a Collection of another Model', ->
           @model0.set 'x', 'a value'
           waitOne ->
             expect(@func.callCount).toBe 1
