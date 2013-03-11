@@ -39,8 +39,11 @@ define [
       
   addModel: (key)->
     if log
-      addLog @, (event = if key then "change:#{key}" else 'all')
-      addLog @collection, event if @collection
+      addLog (
+        if @collection and logObjMap[hash @collection] then @collection
+        else @
+      ), (key and "change:#{key}" or 'all')
+
     return
 
   unwatch: (key)->

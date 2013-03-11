@@ -406,7 +406,7 @@ define(['../../utils/spec-utils'], function(_arg) {
         });
       });
       return describe("When func accesses a Collection", function() {
-        var access, methodAccess, methodName, _results;
+        var access, methodAccess, methodName, _fn;
         beforeEach(function() {
           return this.col = new this.Collection([
             {
@@ -444,59 +444,127 @@ define(['../../utils/spec-utils'], function(_arg) {
             return this.col.reduce(0, function() {});
           }
         };
-        _results = [];
+        _fn = function(methodName, access) {
+          return describe("by calling " + methodName + "()", function() {
+            var changeDesc, changeFunc, changes, _results;
+            beforeEach(function() {
+              var result,
+                _this = this;
+              result = 1;
+              this.func = jasmine.createSpy('func').andCallFake(function() {
+                access.call(_this);
+                return result++;
+              });
+              this.watch(this.context, this.func, this.callback);
+              this.callback.reset();
+              return this.func.reset();
+            });
+            changes = {
+              'a model was added': function() {
+                return this.col.add({
+                  x: 'another x val'
+                });
+              },
+              'a model was removed': function() {
+                return this.col.remove(this.col.at(0));
+              }
+            };
+            _results = [];
+            for (changeDesc in changes) {
+              changeFunc = changes[changeDesc];
+              _results.push((function(changeDesc, changeFunc) {
+                return describe("when the collection changes because " + changeDesc, function() {
+                  beforeEach(function() {
+                    return changeFunc.call(this);
+                  });
+                  return it('calls callback with result of func', function() {
+                    return waitOne(function() {
+                      expect(this.func.callCount).toBe(1);
+                      expect(this.func.calls[0].object).toBe(this.context);
+                      expect(this.callback).toHaveBeenCalledWith(2);
+                      expect(this.callback.callCount).toBe(1);
+                      return expect(this.callback.calls[0].object).toBe(this.context);
+                    });
+                  });
+                });
+              })(changeDesc, changeFunc));
+            }
+            return _results;
+          });
+        };
         for (methodName in methodAccess) {
           access = methodAccess[methodName];
-          _results.push((function(methodName, access) {
-            return describe("by calling " + methodName + "()", function() {
-              var changeDesc, changeFunc, changes, _results1;
-              beforeEach(function() {
-                var result,
-                  _this = this;
-                result = 1;
-                this.func = jasmine.createSpy('func').andCallFake(function() {
-                  access.call(_this);
-                  return result++;
-                });
-                this.watch(this.context, this.func, this.callback);
-                this.callback.reset();
-                return this.func.reset();
-              });
-              changes = {
-                'a model was added': function() {
-                  return this.col.add({
-                    x: 'another x val'
-                  });
-                },
-                'a model was removed': function() {
-                  return this.col.remove(this.col.at(0));
-                }
-              };
-              _results1 = [];
-              for (changeDesc in changes) {
-                changeFunc = changes[changeDesc];
-                _results1.push((function(changeDesc, changeFunc) {
-                  return describe("when the collection changes because " + changeDesc, function() {
-                    beforeEach(function() {
-                      return changeFunc.call(this);
-                    });
-                    return it('calls callback with result of func', function() {
-                      return waitOne(function() {
-                        expect(this.func.callCount).toBe(1);
-                        expect(this.func.calls[0].object).toBe(this.context);
-                        expect(this.callback).toHaveBeenCalledWith(2);
-                        expect(this.callback.callCount).toBe(1);
-                        return expect(this.callback.calls[0].object).toBe(this.context);
-                      });
-                    });
-                  });
-                })(changeDesc, changeFunc));
-              }
-              return _results1;
-            });
-          })(methodName, access));
+          _fn(methodName, access);
         }
-        return _results;
+        describe('and Models contained in the Collection', function() {
+          beforeEach(function() {
+            var _this = this;
+            this.watch(this.context, function() {
+              _this.col.at(0).get('x');
+              _this.col.each(function(model) {
+                return model.get('x');
+              });
+              _this.col.map(function(model) {
+                return model.get('x');
+              });
+              _this.col.filterBy({
+                x: 'some value'
+              });
+              return _this.col.reduce(0, function(sum, model) {
+                return model.get('x');
+              });
+            }, this.callback);
+            return this.callback.reset();
+          });
+          return it('should not add any listeners to the model', function() {
+            expect(this.col.at(0)._e['change:x']).toBeUndefined();
+            return expect(this.col.at(1)._e['change:x']).toBeUndefined();
+          });
+        });
+        return describe('using filterBy()', function() {
+          describe('when filtering by a property with any value (ex. filterBy({a:null}) )', function() {
+            beforeEach(function() {
+              var _this = this;
+              this.watch(this.context, (function() {
+                return _this.col.filterBy({
+                  x: null
+                });
+              }), this.callback);
+              return this.callback.reset();
+            });
+            return describe('when model changes', function() {
+              beforeEach(function() {
+                return this.col.at(0).set('x', 'new value');
+              });
+              return it('does NOT call callback', function() {
+                return waitOne(function() {
+                  return expect(this.callback).not.toHaveBeenCalled();
+                });
+              });
+            });
+          });
+          return describe('when filtering by a property', function() {
+            beforeEach(function() {
+              var _this = this;
+              this.watch(this.context, (function() {
+                return _this.col.filterBy({
+                  x: 'bogus'
+                });
+              }), this.callback);
+              return this.callback.reset();
+            });
+            return describe('when model changes', function() {
+              beforeEach(function() {
+                return this.col.at(0).set('x', 'bogus');
+              });
+              return it('calls callback', function() {
+                return waitOne(function() {
+                  return expect(this.callback).toHaveBeenCalledWith([this.col.at(0)]);
+                });
+              });
+            });
+          });
+        });
       });
     });
   };

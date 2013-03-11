@@ -36,12 +36,8 @@ define(['util/hash', 'util/fn', 'util/type'], function(hash, fn, type) {
       }
     },
     addModel: function(key) {
-      var event;
       if (log) {
-        addLog(this, (event = key ? "change:" + key : 'all'));
-        if (this.collection) {
-          addLog(this.collection, event);
-        }
+        addLog((this.collection && logObjMap[hash(this.collection)] ? this.collection : this), key && ("change:" + key) || 'all');
       }
     },
     unwatch: function(key) {

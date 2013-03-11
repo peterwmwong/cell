@@ -368,3 +368,53 @@ define ['../../utils/spec-utils'], ({waitOne})->
                     expect(@callback).toHaveBeenCalledWith 2
                     expect(@callback.callCount).toBe 1
                     expect(@callback.calls[0].object).toBe @context
+
+        describe 'and Models contained in the Collection', ->
+          
+          beforeEach ->
+            @watch @context,
+              =>
+                @col.at(0).get 'x'
+                @col.each (model)-> model.get 'x'
+                @col.map (model)-> model.get 'x'
+                @col.filterBy x: 'some value'
+                @col.reduce 0, (sum, model)-> model.get 'x'
+              @callback
+            @callback.reset()
+
+          it 'should not add any listeners to the model', ->
+            expect(@col.at(0)._e['change:x']).toBeUndefined()
+            expect(@col.at(1)._e['change:x']).toBeUndefined()
+
+        describe 'using filterBy()', ->
+
+          describe 'when filtering by a property with any value (ex. filterBy({a:null}) )', ->
+
+            beforeEach ->
+              @watch @context, (=> @col.filterBy x:null), @callback
+              @callback.reset()
+
+            describe 'when model changes', ->
+              beforeEach ->
+                @col.at(0).set 'x', 'new value'
+
+              it 'does NOT call callback', ->
+                waitOne ->
+                  expect(@callback).not.toHaveBeenCalled()
+
+
+          describe 'when filtering by a property', ->
+
+            beforeEach ->
+              @watch @context, (=> @col.filterBy x:'bogus'), @callback
+              @callback.reset()
+
+            describe 'when model changes', ->
+              beforeEach ->
+                @col.at(0).set 'x', 'bogus'
+
+              it 'calls callback', ->
+                waitOne ->
+                  expect(@callback).toHaveBeenCalledWith [@col.at 0]
+
+
