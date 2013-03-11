@@ -4,6 +4,7 @@ define [
   'util/type'
 ], (hash,fn,type)->
 
+  logStack = []
   onChangeCalled = logObjMap = log = false
 
   addLog = (obj, event)->
@@ -30,6 +31,7 @@ define [
     return
 
   evaluateAndMonitor = (context)->
+    logStack.push [log, logObjMap] if log
     log = {}
     logObjMap = {}
 
@@ -37,15 +39,22 @@ define [
 
     accesslog = log
     accesslogObjMap = logObjMap
-    logObjMap = log = false
+
+    if logStack.length
+      temp = logStack.pop()
+      log = temp[0]
+      logObjMap = temp[1]
+    else
+      logObjMap = log = false
 
     if prevlog = context.l
       prevObjMap = context.w
       removes = []
       for key, events of prevlog
+        temp = accesslog[key]
         for event of events
-          if accesslog[key][event]
-            delete accesslog[key][event]
+          if temp and temp[event]
+            delete temp[event]
           else
             removes.push [key, event]
 

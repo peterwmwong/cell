@@ -90,6 +90,45 @@ define ['../../utils/spec-utils'], ({waitOne})->
               expect(@callback.callCount).toBe 1
               expect(@callback.calls[0].object).toBe @callContext
 
+      describe "Nested watches", ->
+        beforeEach ->
+          @model = new @Model a:1, b:'b', c:'c'
+          @callback2 = jasmine.createSpy 'callback2'
+          @callback3 = jasmine.createSpy 'callback3'
+          @watch @context,
+            =>
+              a = @model.get 'a'
+              @watch @context,
+                =>
+                  b = @model.get 'b'
+                  @watch @context, (=> @model.get 'c'), @callback3
+                  b
+                @callback2
+              a
+            @callback
+
+          @callback.reset()
+          @callback2.reset()
+          @callback3.reset()
+
+        it "calls callback when accessed Model's change", ->
+          @model.set 'a', 2
+          waitOne ->
+            expect(@callback).toHaveBeenCalledWith 2
+
+        it "calls nested watch callback when accessed Model's change", ->
+          @model.set 'b', 'b2'
+          waitOne ->
+            expect(@callback).not.toHaveBeenCalled()
+            expect(@callback2).toHaveBeenCalledWith 'b2'
+
+        it "calls a doubly-nested watch callback when accessed Model's change", ->
+          @model.set 'c', 'c2'
+          waitOne ->
+            expect(@callback).not.toHaveBeenCalled()
+            expect(@callback2).not.toHaveBeenCalled()
+            expect(@callback3).toHaveBeenCalledWith 'c2'
+
       describe "When func does NOT access any Model or Collection", ->
         beforeEach ->
           @func = jasmine.createSpy('func').andReturn @value
@@ -109,9 +148,11 @@ define ['../../utils/spec-utils'], ({waitOne})->
       describe "When func's accesses Model's differently from call to call", ->
         beforeEach ->
           @model = new @Model a:1, b:'b', c:'c'
+          @model2 = new @Model x:777
           @func = jasmine.createSpy('func').andCallFake =>
             if 1 is @model.get 'a'
               @model.get 'b'
+              @model2.get 'x'
             else
               @model.get 'c'
 

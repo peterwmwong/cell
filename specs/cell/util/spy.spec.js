@@ -112,6 +112,55 @@ define(['../../utils/spec-utils'], function(_arg) {
           });
         });
       });
+      describe("Nested watches", function() {
+        beforeEach(function() {
+          var _this = this;
+          this.model = new this.Model({
+            a: 1,
+            b: 'b',
+            c: 'c'
+          });
+          this.callback2 = jasmine.createSpy('callback2');
+          this.callback3 = jasmine.createSpy('callback3');
+          this.watch(this.context, function() {
+            var a;
+            a = _this.model.get('a');
+            _this.watch(_this.context, function() {
+              var b;
+              b = _this.model.get('b');
+              _this.watch(_this.context, (function() {
+                return _this.model.get('c');
+              }), _this.callback3);
+              return b;
+            }, _this.callback2);
+            return a;
+          }, this.callback);
+          this.callback.reset();
+          this.callback2.reset();
+          return this.callback3.reset();
+        });
+        it("calls callback when accessed Model's change", function() {
+          this.model.set('a', 2);
+          return waitOne(function() {
+            return expect(this.callback).toHaveBeenCalledWith(2);
+          });
+        });
+        it("calls nested watch callback when accessed Model's change", function() {
+          this.model.set('b', 'b2');
+          return waitOne(function() {
+            expect(this.callback).not.toHaveBeenCalled();
+            return expect(this.callback2).toHaveBeenCalledWith('b2');
+          });
+        });
+        return it("calls a doubly-nested watch callback when accessed Model's change", function() {
+          this.model.set('c', 'c2');
+          return waitOne(function() {
+            expect(this.callback).not.toHaveBeenCalled();
+            expect(this.callback2).not.toHaveBeenCalled();
+            return expect(this.callback3).toHaveBeenCalledWith('c2');
+          });
+        });
+      });
       describe("When func does NOT access any Model or Collection", function() {
         beforeEach(function() {
           this.func = jasmine.createSpy('func').andReturn(this.value);
@@ -145,9 +194,13 @@ define(['../../utils/spec-utils'], function(_arg) {
             b: 'b',
             c: 'c'
           });
+          this.model2 = new this.Model({
+            x: 777
+          });
           this.func = jasmine.createSpy('func').andCallFake(function() {
             if (1 === _this.model.get('a')) {
-              return _this.model.get('b');
+              _this.model.get('b');
+              return _this.model2.get('x');
             } else {
               return _this.model.get('c');
             }
