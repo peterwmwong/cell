@@ -13,7 +13,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
       beforeEach ->
 
         @model = new @Model a:1, b:{}, c:'x'
-        @callback = jasmine.createSpy 'callback'
+        @callback = jasmine.createSpy('callback')
         @func = jasmine.createSpy('func').andCallFake => @model.attributes()
 
         @callback2 = jasmine.createSpy 'callback'
@@ -60,7 +60,6 @@ define ['../../utils/spec-utils'], ({waitOne})->
         @context = {}
         @value = {}
         @callback = jasmine.createSpy 'callback'
-
       
       describe "when callContext is specified", ->
 
@@ -106,6 +105,56 @@ define ['../../utils/spec-utils'], ({waitOne})->
             expect(@callback).toHaveBeenCalledWith @value
             expect(@callback.callCount).toBe 1
             expect(@callback.calls[0].object).toBe @context
+
+      describe "When func's accesses Model's differently from call to call", ->
+        beforeEach ->
+          @model = new @Model a:1, b:'b', c:'c'
+          @func = jasmine.createSpy('func').andCallFake =>
+            if 1 is @model.get 'a'
+              @model.get 'b'
+            else
+              @model.get 'c'
+
+          @watch @context, @func, @callback
+          @func.reset()
+          @callback.reset()
+
+        it "doesn't call callback when non-relevant model attributes change", ->
+          @model.set 'c', 'c2'
+          waitOne ->
+            expect(@callback).not.toHaveBeenCalled()
+
+        describe 'when a change causes func to access different Model attributes', ->
+          beforeEach ->
+            @callback.reset()
+            @model.set 'a', 2
+            waitOne ->
+
+          it 'does not register listeners to already monitored events', ->
+            expect(@model._e['change:a'].length).toBe 1
+
+          it 'calls callback', ->
+            expect(@callback).toHaveBeenCalledWith 'c'
+
+          describe 'when a no longer accessed model attribute changes', ->
+            beforeEach ->
+              @callback.reset()
+              @model.set 'b', 'b2'
+
+            it 'does NOT call callback', ->
+              waitOne ->
+                expect(@callback).not.toHaveBeenCalled()
+
+
+          describe 'when the newly accessed model attribute changes', ->
+            beforeEach ->
+              @callback.reset()
+              @model.set 'c', 'c3'
+
+            it 'calls callback', ->
+              waitOne ->
+                expect(@callback).toHaveBeenCalledWith 'c3'
+
 
       describe "When func accesses a Model's attributes()", ->
         beforeEach ->

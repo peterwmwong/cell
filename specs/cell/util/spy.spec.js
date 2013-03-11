@@ -137,6 +137,67 @@ define(['../../utils/spec-utils'], function(_arg) {
           });
         });
       });
+      describe("When func's accesses Model's differently from call to call", function() {
+        beforeEach(function() {
+          var _this = this;
+          this.model = new this.Model({
+            a: 1,
+            b: 'b',
+            c: 'c'
+          });
+          this.func = jasmine.createSpy('func').andCallFake(function() {
+            if (1 === _this.model.get('a')) {
+              return _this.model.get('b');
+            } else {
+              return _this.model.get('c');
+            }
+          });
+          this.watch(this.context, this.func, this.callback);
+          this.func.reset();
+          return this.callback.reset();
+        });
+        it("doesn't call callback when non-relevant model attributes change", function() {
+          this.model.set('c', 'c2');
+          return waitOne(function() {
+            return expect(this.callback).not.toHaveBeenCalled();
+          });
+        });
+        return describe('when a change causes func to access different Model attributes', function() {
+          beforeEach(function() {
+            this.callback.reset();
+            this.model.set('a', 2);
+            return waitOne(function() {});
+          });
+          it('does not register listeners to already monitored events', function() {
+            return expect(this.model._e['change:a'].length).toBe(1);
+          });
+          it('calls callback', function() {
+            return expect(this.callback).toHaveBeenCalledWith('c');
+          });
+          describe('when a no longer accessed model attribute changes', function() {
+            beforeEach(function() {
+              this.callback.reset();
+              return this.model.set('b', 'b2');
+            });
+            return it('does NOT call callback', function() {
+              return waitOne(function() {
+                return expect(this.callback).not.toHaveBeenCalled();
+              });
+            });
+          });
+          return describe('when the newly accessed model attribute changes', function() {
+            beforeEach(function() {
+              this.callback.reset();
+              return this.model.set('c', 'c3');
+            });
+            return it('calls callback', function() {
+              return waitOne(function() {
+                return expect(this.callback).toHaveBeenCalledWith('c3');
+              });
+            });
+          });
+        });
+      });
       describe("When func accesses a Model's attributes()", function() {
         beforeEach(function() {
           var _this = this;

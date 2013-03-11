@@ -7,7 +7,7 @@ define [
   onChangeCalled = logObjMap = log = false
 
   addLog = (obj, event)->
-    (log[key = hash obj] or (log[key] = {}))[event] = 1
+    (log[key = hash obj] or (log[key] = {}))[event] = true
     logObjMap[key] = obj
     return
 
@@ -19,9 +19,7 @@ define [
     onChangeCalled = false
     changes = allChanges
     allChanges = {}
-    for key, context of changes
-      # f(e())
-      context.f context.e()
+    evaluateAndMonitor changes[key] for key of changes
     return
 
   onChange = ->
@@ -29,6 +27,40 @@ define [
     unless onChangeCalled
       onChangeCalled = true
       doAfter _onChange
+    return
+
+  evaluateAndMonitor = (context)->
+    log = {}
+    logObjMap = {}
+
+    value = context.e()
+
+    accesslog = log
+    accesslogObjMap = logObjMap
+    logObjMap = log = false
+
+    if prevlog = context.l
+      prevObjMap = context.w
+      removes = []
+      for key, events of prevlog
+        for event of events
+          if accesslog[key][event]
+            delete accesslog[key][event]
+          else
+            removes.push [key, event]
+
+      i=0
+      while keyEvent = removes[i++]
+        prevObjMap[keyEvent[0]].off keyEvent[1], undefined, context
+
+    context.l = accesslog
+    context.w = accesslogObjMap
+    for key of accesslog
+      obj = accesslogObjMap[key]
+      for event of accesslog[key]
+        obj.on event, onChange, context
+
+    context.f value
     return
 
   addCol: ->
@@ -40,7 +72,7 @@ define [
   addModel: (key)->
     if log
       addLog (
-        if @collection and logObjMap[hash @collection] then @collection
+        if (c = @collection) and logObjMap[hash c] then c
         else @
       ), (key and "change:#{key}" or 'all')
 
@@ -60,30 +92,15 @@ define [
       f.call callContext, e
 
     else
-      e = fn.b0 e, key
-      f = fn.b1 f, callContext
-      key = hash key
-
+      obj = key
       (
-        if (w = watches[key]) then w
+        if (w = watches[key = hash key]) then w
         else (watches[key] = [])
-      ).push context = {e,f,w:{}}
-      
-      log = {}
-      logObjMap = {}
+      ).push context =
+        e: fn.b0 e, obj
+        f: fn.b1 f, callContext
+        w:{}
 
-      try value = e()
-
-      accesslog = log
-      accesslogObjMap = logObjMap
-      logObjMap = log = false
-
-      context.w = accesslogObjMap
-      for key of accesslog
-        obj = accesslogObjMap[key]
-        for event of accesslog[key]
-          obj.on event, onChange, context
-
-      f value
+      evaluateAndMonitor context
 
     return
