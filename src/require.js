@@ -1370,24 +1370,20 @@ var requirejs, require, define;
                     //Grab defines waiting in the global queue.
                     intakeDefines();
 
+                    // cell patch: remove useless nextTick that unnecessarily defers loading! lameee...
+
                     //Mark all the dependencies as needing to be loaded.
-                    context.nextTick(function () {
-                        //Some defines could have been added since the
-                        //require call, collect them.
-                        intakeDefines();
+                    requireMod = getModule(makeModuleMap(null, relMap));
 
-                        requireMod = getModule(makeModuleMap(null, relMap));
+                    //Store if map config should be applied to this require
+                    //call for dependencies.
+                    requireMod.skipMap = options.skipMap;
 
-                        //Store if map config should be applied to this require
-                        //call for dependencies.
-                        requireMod.skipMap = options.skipMap;
-
-                        requireMod.init(deps, callback, errback, {
-                            enabled: true
-                        });
-
-                        checkLoaded();
+                    requireMod.init(deps, callback, errback, {
+                        enabled: true
                     });
+
+                    checkLoaded();
 
                     return localRequire;
                 }
