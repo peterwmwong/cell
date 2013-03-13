@@ -10,6 +10,7 @@ define [
 
   addLog = (obj, event, key)->
     unless log.l[key = event + (key or hash obj)]
+      log.s += key
       log.l[key] =
         o:obj
         e:event
@@ -35,24 +36,26 @@ define [
   _eam: evaluateAndMonitor = (context)->
     logStack.push log
     log =
+      s: ''
       l: curLog = {}
       c: {}
 
     value = context.e()
 
-    if prevLog = context.l
-      for eventKey of prevLog
-        if curLog[eventKey]
-          delete curLog[eventKey]
-        else
-          prevLog[eventKey].o.off prevLog[eventKey].e, undefined, context
+    if log.s isnt context.s
+      if prevLog = context.l
+        for eventKey of prevLog
+          if curLog[eventKey]
+            delete curLog[eventKey]
+          else
+            prevLog[eventKey].o.off prevLog[eventKey].e, undefined, context
 
-    for eventKey of curLog
-      curLog[eventKey].o.on curLog[eventKey].e, onChange, context
+      for eventKey of curLog
+        curLog[eventKey].o.on curLog[eventKey].e, onChange, context
+      context.s = log.s
+      context.l = curLog
 
-    context.l = curLog
     log = logStack.pop()
-
     context.f value
     return
 
