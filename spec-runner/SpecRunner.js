@@ -3,6 +3,7 @@
 define(['require', '../specs/GENERATED_all-specs', 'jquery'], function(require, specs, jquery) {
   var jasmineEnv, spec, trivialReporter, _i, _len;
   jquery.noConflict(true);
+  jasmine.WaitsForBlock.TIMEOUT_INCREMENT = 0;
   for (_i = 0, _len = specs.length; _i < _len; _i++) {
     spec = specs[_i];
     spec();

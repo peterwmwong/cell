@@ -4,7 +4,9 @@ require.config({
   paths: {
     'SpecHelpers': '../spec-runner/SpecHelpers',
     'spec': '../spec-runner/spec',
-    'jquery': '../support/jquery'
+    'jquery': '../support/jquery',
+    'defer': '../src/util/defer',
+    'dom/browser': '../src/dom/browser'
   },
   deps: [
     'SpecRunner'

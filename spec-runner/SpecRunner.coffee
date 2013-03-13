@@ -1,5 +1,6 @@
 define ['require','../specs/GENERATED_all-specs','jquery'], (require,specs,jquery)->
   jquery.noConflict true
+  jasmine.WaitsForBlock.TIMEOUT_INCREMENT = 0
   spec() for spec in specs
   trivialReporter = new jasmine.TrivialReporter()
   jasmineEnv = jasmine.getEnv()

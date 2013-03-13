@@ -1,4 +1,4 @@
-define ['jquery'], ($)->
+define ['jquery','defer'], ($,defer)->
 
   indexOf =
     if Array.prototype.indexOf
@@ -34,7 +34,8 @@ define ['jquery'], ($)->
 
     waitOne: (expectCallback)->
       done = false
-      runs -> setTimeout (-> done = true), 32
+      # runs -> (window.requestAnimationFrame or setTimeout)(-> done = true)
+      runs -> defer -> done = true
       waitsFor -> done
       runs expectCallback
 

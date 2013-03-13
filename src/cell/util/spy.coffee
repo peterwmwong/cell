@@ -2,7 +2,8 @@ define [
   'util/hash'
   'util/fn'
   'util/type'
-], (hash,fn,type)->
+  'util/defer'
+], (hash,fn,type,defer)->
 
   logStack = []
   onChangeCalled = log = false
@@ -14,7 +15,6 @@ define [
         e:event
     return
 
-  doAfter = window.requestAnimationFrame or setTimeout
   allChanges = {}
   watches = {}
 
@@ -29,7 +29,7 @@ define [
     allChanges[hash @] = @
     unless onChangeCalled
       onChangeCalled = true
-      doAfter _onChange
+      defer _onChange
     return
 
   evaluateAndMonitor = (context)->
