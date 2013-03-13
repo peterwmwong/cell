@@ -8,14 +8,16 @@ define(['dom/events', 'cell/Ext'], function(events, Ext) {
         e: 'keyup',
         g: 'value',
         s: function(value) {
-          this.el[this.ea] = value;
+          if (value != null) {
+            this.el[this.a] = value;
+          }
         }
       },
       checkbox: {
         e: 'change',
         g: 'checked',
         s: function(value) {
-          this.el[this.ea] = !!value;
+          this.el[this.a] = !!value;
         }
       }
     },
@@ -42,7 +44,7 @@ define(['dom/events', 'cell/Ext'], function(events, Ext) {
         }
       }
       if (modelEl) {
-        this.ea = modelEl.g;
+        this.a = modelEl.g;
         events.on(el, modelEl.e, function() {
           model.set(prop, el[modelEl.g]);
         });

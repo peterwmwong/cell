@@ -9,13 +9,13 @@ define [
         e: 'keyup'
         g: 'value'
         s: (value)->
-          @el[@ea] = value
+          @el[@a] = value if value?
           return
       checkbox:
         e: 'change'
         g: 'checked'
         s: (value)->
-          @el[@ea] = not not value
+          @el[@a] = not not value
           return
     select:
       e: 'change'
@@ -34,7 +34,7 @@ define [
         modelEl = modelEl[el.type] if tag is 'input'
 
       if modelEl
-        @ea = modelEl.g
+        @a = modelEl.g
         events.on el,
           modelEl.e,
           ->
