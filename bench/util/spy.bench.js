@@ -2,6 +2,6 @@
 
 define(function(require) {
   return require('./bench-spy')({
-    both: "var model = new Model({\n      a:'a',\n      b:'b',\n      c:'c'\n    }),\n    keyObj = {};\nspy.watch(\n  keyObj,\n  function() {\n    return model.get('a')+model.get('b')+model.get('c');\n  },\n  function(){});\nspy.unwatch(keyObj);"
+    both: "var model = new Model({\n      a:'a',\n      b:'b',\n      c:'c'\n    }),\n    keyObj = {};\nspy.watch(\n  keyObj,\n  function() {\n    return model.get('a')+model.get('b')+model.get('c');\n  },\n  function(){});\nspy.unwatch(keyObj);\nmodel.destroy();"
   });
 });

@@ -15,4 +15,5 @@ define (require)->
         },
         function(){});
       spy.unwatch(keyObj);
+      model.destroy();
       """

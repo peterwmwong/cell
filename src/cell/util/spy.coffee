@@ -32,7 +32,7 @@ define [
       defer _onChange
     return
 
-  evaluateAndMonitor = (context)->
+  _eam: evaluateAndMonitor = (context)->
     logStack.push log
     log =
       l: curLog = {}
@@ -54,7 +54,7 @@ define [
     log = logStack.pop()
 
     context.f value
-    return
+    context
 
   addCol: ->
     if log
@@ -69,16 +69,15 @@ define [
         if ((c = @collection) and log.c[hash c]) then c
         else @
       ), (key and "change:#{key}" or 'all')
-
     return
 
   unwatch: (key)->
-    if w = watches[hash key]
+    if w = watches[key = hash key]
+      delete watches[key]
       i=0
       while (context = w[i++])
         for key of context.l
           context.l[key].o.off undefined, undefined, context
-      delete watches[hash key]
     return
 
   watch: (keyObj, e, f, callContext)->
