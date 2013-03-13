@@ -8,8 +8,8 @@ define [
   logStack = []
   onChangeCalled = log = false
 
-  addLog = (obj, event, key)->
-    unless log.l[key = event + (key or hash obj)]
+  addLog = (obj, event)->
+    unless log.l[key = event + (obj.$$hashkey or hash obj)]
       log.s += key
       log.l[key] =
         o:obj
@@ -61,17 +61,17 @@ define [
 
   addCol: ->
     if log
-      log.c[colKey = hash @] = true
-      addLog @, 'add', colKey
-      addLog @, 'remove', colKey
+      log.c[@$$hashkey or hash @] = true
+      addLog @, 'add'
+      addLog @, 'remove'
     return
       
   addModel: (key)->
     if log
       addLog (
-        if ((c = @collection) and log.c[hash c]) then c
+        if ((obj = @collection) and log.c[obj.$$hashkey or hash obj]) then obj
         else @
-      ), (key and "change:#{key}" or 'all')
+      ), (if key then "change:#{key}" else 'all')
     return
 
   unwatch: (key)->

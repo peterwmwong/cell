@@ -442,7 +442,11 @@ define('util/hash',[],function() {
   hashuid = 0;
   return function(obj) {
     var objType;
-    return (objType = typeof obj) + ':' + ((objType === 'object') && (obj !== null) ? obj.$$hashkey || (obj.$$hashkey = (++hashuid).toString(36)) : obj);
+    if (((objType = typeof obj) === 'object') && obj !== null) {
+      return obj.$$hashkey || (obj.$$hashkey = "" + (++hashuid));
+    } else {
+      return objType + ':' + obj;
+    }
   };
 });
 
@@ -848,8 +852,9 @@ define('cell/util/spy',['util/hash', 'util/fn', 'util/type', 'util/defer'], func
   var addLog, allChanges, evaluateAndMonitor, log, logStack, onChange, onChangeCalled, watches, _onChange;
   logStack = [];
   onChangeCalled = log = false;
-  addLog = function(obj, event, key) {
-    if (!log.l[key = event + (key || hash(obj))]) {
+  addLog = function(obj, event) {
+    var key;
+    if (!log.l[key = event + (obj.$$hashkey || hash(obj))]) {
       log.s += key;
       log.l[key] = {
         o: obj,
@@ -905,17 +910,16 @@ define('cell/util/spy',['util/hash', 'util/fn', 'util/type', 'util/defer'], func
       context.f(value);
     },
     addCol: function() {
-      var colKey;
       if (log) {
-        log.c[colKey = hash(this)] = true;
-        addLog(this, 'add', colKey);
-        addLog(this, 'remove', colKey);
+        log.c[this.$$hashkey || hash(this)] = true;
+        addLog(this, 'add');
+        addLog(this, 'remove');
       }
     },
     addModel: function(key) {
-      var c;
+      var obj;
       if (log) {
-        addLog(((c = this.collection) && log.c[hash(c)] ? c : this), key && ("change:" + key) || 'all');
+        addLog(((obj = this.collection) && log.c[obj.$$hashkey || hash(obj)] ? obj : this), (key ? "change:" + key : 'all'));
       }
     },
     unwatch: function(key) {

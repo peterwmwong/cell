@@ -5,6 +5,10 @@ define(function() {
   hashuid = 0;
   return function(obj) {
     var objType;
-    return (objType = typeof obj) + ':' + ((objType === 'object') && (obj !== null) ? obj.$$hashkey || (obj.$$hashkey = (++hashuid).toString(36)) : obj);
+    if (((objType = typeof obj) === 'object') && obj !== null) {
+      return obj.$$hashkey || (obj.$$hashkey = "" + (++hashuid));
+    } else {
+      return objType + ':' + obj;
+    }
   };
 });

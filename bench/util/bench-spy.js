@@ -6,9 +6,10 @@ define(function(require) {
   requirejs.config({
     context: 'now',
     baseUrl: '../../../src',
-    deps: ['cell/Model', 'cell/util/spy'],
-    callback: function(Model, spy) {
+    deps: ['cell/Model', 'cell/Collection', 'cell/util/spy'],
+    callback: function(Model, Collection, spy) {
       window.ModelNow = Model;
+      window.CollectionNow = Collection;
       window.spyNow = spy;
       runBench();
     }
@@ -16,9 +17,10 @@ define(function(require) {
   requirejs.config({
     context: 'baseline',
     baseUrl: 'https://raw.github.com/peterwmwong/cell/master/src/',
-    deps: ['cell/Model', 'cell/util/spy'],
-    callback: function(Model, spy) {
+    deps: ['cell/Model', 'cell/Collection', 'cell/util/spy'],
+    callback: function(Model, Collection, spy) {
       window.ModelBaseline = Model;
+      window.CollectionBaseline = Collection;
       window.spyBaseline = spy;
       runBench();
     }

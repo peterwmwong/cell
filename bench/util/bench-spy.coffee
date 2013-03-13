@@ -4,9 +4,10 @@ define (require)->
   requirejs.config
     context: 'now'
     baseUrl: '../../../src'
-    deps: ['cell/Model','cell/util/spy']
-    callback: (Model,spy)->
+    deps: ['cell/Model','cell/Collection','cell/util/spy']
+    callback: (Model,Collection,spy)->
       window.ModelNow = Model
+      window.CollectionNow = Collection
       window.spyNow = spy
       runBench()
       return
@@ -15,9 +16,10 @@ define (require)->
     context: 'baseline'
     baseUrl: 'https://raw.github.com/peterwmwong/cell/master/src/'
     # baseUrl: '../../../src'
-    deps: ['cell/Model','cell/util/spy']
-    callback: (Model,spy)->
+    deps: ['cell/Model','cell/Collection','cell/util/spy']
+    callback: (Model,Collection,spy)->
       window.ModelBaseline = Model
+      window.CollectionBaseline = Collection
       window.spyBaseline = spy
       runBench()
       return
