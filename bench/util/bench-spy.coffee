@@ -11,10 +11,10 @@ define (require)->
       runBench()
       return
 
-
   requirejs.config
     context: 'baseline'
     baseUrl: 'https://raw.github.com/peterwmwong/cell/master/src/'
+    # baseUrl: '../../../src'
     deps: ['cell/Model','cell/util/spy']
     callback: (Model,spy)->
       window.ModelBaseline = Model
@@ -28,28 +28,9 @@ define (require)->
       bench.run settings
     return
 
-  ({baseline,now,both,setup})->
-    settings = setup: ""
-    settings.tests =
-      if both
-        baseline: both
-        now: both
-
-      else
-        {baseline,now}
-        
-    settings.tests.now =
-      """
-      var spy = spyNow,
-          Model = ModelNow;
-      #{settings.tests.now}
-      """
-
-    settings.tests.baseline =
-      """
-      var spy = spyBaseline,
-          Model = ModelBaseline;
-      #{settings.tests.baseline}
-      """
-
+  ({baseline,now,both,setup,teardown})->
+    settings =
+      setup: setup or ''
+      teardown: teardown or ''
+    settings.tests = {baseline,now}
     runBench()

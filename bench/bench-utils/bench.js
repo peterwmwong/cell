@@ -9,10 +9,13 @@ define(function(require) {
   };
   return {
     run: function(_arg) {
-      var name, s, setup, test, tests, _i, _len, _ref;
-      setup = _arg.setup, tests = _arg.tests;
+      var name, s, setup, teardown, test, tests, _i, _len, _ref;
+      setup = _arg.setup, tests = _arg.tests, teardown = _arg.teardown;
       if (setup) {
         Benchmark.prototype.setup = setup;
+      }
+      if (teardown) {
+        Benchmark.prototype.teardown = teardown;
       }
       log('benchCode', "<pre>// Setup\n" + (escapeCode(setup)) + "</pre>");
       Benchmark.platform = platform;

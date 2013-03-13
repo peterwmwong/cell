@@ -54,7 +54,7 @@ define [
     log = logStack.pop()
 
     context.f value
-    context
+    return
 
   addCol: ->
     if log
@@ -85,6 +85,7 @@ define [
 
     unless type.isF e
       f.call callContext, e
+      return
 
     else
       (watches[key = hash keyObj] or (watches[key] = [])).push context =
@@ -92,5 +93,4 @@ define [
         f: fn.b1 f, callContext
 
       evaluateAndMonitor context
-
-    return
+      context

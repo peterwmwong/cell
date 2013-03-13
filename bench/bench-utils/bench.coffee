@@ -7,8 +7,9 @@ define (require)->
       .replace(/</g,'&lt;')
       .replace(/>/g,'&gt;')
 
-  run: ({setup,tests})->
+  run: ({setup,tests,teardown})->
     Benchmark::setup = setup if setup
+    Benchmark::teardown = teardown if teardown
     log 'benchCode', "<pre>// Setup\n#{escapeCode setup}</pre>"
 
     Benchmark.platform = platform

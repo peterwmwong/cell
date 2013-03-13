@@ -54,7 +54,6 @@ define(['util/hash', 'util/fn', 'util/type', 'util/defer'], function(hash, fn, t
       context.l = curLog;
       log = logStack.pop();
       context.f(value);
-      return context;
     },
     addCol: function() {
       var colKey;
@@ -93,6 +92,7 @@ define(['util/hash', 'util/fn', 'util/type', 'util/defer'], function(hash, fn, t
           f: fn.b1(f, callContext)
         });
         evaluateAndMonitor(context);
+        return context;
       }
     }
   };

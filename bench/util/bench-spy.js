@@ -30,20 +30,16 @@ define(function(require) {
     }
   };
   return function(_arg) {
-    var baseline, both, now, setup;
-    baseline = _arg.baseline, now = _arg.now, both = _arg.both, setup = _arg.setup;
+    var baseline, both, now, setup, teardown;
+    baseline = _arg.baseline, now = _arg.now, both = _arg.both, setup = _arg.setup, teardown = _arg.teardown;
     settings = {
-      setup: ""
+      setup: setup || '',
+      teardown: teardown || ''
     };
-    settings.tests = both ? {
-      baseline: both,
-      now: both
-    } : {
+    settings.tests = {
       baseline: baseline,
       now: now
     };
-    settings.tests.now = "var spy = spyNow,\n    Model = ModelNow;\n" + settings.tests.now;
-    settings.tests.baseline = "var spy = spyBaseline,\n    Model = ModelBaseline;\n" + settings.tests.baseline;
     return runBench();
   };
 });

@@ -2,6 +2,9 @@
 
 define(function(require) {
   return require('./bench-spy')({
-    both: "var model = new Model({\n      a:'a',\n      b:'b',\n      c:'c'\n    }),\n    keyObj = {};\nspy.watch(\n  keyObj,\n  function() {\n    return model.get('a')+model.get('b')+model.get('c');\n  },\n  function(){});\nspy.unwatch(keyObj);\nmodel.destroy();"
+    setup: "var modelData = {a:'a',b:'b',c:'c'},\n    modelBaseline = new ModelBaseline(modelData),\n    modelNow = new ModelNow(modelData),\n    keyObj = {},\n    contextBaseline = spyBaseline.watch(\n      keyObj,\n      function() {\n        return modelBaseline.get('a')+modelBaseline.get('b')+modelBaseline.get('c');\n      },\n      function(){}),\n    contextNow = spyNow.watch(\n      keyObj,\n      function() {\n        return modelNow.get('a')+modelNow.get('b')+modelNow.get('c');\n      },\n      function(){});",
+    baseline: "spyBaseline._eam(contextBaseline);",
+    now: "spyNow._eam(contextNow);",
+    teardown: "spyBaseline.unwatch(keyObj);\nmodelBaseline.destroy();\nspyNow.unwatch(keyObj);\nmodelNow.destroy();"
   });
 });
