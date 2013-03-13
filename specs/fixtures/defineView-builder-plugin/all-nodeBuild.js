@@ -922,6 +922,7 @@ define('cell/util/spy',['util/hash', 'util/fn', 'util/type', 'util/defer'], func
             context.l[key].o.off(void 0, void 0, context);
           }
         }
+        delete watches[hash(key)];
       }
     },
     watch: function(keyObj, e, f, callContext) {

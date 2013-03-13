@@ -1,14 +1,13 @@
 define (require)->
   Benchmark = require 'benchmark'
   platform = require 'platform'
-  publishResults = require 'publishResults'
   escapeCode = (str)->
     str
       .replace(/&/g,'&amp;')
       .replace(/</g,'&lt;')
       .replace(/>/g,'&gt;')
 
-  run: ({publish,setup,tests})->
+  run: ({setup,tests})->
     Benchmark::setup = setup if setup
     log 'benchCode', "<pre>// Setup\n#{escapeCode setup}</pre>"
 
@@ -38,10 +37,8 @@ define (require)->
           else ''
         log "benchResult #{desc}", "#{name} #{Math.abs diff/10.0}% #{desc}"
 
-      if publish and /[?&]publish/.test(window.location.search)
-        publishResults.toBrowserScope results, publish.testkey, publish.sandboxid
-
-    for name,test of tests
+    for name in ['baseline','now']
+      test = tests[name]
       s.add name, test
       log 'benchCode', "<pre>// #{name}<br>#{escapeCode test}</pre>"
 

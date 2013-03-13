@@ -78,6 +78,7 @@ define [
       while (context = w[i++])
         for key of context.l
           context.l[key].o.off undefined, undefined, context
+      delete watches[hash key]
     return
 
   watch: (keyObj, e, f, callContext)->

@@ -78,6 +78,7 @@ define(['util/hash', 'util/fn', 'util/type', 'util/defer'], function(hash, fn, t
             context.l[key].o.off(void 0, void 0, context);
           }
         }
+        delete watches[hash(key)];
       }
     },
     watch: function(keyObj, e, f, callContext) {

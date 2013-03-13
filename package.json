@@ -12,8 +12,7 @@
   "devDependencies": {
     "benchmark":"~1.0.0",
     "platform":"~1.0.0",
-    "backbone":"~0.9.10",
-    "underscore": "1.4.3"
+    "lodash":"~1.0.1"
   },
   "dependencies": {
     "almond":"0.2.5",

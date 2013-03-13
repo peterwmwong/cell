@@ -76,7 +76,7 @@ window.log = function(type,msg){
   logDiv.appendChild(newDiv);
 }
 
-var match = /[&?]bench=([\w-]+)/.exec(window.location.search);
+var match = /[&?]bench=([\w-/]+)/.exec(window.location.search);
 var bench = match && match[1];
 
 if (!bench) {
@@ -95,24 +95,22 @@ if (!bench) {
     if (!raw) {
       url += 'blob/';
     }
-    url += commitOrBranch+'/build/dom.js';
+    url += commitOrBranch+'/src/cell/util/spy.js';
     return url;
   };
 
   match = /[&?]base=(\w+)/.exec(window.location.search);
-  var commitBranch = match && match[1] || 'dom';
+  var commitBranch = match && match[1] || 'master';
 
   log('baseline', "baseline commit: <a target='_blank' href='"+getCommitBranchDomURL(commitBranch)+"'>"+commitBranch+"</a>");
 
   require.config({
     paths: {
-      underscore: '../../support/lodash.custom',
-      DOMBaseline: getCommitBranchDomURL(commitBranch,true).slice(0,-3),
-      DOMNow: '../../build/dom',
       benchmark: '../../node_modules/benchmark/benchmark',
-      platform: '../../node_modules/platform/platform'
+      platform: '../../node_modules/platform/platform',
+      benches: './'
     },
-    deps: [bench+'.bench']
+    deps: ['benches/'+bench+'.bench']
   });
 }
 })();
