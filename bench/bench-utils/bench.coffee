@@ -40,7 +40,7 @@ define (require)->
 
     for name in ['baseline','now']
       test = tests[name]
-      s.add name, test
+      s.add name, test, minTime: 2
       log 'benchCode', "<pre>// #{name}<br>#{escapeCode test}</pre>"
 
     s.run async: true

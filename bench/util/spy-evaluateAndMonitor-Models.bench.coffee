@@ -2,18 +2,20 @@ define (require)->
   require('./bench-spy')
     setup:
       """
-      var modelData = {a:'a',b:'b',c:'c'},
-          modelBaseline = new ModelBaseline(modelData),
-          modelNow = new ModelNow(modelData),
-          keyObj = {},
+      var modelBaseline = new ModelBaseline({a:'a',b:'b',c:'c'}),
+          modelNow = new ModelNow({a:'a',b:'b',c:'c'}),
+          keyObjBaseline = {},
+          keyObjNow= {},
+          eamBaseline = spyBaseline._eam,
+          eamNow = spyNow._eam,
           contextBaseline = spyBaseline.watch(
-            keyObj,
+            keyObjBaseline,
             function() {
               return modelBaseline.get('a')+modelBaseline.get('b')+modelBaseline.get('c');
             },
             function(){}),
           contextNow = spyNow.watch(
-            keyObj,
+            keyObjNow,
             function() {
               return modelNow.get('a')+modelNow.get('b')+modelNow.get('c');
             },
@@ -22,18 +24,18 @@ define (require)->
 
     baseline:
       """
-      spyBaseline._eam(contextBaseline);
+      eamBaseline(contextBaseline);
       """
 
     now:
       """
-      spyNow._eam(contextNow);
+      eamNow(contextNow);
       """
 
     teardown:
       """
-      spyBaseline.unwatch(keyObj);
+      spyBaseline.unwatch(keyObjBaseline);
       modelBaseline.destroy();
-      spyNow.unwatch(keyObj);
+      spyNow.unwatch(keyObjNow);
       modelNow.destroy();
       """

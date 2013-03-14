@@ -2,9 +2,9 @@
 
 define(function(require) {
   return require('./bench-spy')({
-    setup: "var collectionData = [{key:'a'},{key:'b'},{key:'c'}],\n    collectionBaseline = new CollectionBaseline(collectionData),\n    collectionNow = new CollectionNow(collectionData),\n    mapFun = function(el){return el.get('key');};\n    keyObj = {},\n    contextBaseline = spyBaseline.watch(\n      keyObj,\n      function() {\n        return collectionBaseline.map(mapFun);\n      },\n      function(){}),\n    contextNow = spyNow.watch(\n      keyObj,\n      function() {\n        return collectionNow.map(mapFun);\n      },\n      function(){});",
-    baseline: "spyBaseline._eam(contextBaseline);",
-    now: "spyNow._eam(contextNow);",
-    teardown: "spyBaseline.unwatch(keyObj);\ncollectionBaseline.destroy();\nspyNow.unwatch(keyObj);\ncollectionNow.destroy();"
+    setup: "var collectionData = [{key:'a'},{key:'b'},{key:'c'}],\n    collectionBaseline = new CollectionBaseline(collectionData),\n    collectionNow = new CollectionNow(collectionData),\n    mapFun = function(el){return el.get('key');},\n    keyObjBaseline = {},\n    keyObjNow= {},\n    eamBaseline = spyBaseline._eam,\n    eamNow = spyNow._eam,\n    contextBaseline = spyBaseline.watch(\n      keyObjBaseline,\n      function() {\n        return collectionBaseline.map(mapFun);\n      },\n      function(){}),\n    contextNow = spyNow.watch(\n      keyObjNow,\n      function() {\n        return collectionNow.map(mapFun);\n      },\n      function(){});",
+    baseline: "eamBaseline(contextBaseline);",
+    now: "eamNow(contextNow);",
+    teardown: "spyBaseline.unwatch(keyObjBaseline);\ncollectionBaseline.destroy();\nspyNow.unwatch(keyObjNow);\ncollectionNow.destroy();"
   });
 });

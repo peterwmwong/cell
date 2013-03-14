@@ -2,9 +2,9 @@
 
 define(function(require) {
   return require('./bench-spy')({
-    setup: "var modelData = {a:'a',b:'b',c:'c'},\n    modelBaseline = new ModelBaseline(modelData),\n    modelNow = new ModelNow(modelData),\n    keyObj = {},\n    contextBaseline = spyBaseline.watch(\n      keyObj,\n      function() {\n        return modelBaseline.get('a')+modelBaseline.get('b')+modelBaseline.get('c');\n      },\n      function(){}),\n    contextNow = spyNow.watch(\n      keyObj,\n      function() {\n        return modelNow.get('a')+modelNow.get('b')+modelNow.get('c');\n      },\n      function(){});",
-    baseline: "spyBaseline._eam(contextBaseline);",
-    now: "spyNow._eam(contextNow);",
-    teardown: "spyBaseline.unwatch(keyObj);\nmodelBaseline.destroy();\nspyNow.unwatch(keyObj);\nmodelNow.destroy();"
+    setup: "var modelBaseline = new ModelBaseline({a:'a',b:'b',c:'c'}),\n    modelNow = new ModelNow({a:'a',b:'b',c:'c'}),\n    keyObjBaseline = {},\n    keyObjNow= {},\n    eamBaseline = spyBaseline._eam,\n    eamNow = spyNow._eam,\n    contextBaseline = spyBaseline.watch(\n      keyObjBaseline,\n      function() {\n        return modelBaseline.get('a')+modelBaseline.get('b')+modelBaseline.get('c');\n      },\n      function(){}),\n    contextNow = spyNow.watch(\n      keyObjNow,\n      function() {\n        return modelNow.get('a')+modelNow.get('b')+modelNow.get('c');\n      },\n      function(){});",
+    baseline: "eamBaseline(contextBaseline);",
+    now: "eamNow(contextNow);",
+    teardown: "spyBaseline.unwatch(keyObjBaseline);\nmodelBaseline.destroy();\nspyNow.unwatch(keyObjNow);\nmodelNow.destroy();"
   });
 });

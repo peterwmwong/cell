@@ -42,7 +42,9 @@ define(function(require) {
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         name = _ref[_i];
         test = tests[name];
-        s.add(name, test);
+        s.add(name, test, {
+          minTime: 2
+        });
         log('benchCode', "<pre>// " + name + "<br>" + (escapeCode(test)) + "</pre>");
       }
       return s.run({

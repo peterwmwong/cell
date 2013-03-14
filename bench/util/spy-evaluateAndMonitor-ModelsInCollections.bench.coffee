@@ -5,16 +5,19 @@ define (require)->
       var collectionData = [{key:'a'},{key:'b'},{key:'c'}],
           collectionBaseline = new CollectionBaseline(collectionData),
           collectionNow = new CollectionNow(collectionData),
-          mapFun = function(el){return el.get('key');};
-          keyObj = {},
+          mapFun = function(el){return el.get('key');},
+          keyObjBaseline = {},
+          keyObjNow= {},
+          eamBaseline = spyBaseline._eam,
+          eamNow = spyNow._eam,
           contextBaseline = spyBaseline.watch(
-            keyObj,
+            keyObjBaseline,
             function() {
               return collectionBaseline.map(mapFun);
             },
             function(){}),
           contextNow = spyNow.watch(
-            keyObj,
+            keyObjNow,
             function() {
               return collectionNow.map(mapFun);
             },
@@ -23,18 +26,18 @@ define (require)->
 
     baseline:
       """
-      spyBaseline._eam(contextBaseline);
+      eamBaseline(contextBaseline);
       """
 
     now:
       """
-      spyNow._eam(contextNow);
+      eamNow(contextNow);
       """
 
     teardown:
       """
-      spyBaseline.unwatch(keyObj);
+      spyBaseline.unwatch(keyObjBaseline);
       collectionBaseline.destroy();
-      spyNow.unwatch(keyObj);
+      spyNow.unwatch(keyObjNow);
       collectionNow.destroy();
       """
