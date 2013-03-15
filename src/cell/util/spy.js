@@ -74,6 +74,15 @@ define(['util/hash', 'util/fn', 'util/type', 'util/defer'], function(hash, fn, t
         addLog(((obj = this.collection) && log.c[obj.$$hashkey || hash(obj)] ? obj : this), (key ? "change:" + key : 'all'));
       }
     },
+    suspendWatch: function(f) {
+      var suspendedLog;
+      suspendedLog = log;
+      log = false;
+      try {
+        f();
+      } catch (_error) {}
+      log = suspendedLog;
+    },
     unwatch: function(key) {
       var context, i, w;
       if (w = watches[key = hash(key)]) {

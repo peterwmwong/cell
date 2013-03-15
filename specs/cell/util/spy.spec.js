@@ -11,7 +11,48 @@ define(['../../utils/spec-utils'], function(_arg) {
       this.Collection = Collection;
       this.spy = spy;
       this.watch = this.spy.watch;
-      return this.unwatch = this.spy.unwatch;
+      this.unwatch = this.spy.unwatch;
+      return this.suspendWatch = this.spy.suspendWatch;
+    });
+    describe('@suspendWatch( func:function )', function() {
+      beforeEach(function() {
+        var _this = this;
+        this.model = new this.Model({
+          before: 1,
+          during: 2,
+          after: 3
+        });
+        this.watch('key1', this.func = jasmine.createSpy('func').andCallFake(function() {
+          _this.model.get('before');
+          _this.suspendWatch(function() {
+            return _this.model.get('during');
+          });
+          _this.model.get('after');
+        }), this.callback = jasmine.createSpy('callback'));
+        this.func.reset();
+        return this.callback.reset();
+      });
+      it('when models that are accessed BEFORE are recorded', function() {
+        this.model.set('before', 2);
+        return waitOne(function() {
+          expect(this.callback.callCount).toBe(1);
+          return expect(this.func.callCount).toBe(1);
+        });
+      });
+      it('when models that are accessed DURING are recorded', function() {
+        this.model.set('during', 3);
+        return waitOne(function() {
+          expect(this.callback.callCount).toBe(0);
+          return expect(this.func.callCount).toBe(0);
+        });
+      });
+      return it('when models that are accessed AFTER are recorded', function() {
+        this.model.set('after', 4);
+        return waitOne(function() {
+          expect(this.callback.callCount).toBe(1);
+          return expect(this.func.callCount).toBe(1);
+        });
+      });
     });
     describe('@unwatch( context:any )', function() {
       beforeEach(function() {

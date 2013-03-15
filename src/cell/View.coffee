@@ -9,7 +9,7 @@ define [
   'cell/Collection'
   'cell/Ext'
   'cell/util/spy'
-], (hash, {isA,isF,isS}, fn, data, events, mutate, Model, Collection, Ext, {watch,unwatch})->
+], (hash, {isA,isF,isS}, fn, data, events, mutate, Model, Collection, Ext, {watch,unwatch,suspendWatch})->
 
   protoProp = 'prototype'
   constrProp = 'constructor'
@@ -151,7 +151,8 @@ define [
           
     # View
     else if viewOrHAML and viewOrHAML[protoProp] instanceof View
-      parent = new viewOrHAML(options).el
+      suspendWatch ->
+        parent = new viewOrHAML(options).el
 
     if parent
       @_rcs children, parent

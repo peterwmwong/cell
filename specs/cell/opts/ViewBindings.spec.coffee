@@ -86,7 +86,6 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
                 expect(@view.el.children[0].children[0]).toBe @item2
                 expect(@view.el.children[0].children[1]).toBe @item3
 
-
       describe 'when a bind is passed as the condition to __.if(condition, {then:function, else:function})', ->
 
         describe 'when then and else return array of nodes', ->
@@ -272,3 +271,34 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
           ]
           expected_child_html: 'Hello World!0'
           expected_child_html_after: 'Goodbye!1'
+
+        describe "and the bind renders a child View that accesses Models/Collections during it's construction", ->
+          beforeEach ->
+            @model = new @Model test: 'test value'
+            
+            @ChildView = @View.extend
+              beforeRender: =>
+                @model.get 'test'
+
+            @count = 0
+            @ParentView = @View.extend
+              render: (_)=> [
+                =>
+                  ++@count
+                  _ @ChildView
+              ]
+
+            @parentView = new @ParentView
+
+          it 'it renders correctly', ->
+            expect(@count).toBe 1
+
+          describe "when the child View's binds update", ->
+
+            beforeEach ->
+              @model.set 'test', 'test value2'
+
+            it 'does NOT rerender the bind', ->
+              waitOne ->
+                expect(@count).toBe 1
+

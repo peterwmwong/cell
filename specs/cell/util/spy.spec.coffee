@@ -8,6 +8,42 @@ define ['../../utils/spec-utils'], ({waitOne})->
     ], (@Model, @Collection, @spy)->
       @watch = @spy.watch
       @unwatch = @spy.unwatch
+      @suspendWatch = @spy.suspendWatch
+
+
+    describe '@suspendWatch( func:function )', ->
+      beforeEach ->
+        @model = new @Model before:1, during:2, after:3
+        @watch 'key1',
+          @func = jasmine.createSpy('func').andCallFake =>
+            @model.get 'before'
+            @suspendWatch => @model.get 'during'
+            @model.get 'after'
+            return
+          @callback = jasmine.createSpy 'callback'
+
+        @func.reset()
+        @callback.reset()
+
+      it 'when models that are accessed BEFORE are recorded', ->
+        @model.set 'before', 2
+        waitOne ->
+          expect(@callback.callCount).toBe 1
+          expect(@func.callCount).toBe 1
+
+
+      it 'when models that are accessed DURING are recorded', ->
+        @model.set 'during', 3
+        waitOne ->
+          expect(@callback.callCount).toBe 0
+          expect(@func.callCount).toBe 0
+
+
+      it 'when models that are accessed AFTER are recorded', ->
+        @model.set 'after', 4
+        waitOne ->
+          expect(@callback.callCount).toBe 1
+          expect(@func.callCount).toBe 1
 
     describe '@unwatch( context:any )', ->
       beforeEach ->

@@ -322,12 +322,50 @@ define(['../../utils/spec-utils'], function(_arg) {
           expected_child_html: '0',
           expected_child_html_after: '1'
         });
-        return describe_render_reference({
+        describe_render_reference({
           value_type: 'Array',
           ref_value: ['Hello World!', 0],
           ref_value_after: ['Goodbye!', 1],
           expected_child_html: 'Hello World!0',
           expected_child_html_after: 'Goodbye!1'
+        });
+        return describe("and the bind renders a child View that accesses Models/Collections during it's construction", function() {
+          beforeEach(function() {
+            var _this = this;
+            this.model = new this.Model({
+              test: 'test value'
+            });
+            this.ChildView = this.View.extend({
+              beforeRender: function() {
+                return _this.model.get('test');
+              }
+            });
+            this.count = 0;
+            this.ParentView = this.View.extend({
+              render: function(_) {
+                return [
+                  function() {
+                    ++_this.count;
+                    return _(_this.ChildView);
+                  }
+                ];
+              }
+            });
+            return this.parentView = new this.ParentView;
+          });
+          it('it renders correctly', function() {
+            return expect(this.count).toBe(1);
+          });
+          return describe("when the child View's binds update", function() {
+            beforeEach(function() {
+              return this.model.set('test', 'test value2');
+            });
+            return it('does NOT rerender the bind', function() {
+              return waitOne(function() {
+                return expect(this.count).toBe(1);
+              });
+            });
+          });
         });
       });
     });

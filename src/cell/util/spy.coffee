@@ -74,6 +74,13 @@ define [
       ), (if key then "change:#{key}" else 'all')
     return
 
+  suspendWatch: (f)->
+    suspendedLog = log
+    log = false
+    try f()
+    log = suspendedLog
+    return
+
   unwatch: (key)->
     if w = watches[key = hash key]
       delete watches[key]
