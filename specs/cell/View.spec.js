@@ -122,11 +122,13 @@ define(['../utils/spec-utils'], function(_arg) {
                 onclick: this.onclick
               }, (function() {
                 return this.model.get('a');
-              })), __.each(this.collection, function(item) {
-                return __('.item', (function() {
-                  return item.get('b');
-                }));
-              })
+              })), function() {
+                return this.collection.map(function(item) {
+                  return __('.item', (function() {
+                    return item.get('b');
+                  }));
+                });
+              }
             ];
           },
           onclick: jasmine.createSpy('click')

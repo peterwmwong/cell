@@ -85,7 +85,7 @@ define ['../utils/spec-utils'], ({node,browserTrigger,nodeHTMLEquals,waitOne})->
           _cellName: 'Test'
           render: (__)-> [
             __ '.model', onclick:@onclick, (-> @model.get 'a')
-            __.each @collection, (item)->
+            -> @collection.map (item)->
               __ '.item', (-> item.get 'b')
           ]
           onclick: jasmine.createSpy 'click'
