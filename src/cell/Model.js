@@ -9,7 +9,7 @@ define(['util/type', 'cell/Events', 'cell/util/spy'], function(type, Events, spy
     attributes: function() {
       var attr, result;
       if (this._a) {
-        this._s();
+        this._s('all');
         result = {};
         for (attr in this._a) {
           result[attr] = this._a[attr];
@@ -19,7 +19,7 @@ define(['util/type', 'cell/Events', 'cell/util/spy'], function(type, Events, spy
     },
     get: function(key) {
       if (this._a) {
-        this._s(key);
+        this._s("change:" + key);
         return this._a[key];
       }
     },

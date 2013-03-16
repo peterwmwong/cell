@@ -150,29 +150,25 @@ define(['../../utils/spec-utils'], function(_arg) {
                 return _this.model.get('test');
               }
             });
-            this.count = 0;
             this.ParentView = this.View.extend({
               render: function(_) {
-                return [
-                  function() {
-                    ++_this.count;
-                    return _(_this.ChildView);
-                  }
-                ];
+                return _(_this.ChildView);
               }
             });
+            spyOn(this.ParentView.prototype, 'render');
             return this.parentView = new this.ParentView;
           });
           it('it renders correctly', function() {
-            return expect(this.count).toBe(1);
+            return expect(this.ParentView.prototype.render.callCount).toBe(1);
           });
           return describe("when a Model/Collection accessed by the child View changes", function() {
             beforeEach(function() {
+              this.ParentView.prototype.render.reset();
               return this.model.set('test', 'test value2');
             });
             return it("does NOT rerender the parent's bind", function() {
               return waitOne(function() {
-                return expect(this.count).toBe(1);
+                return expect(this.ParentView.prototype.render).not.toHaveBeenCalled();
               });
             });
           });

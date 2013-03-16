@@ -11,7 +11,7 @@ define [
 
     attributes: ->
       if @_a
-        @_s()
+        @_s 'all'
         result = {}
         for attr of @_a
           result[attr] = @_a[attr]
@@ -19,7 +19,7 @@ define [
 
     get: (key)->
       if @_a
-        @_s key
+        @_s "change:#{key}"
         @_a[key]
 
     set: (key, value)->

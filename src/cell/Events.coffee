@@ -1,4 +1,9 @@
-define ['util/type','util/extend','util/ev'], (type, extend, ev)->
+define [
+  'util/hash'
+  'util/type'
+  'util/extend'
+  'util/ev'
+], (hash, type, extend, ev)->
 
   triggerHandlers = (handlers, event, args)->
     while (h = handlers.pop())
@@ -6,6 +11,7 @@ define ['util/type','util/extend','util/ev'], (type, extend, ev)->
     return
 
   Events = ->
+    hash @
     @_e = all: []
     return
 

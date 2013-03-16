@@ -6,16 +6,7 @@ define [
 ], (hash,fn,type,defer)->
 
   logStack = []
-  onChangeCalled = log = false
-
-  addLog = (obj, event)->
-    unless log.l[key = event + (obj.$$hashkey or hash obj)]
-      log.s += key
-      log.l[key] =
-        o:obj
-        e:event
-    return
-
+  onChangeCalled = logl = logs = logc = false
   allChanges = {}
   watches = {}
 
@@ -27,58 +18,68 @@ define [
     return
 
   onChange = ->
-    allChanges[hash @] = @
+    allChanges[@$$hashkey or hash @] = @
     unless onChangeCalled
       onChangeCalled = true
       defer _onChange
     return
 
   _eam: evaluateAndMonitor = (context)->
-    logStack.push log
-    log =
-      s: ''
-      l: curLog = {}
-      c: {}
+    logStack.push [logs, logc, logl]
+    logs = ''
+    logl = {}
+    logc = {}
 
     value = context.e()
 
-    if log.s isnt context.s
+    if logs isnt context.s
       if prevLog = context.l
         for eventKey of prevLog
-          if curLog[eventKey]
-            delete curLog[eventKey]
+          if logl[eventKey]
+            delete logl[eventKey]
           else
             prevLog[eventKey].o.off prevLog[eventKey].e, undefined, context
 
-      for eventKey of curLog
-        curLog[eventKey].o.on curLog[eventKey].e, onChange, context
-      context.s = log.s
-      context.l = curLog
+      for eventKey of logl
+        logl[eventKey].o.on logl[eventKey].e, onChange, context
+      context.s = logs
+      context.l = logl
 
-    log = logStack.pop()
+    [logs, logc, logl] = logStack.pop()
     context.f value
     return
 
   addCol: ->
-    if log
-      log.c[@$$hashkey or hash @] = true
-      addLog @, 'add'
-      addLog @, 'remove'
+    if logl and not logc[key = @$$hashkey]
+      logs += key
+      logc[key] = true
+      logl['add'+key] = o: @, e: 'add'
+      logl['remove'+key] = o: @, e: 'remove'
     return
       
-  addModel: (key)->
-    if log
-      addLog (
-        if ((obj = @collection) and log.c[obj.$$hashkey or hash obj]) then obj
-        else @
-      ), (if key then "change:#{key}" else 'all')
+  addModel: (event)->
+    if logl
+      eventKey = event +
+        if ((obj = @collection) and logc[key = obj.$$hashkey]) then key
+        else
+          obj = @
+          @$$hashkey
+
+      unless logl[eventKey]
+        logs += eventKey
+        logl[eventKey] = {o:obj, e:event}
+
     return
 
   suspendWatch: (f)->
-    suspendedLog = log
-    log = false
+    suspendedLogl = logl
+    suspendedLogs = logs
+    suspendedLogc = logs
+    logl = logs = logc = undefined
     try f()
-    log = suspendedLog
+    logl = suspendedLogl
+    logs = suspendedLogs
+    logc = suspendedLogc
     return
 
   unwatch: (key)->

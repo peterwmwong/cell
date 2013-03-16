@@ -132,24 +132,22 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
               beforeRender: =>
                 @model.get 'test'
 
-            @count = 0
             @ParentView = @View.extend
-              render: (_)=> [
-                =>
-                  ++@count
-                  _ @ChildView
-              ]
+              render: (_)=>
+                _ @ChildView
 
+            spyOn @ParentView::, 'render'
             @parentView = new @ParentView
 
           it 'it renders correctly', ->
-            expect(@count).toBe 1
+            expect(@ParentView::render.callCount).toBe 1
 
           describe "when a Model/Collection accessed by the child View changes", ->
             beforeEach ->
+              @ParentView::render.reset()
               @model.set 'test', 'test value2'
 
             it "does NOT rerender the parent's bind", ->
               waitOne ->
-                expect(@count).toBe 1
+                expect(@ParentView::render).not.toHaveBeenCalled()
 
