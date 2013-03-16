@@ -48,10 +48,10 @@ define [
 
     __: (viewOrHAML, optionsOrFirstChild)->
       children = [].slice.call arguments, 1
-      i = 0
+      i = -1
       len = children.length
-      while i < len
-        break unless children[i++] instanceof Ext
+      while ++i < len
+        break unless children[i] instanceof Ext
 
       exts = children.splice 0, i
       options =
@@ -81,12 +81,14 @@ define [
             if match = /^on(\w+)/.exec k
               events.on parent, match[1], v, @
             else
-              watch @, v, do(k)-> (value)->
-                if k is 'innerHTML'
-                  parent.innerHTML = value
-                else
-                  parent.setAttribute k, value
-                return
+              watch @, v,
+                (value)->
+                  if @k is 'innerHTML'
+                    parent.innerHTML = value
+                  else
+                    parent.setAttribute @k, value
+                  return
+                {k}
             
       # View
       else if viewOrHAML and viewOrHAML[protoProp] instanceof View
@@ -125,7 +127,8 @@ define [
       else if n.nodeType in [1,3]
         rendered.push parent.insertBefore n, insertBeforeNode
 
-      else iftypent, insertBeforeNode, rendered
+      else if type.isA n
+        @_rcs n, parent, insertBeforeNode, rendered
 
       else
         rendered.push parent.insertBefore d.createTextNode(n), insertBeforeNode
@@ -133,5 +136,6 @@ define [
 
     _rcs: (nodes, parent, insertBeforeNode=null, rendered=[])->
       return rendered unless nodes?
-      nodes = [nodes] unlesstyperent, insertBeforeNode, rendered) for n in nodes when n?
+      nodes = [nodes] unless type.isA nodes
+      @_rc(n, parent, insertBeforeNode, rendered) for n in nodes when n?
       rendered
