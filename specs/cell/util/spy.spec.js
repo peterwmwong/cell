@@ -39,7 +39,7 @@ define(['../../utils/spec-utils'], function(_arg) {
           return expect(this.func.callCount).toBe(1);
         });
       });
-      it('when models that are accessed DURING are recorded', function() {
+      it('when models that are accessed DURING are NOT recorded', function() {
         this.model.set('during', 3);
         return waitOne(function() {
           expect(this.callback.callCount).toBe(0);

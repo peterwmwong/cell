@@ -32,7 +32,7 @@ define ['../../utils/spec-utils'], ({waitOne})->
           expect(@func.callCount).toBe 1
 
 
-      it 'when models that are accessed DURING are recorded', ->
+      it 'when models that are accessed DURING are NOT recorded', ->
         @model.set 'during', 3
         waitOne ->
           expect(@callback.callCount).toBe 0

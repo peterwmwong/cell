@@ -15,7 +15,6 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
         @__ = @view.__
 
       describe 'when a bind is passed as an attribute', ->
-
         beforeEach ->
           @node = @__ '.bound', 'data-custom':(-> @get 'test'), 'non-bind': 'constant value', innerHTML: (-> @get 'testInnerHTML')
 
@@ -52,7 +51,6 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
         describe_render_reference = ({value_type, ref_value, ref_value_after, expected_child_html, expected_child_html_after})->
 
           describe "when the binding's value is of type #{value_type}", ->
-
             beforeEach ->
               @view.set 'test', ref_value
               @node = @__ '.parent',
@@ -73,7 +71,6 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
 
         describe "when the binding's value is undefined", ->
-
           beforeEach ->
             @view.set 'test', undefined
             @node = @__ '.parent',
@@ -148,12 +145,11 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
           it 'it renders correctly', ->
             expect(@count).toBe 1
 
-          describe "when the child View's binds update", ->
-
+          describe "when a Model/Collection accessed by the child View changes", ->
             beforeEach ->
               @model.set 'test', 'test value2'
 
-            it 'does NOT rerender the bind', ->
+            it "does NOT rerender the parent's bind", ->
               waitOne ->
                 expect(@count).toBe 1
 

@@ -166,11 +166,11 @@ define(['../../utils/spec-utils'], function(_arg) {
           it('it renders correctly', function() {
             return expect(this.count).toBe(1);
           });
-          return describe("when the child View's binds update", function() {
+          return describe("when a Model/Collection accessed by the child View changes", function() {
             beforeEach(function() {
               return this.model.set('test', 'test value2');
             });
-            return it('does NOT rerender the bind', function() {
+            return it("does NOT rerender the parent's bind", function() {
               return waitOne(function() {
                 return expect(this.count).toBe(1);
               });
