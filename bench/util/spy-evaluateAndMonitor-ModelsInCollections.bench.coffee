@@ -2,42 +2,21 @@ define (require)->
   require('./bench-spy')
     setup:
       """
-      var collectionData = [{key:'a'},{key:'b'},{key:'c'}],
-          collectionBaseline = new CollectionBaseline(collectionData),
-          collectionNow = new CollectionNow(collectionData),
-          mapFun = function(el){return el.get('key');},
-          keyObjBaseline = {},
-          keyObjNow= {},
-          eamBaseline = spyBaseline._eam,
-          eamNow = spyNow._eam,
-          contextBaseline = spyBaseline.watch(
-            keyObjBaseline,
+      var collection = new this.Collection([{key:'a'},{key:'b'},{key:'c'}]),
+          keyObj = {},
+          spy = this.spy,
+          context = spy.watch(
+            keyObj,
             function() {
-              return collectionBaseline.map(mapFun);
-            },
-            function(){}),
-          contextNow = spyNow.watch(
-            keyObjNow,
-            function() {
-              return collectionNow.map(mapFun);
+              return collection.map(function(el){return el.get('key');});
             },
             function(){});
       """
 
-    baseline:
-      """
-      eamBaseline(contextBaseline);
-      """
-
-    now:
-      """
-      eamNow(contextNow);
-      """
+    both: "spy._eam(context);"
 
     teardown:
       """
-      spyBaseline.unwatch(keyObjBaseline);
-      collectionBaseline.destroy();
-      spyNow.unwatch(keyObjNow);
-      collectionNow.destroy();
+      spy.unwatch(keyObj);
+      collection.destroy();
       """

@@ -2,7 +2,7 @@
 <head>
 <title id='pageTitle'>bench</title>
 <!-- http://localhost:8080/bench/dom/bench.html?bench=css&base=04fe62d8657d4be2ebf72eaad5cc6456ccdefaa5 -->
-<script src='../../node_modules/requirejs/require.js'></script>
+<script src='../../src/require.js'></script>
 <style>
 
 body {
@@ -107,7 +107,6 @@ if (!bench) {
   require.config({
     paths: {
       benchmark: '../../node_modules/benchmark/benchmark',
-      platform: '../../node_modules/platform/platform',
       benches: './'
     },
     deps: ['benches/'+bench+'.bench']

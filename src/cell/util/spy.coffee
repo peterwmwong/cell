@@ -6,7 +6,7 @@ define [
 ], (hash,fn,type,defer)->
 
   logStack = []
-  onChangeCalled = logl = logs = logc = false
+  onChangeCalled = logl = logs = logc = prevLogc = false
   allChanges = {}
   watches = {}
 
@@ -25,10 +25,14 @@ define [
     return
 
   _eam: evaluateAndMonitor = (context)->
-    logStack.push [logs, logc, logl]
+    suspendedLogl = logl
+    suspendedLogs = logs
+    suspendedLogc = logc
+    suspendedPrevLogc = prevLogc
     logs = ''
     logl = {}
     logc = {}
+    prevLogc = context.c
 
     value = context.e()
 
@@ -44,8 +48,12 @@ define [
         logl[eventKey].o.on logl[eventKey].e, onChange, context
       context.s = logs
       context.l = logl
+      context.c = logc
 
-    [logs, logc, logl] = logStack.pop()
+    logl = suspendedLogl
+    logs = suspendedLogs
+    logc = suspendedLogc
+    prevLogc = suspendedPrevLogc
     context.f value
     return
 
@@ -53,8 +61,9 @@ define [
     if logl and not logc[key = @$$hashkey]
       logs += key
       logc[key] = true
-      logl['add'+key] = o: @, e: 'add'
-      logl['remove'+key] = o: @, e: 'remove'
+      unless prevLogc[key]
+        logl['add'+key] = o: @, e: 'add'
+        logl['remove'+key] = o: @, e: 'remove'
     return
       
   addModel: (event)->
@@ -67,14 +76,14 @@ define [
 
       unless logl[eventKey]
         logs += eventKey
-        logl[eventKey] = {o:obj, e:event}
+        logl[eventKey] = o:obj, e:event
 
     return
 
   suspendWatch: (f)->
     suspendedLogl = logl
     suspendedLogs = logs
-    suspendedLogc = logs
+    suspendedLogc = logc
     logl = logs = logc = undefined
     try f()
     logl = suspendedLogl
@@ -102,6 +111,7 @@ define [
       (watches[key = hash keyObj] or (watches[key] = [])).push context =
         e: fn.b0 e, keyObj
         f: fn.b1 f, callContext
+        c: {}
 
       evaluateAndMonitor context
       context

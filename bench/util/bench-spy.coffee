@@ -1,14 +1,14 @@
 define (require)->
   bench = require '../bench-utils/bench'
 
+  configs = {}
+
   requirejs.config
     context: 'now'
     baseUrl: '../../../src'
     deps: ['cell/Model','cell/Collection','cell/util/spy']
     callback: (Model,Collection,spy)->
-      window.ModelNow = Model
-      window.CollectionNow = Collection
-      window.spyNow = spy
+      configs.now = {Model,Collection,spy}
       runBench()
       return
 
@@ -18,15 +18,14 @@ define (require)->
     # baseUrl: '../../../src'
     deps: ['cell/Model','cell/Collection','cell/util/spy']
     callback: (Model,Collection,spy)->
-      window.ModelBaseline = Model
-      window.CollectionBaseline = Collection
-      window.spyBaseline = spy
+      configs.baseline = {Model,Collection,spy}
       runBench()
       return
 
   settings = undefined
   runBench = ->
-    if settings and window.spyBaseline and window.spyNow and window.ModelBaseline and window.ModelNow
+    if configs.baseline and configs.now
+      settings.deps = configs
       bench.run settings
     return
 
@@ -34,5 +33,11 @@ define (require)->
     settings =
       setup: setup or ''
       teardown: teardown or ''
-    settings.tests = {baseline,now}
+
+    settings.tests =
+      if both
+        baseline: both
+        now: both
+      else {baseline,now}
+
     runBench()
