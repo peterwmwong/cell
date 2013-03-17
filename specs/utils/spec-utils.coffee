@@ -1,4 +1,4 @@
-define ['jquery','defer'], ($,defer)->
+define ['defer'], (defer)->
 
   indexOf =
     if Array.prototype.indexOf
@@ -134,7 +134,7 @@ define ['jquery','defer'], ($,defer)->
       else if obj is null
         "null"
 
-      else if obj.jquery? or obj instanceof Array
+      else if obj instanceof Array
         str = (for o in obj then exports.stringify o).join ', '
         # str = _.map(obj,exports.stringify).join ', '
         if excludeArrayBrackets 
@@ -184,10 +184,10 @@ define ['jquery','defer'], ($,defer)->
         html += ">"
 
         # Recursively html-ize children
-        for el in $(node).contents()
+        for el in node.childNodes
           html += nodeToHTML el
           
         html += "</#{node.tagName.toLowerCase()}>"
 
       else
-        $(node).text()
+        node.textContent

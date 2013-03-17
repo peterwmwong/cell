@@ -1,6 +1,21 @@
-define ['jquery'], ($)->
+define ->
   ctx_name_salt = 0
   domFixture = document.getElementById 'spec-fixture'
+
+  unloadRequire = (contextName)->
+    delete window.require.s.contexts[contextName]
+
+    if document.querySelectorAll
+      scripts = document.querySelectorAll "[data-requirecontext='#{contextName}']"
+      for s in scripts
+        s.parentNode.removeChild s
+
+    else
+      scripts = document.getElementsByTagName "script"
+      for s in scripts when s and (contextName is s.getAttribute 'data-requirecontext')
+        s.parentNode.removeChild s
+
+    return
 
   load: (name, req, load, config)->
     
@@ -47,6 +62,4 @@ define ['jquery'], ($)->
               domFixture.innerHTML = ''
 
               # Remove all modules loaded from context
-              if ctx
-                $("[data-requirecontext='#{ctx.contextName}']").remove()
-                delete window.require.s.contexts[ctx.contextName]
+              unloadRequire ctx.contextName if ctx
