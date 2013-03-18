@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "spy.bench.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "bench/util/spy.bench.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,CAAO,EAAA,GAAP,CAAO,EAAC;CACE,MAAR,EAAA,IAAA;CACE,CACE,EADF,CAAA,4fAAA;CAAA,CAqBE,EADF,IAAA,4BApBA;CAAA,CA0BE,CADF,CAAA,sBAzBA;CAAA,CA+BE,EADF,IAAA,8FA9BA;CAFG,GACL;CADK"
+}

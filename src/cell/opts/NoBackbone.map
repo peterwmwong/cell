@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "NoBackbone.js",
+  "sourceRoot": "../../..",
+  "sources": [
+    "src/cell/opts/NoBackbone.coffee"
+  ],
+  "names": [],
+  "mappings": ";AACA,CAAO,EAAA,GAAP,GAAO"
+}

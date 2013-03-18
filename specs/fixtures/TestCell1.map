@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "TestCell1.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "specs/fixtures/TestCell1.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,CAAO,EAAA,GAAP,CAAO,EAAC;CACE,MAAR,EAAA,SAAA;CACE,CAAQ,CAAA,CAAR,EAAA,GAAQ;CAAA,YAAG;CAAX,IAAQ;CAFL,GACL;CADK"
+}

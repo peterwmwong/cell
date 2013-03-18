@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "Backbone.js",
+  "sourceRoot": "../../..",
+  "sources": [
+    "src/cell/opts/Backbone.coffee"
+  ],
+  "names": [],
+  "mappings": ";AACA,CAAO,EAAA,GAAP,GAAO"
+}

@@ -6,7 +6,8 @@ define [
 ], (hash,fn,type,defer)->
 
   logStack = []
-  onChangeCalled = logl = logs = logc = prevLogc = false
+  onChangeCalled = false
+  prevScope = scope = undefined
   allChanges = {}
   watches = {}
 
@@ -24,71 +25,63 @@ define [
       defer _onChange
     return
 
+  Scope = ->
+    @sig = ''
+    @log = {}
+    @col = {}
+    return
+
   _eam: evaluateAndMonitor = (context)->
-    suspendedLogl = logl
-    suspendedLogs = logs
-    suspendedLogc = logc
-    suspendedPrevLogc = prevLogc
-    logs = ''
-    logl = {}
-    logc = {}
-    prevLogc = context.c
+    suspendedScope = scope
+    prevScope = context.scope
+    scope = new Scope()
 
     value = context.e()
 
-    if logs isnt context.s
-      if prevLog = context.l
-        for eventKey of prevLog
-          if logl[eventKey]
-            delete logl[eventKey]
-          else
-            prevLog[eventKey].o.off prevLog[eventKey].e, undefined, context
+    if scope.sig isnt prevScope.sig
+      for eventKey of prevScope.log
+        if scope.log[eventKey]
+          delete scope.log[eventKey]
+        else
+          prevScope.log[eventKey].o.off prevScope.log[eventKey].e, undefined, context
 
-      for eventKey of logl
-        logl[eventKey].o.on logl[eventKey].e, onChange, context
-      context.s = logs
-      context.l = logl
-      context.c = logc
+      for eventKey of scope.log
+        scope.log[eventKey].o.on scope.log[eventKey].e, onChange, context
 
-    logl = suspendedLogl
-    logs = suspendedLogs
-    logc = suspendedLogc
-    prevLogc = suspendedPrevLogc
+      context.scope = scope
+
+    scope = suspendedScope
     context.f value
     return
 
   addCol: ->
-    if logl and not logc[key = @$$hashkey]
-      logs += key
-      logc[key] = true
-      unless prevLogc[key]
-        logl['add'+key] = o: @, e: 'add'
-        logl['remove'+key] = o: @, e: 'remove'
+    if scope and not scope.col[key = @$$hashkey]
+      scope.sig += key
+      scope.col[key] = true
+      unless prevScope.col[key]
+        scope.log['add'+key] = o: @, e: 'add'
+        scope.log['remove'+key] = o: @, e: 'remove'
     return
       
   addModel: (event)->
-    if logl
+    if scope
       eventKey = event +
-        if ((obj = @collection) and logc[key = obj.$$hashkey]) then key
+        if ((obj = @collection) and scope.col[key = obj.$$hashkey]) then key
         else
           obj = @
           @$$hashkey
 
-      unless logl[eventKey]
-        logs += eventKey
-        logl[eventKey] = o:obj, e:event
+      unless scope.log[eventKey]
+        scope.sig += eventKey
+        scope.log[eventKey] = o:obj, e:event
 
     return
 
   suspendWatch: (f)->
-    suspendedLogl = logl
-    suspendedLogs = logs
-    suspendedLogc = logc
-    logl = logs = logc = undefined
+    suspendedScope = scope
+    scope = undefined
     try f()
-    logl = suspendedLogl
-    logs = suspendedLogs
-    logc = suspendedLogc
+    scope = suspendedScope
     return
 
   unwatch: (key)->
@@ -96,8 +89,8 @@ define [
       delete watches[key]
       i=0
       while (context = w[i++])
-        for key of context.l
-          context.l[key].o.off undefined, undefined, context
+        for key of context.scope.log
+          context.scope.log[key].o.off undefined, undefined, context
     return
 
   watch: (keyObj, e, f, callContext)->
@@ -111,7 +104,7 @@ define [
       (watches[key = hash keyObj] or (watches[key] = [])).push context =
         e: fn.b0 e, keyObj
         f: fn.b1 f, callContext
-        c: {}
+        scope: new Scope()
 
       evaluateAndMonitor context
       context

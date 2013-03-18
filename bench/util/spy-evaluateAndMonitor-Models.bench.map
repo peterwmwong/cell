@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "spy-evaluateAndMonitor-Models.bench.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "bench/util/spy-evaluateAndMonitor-Models.bench.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,CAAO,EAAA,GAAP,CAAO,EAAC;CACE,MAAR,EAAA,IAAA;CACE,CACE,EADF,CAAA,+OAAA;CAAA,CAaM,EAAN,gBAbA;CAAA,CAgBE,EADF,IAAA,gCAfA;CAFG,GACL;CADK"
+}

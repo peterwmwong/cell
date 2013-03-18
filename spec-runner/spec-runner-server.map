@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "spec-runner-server.js",
+  "sourceRoot": "..",
+  "sources": [
+    "spec-runner/spec-runner-server.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,IAAA,gEAAA;;AAAC,CAAD,EAAY,GAAA,CAAA;;AACZ,CADA,EACU,IAAV,EAAU;;AACV,CAFA,EAEO,CAAP,EAAO,CAAA;;AAEP,CAAA,GAAG,CAAuB,CAAvB,CAAO;CAAuB,CAAA,CAAA,IAAO;EAAxC,IAAA;CAEE,CAAA,CAAY,CAAqB,GAArB,EAAZ;CAAA,CACA,CAAA,IAAM;CACN;;;;;;CAAA,MAAA,oCAAA;uBAAA;CAAA,EAAG,CAAH,EAAA;CAAA,EAFA;CAAA,CAOA,CAAA,CAAI,EAAJ,MAAA;CAPA,CAQA,CAAA,CAAA,GAAO,EAAM,CAAA,CAAA;EAdf"
+}

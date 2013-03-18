@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "MockNested.js",
+  "sourceRoot": "../../../..",
+  "sources": [
+    "specs/fixtures/defineView-builder-plugin/dir/MockNested.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,CAAO,EAAA,GAAP,CAAO,EAAC;CACE,MAAR,EAAA,SAAA;CACE,CAAQ,CAAA,CAAR,EAAA,GAAQ;CACP,WADU,CAAA;CAAX,IAAQ;CAFL,GACL;CADK"
+}
