@@ -6,7 +6,11 @@ require.config({
     'spec': '../spec-runner/spec',
     'jquery': '../support/jquery',
     'defer': '../src/util/defer',
-    'dom/browser': '../src/dom/browser'
+    'dom/browser': '../src/dom/browser',
+    'sinon-server': '../support/sinon/sinon-server'
+  },
+  shim: {
+    'sinon-server': { exports:'sinon' }
   },
   deps: [
     'SpecRunner'
