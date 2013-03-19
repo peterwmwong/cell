@@ -101,21 +101,22 @@
 #   ]
 
 define ->
+  
   ({beforeEachRequire})->
     beforeEachRequire [
       'cell/Resource'
       'cell/Collection'
     ], (@Resource, @Collection)->
 
-  describe 'Resource', ->
-    describe '#create( params:object ) : ResourceInstance', ->
-    describe '#get( params:object ) : ResourceInstance', ->
-    describe '#query( params:object ) : ResourceCollectionInstance', ->
+    describe 'Resource', ->
+      describe '#create( params:object ) : ResourceInstance', ->
+      describe '#get( params:object ) : ResourceInstance', ->
+      describe '#query( params:object ) : ResourceCollectionInstance', ->
 
-  describe 'ResourceCollectionInstance', ->
-    it 'is an instanceof Collection', ->
-    describe '@requery( params:object ) : '
+    describe 'ResourceCollectionInstance', ->
+      it 'is an instanceof Collection', ->
+      describe '@requery( params:object ) : ', ->
 
-  describe 'ResourceInstance', ->
-    describe '@delete( params:object ) : ResourceInstance', ->
-    describe '@save( params:object ) : ResourceInstance', ->
+    describe 'ResourceInstance', ->
+      describe '@delete( params:object ) : ResourceInstance', ->
+      describe '@save( params:object ) : ResourceInstance', ->

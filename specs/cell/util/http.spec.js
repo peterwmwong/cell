@@ -72,7 +72,7 @@ define(['../../utils/spec-utils', 'sinon-server'], function(_arg, sinon) {
 
           this.callback.andCallFake(function(status, response) {
             expect(status).toBe(-1);
-            return expect(_this.request.aborted).toBe(true);
+            return expect(request.aborted).toBe(true);
           });
           this.http({
             method: "GET",
@@ -133,66 +133,61 @@ define(['../../utils/spec-utils', 'sinon-server'], function(_arg, sinon) {
           }, this.callback);
           return expect(this.requests[0].withCredentials).toBe(true);
         });
-        return it("[sinon.js DOES NOT SUPPORT MOCKING OF RESPONSE (only responseText/responseXML)] should set responseType and return xhr.response", function() {
+        return it("should set responseType and return xhr.response", function() {
           var request;
 
+          request = void 0;
+          this.http.XHR = function() {
+            request = this;
+            this.open = this.setRequestHeader = function() {};
+            this.send = function() {
+              this.status = 200;
+              this.responseType = request.responseType;
+              this.response = {
+                some: "object"
+              };
+              this.readyState = 4;
+              return this.onreadystatechange();
+            };
+            this.getAllResponseHeaders = function() {
+              return "";
+            };
+            this.getResponseHeader = function() {
+              return "";
+            };
+          };
+          this.callback.andCallFake(function(status, response) {
+            return expect(response).toEqual({
+              some: "object"
+            });
+          });
           this.http({
             method: "GET",
             url: "/some.url",
             responseType: 'blob'
           }, this.callback);
-          request = this.requests[0];
-          expect(request.responseType).toBe("blob");
-          this.callback.andCallFake(function(status, response) {
-            return expect(response).toEqual(JSON.stringify({
-              some: "object"
-            }));
-          });
-          request.respond(200, {}, JSON.stringify({
-            some: "object"
-          }));
+          expect(request.responseType).toBe('blob');
           return expect(this.callback.callCount).toBe(1);
         });
       });
       return describe("file protocol", function() {
-        var respond;
-
-        respond = function(status, content) {
-          var request;
-
-          request = this.requests[0];
-          xhr.status = status;
-          xhr.responseText = content;
-          xhr.readyState = 4;
-          return xhr.onreadystatechange();
-        };
         it("should convert 0 to 200 if content", function() {
-          this.http = createHttpBackend($browser, MockXhr, null, null, null, "http");
-          this.http("GET", "file:///whatever/index.html", null, callback);
-          respond(0, "SOME CONTENT");
-          expect(callback).toHaveBeenCalled();
-          return expect(callback.mostRecentCall.args[0]).toBe(200);
+          this.http({
+            method: "GET",
+            url: "file:///whatever/index.html"
+          }, this.callback);
+          this.requests[0].respond(0, {}, "SOME CONTENT");
+          expect(this.callback).toHaveBeenCalled();
+          return expect(this.callback.calls[0].args[0]).toBe(200);
         });
-        it("should convert 0 to 200 if content - relative url", function() {
-          this.http = createHttpBackend($browser, MockXhr, null, null, null, "file");
-          this.http("GET", "/whatever/index.html", null, callback);
-          respond(0, "SOME CONTENT");
-          expect(callback).toHaveBeenCalled();
-          return expect(callback.mostRecentCall.args[0]).toBe(200);
-        });
-        it("should convert 0 to 404 if no content", function() {
-          this.http = createHttpBackend($browser, MockXhr, null, null, null, "http");
-          this.http("GET", "file:///whatever/index.html", null, callback);
-          respond(0, "");
-          expect(callback).toHaveBeenCalled();
-          return expect(callback.mostRecentCall.args[0]).toBe(404);
-        });
-        return it("should convert 0 to 200 if content - relative url", function() {
-          this.http = createHttpBackend($browser, MockXhr, null, null, null, "file");
-          this.http("GET", "/whatever/index.html", null, callback);
-          respond(0, "");
-          expect(callback).toHaveBeenCalled();
-          return expect(callback.mostRecentCall.args[0]).toBe(404);
+        return it("should convert 0 to 404 if no content", function() {
+          this.http({
+            method: "GET",
+            url: "file:///whatever/index.html"
+          }, this.callback);
+          this.requests[0].respond(0, {}, "");
+          expect(this.callback).toHaveBeenCalled();
+          return expect(this.callback.calls[0].args[0]).toBe(404);
         });
       });
     });

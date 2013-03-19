@@ -54,7 +54,7 @@ define [
         it "should abort request on timeout", ->
           @callback.andCallFake (status, response)=>
             expect(status).toBe -1
-            expect(@request.aborted).toBe true
+            expect(request.aborted).toBe true
 
           @http method: "GET", url: "URL", timeout: 1000, @callback
 
@@ -96,54 +96,47 @@ define [
           @http method: "GET", url: "/some.url", withCredentials: true, @callback
           expect(@requests[0].withCredentials).toBe true
 
-        it "[sinon.js DOES NOT SUPPORT MOCKING OF RESPONSE (only responseText/responseXML)] should set responseType and return xhr.response", ->
-          @http method: "GET", url: "/some.url", responseType:'blob', @callback
+        it "should set responseType and return xhr.response", ->
+          request = undefined
+          @http.XHR = ->
+            request = @
+            @open = @setRequestHeader = ->
+            @send = ->
+              @status = 200
+              @responseType = request.responseType
+              @response = some: "object"
+              @readyState = 4
+              @onreadystatechange()
 
-          request = @requests[0]
-          expect(request.responseType).toBe "blob"
+            @getAllResponseHeaders =  -> ""
+            
+            # for temporary Firefox CORS workaround
+            # see https://github.com/angular/angular.js/issues/1468
+            @getResponseHeader =  -> ""
+            return
 
           @callback.andCallFake (status, response) ->
-            expect(response).toEqual JSON.stringify some: "object"
+            expect(response).toEqual some: "object"
 
-          request.respond 200, {}, JSON.stringify some: "object"
+          @http method: "GET", url: "/some.url", responseType:'blob', @callback
 
+          expect(request.responseType).toBe 'blob'
           expect(@callback.callCount).toBe 1
       
       # TODO(vojta): test whether it fires "async-start"
       # TODO(vojta): test whether it fires "async-end" on both success and error
       describe "file protocol", ->
-        respond = (status, content) ->
-          request = @requests[0]
-          xhr.status = status
-          xhr.responseText = content
-          xhr.readyState = 4
-          xhr.onreadystatechange()
-        it "should convert 0 to 200 if content", ->
-          @http = createHttpBackend($browser, MockXhr, null, null, null, "http")
-          @http "GET", "file:///whatever/index.html", null, callback
-          respond 0, "SOME CONTENT"
-          expect(callback).toHaveBeenCalled()
-          expect(callback.mostRecentCall.args[0]).toBe 200
 
-        it "should convert 0 to 200 if content - relative url", ->
-          @http = createHttpBackend($browser, MockXhr, null, null, null, "file")
-          @http "GET", "/whatever/index.html", null, callback
-          respond 0, "SOME CONTENT"
-          expect(callback).toHaveBeenCalled()
-          expect(callback.mostRecentCall.args[0]).toBe 200
+        it "should convert 0 to 200 if content", ->
+          @http method:"GET", url:"file:///whatever/index.html", @callback
+          @requests[0].respond 0, {}, "SOME CONTENT"
+
+          expect(@callback).toHaveBeenCalled()
+          expect(@callback.calls[0].args[0]).toBe 200
 
         it "should convert 0 to 404 if no content", ->
-          @http = createHttpBackend($browser, MockXhr, null, null, null, "http")
-          @http "GET", "file:///whatever/index.html", null, callback
-          respond 0, ""
-          expect(callback).toHaveBeenCalled()
-          expect(callback.mostRecentCall.args[0]).toBe 404
-
-        it "should convert 0 to 200 if content - relative url", ->
-          @http = createHttpBackend($browser, MockXhr, null, null, null, "file")
-          @http "GET", "/whatever/index.html", null, callback
-          respond 0, ""
-          expect(callback).toHaveBeenCalled()
-          expect(callback.mostRecentCall.args[0]).toBe 404
-
+          @http method:"GET", url:"file:///whatever/index.html", @callback
+          @requests[0].respond 0, {}, ""
+          expect(@callback).toHaveBeenCalled()
+          expect(@callback.calls[0].args[0]).toBe 404
 
