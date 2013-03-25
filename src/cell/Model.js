@@ -10,50 +10,36 @@ define(['util/type', 'cell/Events', 'cell/util/spy'], function(type, Events, spy
     attributes: function() {
       var attr, result;
 
-      if (this._a) {
-        this._s('all');
-        result = {};
-        for (attr in this._a) {
-          result[attr] = this._a[attr];
-        }
-        return result;
+      this._s('all');
+      result = {};
+      for (attr in this._a) {
+        result[attr] = this._a[attr];
       }
+      return result;
     },
     get: function(key) {
-      if (this._a) {
-        this._s("change:" + key);
-        return this._a[key];
-      }
+      this._s("change:" + key);
+      return this._a[key];
     },
     set: function(key, value) {
       var collection, event, old_value;
 
-      if (this._a) {
-        if ((type.isS(key)) && (this._a[key] !== value)) {
-          old_value = this._a[key];
-          this.trigger((event = "change:" + key), this, (this._a[key] = value), old_value);
-          if (collection = this.collection) {
-            collection.trigger(event, this, value, old_value);
-          }
-          return true;
+      if ((type.isS(key)) && (this._a[key] !== value)) {
+        old_value = this._a[key];
+        this.trigger((event = "change:" + key), this, (this._a[key] = value), old_value);
+        if (collection = this.collection) {
+          collection.trigger(event, this, value, old_value);
         }
-      }
-    },
-    onChangeAndDo: function(key, cb, ctx) {
-      if (this._a) {
-        if (this.on("change:" + key, cb, ctx)) {
-          cb("initial:" + key, this, this.get(key));
-        }
+        return true;
       }
     },
     destroy: function() {
-      if (this._a) {
-        Events.prototype.destroy.call(this);
-        if (this.collection) {
-          this.collection.remove([this]);
-        }
-        delete this._a;
+      Events.prototype.destroy.call(this);
+      if (this.collection) {
+        this.collection.remove([this]);
       }
+      delete this._a;
+      this.destroy = this.attributes = this.get = this.set = function() {};
     },
     _s: spy.addModel
   });

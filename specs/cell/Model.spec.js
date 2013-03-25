@@ -128,7 +128,7 @@ define(function() {
         });
       });
     });
-    describe('@set(key,value)', function() {
+    return describe('@set(key,value)', function() {
       beforeEach(function() {
         return this.model = new this.Model({
           a: 'a val',
@@ -187,31 +187,6 @@ define(function() {
           })(key));
         }
         return _results;
-      });
-    });
-    return describe('@onChangeAndDo(propertyName:string, change_handler:function)', function() {
-      beforeEach(function() {
-        return this.model = new this.Model({
-          a: 'a val',
-          b: 'b val',
-          c: 'c val'
-        });
-      });
-      it('calls change_handler with current value of key', function() {
-        var change_handler;
-
-        this.model.onChangeAndDo('a', (change_handler = jasmine.createSpy('change_handler')));
-        expect(change_handler.argsForCall.length).toBe(1);
-        return expect(change_handler).toHaveBeenCalledWith('initial:a', this.model, 'a val');
-      });
-      return it('calls change_handler when key is changed', function() {
-        var change_handler;
-
-        this.model.onChangeAndDo('a', (change_handler = jasmine.createSpy('change_handler')));
-        change_handler.reset();
-        this.model.set('a', 'a new val');
-        expect(change_handler.argsForCall.length).toBe(1);
-        return expect(change_handler).toHaveBeenCalledWith('change:a', this.model, 'a new val', 'a val');
       });
     });
   };

@@ -147,22 +147,3 @@ define -> ({beforeEachRequire})->
           expect(@on_change_spy_a).not.toHaveBeenCalled()
           expect(@on_change_spy_b).not.toHaveBeenCalled()
           expect(@on_change_spy_c).not.toHaveBeenCalled()
-
-  describe '@onChangeAndDo(propertyName:string, change_handler:function)', ->
-    beforeEach ->
-      @model = new @Model
-        a: 'a val'
-        b: 'b val'
-        c: 'c val'
-
-    it 'calls change_handler with current value of key', ->
-      @model.onChangeAndDo 'a', (change_handler = jasmine.createSpy 'change_handler')
-      expect(change_handler.argsForCall.length).toBe 1
-      expect(change_handler).toHaveBeenCalledWith 'initial:a', @model, 'a val'
-
-    it 'calls change_handler when key is changed', ->
-      @model.onChangeAndDo 'a', (change_handler = jasmine.createSpy 'change_handler')
-      change_handler.reset()
-      @model.set 'a', 'a new val'
-      expect(change_handler.argsForCall.length).toBe 1
-      expect(change_handler).toHaveBeenCalledWith 'change:a', @model, 'a new val', 'a val'
