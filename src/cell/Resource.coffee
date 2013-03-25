@@ -1,6 +1,10 @@
 define [
-
-], ()->
+  'cell/Model'
+  'cell/Collection'
+  'cell/util/http'
+  'util/extend'
+  'util/type'
+], (Model,Collection,http,extend,type)->
 
   # CommentCard = Resource.extend
   #   url: '/commentCards/{id}'
@@ -46,5 +50,76 @@ define [
   #         _ 'li', card.get 'name'
   #   ]
 
-  Resource = (@url)->
-    # @url = 
+  copyObj = (obj)->
+    newObj = {}
+    for k of obj
+      newObj[k] = obj[k]
+    newObj
+
+  Resource = (@url, @_params)->
+
+  Resource::defaultParams = (params)->
+    params[k] = @_params[k] for k of @_params
+    return
+
+  Resource::create = (params)->
+    inst = new Resource.Instance()
+    params = copyObj params
+    http
+      method: 'POST'
+      url: @genUrl params, true
+      data: JSON.stringify params
+      (status,response)->
+        for k,v of (JSON.parse response)
+          inst.set k, v
+        return
+    inst
+
+  Resource::get = (params)->
+    inst = new Resource.Instance()
+    params = copyObj params
+    http
+      method: 'GET'
+      url: @genUrl params, false
+      (status,response)->
+        for k,v of (JSON.parse response)
+          inst.set k, v
+        return
+    inst
+
+  Resource::query = (params)->
+    inst = new Resource.CollectionInstance()
+    params = copyObj params
+    http
+      method: 'GET'
+      url: @genUrl params, false
+      (status,response)->
+        inst.add JSON.parse response
+        return
+    inst
+
+  Resource.Instance = Model.extend
+    delete: (params)->
+
+    save: (params)->
+
+
+  Resource.CollectionInstance = Collection.extend
+    requery: (params)->
+
+  Resource::genUrl = (params, disableQueryParams)->
+    @defaultParams params
+    url = (url = @url).replace /{([A-z0-9]+)}/g, (match, key, index)->
+      value = params[key]
+      delete params[key]
+      encodeURIComponent value
+
+    unless disableQueryParams
+      delim = '?'
+      for k,v of params when v
+        url += "#{delim}#{encodeURIComponent k}=#{encodeURIComponent v}"
+        delim = '&'
+
+    url
+
+  Resource

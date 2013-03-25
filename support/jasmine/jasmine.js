@@ -1167,7 +1167,6 @@ jasmine.Matchers.matcherFn_ = function(matcherName, matcherFunction) {
     if(!result){
       var _actual = this.actual,
           _expected = matcherArgs[0];
-      debugger;
     }
     var expectationResult = new jasmine.ExpectationResult({
       matcherName: matcherName,

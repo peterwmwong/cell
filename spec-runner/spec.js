@@ -36,14 +36,13 @@ define(function() {
             specRequire = null;
             ctx = void 0;
             return Spec({
-              beforeEachRequire: function(prereqDeps, deps, cb) {
+              beforeEachRequire: function(cb_mocks, deps, cb) {
                 if (arguments.length === 2) {
                   cb = deps;
-                  deps = prereqDeps;
-                  prereqDeps = void 0;
+                  deps = cb_mocks;
                 }
                 beforeEach(function() {
-                  var ctxName, dep_modules, prereqdep_modules;
+                  var ctxName, dep_modules, mod_name, mod_obj, _fn;
 
                   this.domFixture = domFixture;
                   specRequire = window.require.config({
@@ -56,19 +55,21 @@ define(function() {
                     }
                   });
                   ctx = window.require.s.contexts[ctxName];
-                  if (prereqDeps) {
-                    prereqdep_modules = void 0;
-                    runs(function() {
-                      return specRequire(prereqDeps, function() {
-                        var dms;
+                  if (cb_mocks) {
+                    _fn = function(mod_obj) {
+                      var mod_map;
 
-                        dms = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-                        return prereqdep_modules = dms;
+                      mod_map = ctx.makeModuleMap(mod_name, null, true);
+                      return (ctx.registry[mod_name] = new ctx.Module(mod_map)).init([], function() {
+                        return mod_obj;
+                      }, void 0, {
+                        enabled: true
                       });
-                    });
-                    waitsFor(function() {
-                      return prereqdep_modules != null;
-                    });
+                    };
+                    for (mod_name in cb_mocks) {
+                      mod_obj = cb_mocks[mod_name];
+                      _fn(mod_obj);
+                    }
                   }
                   dep_modules = void 0;
                   runs(function() {

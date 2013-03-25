@@ -21,10 +21,11 @@ define [
 
       describe 'http protocol', ->
         it "should do basics - open async xhr and send data", ->
-          @http method: "GET", url:"/some-url", ->
+          @http method: "GET", url:"/some-url", data:'yolo'->
           request = @requests[0]
           expect(request.method).toBe "GET"
           expect(request.url).toBe "/some-url"
+          expect(request.data).toBe "yolo"
           expect(request.async).toBe true
 
         it "should normalize IE's 1223 status code into 204", ->
