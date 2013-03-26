@@ -25,7 +25,7 @@ define(['../../utils/spec-utils', 'sinon-server'], function(_arg, sinon) {
     });
     return describe('http( { method:string, url:string, data:string, headers:object, timeout:number, withCredentials:boolean, responseType:string }, callback:function )', function() {
       describe('http protocol', function() {
-        it("should do basics - open async xhr and send data", function() {
+        it("should do basics - open async xhr", function() {
           var request;
 
           this.http({
@@ -60,11 +60,13 @@ define(['../../utils/spec-utils', 'sinon-server'], function(_arg, sinon) {
             headers: {
               "X-header1": "value1",
               "X-header2": "value2"
-            }
+            },
+            data: 'yolo'
           }, (function() {}));
           request = this.requests[0];
           expect(request.requestHeaders["X-header1"]).toBe("value1");
-          return expect(request.requestHeaders["X-header2"]).toBe("value2");
+          expect(request.requestHeaders["X-header2"]).toBe("value2");
+          return expect(request.requestBody).toBe("yolo");
         });
         it("should abort request on timeout", function() {
           var done, request,

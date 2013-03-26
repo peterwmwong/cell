@@ -20,12 +20,11 @@ define [
     describe 'http( { method:string, url:string, data:string, headers:object, timeout:number, withCredentials:boolean, responseType:string }, callback:function )', ->
 
       describe 'http protocol', ->
-        it "should do basics - open async xhr and send data", ->
-          @http method: "GET", url:"/some-url", data:'yolo'->
+        it "should do basics - open async xhr", ->
+          @http method: "GET", url:"/some-url", ->
           request = @requests[0]
           expect(request.method).toBe "GET"
           expect(request.url).toBe "/some-url"
-          expect(request.data).toBe "yolo"
           expect(request.async).toBe true
 
         it "should normalize IE's 1223 status code into 204", ->
@@ -46,11 +45,13 @@ define [
             headers:
               "X-header1": "value1"
               "X-header2": "value2"
+            data: 'yolo'
             (->)
 
           request = @requests[0]
           expect(request.requestHeaders["X-header1"]).toBe "value1"
           expect(request.requestHeaders["X-header2"]).toBe "value2"
+          expect(request.requestBody).toBe "yolo"
 
         it "should abort request on timeout", ->
           @callback.andCallFake (status, response)=>
