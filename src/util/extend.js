@@ -12,10 +12,7 @@ define(function() {
       if (!(this instanceof Child)) {
         return Child.apply(new ChildSurrogate(), arguments);
       }
-      Parent.apply(this, arguments);
-      if (childConstructor) {
-        childConstructor.apply(this, arguments);
-      }
+      (childConstructor || Parent).apply(this, arguments);
       return this;
     };
     Child.extend = Parent.extend;
@@ -24,7 +21,9 @@ define(function() {
     ChildSurrogate = function() {};
     childProto = ChildSurrogate[protoProp] = Child[protoProp] = new Surrogate();
     if (proto) {
-      childConstructor = proto[constrProp];
+      if (proto.hasOwnProperty(constrProp)) {
+        childConstructor = proto[constrProp];
+      }
       for (k in proto) {
         childProto[k] = proto[k];
       }

@@ -7,6 +7,7 @@ define(['cell/Events', 'util/type', 'cell/Model', 'cell/util/spy'], function(Eve
   };
   return Collection = Events.extend({
     constructor: function(array) {
+      Events.call(this);
       this._i = [];
       this.add(array);
     },

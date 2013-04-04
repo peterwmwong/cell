@@ -27,7 +27,18 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
         it 'adds extend method', ->
           expect(@Child.extend).toBe @extend
 
-      describe 'prototypeProps is an object hash', ->
+      describe 'prototypeProps is an object hash without a "constructor" property', ->
+        beforeEach ->
+          @Child = @Parent.extend
+            b: @child_b = {}
+            c: @child_c = {}
+          @child = new @Child 1, 2, 3
+
+        it 'calls Parent as constructor', ->
+          expect(@Parent).toHaveBeenCalledWith 1, 2, 3
+          expect(@Parent.callCount).toBe 1
+
+      describe 'prototypeProps is an object hash with a "constructor" property', ->
         beforeEach ->
           @Child = @Parent.extend
             constructor: @constr = jasmine.createSpy('constructor')
@@ -38,8 +49,7 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
         it 'creates an instanceof Parent', ->
           expect(@Child.prototype instanceof @Parent).toBe true
           expect(@constr).toHaveBeenCalledWith 1, 2, 3
-          expect(@Parent).toHaveBeenCalledWith 1, 2, 3
-          expect(@Parent.callCount).toBe 1
+          expect(@Parent).not.toHaveBeenCalled()
           expect(@child instanceof @Parent).toBe true
 
         it 'adds extend method', ->

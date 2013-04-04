@@ -6,6 +6,7 @@ define [
 
   Model = Events.extend
     constructor: (attributes)->
+      Events.call @
       @_a = attributes or {}
       @collection = undefined
       return

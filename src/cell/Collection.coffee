@@ -23,6 +23,7 @@ define [
   Collection = Events.extend
 
     constructor: (array)->
+      Events.call @
       @_i = []
       @add array
       return

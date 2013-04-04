@@ -4,6 +4,7 @@ define(['util/type', 'cell/Events', 'cell/util/spy'], function(type, Events, spy
 
   Model = Events.extend({
     constructor: function(attributes) {
+      Events.call(this);
       this._a = attributes || {};
       this.collection = void 0;
     },

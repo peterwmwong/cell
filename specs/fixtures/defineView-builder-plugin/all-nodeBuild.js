@@ -769,10 +769,7 @@ define('util/extend',[],function() {
       if (!(this instanceof Child)) {
         return Child.apply(new ChildSurrogate(), arguments);
       }
-      Parent.apply(this, arguments);
-      if (childConstructor) {
-        childConstructor.apply(this, arguments);
-      }
+      (childConstructor || Parent).apply(this, arguments);
       return this;
     };
     Child.extend = Parent.extend;
@@ -781,7 +778,9 @@ define('util/extend',[],function() {
     ChildSurrogate = function() {};
     childProto = ChildSurrogate[protoProp] = Child[protoProp] = new Surrogate();
     if (proto) {
-      childConstructor = proto[constrProp];
+      if (proto.hasOwnProperty(constrProp)) {
+        childConstructor = proto[constrProp];
+      }
       for (k in proto) {
         childProto[k] = proto[k];
       }
@@ -1051,56 +1050,43 @@ define('cell/Model',['util/type', 'cell/Events', 'cell/util/spy'], function(type
 
   Model = Events.extend({
     constructor: function(attributes) {
+      Events.call(this);
       this._a = attributes || {};
       this.collection = void 0;
     },
     attributes: function() {
       var attr, result;
 
-      if (this._a) {
-        this._s('all');
-        result = {};
-        for (attr in this._a) {
-          result[attr] = this._a[attr];
-        }
-        return result;
+      this._s('all');
+      result = {};
+      for (attr in this._a) {
+        result[attr] = this._a[attr];
       }
+      return result;
     },
     get: function(key) {
-      if (this._a) {
-        this._s("change:" + key);
-        return this._a[key];
-      }
+      this._s("change:" + key);
+      return this._a[key];
     },
     set: function(key, value) {
       var collection, event, old_value;
 
-      if (this._a) {
-        if ((type.isS(key)) && (this._a[key] !== value)) {
-          old_value = this._a[key];
-          this.trigger((event = "change:" + key), this, (this._a[key] = value), old_value);
-          if (collection = this.collection) {
-            collection.trigger(event, this, value, old_value);
-          }
-          return true;
+      if ((type.isS(key)) && (this._a[key] !== value)) {
+        old_value = this._a[key];
+        this.trigger((event = "change:" + key), this, (this._a[key] = value), old_value);
+        if (collection = this.collection) {
+          collection.trigger(event, this, value, old_value);
         }
-      }
-    },
-    onChangeAndDo: function(key, cb, ctx) {
-      if (this._a) {
-        if (this.on("change:" + key, cb, ctx)) {
-          cb("initial:" + key, this, this.get(key));
-        }
+        return true;
       }
     },
     destroy: function() {
-      if (this._a) {
-        Events.prototype.destroy.call(this);
-        if (this.collection) {
-          this.collection.remove([this]);
-        }
-        delete this._a;
+      Events.prototype.destroy.call(this);
+      if (this.collection) {
+        this.collection.remove([this]);
       }
+      delete this._a;
+      this.destroy = this.attributes = this.get = this.set = function() {};
     },
     _s: spy.addModel
   });
@@ -1146,6 +1132,7 @@ define('cell/View',['util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/mutat
     constructor: function(options) {
       var cellName, cls, el, t;
 
+      Model.call(this);
       t = this;
       t.options = options ? (t.model = options.model, t.collection = options.collection, delete options.model, delete options.collection, options) : {};
       t.__ = fn.b(View[protoProp].__, t);

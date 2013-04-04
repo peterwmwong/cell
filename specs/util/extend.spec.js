@@ -34,7 +34,20 @@ define(['../utils/spec-utils'], function(_arg) {
           return expect(this.Child.extend).toBe(this.extend);
         });
       });
-      return describe('prototypeProps is an object hash', function() {
+      describe('prototypeProps is an object hash without a "constructor" property', function() {
+        beforeEach(function() {
+          this.Child = this.Parent.extend({
+            b: this.child_b = {},
+            c: this.child_c = {}
+          });
+          return this.child = new this.Child(1, 2, 3);
+        });
+        return it('calls Parent as constructor', function() {
+          expect(this.Parent).toHaveBeenCalledWith(1, 2, 3);
+          return expect(this.Parent.callCount).toBe(1);
+        });
+      });
+      return describe('prototypeProps is an object hash with a "constructor" property', function() {
         beforeEach(function() {
           this.Child = this.Parent.extend({
             constructor: this.constr = jasmine.createSpy('constructor'),
@@ -46,8 +59,7 @@ define(['../utils/spec-utils'], function(_arg) {
         it('creates an instanceof Parent', function() {
           expect(this.Child.prototype instanceof this.Parent).toBe(true);
           expect(this.constr).toHaveBeenCalledWith(1, 2, 3);
-          expect(this.Parent).toHaveBeenCalledWith(1, 2, 3);
-          expect(this.Parent.callCount).toBe(1);
+          expect(this.Parent).not.toHaveBeenCalled();
           return expect(this.child instanceof this.Parent).toBe(true);
         });
         it('adds extend method', function() {

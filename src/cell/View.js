@@ -10,6 +10,7 @@ define(['util/type', 'util/fn', 'dom/data', 'dom/events', 'dom/mutate', 'cell/Mo
     constructor: function(options) {
       var cellName, cls, el, t;
 
+      Model.call(this);
       t = this;
       t.options = options ? (t.model = options.model, t.collection = options.collection, delete options.model, delete options.collection, options) : {};
       t.__ = fn.b(View[protoProp].__, t);

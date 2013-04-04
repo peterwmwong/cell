@@ -25,6 +25,9 @@ define [
 
   Ext.extend
     constructor: (@prop, @model)->
+      Ext.call @
+      return
+
     render: ->
       el = @el
       model = @model or @view.model

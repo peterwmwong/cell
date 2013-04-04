@@ -15,6 +15,7 @@ define [
 
   View = Model.extend
     constructor: (options)->
+      Model.call @
       t = @
       t.options =
         if options

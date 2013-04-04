@@ -32,6 +32,7 @@ define(['dom/events', 'cell/Ext'], function(events, Ext) {
     constructor: function(prop, model) {
       this.prop = prop;
       this.model = model;
+      Ext.call(this);
     },
     render: function() {
       var el, model, modelEl, prop, tag;
