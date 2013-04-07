@@ -8,33 +8,33 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
       'cell/Collection'
     ], (@TestCell1,@View,@Collection)->
       @view = new @View()
-      @__ = @view.__
+      @_ = @view._
 
-    describe '__( viewOrSelector:[View, String], attrHash_or_options?:Object, children...:[DOMNode, String, Number, Array] )', ->
+    describe '_( viewOrSelector:[View, String], attrHash_or_options?:Object, children...:[DOMNode, String, Number, Array] )', ->
 
       it_renders = (desc, input_args, expected_html_output, debug)->
-        describe "__( #{desc} )", ->
+        describe "_( #{desc} )", ->
           input_strings = stringify input_args, true
-          it "__( #{input_strings} ) === #{expected_html_output}", ->
+          it "_( #{input_strings} ) === #{expected_html_output}", ->
             debugger if debug
-            nodeHTMLEquals (@__ input_args...), expected_html_output
+            nodeHTMLEquals (@_ input_args...), expected_html_output
 
       it_renders_views = (desc, input_args, expected_html_output, debug)->
-        describe "__( #{desc} )", ->
+        describe "_( #{desc} )", ->
           input_strings = stringify input_args, true
-          it "__( View, #{input_strings} ) === #{expected_html_output}", ->
+          it "_( View, #{input_strings} ) === #{expected_html_output}", ->
             debugger if debug
-            nodeHTMLEquals (@__ @TestCell1, input_args...), expected_html_output
+            nodeHTMLEquals (@_ @TestCell1, input_args...), expected_html_output
 
-      describe "__( function )", ->
-        it "__( function ) === undefined", ->
-          expect(@__ ->).toBe undefined
+      describe "_( function )", ->
+        it "_( function ) === undefined", ->
+          expect(@_ ->).toBe undefined
 
       for empty in [undefined,null] then do(empty)->
         empty_str = "#{empty is '' and '""' or empty}"
-        describe "__( #{empty_str} )", ->
-          it "__( #{empty_str} ) === undefined", ->
-            expect(@__ empty).toBe undefined
+        describe "_( #{empty_str} )", ->
+          it "_( #{empty_str} ) === undefined", ->
+            expect(@_ empty).toBe undefined
 
       it_renders 'empty string',
         ['']
@@ -116,7 +116,7 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
       describe "on* event handlers", ->
 
         it 'registers event handler', ->
-          @node = @__ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
+          @node = @_ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
           expect(@clickHandler).not.toHaveBeenCalled()
           browserTrigger @node, 'click'
           # expect(@clickHandler).toHaveBeenCalled()
@@ -143,3 +143,111 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
         []
         '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>'
         true
+
+    # describe '_.each( collection:Collection, renderer:function )', ->
+
+    #   beforeEach ->
+    #     @collection = new @Collection [
+    #       {name:'a'}
+    #       {name:'b'}
+    #       {name:'c'}
+    #     ]
+    #     @eachRenderer = jasmine.createSpy('eachRenderer')
+    #     @eachRenderer.andCallFake (item)=> @_ 'div', item.name or item.attributes.name
+
+    #   it 'when collection is not empty', ->
+    #     result = @_.each @collection, @eachRenderer
+    #     expect(@eachRenderer.callCount).toEqual 3
+    #     @collection.each (item, i)=>
+    #       expect(@eachRenderer.calls[i].args).toEqual [item,i,@collection]
+    #       expect(@eachRenderer.calls[i].object).toBe @view
+    #     nodeHTMLEquals result[0], '<div>a</div>'
+    #     nodeHTMLEquals result[1], '<div>b</div>'
+    #     nodeHTMLEquals result[2], '<div>c</div>'
+
+    #   it 'when collection is undefined', ->
+    #     result = @_.each undefined, @eachRenderer
+    #     expect(@eachRenderer).not.toHaveBeenCalled()
+
+    # describe '_.each( many:array, view:View )', ->
+
+    #   beforeEach ->
+    #     @SubView = @View.extend
+    #       _cellName: 'Sub'
+    #       render: (_)-> @model.name
+    #     @items = [
+    #       {name:'a'}
+    #       {name:'b'}
+    #       {name:'c'}
+    #     ]
+
+    #   it 'when many is non-empty array', ->
+    #     result = @_.each @items, @SubView
+    #     nodeHTMLEquals result[0], '<div cell="Sub" class="Sub">a</div>'
+    #     nodeHTMLEquals result[1], '<div cell="Sub" class="Sub">b</div>'
+    #     nodeHTMLEquals result[2], '<div cell="Sub" class="Sub">c</div>'
+
+    describe '_.each( array:array, renderer:function )', ->
+
+      beforeEach ->
+        @items = [
+          {name:'a'}
+          {name:'b'}
+          {name:'c'}
+        ]
+        @eachRenderer = jasmine.createSpy 'eachRenderer'
+        @eachRenderer.andCallFake (item)=> @_ 'b', item.name
+
+        @ParentView = @View.extend
+          _cellName: 'Parent'
+          render: (_)=> _.each @items, @eachRenderer
+
+        @view = new @ParentView
+
+      it 'calls renderer for each model in the collection', ->
+        expect(@eachRenderer.callCount).toEqual 3
+        for item,i in @items
+          expect(@eachRenderer.calls[i].args).toEqual [item,i,@items]
+          expect(@eachRenderer.calls[i].object).toBe @view
+
+      it 'renders correctly', ->
+        nodeHTMLEquals @view.el,
+          '<div cell="Parent" class="Parent">'+
+            '<b>a</b>'+
+            '<b>b</b>'+
+            '<b>c</b>'+
+          '</div>'
+
+    describe '_.each( collection:Collection, renderer:function )', ->
+
+      beforeEach ->
+        @collection = new @Collection [
+          {name:'a'}
+          {name:'b'}
+          {name:'c'}
+        ]
+
+        eachRenderer = @eachRenderer = jasmine.createSpy 'eachRenderer'
+        @eachRenderer.andCallFake (item)=> @_ 'b', item.get 'name'
+
+        @ParentView = @View.extend
+          _cellName: 'Parent'
+          render: (_)-> _.each @collection, eachRenderer
+
+        @view = new @ParentView collection: @collection
+
+      it 'calls renderer for each model in the collection', ->
+        expect(@eachRenderer.callCount).toEqual 3
+        @collection.each (item, i)=>
+          debugger
+          expect(@eachRenderer.calls[i].args).toEqual [item,i,@collection]
+          expect(@eachRenderer.calls[i].object).toBe @view
+        # nodeHTMLEquals result[0], '<div>a</div>'
+        # nodeHTMLEquals result[1], '<div>b</div>'
+        # nodeHTMLEquals result[2], '<div>c</div>'
+
+        # result = (new @ParentView collection: @collection).el.children
+        # nodeHTMLEquals result[0], '<div cell="Sub" class="Sub">a</div>'
+        # nodeHTMLEquals result[1], '<div cell="Sub" class="Sub">b</div>'
+        # nodeHTMLEquals result[2], '<div cell="Sub" class="Sub">c</div>'
+      

@@ -2,7 +2,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
   ({beforeEachRequire})->
 
-    describe 'Passing Bindings (functions) to __', ->
+    describe 'Passing Bindings (functions) to _', ->
 
       beforeEachRequire [
         'cell/View'
@@ -12,11 +12,65 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
         @view = new @View()
         @view.set 'test', 'test val'
         @view.set 'testInnerHTML', 'test innerHTML'
-        @__ = @view.__
+        @_ = @view._
+
+      describe '_.each(collection:Collection, renderer:function)', ->
+
+        describe 'when renderer returns an array of nodes', ->
+
+          beforeEach ->
+            @collection = new @Collection [
+              {a: 1}
+              {a: 2}
+              {a: 3}
+            ]
+            @CellWithEach = @View.extend
+              _cellName: 'test'
+              eachKey: 'eachValue'
+              render: (_)=> [
+                _ '.parent',
+                  _.each @collection, (item)->
+                    _ ".item#{item.get 'a'}", @eachKey
+              ]
+            @view = new @CellWithEach()
+
+          it 'renders initially correctly', ->
+            nodeHTMLEquals @view.el,
+              '<div cell="test" class="test">'+
+                '<div class="parent">'+
+                  '<div class="item1">eachValue</div>'+
+                  '<div class="item2">eachValue</div>'+
+                  '<div class="item3">eachValue</div>'+
+                '</div>'+
+              '</div>'
+
+          describe 'when collection changes', ->
+
+            beforeEach ->
+              [@item1, @item2, @item3] = @view.el.children[0].children
+              @collection.remove @collection.at 0
+              @collection.add new @Model a: 4
+
+            it 'renders after change correctly', ->
+              waitOne ->
+                nodeHTMLEquals @view.el,
+                  '<div cell="test" class="test">'+
+                    '<div class="parent">'+
+                      '<div class="item2">eachValue</div>'+
+                      '<div class="item3">eachValue</div>'+
+                      '<div class="item4">eachValue</div>'+
+                    '</div>'+
+                  '</div>'
+
+            it "doesn't rerender previous items", ->
+              waitOne ->
+                expect(@view.el.children[0].children[0]).toBe @item2
+                expect(@view.el.children[0].children[1]).toBe @item3
+
 
       describe 'when a bind is passed as an attribute', ->
         beforeEach ->
-          @node = @__ '.bound', 'data-custom':(-> @get 'test'), 'non-bind': 'constant value', innerHTML: (-> @get 'testInnerHTML')
+          @node = @_ '.bound', 'data-custom':(-> @get 'test'), 'non-bind': 'constant value', innerHTML: (-> @get 'testInnerHTML')
 
         it "when innerHTML is specified as an attribute, sets the innerHTML", ->
           expect(@node.innerHTML).toBe 'test innerHTML'
@@ -40,7 +94,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
       describe "when the attribute is a on* event handler", ->
         it "doesn't think it's a bind", ->
-          @node = @__ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
+          @node = @_ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
           @domFixture.appendChild @node
           expect(@clickHandler).not.toHaveBeenCalled()
           browserTrigger @node, 'click'
@@ -53,7 +107,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
           describe "when the binding's value is of type #{value_type}", ->
             beforeEach ->
               @view.set 'test', ref_value
-              @node = @__ '.parent',
+              @node = @_ '.parent',
                 'BEFORE'
                 -> @get 'test'
                 'AFTER'
@@ -73,7 +127,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
         describe "when the binding's value is undefined", ->
           beforeEach ->
             @view.set 'test', undefined
-            @node = @__ '.parent',
+            @node = @_ '.parent',
               'BEFORE'
               -> @get 'test'
               'AFTER'

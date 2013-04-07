@@ -14,40 +14,40 @@ define(['../utils/spec-utils'], function(_arg) {
       this.View = View;
       this.Collection = Collection;
       this.view = new this.View();
-      return this.__ = this.view.__;
+      return this._ = this.view._;
     });
-    return describe('__( viewOrSelector:[View, String], attrHash_or_options?:Object, children...:[DOMNode, String, Number, Array] )', function() {
+    describe('_( viewOrSelector:[View, String], attrHash_or_options?:Object, children...:[DOMNode, String, Number, Array] )', function() {
       var empty, it_renders, it_renders_views, _fn, _i, _len, _ref;
 
       it_renders = function(desc, input_args, expected_html_output, debug) {
-        return describe("__( " + desc + " )", function() {
+        return describe("_( " + desc + " )", function() {
           var input_strings;
 
           input_strings = stringify(input_args, true);
-          return it("__( " + input_strings + " ) === " + expected_html_output, function() {
+          return it("_( " + input_strings + " ) === " + expected_html_output, function() {
             if (debug) {
               debugger;
             }
-            return nodeHTMLEquals(this.__.apply(this, input_args), expected_html_output);
+            return nodeHTMLEquals(this._.apply(this, input_args), expected_html_output);
           });
         });
       };
       it_renders_views = function(desc, input_args, expected_html_output, debug) {
-        return describe("__( " + desc + " )", function() {
+        return describe("_( " + desc + " )", function() {
           var input_strings;
 
           input_strings = stringify(input_args, true);
-          return it("__( View, " + input_strings + " ) === " + expected_html_output, function() {
+          return it("_( View, " + input_strings + " ) === " + expected_html_output, function() {
             if (debug) {
               debugger;
             }
-            return nodeHTMLEquals(this.__.apply(this, [this.TestCell1].concat(__slice.call(input_args))), expected_html_output);
+            return nodeHTMLEquals(this._.apply(this, [this.TestCell1].concat(__slice.call(input_args))), expected_html_output);
           });
         });
       };
-      describe("__( function )", function() {
-        return it("__( function ) === undefined", function() {
-          return expect(this.__(function() {})).toBe(void 0);
+      describe("_( function )", function() {
+        return it("_( function ) === undefined", function() {
+          return expect(this._(function() {})).toBe(void 0);
         });
       });
       _ref = [void 0, null];
@@ -55,9 +55,9 @@ define(['../utils/spec-utils'], function(_arg) {
         var empty_str;
 
         empty_str = "" + (empty === '' && '""' || empty);
-        return describe("__( " + empty_str + " )", function() {
-          return it("__( " + empty_str + " ) === undefined", function() {
-            return expect(this.__(empty)).toBe(void 0);
+        return describe("_( " + empty_str + " )", function() {
+          return it("_( " + empty_str + " ) === undefined", function() {
+            return expect(this._(empty)).toBe(void 0);
           });
         });
       };
@@ -99,7 +99,7 @@ define(['../utils/spec-utils'], function(_arg) {
       ], '<p class="myclass myclass2 myclass3" data-custom="myattr" id="myid"><b>wompa</b></p>');
       describe("on* event handlers", function() {
         return it('registers event handler', function() {
-          this.node = this.__('.bound', {
+          this.node = this._('.bound', {
             onclick: this.clickHandler = jasmine.createSpy('click')
           });
           expect(this.clickHandler).not.toHaveBeenCalled();
@@ -119,6 +119,86 @@ define(['../utils/spec-utils'], function(_arg) {
         }, void 0, null
       ], '<p data-custom="myattr" data-custom2="myattr2"></p>');
       return it_renders_views("view:View", [], '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>', true);
+    });
+    describe('_.each( array:array, renderer:function )', function() {
+      beforeEach(function() {
+        var _this = this;
+
+        this.items = [
+          {
+            name: 'a'
+          }, {
+            name: 'b'
+          }, {
+            name: 'c'
+          }
+        ];
+        this.eachRenderer = jasmine.createSpy('eachRenderer');
+        this.eachRenderer.andCallFake(function(item) {
+          return _this._('b', item.name);
+        });
+        this.ParentView = this.View.extend({
+          _cellName: 'Parent',
+          render: function(_) {
+            return _.each(_this.items, _this.eachRenderer);
+          }
+        });
+        return this.view = new this.ParentView;
+      });
+      it('calls renderer for each model in the collection', function() {
+        var i, item, _i, _len, _ref, _results;
+
+        expect(this.eachRenderer.callCount).toEqual(3);
+        _ref = this.items;
+        _results = [];
+        for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+          item = _ref[i];
+          expect(this.eachRenderer.calls[i].args).toEqual([item, i, this.items]);
+          _results.push(expect(this.eachRenderer.calls[i].object).toBe(this.view));
+        }
+        return _results;
+      });
+      return it('renders correctly', function() {
+        return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent">' + '<b>a</b>' + '<b>b</b>' + '<b>c</b>' + '</div>');
+      });
+    });
+    return describe('_.each( collection:Collection, renderer:function )', function() {
+      beforeEach(function() {
+        var eachRenderer,
+          _this = this;
+
+        this.collection = new this.Collection([
+          {
+            name: 'a'
+          }, {
+            name: 'b'
+          }, {
+            name: 'c'
+          }
+        ]);
+        eachRenderer = this.eachRenderer = jasmine.createSpy('eachRenderer');
+        this.eachRenderer.andCallFake(function(item) {
+          return _this._('b', item.get('name'));
+        });
+        this.ParentView = this.View.extend({
+          _cellName: 'Parent',
+          render: function(_) {
+            return _.each(this.collection, eachRenderer);
+          }
+        });
+        return this.view = new this.ParentView({
+          collection: this.collection
+        });
+      });
+      return it('calls renderer for each model in the collection', function() {
+        var _this = this;
+
+        expect(this.eachRenderer.callCount).toEqual(3);
+        return this.collection.each(function(item, i) {
+          debugger;          expect(_this.eachRenderer.calls[i].args).toEqual([item, i, _this.collection]);
+          return expect(_this.eachRenderer.calls[i].object).toBe(_this.view);
+        });
+      });
     });
   };
 });

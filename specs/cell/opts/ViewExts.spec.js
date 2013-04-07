@@ -14,7 +14,7 @@ define(['../../utils/spec-utils'], function(_arg) {
       this.View = View;
       this.require = require;
     });
-    return describe('modifies View.__() method signature ( viewOrSelector:[View, String], exts...:Ext, attrHash_or_options?:Object, children...:[DOMElement, String, Number, Array, jQuery] )', function() {
+    return describe('modifies View._() method signature ( viewOrSelector:[View, String], exts...:Ext, attrHash_or_options?:Object, children...:[DOMElement, String, Number, Array, jQuery] )', function() {
       beforeEach(function() {
         this.x_test1 = this.Ext.extend({
           render: this.x_test1_func = jasmine.createSpy('x_test1_func')
@@ -23,11 +23,11 @@ define(['../../utils/spec-utils'], function(_arg) {
           render: this.x_test2_func = jasmine.createSpy('x_test2_func')
         });
         this.view = new this.View;
-        return this.__ = this.view.__;
+        return this._ = this.view._;
       });
-      describe('__( selector:String, exts...:Ext )', function() {
+      describe('_( selector:String, exts...:Ext )', function() {
         beforeEach(function() {
-          return this.result = this.__('.myClass', this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {}));
+          return this.result = this._('.myClass', this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {}));
         });
         return it('calls Ext.run(element) for each ext', function() {
           expect(this.x_test1_func).toHaveBeenCalledWith();
@@ -36,9 +36,9 @@ define(['../../utils/spec-utils'], function(_arg) {
           return expect(this.x_test2_func.callCount).toBe(1);
         });
       });
-      describe('__( selector:String, exts...:Ext, attrHash_or_options:Object )', function() {
+      describe('_( selector:String, exts...:Ext, attrHash_or_options:Object )', function() {
         beforeEach(function() {
-          return this.result = this.__('.myClass', this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {}), this.options = {
+          return this.result = this._('.myClass', this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {}), this.options = {
             a: 1
           });
         });
@@ -49,9 +49,9 @@ define(['../../utils/spec-utils'], function(_arg) {
           return expect(this.x_test2_func.callCount).toBe(1);
         });
       });
-      describe('__( selector:String, exts...:Ext, attrHash_or_options:Object, children...:[DOMElement, String, Number, Array] )', function() {
+      describe('_( selector:String, exts...:Ext, attrHash_or_options:Object, children...:[DOMElement, String, Number, Array] )', function() {
         beforeEach(function() {
-          return this.result = this.__.apply(this, [(this.sel_arg = '.myClass'), this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {}), this.options = {
+          return this.result = this._.apply(this, [(this.sel_arg = '.myClass'), this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {}), this.options = {
             a: 1
           }].concat(__slice.call((this.child_args = [node('a'), 'hello', 0, [node('b'), 'bye', 1]]))));
         });
@@ -62,9 +62,9 @@ define(['../../utils/spec-utils'], function(_arg) {
           return expect(this.x_test2_func.callCount).toBe(1);
         });
       });
-      return describe('__( selector:String, exts...:Ext, children...:[DOMElement, String, Number, Array] )', function() {
+      return describe('_( selector:String, exts...:Ext, children...:[DOMElement, String, Number, Array] )', function() {
         beforeEach(function() {
-          return this.result = this.__.apply(this, [(this.sel_arg = '.myClass'), this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {})].concat(__slice.call((this.child_args = [node('a'), 'hello', 0, [node('b'), 'bye', 1]]))));
+          return this.result = this._.apply(this, [(this.sel_arg = '.myClass'), this.x_test1_instance = this.x_test1(this.x_test1_options = {}), this.x_test2_instance = this.x_test2(this.x_test2_options = {})].concat(__slice.call((this.child_args = [node('a'), 'hello', 0, [node('b'), 'bye', 1]]))));
         });
         return it('calls Ext.run(element) for each ext', function() {
           expect(this.x_test1_func).toHaveBeenCalledWith();

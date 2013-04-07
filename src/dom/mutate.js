@@ -5,12 +5,14 @@ define(['dom/data'], function(data) {
   dealloc = function(element) {
     var children, i, len;
 
-    data.remove(element);
-    children = element.children;
-    len = children.length;
-    i = -1;
-    while (++i < len) {
-      dealloc(children[i]);
+    if (element.nodeType !== 3) {
+      data.remove(element);
+      children = element.children;
+      len = children.length;
+      i = -1;
+      while (++i < len) {
+        dealloc(children[i]);
+      }
     }
   };
   return {

@@ -6,16 +6,16 @@ define ['../../utils/spec-utils'], ({node})->
       'require'
     ], (@Ext, @View, @require)->
 
-    describe 'modifies View.__() method signature ( viewOrSelector:[View, String], exts...:Ext, attrHash_or_options?:Object, children...:[DOMElement, String, Number, Array, jQuery] )', ->
+    describe 'modifies View._() method signature ( viewOrSelector:[View, String], exts...:Ext, attrHash_or_options?:Object, children...:[DOMElement, String, Number, Array, jQuery] )', ->
       beforeEach ->
         @x_test1 = @Ext.extend render: @x_test1_func = jasmine.createSpy 'x_test1_func'
         @x_test2 = @Ext.extend render: @x_test2_func = jasmine.createSpy 'x_test2_func'
         @view = new @View
-        @__ = @view.__
+        @_ = @view._
 
-      describe '__( selector:String, exts...:Ext )', ->
+      describe '_( selector:String, exts...:Ext )', ->
         beforeEach ->
-          @result = @__ '.myClass',
+          @result = @_ '.myClass',
             @x_test1_instance = @x_test1(@x_test1_options = {})
             @x_test2_instance = @x_test2(@x_test2_options = {})
 
@@ -26,9 +26,9 @@ define ['../../utils/spec-utils'], ({node})->
           expect(@x_test2_func.callCount).toBe 1
 
 
-      describe '__( selector:String, exts...:Ext, attrHash_or_options:Object )', ->
+      describe '_( selector:String, exts...:Ext, attrHash_or_options:Object )', ->
         beforeEach ->
-          @result = @__ '.myClass',
+          @result = @_ '.myClass',
             @x_test1_instance = @x_test1(@x_test1_options = {})
             @x_test2_instance = @x_test2(@x_test2_options = {})
             @options = a: 1
@@ -40,9 +40,9 @@ define ['../../utils/spec-utils'], ({node})->
           expect(@x_test2_func.callCount).toBe 1
 
 
-      describe '__( selector:String, exts...:Ext, attrHash_or_options:Object, children...:[DOMElement, String, Number, Array] )', ->
+      describe '_( selector:String, exts...:Ext, attrHash_or_options:Object, children...:[DOMElement, String, Number, Array] )', ->
         beforeEach ->
-          @result = @__ (@sel_arg = '.myClass'),
+          @result = @_ (@sel_arg = '.myClass'),
             @x_test1_instance = @x_test1(@x_test1_options = {})
             @x_test2_instance = @x_test2(@x_test2_options = {})
             @options = a: 1
@@ -64,9 +64,9 @@ define ['../../utils/spec-utils'], ({node})->
           expect(@x_test2_func.callCount).toBe 1
 
 
-      describe '__( selector:String, exts...:Ext, children...:[DOMElement, String, Number, Array] )', ->
+      describe '_( selector:String, exts...:Ext, children...:[DOMElement, String, Number, Array] )', ->
         beforeEach ->
-          @result = @__ (@sel_arg = '.myClass'),
+          @result = @_ (@sel_arg = '.myClass'),
             @x_test1_instance = @x_test1(@x_test1_options = {})
             @x_test2_instance = @x_test2(@x_test2_options = {})
             (@child_args = [

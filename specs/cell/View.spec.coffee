@@ -35,7 +35,7 @@ define ['../utils/spec-utils'], ({node,browserTrigger,nodeHTMLEquals,waitOne})->
             renderEl: =>
               @log.push 'renderEl'
               @el
-            render: (__)=>
+            render: (_)=>
               @log.push 'render'
               @childEl
             afterRender: =>
@@ -83,10 +83,10 @@ define ['../utils/spec-utils'], ({node,browserTrigger,nodeHTMLEquals,waitOne})->
         @col = new @Collection [new @Model b: 'b val']
         @TestView = @View.extend
           _cellName: 'Test'
-          render: (__)-> [
-            __ '.model', onclick:@onclick, (-> @model.get 'a')
-            -> @collection.map (item)->
-              __ '.item', (-> item.get 'b')
+          render: (_)-> [
+            _ '.model', onclick:@onclick, (-> @model.get 'a')
+            _.each @collection, (item)->
+              _ '.item', (-> item.get 'b')
           ]
           onclick: jasmine.createSpy 'click'
 

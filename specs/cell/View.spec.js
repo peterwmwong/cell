@@ -58,7 +58,7 @@ define(['../utils/spec-utils'], function(_arg) {
               _this.log.push('renderEl');
               return _this.el;
             },
-            render: function(__) {
+            render: function(_) {
               _this.log.push('render');
               return _this.childEl;
             },
@@ -121,19 +121,17 @@ define(['../utils/spec-utils'], function(_arg) {
         ]);
         this.TestView = this.View.extend({
           _cellName: 'Test',
-          render: function(__) {
+          render: function(_) {
             return [
-              __('.model', {
+              _('.model', {
                 onclick: this.onclick
               }, (function() {
                 return this.model.get('a');
-              })), function() {
-                return this.collection.map(function(item) {
-                  return __('.item', (function() {
-                    return item.get('b');
-                  }));
-                });
-              }
+              })), _.each(this.collection, function(item) {
+                return _('.item', (function() {
+                  return item.get('b');
+                }));
+              })
             ];
           },
           onclick: jasmine.createSpy('click')

@@ -7,7 +7,7 @@ define(['../../utils/spec-utils'], function(_arg) {
     var beforeEachRequire;
 
     beforeEachRequire = _arg1.beforeEachRequire;
-    return describe('Passing Bindings (functions) to __', function() {
+    return describe('Passing Bindings (functions) to _', function() {
       beforeEachRequire(['cell/View', 'cell/Model', 'cell/Collection'], function(View, Model, Collection) {
         this.View = View;
         this.Model = Model;
@@ -15,11 +15,65 @@ define(['../../utils/spec-utils'], function(_arg) {
         this.view = new this.View();
         this.view.set('test', 'test val');
         this.view.set('testInnerHTML', 'test innerHTML');
-        return this.__ = this.view.__;
+        return this._ = this.view._;
+      });
+      describe('_.each(collection:Collection, renderer:function)', function() {
+        return describe('when renderer returns an array of nodes', function() {
+          beforeEach(function() {
+            var _this = this;
+
+            this.collection = new this.Collection([
+              {
+                a: 1
+              }, {
+                a: 2
+              }, {
+                a: 3
+              }
+            ]);
+            this.CellWithEach = this.View.extend({
+              _cellName: 'test',
+              eachKey: 'eachValue',
+              render: function(_) {
+                return [
+                  _('.parent', _.each(_this.collection, function(item) {
+                    return _(".item" + (item.get('a')), this.eachKey);
+                  }))
+                ];
+              }
+            });
+            return this.view = new this.CellWithEach();
+          });
+          it('renders initially correctly', function() {
+            return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">eachValue</div>' + '<div class="item2">eachValue</div>' + '<div class="item3">eachValue</div>' + '</div>' + '</div>');
+          });
+          return describe('when collection changes', function() {
+            beforeEach(function() {
+              var _ref;
+
+              _ref = this.view.el.children[0].children, this.item1 = _ref[0], this.item2 = _ref[1], this.item3 = _ref[2];
+              this.collection.remove(this.collection.at(0));
+              return this.collection.add(new this.Model({
+                a: 4
+              }));
+            });
+            it('renders after change correctly', function() {
+              return waitOne(function() {
+                return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item2">eachValue</div>' + '<div class="item3">eachValue</div>' + '<div class="item4">eachValue</div>' + '</div>' + '</div>');
+              });
+            });
+            return it("doesn't rerender previous items", function() {
+              return waitOne(function() {
+                expect(this.view.el.children[0].children[0]).toBe(this.item2);
+                return expect(this.view.el.children[0].children[1]).toBe(this.item3);
+              });
+            });
+          });
+        });
       });
       describe('when a bind is passed as an attribute', function() {
         beforeEach(function() {
-          return this.node = this.__('.bound', {
+          return this.node = this._('.bound', {
             'data-custom': (function() {
               return this.get('test');
             }),
@@ -55,7 +109,7 @@ define(['../../utils/spec-utils'], function(_arg) {
       });
       describe("when the attribute is a on* event handler", function() {
         return it("doesn't think it's a bind", function() {
-          this.node = this.__('.bound', {
+          this.node = this._('.bound', {
             onclick: this.clickHandler = jasmine.createSpy('click')
           });
           this.domFixture.appendChild(this.node);
@@ -74,7 +128,7 @@ define(['../../utils/spec-utils'], function(_arg) {
           return describe("when the binding's value is of type " + value_type, function() {
             beforeEach(function() {
               this.view.set('test', ref_value);
-              return this.node = this.__('.parent', 'BEFORE', function() {
+              return this.node = this._('.parent', 'BEFORE', function() {
                 return this.get('test');
               }, 'AFTER');
             });
@@ -96,7 +150,7 @@ define(['../../utils/spec-utils'], function(_arg) {
         describe("when the binding's value is undefined", function() {
           beforeEach(function() {
             this.view.set('test', void 0);
-            return this.node = this.__('.parent', 'BEFORE', function() {
+            return this.node = this._('.parent', 'BEFORE', function() {
               return this.get('test');
             }, 'AFTER');
           });
