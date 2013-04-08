@@ -480,6 +480,13 @@ define(['../../utils/spec-utils'], function(_arg) {
           expected_child_html_after: '1'
         });
         describe_render_reference({
+          value_type: 'Array (initially empty)',
+          ref_value: [],
+          ref_value_after: ['Yolo'],
+          expected_child_html: '',
+          expected_child_html_after: 'Yolo'
+        });
+        describe_render_reference({
           value_type: 'Array',
           ref_value: ['Hello World!', 0],
           ref_value_after: ['Goodbye!', 1],
