@@ -17,7 +17,7 @@ define(['../../utils/spec-utils'], function(_arg) {
         this.view.set('testInnerHTML', 'test innerHTML');
         return this._ = this.view._;
       });
-      describe('_.each(collection:Collection, renderer:function)', function() {
+      describe('_.map(collection:Collection, renderer:function)', function() {
         describe('when collection is initially empty', function() {});
         describe('when renderer returns an array of nodes', function() {
           beforeEach(function() {
@@ -36,7 +36,7 @@ define(['../../utils/spec-utils'], function(_arg) {
               _cellName: 'test',
               render: function(_) {
                 return [
-                  _('.parent', _.each(_this.collection, function(item) {
+                  _('.parent', _.map(_this.collection, function(item) {
                     var i, _i, _ref, _results;
 
                     _results = [];
@@ -187,7 +187,7 @@ define(['../../utils/spec-utils'], function(_arg) {
               _cellName: 'test',
               render: function(_) {
                 return [
-                  _('.parent', _.each(_this.collection, function(item) {
+                  _('.parent', _.map(_this.collection, function(item) {
                     return function() {
                       var i, _i, _ref, _results;
 

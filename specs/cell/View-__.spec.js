@@ -120,7 +120,7 @@ define(['../utils/spec-utils'], function(_arg) {
       ], '<p data-custom="myattr" data-custom2="myattr2"></p>');
       return it_renders_views("view:View", [], '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>', true);
     });
-    return describe('_.each( arrayOrCollection:[array,Collection], renderer:function )', function() {
+    return describe('_.map( arrayOrCollection:[array,Collection], renderer:function )', function() {
       var describeEachRender;
 
       beforeEach(function() {
@@ -135,8 +135,8 @@ define(['../utils/spec-utils'], function(_arg) {
             name: 'c'
           }
         ];
-        this.eachRenderer = jasmine.createSpy('eachRenderer');
-        return this.eachRenderer.andCallFake(function(item) {
+        this.mapRenderer = jasmine.createSpy('mapRenderer');
+        return this.mapRenderer.andCallFake(function(item) {
           return _this._('b', item.name || item.get('name'));
         });
       });
@@ -148,7 +148,7 @@ define(['../utils/spec-utils'], function(_arg) {
             this.ParentView = this.View.extend({
               _cellName: 'Parent',
               render: function(_) {
-                return _.each(_this.items, function() {
+                return _.map(_this.items, function() {
                   return renderValue;
                 });
               }
@@ -179,33 +179,33 @@ define(['../utils/spec-utils'], function(_arg) {
           return 6;
         };
       }), '');
-      describe('_.each( undefined, renderer:function )', function() {
+      describe('_.map( undefined, renderer:function )', function() {
         beforeEach(function() {
           var _this = this;
 
           this.ParentView = this.View.extend({
             _cellName: 'Parent',
             render: function(_) {
-              return _.each(void 0, _this.eachRenderer);
+              return _.map(void 0, _this.mapRenderer);
             }
           });
           return this.view = new this.ParentView;
         });
         it('does NOT calls renderer', function() {
-          return expect(this.eachRenderer).not.toHaveBeenCalled();
+          return expect(this.mapRenderer).not.toHaveBeenCalled();
         });
         return it('renders correctly', function() {
           return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent"></div>');
         });
       });
-      describe('_.each( array:array, renderer:function )', function() {
+      describe('_.map( array:array, renderer:function )', function() {
         beforeEach(function() {
           var _this = this;
 
           this.ParentView = this.View.extend({
             _cellName: 'Parent',
             render: function(_) {
-              return _.each(_this.items, _this.eachRenderer);
+              return _.map(_this.items, _this.mapRenderer);
             }
           });
           return this.view = new this.ParentView;
@@ -213,13 +213,13 @@ define(['../utils/spec-utils'], function(_arg) {
         it('calls renderer for each model in the collection', function() {
           var i, item, _i, _len, _ref, _results;
 
-          expect(this.eachRenderer.callCount).toEqual(3);
+          expect(this.mapRenderer.callCount).toEqual(3);
           _ref = this.items;
           _results = [];
           for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
             item = _ref[i];
-            expect(this.eachRenderer.calls[i].args).toEqual([item, i, this.items]);
-            _results.push(expect(this.eachRenderer.calls[i].object).toBe(this.view));
+            expect(this.mapRenderer.calls[i].args).toEqual([item, i, this.items]);
+            _results.push(expect(this.mapRenderer.calls[i].object).toBe(this.view));
           }
           return _results;
         });
@@ -227,35 +227,35 @@ define(['../utils/spec-utils'], function(_arg) {
           return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent">' + '<b>a</b>' + '<b>b</b>' + '<b>c</b>' + '</div>');
         });
       });
-      describe('_.each( array:array, renderer:function ), array is empty', function() {
+      describe('_.map( array:array, renderer:function ), array is empty', function() {
         beforeEach(function() {
           var _this = this;
 
           this.ParentView = this.View.extend({
             _cellName: 'Parent',
             render: function(_) {
-              return _.each([], _this.eachRenderer);
+              return _.map([], _this.mapRenderer);
             }
           });
           return this.view = new this.ParentView;
         });
         it('does NOT calls renderer', function() {
-          return expect(this.eachRenderer).not.toHaveBeenCalled();
+          return expect(this.mapRenderer).not.toHaveBeenCalled();
         });
         return it('renders correctly', function() {
           return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent"></div>');
         });
       });
-      describe('_.each( collection:Collection, renderer:function )', function() {
+      describe('_.map( collection:Collection, renderer:function )', function() {
         beforeEach(function() {
-          var eachRenderer;
+          var mapRenderer;
 
           this.collection = new this.Collection(this.items);
-          eachRenderer = this.eachRenderer;
+          mapRenderer = this.mapRenderer;
           this.ParentView = this.View.extend({
             _cellName: 'Parent',
             render: function(_) {
-              return _.each(this.collection, eachRenderer);
+              return _.map(this.collection, mapRenderer);
             }
           });
           return this.view = new this.ParentView({
@@ -265,26 +265,26 @@ define(['../utils/spec-utils'], function(_arg) {
         it('calls renderer for each model in the collection', function() {
           var _this = this;
 
-          expect(this.eachRenderer.callCount).toEqual(3);
+          expect(this.mapRenderer.callCount).toEqual(3);
           return this.collection.each(function(item, i) {
-            expect(_this.eachRenderer.calls[i].args).toEqual([item, i, _this.collection]);
-            return expect(_this.eachRenderer.calls[i].object).toBe(_this.view);
+            expect(_this.mapRenderer.calls[i].args).toEqual([item, i, _this.collection]);
+            return expect(_this.mapRenderer.calls[i].object).toBe(_this.view);
           });
         });
         return it('renders correctly', function() {
           return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent">' + '<b>a</b>' + '<b>b</b>' + '<b>c</b>' + '</div>');
         });
       });
-      return describe('_.each( collection:Collection, renderer:function ), collection is empty', function() {
+      return describe('_.map( collection:Collection, renderer:function ), collection is empty', function() {
         beforeEach(function() {
-          var eachRenderer;
+          var mapRenderer;
 
           this.collection = new this.Collection;
-          eachRenderer = this.eachRenderer;
+          mapRenderer = this.mapRenderer;
           this.ParentView = this.View.extend({
             _cellName: 'Parent',
             render: function(_) {
-              return _.each(this.collection, eachRenderer);
+              return _.map(this.collection, mapRenderer);
             }
           });
           return this.view = new this.ParentView({
@@ -292,7 +292,7 @@ define(['../utils/spec-utils'], function(_arg) {
           });
         });
         it('does NOT calls renderer', function() {
-          return expect(this.eachRenderer).not.toHaveBeenCalled();
+          return expect(this.mapRenderer).not.toHaveBeenCalled();
         });
         return it('renders correctly', function() {
           return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent"></div>');

@@ -127,7 +127,7 @@ define(['../utils/spec-utils'], function(_arg) {
                 onclick: this.onclick
               }, (function() {
                 return this.model.get('a');
-              })), _.each(this.collection, function(item) {
+              })), _.map(this.collection, function(item) {
                 return _('.item', (function() {
                   return item.get('b');
                 }));

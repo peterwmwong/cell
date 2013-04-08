@@ -14,7 +14,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
         @view.set 'testInnerHTML', 'test innerHTML'
         @_ = @view._
 
-      describe '_.each(collection:Collection, renderer:function)', ->
+      describe '_.map(collection:Collection, renderer:function)', ->
 
         describe 'when collection is initially empty', ->
 
@@ -30,7 +30,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
               _cellName: 'test'
               render: (_)=> [
                 _ '.parent',
-                  _.each @collection, (item)->
+                  _.map @collection, (item)->
                     for i in [0...(item.get 'a')]
                       _ ".item#{item.get 'a'}", i
               ]
@@ -199,7 +199,7 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
               _cellName: 'test'
               render: (_)=> [
                 _ '.parent',
-                  _.each @collection, (item)->
+                  _.map @collection, (item)->
                     ->
                       for i in [0...(item.get 'a')]
                         _ ".item#{item.get 'a'}", i

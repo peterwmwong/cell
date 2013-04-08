@@ -89,7 +89,7 @@ define [
     @hq = newhq
     return
 
-  _each = (col,renderer)->
+  _map = (col,renderer)->
     new EachBind @view, col, renderer if col
 
   _ = (viewOrHAML, optionsOrFirstChild)->
@@ -164,7 +164,7 @@ define [
 
       t._ = fn.b _, @
       t._.view = @
-      t._.each = _each
+      t._.map = _map
 
       t.beforeRender()
       t.el = el = t.renderEl t._

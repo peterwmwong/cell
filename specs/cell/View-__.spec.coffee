@@ -144,22 +144,22 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
         '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>'
         true
 
-    describe '_.each( arrayOrCollection:[array,Collection], renderer:function )', ->
+    describe '_.map( arrayOrCollection:[array,Collection], renderer:function )', ->
       beforeEach ->
         @items = [
           {name:'a'}
           {name:'b'}
           {name:'c'}
         ]
-        @eachRenderer = jasmine.createSpy 'eachRenderer'
-        @eachRenderer.andCallFake (item)=> @_ 'b', item.name or item.get 'name'
+        @mapRenderer = jasmine.createSpy 'mapRenderer'
+        @mapRenderer.andCallFake (item)=> @_ 'b', item.name or item.get 'name'
 
       describeEachRender = (renderValue,expectedInnerHTML)->
         describe "when renderer returns #{renderValue}, expected #{expectedInnerHTML}", ->
           beforeEach ->
             @ParentView = @View.extend
               _cellName: 'Parent'
-              render: (_)=> _.each @items, -> renderValue
+              render: (_)=> _.map @items, -> renderValue
             @view = new @ParentView
 
           it 'renders correctly', ->
@@ -181,34 +181,34 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
       describeEachRender undefined, ''
       describeEachRender (-> -> 6), ''
 
-      describe '_.each( undefined, renderer:function )', ->
+      describe '_.map( undefined, renderer:function )', ->
 
         beforeEach ->
           @ParentView = @View.extend
             _cellName: 'Parent'
-            render: (_)=> _.each undefined, @eachRenderer
+            render: (_)=> _.map undefined, @mapRenderer
           @view = new @ParentView
 
         it 'does NOT calls renderer', ->
-          expect(@eachRenderer).not.toHaveBeenCalled()
+          expect(@mapRenderer).not.toHaveBeenCalled()
 
         it 'renders correctly', ->
           nodeHTMLEquals @view.el,
             '<div cell="Parent" class="Parent"></div>'
 
-      describe '_.each( array:array, renderer:function )', ->
+      describe '_.map( array:array, renderer:function )', ->
 
         beforeEach ->
           @ParentView = @View.extend
             _cellName: 'Parent'
-            render: (_)=> _.each @items, @eachRenderer
+            render: (_)=> _.map @items, @mapRenderer
           @view = new @ParentView
 
         it 'calls renderer for each model in the collection', ->
-          expect(@eachRenderer.callCount).toEqual 3
+          expect(@mapRenderer.callCount).toEqual 3
           for item,i in @items
-            expect(@eachRenderer.calls[i].args).toEqual [item,i,@items]
-            expect(@eachRenderer.calls[i].object).toBe @view
+            expect(@mapRenderer.calls[i].args).toEqual [item,i,@items]
+            expect(@mapRenderer.calls[i].object).toBe @view
 
         it 'renders correctly', ->
           nodeHTMLEquals @view.el,
@@ -218,37 +218,37 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
               '<b>c</b>'+
             '</div>'
 
-      describe '_.each( array:array, renderer:function ), array is empty', ->
+      describe '_.map( array:array, renderer:function ), array is empty', ->
 
         beforeEach ->
           @ParentView = @View.extend
             _cellName: 'Parent'
-            render: (_)=> _.each [], @eachRenderer
+            render: (_)=> _.map [], @mapRenderer
           @view = new @ParentView
 
         it 'does NOT calls renderer', ->
-          expect(@eachRenderer).not.toHaveBeenCalled()
+          expect(@mapRenderer).not.toHaveBeenCalled()
 
         it 'renders correctly', ->
           nodeHTMLEquals @view.el,
             '<div cell="Parent" class="Parent"></div>'
 
-      describe '_.each( collection:Collection, renderer:function )', ->
+      describe '_.map( collection:Collection, renderer:function )', ->
 
         beforeEach ->
           @collection = new @Collection @items
-          eachRenderer = @eachRenderer 
+          mapRenderer = @mapRenderer 
 
           @ParentView = @View.extend
             _cellName: 'Parent'
-            render: (_)-> _.each @collection, eachRenderer
+            render: (_)-> _.map @collection, mapRenderer
           @view = new @ParentView collection: @collection
 
         it 'calls renderer for each model in the collection', ->
-          expect(@eachRenderer.callCount).toEqual 3
+          expect(@mapRenderer.callCount).toEqual 3
           @collection.each (item, i)=>
-            expect(@eachRenderer.calls[i].args).toEqual [item,i,@collection]
-            expect(@eachRenderer.calls[i].object).toBe @view
+            expect(@mapRenderer.calls[i].args).toEqual [item,i,@collection]
+            expect(@mapRenderer.calls[i].object).toBe @view
 
         it 'renders correctly', ->
           nodeHTMLEquals @view.el,
@@ -258,19 +258,19 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
               '<b>c</b>'+
             '</div>'
 
-      describe '_.each( collection:Collection, renderer:function ), collection is empty', ->
+      describe '_.map( collection:Collection, renderer:function ), collection is empty', ->
 
         beforeEach ->
           @collection = new @Collection
-          eachRenderer = @eachRenderer 
+          mapRenderer = @mapRenderer 
 
           @ParentView = @View.extend
             _cellName: 'Parent'
-            render: (_)-> _.each @collection, eachRenderer
+            render: (_)-> _.map @collection, mapRenderer
           @view = new @ParentView collection: @collection
 
         it 'does NOT calls renderer', ->
-          expect(@eachRenderer).not.toHaveBeenCalled()
+          expect(@mapRenderer).not.toHaveBeenCalled()
 
         it 'renders correctly', ->
           nodeHTMLEquals @view.el,
