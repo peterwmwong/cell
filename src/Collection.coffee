@@ -1,6 +1,6 @@
 define [
   'cell/Events'
-  'util/type'
+  'cell/util/type'
   'cell/Model'
   'cell/util/spy'
 ], (Events,type,Model,spy)->

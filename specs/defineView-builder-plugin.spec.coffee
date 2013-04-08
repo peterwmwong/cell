@@ -1,6 +1,6 @@
 define [
   'jquery'
-  '../utils/spec-utils'
+  'spec-utils'
   ], ($,{nodeToHTML,msie})-> ({beforeEachRequire})->
     load_fixture = (iframe_src, cb)->
       $fixture_container = $ '#spec-fixture'

@@ -1,13 +1,13 @@
 define [
-  '../utils/spec-utils'
-  '../utils/spec-matchers'
+  'spec-utils'
+  'spec-matchers'
 ],  ({node,browserTrigger}, matchers)->
 
   ({beforeEachRequire})->
 
     beforeEachRequire [
-      'dom/data'
-      'dom/events'
+      'cell/dom/data'
+      'cell/dom/events'
     ], (@data, @events)->
       @addMatchers matchers
       @element = node 'div'

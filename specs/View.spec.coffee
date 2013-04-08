@@ -1,4 +1,4 @@
-define ['../utils/spec-utils'], ({node,browserTrigger,nodeHTMLEquals,waitOne})->
+define ['spec-utils'], ({node,browserTrigger,nodeHTMLEquals,waitOne})->
   ({beforeEachRequire})->
     beforeEachRequire ['cell/View','cell/Model','cell/Collection'], (@View, @Model, @Collection)->
 

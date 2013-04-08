@@ -1,8 +1,6 @@
 require.config({
   paths:{
-    cell: '../../../src/cell',
-    dom: '../../../src/dom',
-    util: '../../../src/util'
+    cell: '../../../src/'
   },
   deps: [
     'App'

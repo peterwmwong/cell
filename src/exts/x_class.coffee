@@ -1,8 +1,8 @@
 define [
   'cell/Ext'
-  'util/fn'
-  'util/type'
-  'dom/class'
+  'cell/util/fn'
+  'cell/util/type'
+  'cell/dom/class'
 ], (Ext,fn,type,cls)->
 
   Ext.extend

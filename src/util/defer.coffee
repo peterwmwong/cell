@@ -1,4 +1,4 @@
-define ['dom/browser'], (browser)->
+define ['cell/dom/browser'], (browser)->
   return setImmediate if window.setImmediate
   return setTimeout if browser.msie < 9 # IE8: can't use postMessage as it executes synchonously
   

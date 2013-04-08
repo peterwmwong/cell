@@ -1,4 +1,4 @@
-define ['dom/data'], (data)->
+define ['cell/dom/data'], (data)->
   dealloc = (element)->
     unless element.nodeType is 3
       data.remove element

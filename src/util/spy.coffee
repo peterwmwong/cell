@@ -1,8 +1,8 @@
 define [
-  'util/hash'
-  'util/fn'
-  'util/type'
-  'util/defer'
+  'cell/util/hash'
+  'cell/util/fn'
+  'cell/util/type'
+  'cell/util/defer'
 ], (hash,fn,type,defer)->
 
   logStack = []

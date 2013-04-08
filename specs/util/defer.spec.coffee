@@ -1,8 +1,8 @@
-define ['../utils/spec-utils'], ({waitOne})->
+define ['spec-utils'], ({waitOne})->
   ({beforeEachRequire})->
 
     beforeEachRequire [
-      'util/defer'
+      'cell/util/defer'
     ], (@defer)->
 
     describe 'defer(func:function)', ->

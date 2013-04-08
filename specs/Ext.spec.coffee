@@ -1,4 +1,4 @@
-define ['../utils/spec-utils'], ({waitOne})-> ({beforeEachRequire})->
+define ['spec-utils'], ({waitOne})-> ({beforeEachRequire})->
   beforeEachRequire [
     'cell/Ext'
     'cell/Model'

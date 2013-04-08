@@ -1,4 +1,4 @@
-define ['../../utils/spec-utils'], ({node})->
+define ['spec-utils'], ({node})->
   ({beforeEachRequire})->
     beforeEachRequire [
       'cell/Ext'

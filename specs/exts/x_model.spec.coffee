@@ -1,4 +1,4 @@
-define ['../../utils/spec-utils'], ({node,browserTrigger,waitOne,msie})-> ({beforeEachRequire})->
+define ['spec-utils'], ({node,browserTrigger,waitOne,msie})-> ({beforeEachRequire})->
   beforeEachRequire [
     'cell/View'
     'cell/Model'

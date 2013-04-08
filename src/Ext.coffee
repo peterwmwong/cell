@@ -1,5 +1,5 @@
 define [
-  'util/extend'
+  'cell/util/extend'
   'cell/util/spy'
 ], (extend,spy)->
 

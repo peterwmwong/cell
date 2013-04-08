@@ -1,7 +1,7 @@
 define [
-  'util/ev'
-  'dom/browser'
-  'dom/data'
+  'cell/util/ev'
+  'cell/dom/browser'
+  'cell/dom/data'
 ], (ev, browser, data)->
 
   addEventListenerFn =

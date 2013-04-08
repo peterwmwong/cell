@@ -49,9 +49,7 @@ define(function() {
                     context: ctxName = "specs" + (ctx_name_salt++),
                     baseUrl: '../specs/',
                     paths: {
-                      cell: '../src/cell',
-                      dom: '../src/dom',
-                      util: '../src/util'
+                      cell: '../src'
                     }
                   });
                   ctx = window.require.s.contexts[ctxName];

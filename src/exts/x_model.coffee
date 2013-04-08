@@ -1,5 +1,5 @@
 define [
-  'dom/events'
+  'cell/dom/events'
   'cell/Ext'
 ], (events,Ext)->
 

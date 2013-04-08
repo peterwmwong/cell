@@ -1,8 +1,8 @@
 define [
-  'util/hash'
-  'util/type'
-  'util/extend'
-  'util/ev'
+  'cell/util/hash'
+  'cell/util/type'
+  'cell/util/extend'
+  'cell/util/ev'
 ], (hash, type, extend, ev)->
 
   triggerHandlers = (handlers, event, args)->

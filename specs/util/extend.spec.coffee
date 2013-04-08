@@ -1,8 +1,8 @@
-define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})->
+define ['spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})->
 
   ({beforeEachRequire})->
 
-    beforeEachRequire ['util/extend'], (@extend)->
+    beforeEachRequire ['cell/util/extend'], (@extend)->
 
     describe 'Parent.extend( prototypeProps:object )', ->
       beforeEach ->

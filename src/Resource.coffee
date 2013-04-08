@@ -2,8 +2,8 @@ define [
   'cell/Model'
   'cell/Collection'
   'cell/util/http'
-  'util/extend'
-  'util/type'
+  'cell/util/extend'
+  'cell/util/type'
 ], (Model,Collection,http,extend,type)->
 
   copyObj = (obj)->

@@ -1,5 +1,5 @@
 define [
-  'util/type'
+  'cell/util/type'
   'cell/Events'
   'cell/util/spy'
 ], (type, Events, spy)->

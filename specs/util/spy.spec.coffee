@@ -1,4 +1,4 @@
-define ['../../utils/spec-utils'], ({waitOne})->
+define ['spec-utils'], ({waitOne})->
   ({beforeEachRequire})->
 
     beforeEachRequire [

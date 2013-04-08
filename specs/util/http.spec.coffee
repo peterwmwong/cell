@@ -1,5 +1,5 @@
 define [
-  '../../utils/spec-utils'
+  'spec-utils'
   'sinon-server'
 ], ({waitOne},sinon)->
 

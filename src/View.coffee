@@ -3,12 +3,12 @@ define [
   'cell/Ext'
   'cell/Model'
   'cell/util/spy'
-  'dom/data'
-  'dom/events'
-  'dom/mutate'
-  'util/fn'
-  'util/hash'
-  'util/type'
+  'cell/dom/data'
+  'cell/dom/events'
+  'cell/dom/mutate'
+  'cell/util/fn'
+  'cell/util/hash'
+  'cell/util/type'
 ], (Collection, Ext, Model, {watch,unwatch,suspendWatch}, data, events, mutate, fn, hash, type)->
 
   protoProp = 'prototype'

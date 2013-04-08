@@ -1,6 +1,6 @@
-define ['../../utils/spec-utils'], ({node,waitOne})-> ({beforeEachRequire})->
+define ['spec-utils'], ({node,waitOne})-> ({beforeEachRequire})->
   beforeEachRequire [
-    'dom/class'
+    'cell/dom/class'
     'cell/Model'
     'cell/Ext'
     'cell/exts/x_class'
