@@ -13,7 +13,7 @@ define(function() {
       } else if (status === 1223) {
         status = 204;
       }
-      return callback(status, response);
+      return callback(status, response, (200 <= status && status < 300));
     };
     xhr = new http.XHR();
     xhr.open(opts.method, opts.url, true);

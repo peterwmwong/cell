@@ -11,7 +11,7 @@ define ->
       else if status is 1223
         status = 204
 
-      callback status, response
+      callback status, response, (200 <= status < 300)
 
     xhr = new http.XHR()
     xhr.open opts.method, opts.url, true

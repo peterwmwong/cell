@@ -76,45 +76,54 @@ define(function() {
         describeGenUrl('/x/{thr_ee}', params(), '/x/%7Bsan%7D?one=1&two2=deux', '/x/%7Bsan%7D');
         return describeGenUrl('/x/{one}/{two2}/{thr_ee}', params(), '/x/1/deux/%7Bsan%7D', '/x/1/deux/%7Bsan%7D');
       });
-      describe('@create( params:object ) : Resource.Instance', function() {
+      describe('@create( attributes:object ) : Resource.Instance', function() {
         beforeEach(function() {
           return this.resourceItem = this.resource.create({
-            pathParam: 'path',
             one: 1,
             two: 'duex',
             three: 'san'
           });
         });
-        it('issues a HTTP request', function() {
-          return expect(this.http).toHaveBeenCalledWithCallback({
-            method: 'POST',
-            url: '/default/path',
-            data: JSON.stringify({
-              one: 1,
-              two: 'duex',
-              three: 'san'
-            })
-          });
+        it('should NOT issue a HTTP request', function() {
+          return expect(this.http).not.toHaveBeenCalled();
         });
         it('creates an empty Resource.Instance (Model)', function() {
           expect(this.resourceItem instanceof this.Resource.Instance).toBe(true);
           expect(this.resourceItem instanceof this.Model).toBe(true);
-          return expect(this.resourceItem.attributes()).toEqual({});
-        });
-        return describe('when http JSON response received', function() {
-          beforeEach(function() {
-            return this.http.calls[0].args[1](200, JSON.stringify({
-              one: 1,
-              two: 'deux',
-              three: 'san'
-            }));
+          return expect(this.resourceItem.attributes()).toEqual({
+            one: 1,
+            two: 'duex',
+            three: 'san'
           });
-          return it('assigns all properties', function() {
-            return expect(this.resourceItem.attributes()).toEqual({
-              one: 1,
-              two: 'deux',
-              three: 'san'
+        });
+        describe('when $save() is called', function() {
+          beforeEach(function() {
+            return this.resourceItem.$save({
+              pathParam: 'pathParam',
+              queryParam: 'queryValue'
             });
+          });
+          return it('issues a HTTP request', function() {
+            return expect(this.http).toHaveBeenCalledWithCallback({
+              method: 'POST',
+              url: '/default/pathParam?queryParam=queryValue',
+              data: JSON.stringify({
+                one: 1,
+                two: 'duex',
+                three: 'san'
+              })
+            });
+          });
+        });
+        return describe('when $delete() is called', function() {
+          beforeEach(function() {
+            return this.resourceItem.$delete({
+              pathParam: 'pathParam',
+              queryParam: 'queryValue'
+            });
+          });
+          return it("does NOT issue a HTTP request (because it's new)", function() {
+            return expect(this.http).not.toHaveBeenCalled();
           });
         });
       });
@@ -142,13 +151,49 @@ define(function() {
               one: 1,
               two: 'deux',
               three: 'san'
-            }));
+            }), true);
           });
-          return it('assigns all properties', function() {
+          it('assigns all properties', function() {
             return expect(this.resourceItem.attributes()).toEqual({
               one: 1,
               two: 'deux',
               three: 'san'
+            });
+          });
+          describe('when $save() is called', function() {
+            beforeEach(function() {
+              this.http.reset();
+              this.resourceItem.set('one', 'yi');
+              return this.resourceItem.$save({
+                pathParam: 'pathParam',
+                queryParam: 'queryValue'
+              });
+            });
+            return it('issues a HTTP PUT request', function() {
+              return expect(this.http).toHaveBeenCalledWithCallback({
+                method: 'PUT',
+                url: '/default/pathParam?queryParam=queryValue',
+                data: JSON.stringify({
+                  one: 'yi',
+                  two: 'deux',
+                  three: 'san'
+                })
+              });
+            });
+          });
+          return describe('when $delete() is called', function() {
+            beforeEach(function() {
+              this.http.reset();
+              return this.resourceItem.$delete({
+                pathParam: 'pathParam',
+                queryParam: 'queryValue'
+              });
+            });
+            return it('issues a HTTP PUT request', function() {
+              return expect(this.http).toHaveBeenCalledWithCallback({
+                method: 'DELETE',
+                url: '/default/pathParam?queryParam=queryValue'
+              });
             });
           });
         });
@@ -181,7 +226,7 @@ define(function() {
                 id: 456,
                 name: 'Peter'
               }
-            ]));
+            ]), true);
           });
           return it('adds all Models', function() {
             expect(this.resourceItem.at(0).attributes()).toEqual({

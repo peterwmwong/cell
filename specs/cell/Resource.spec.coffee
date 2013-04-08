@@ -53,44 +53,44 @@ define ->
         describeGenUrl '/x/{thr_ee}', params(), '/x/%7Bsan%7D?one=1&two2=deux', '/x/%7Bsan%7D'
         describeGenUrl '/x/{one}/{two2}/{thr_ee}', params(), '/x/1/deux/%7Bsan%7D', '/x/1/deux/%7Bsan%7D'
 
-      describe '@create( params:object ) : Resource.Instance', ->
-
+      describe '@create( attributes:object ) : Resource.Instance', ->
         beforeEach ->
           @resourceItem = @resource.create
-            pathParam: 'path'
             one: 1
             two: 'duex'
             three: 'san'
 
-        it 'issues a HTTP request', ->
-          expect(@http).toHaveBeenCalledWithCallback
-            method: 'POST'
-            url: '/default/path'
-            data: JSON.stringify
-              one: 1
-              two: 'duex'
-              three: 'san'
+        it 'should NOT issue a HTTP request', ->
+          expect(@http).not.toHaveBeenCalled()
 
         it 'creates an empty Resource.Instance (Model)', ->
           expect(@resourceItem instanceof @Resource.Instance).toBe true
           expect(@resourceItem instanceof @Model).toBe true
-          expect(@resourceItem.attributes()).toEqual {}
+          expect(@resourceItem.attributes()).toEqual
+            one: 1
+            two: 'duex'
+            three: 'san'
 
-        describe 'when http JSON response received', ->
-
+        describe 'when $save() is called', ->
           beforeEach ->
-            # http callback
-            @http.calls[0].args[1] 200,
-              JSON.stringify
-                one: 1
-                two: 'deux'
-                three: 'san'
+            @resourceItem.$save pathParam:'pathParam', queryParam:'queryValue'
 
-          it 'assigns all properties', ->
-            expect(@resourceItem.attributes()).toEqual
-              one: 1
-              two: 'deux'
-              three: 'san'
+          it 'issues a HTTP request', ->
+            expect(@http).toHaveBeenCalledWithCallback
+              method: 'POST'
+              url: '/default/pathParam?queryParam=queryValue'
+              data:
+                JSON.stringify
+                  one: 1
+                  two: 'duex'
+                  three: 'san'
+
+        describe 'when $delete() is called', ->
+          beforeEach ->
+            @resourceItem.$delete pathParam:'pathParam', queryParam:'queryValue'
+
+          it "does NOT issue a HTTP request (because it's new)", ->
+            expect(@http).not.toHaveBeenCalled()
 
       describe '@get( params:object ) : Resource.Instance', ->
 
@@ -116,12 +116,39 @@ define ->
                 one: 1
                 two: 'deux'
                 three: 'san'
+              true
 
           it 'assigns all properties', ->
             expect(@resourceItem.attributes()).toEqual
               one: 1
               two: 'deux'
               three: 'san'
+
+          describe 'when $save() is called', ->
+            beforeEach ->
+              @http.reset()
+              @resourceItem.set 'one', 'yi'
+              @resourceItem.$save pathParam:'pathParam', queryParam:'queryValue'
+
+            it 'issues a HTTP PUT request', ->
+              expect(@http).toHaveBeenCalledWithCallback
+                method: 'PUT'
+                url: '/default/pathParam?queryParam=queryValue'
+                data:
+                  JSON.stringify
+                    one: 'yi'
+                    two: 'deux'
+                    three: 'san'
+
+          describe 'when $delete() is called', ->
+            beforeEach ->
+              @http.reset()
+              @resourceItem.$delete pathParam:'pathParam', queryParam:'queryValue'
+
+            it 'issues a HTTP PUT request', ->
+              expect(@http).toHaveBeenCalledWithCallback
+                method: 'DELETE'
+                url: '/default/pathParam?queryParam=queryValue'
 
       describe '#query( params:object ) : ResourceCollectionInstance', ->
 
@@ -147,6 +174,7 @@ define ->
                 {id:123, name:'Grace'}
                 {id:456, name:'Peter'}
               ]
+              true
 
           it 'adds all Models', ->
             expect(@resourceItem.at(0).attributes()).toEqual

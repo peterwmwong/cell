@@ -6,105 +6,91 @@ define [
   'util/type'
 ], (Model,Collection,http,extend,type)->
 
-  # CommentCard = Resource.extend
-  #   url: '/commentCards/{id}'
-
-  # # Displays the name, description, and referers of a card
-  # # Also allows for editing and auto-saving of the name and description
-  # require('cell/defineView!')
-  #   beforeRender: ->
-  #     @model = CommentCard.get id: @options.id
-
-  #     # When the model changes, save the model. Limit save frequency to to no faster than every 300ms
-  #     @model.on 'any', (->@$save()),  debounce: 300
-
-  #   render: (_)-> [
-  #     _ 'input.name', (x_model 'name'), type:'text'
-  #     _ 'input.description', (x_model 'name'), type:'text'
-  #     _ '.referers', ->
-  #       @model.get('referers')?.map (referrer)->
-  #         _ '.referer', referrer.get 'url'
-  #   ]
-
-  # # List the name of Comment Cards
-  # require('cell/defineView!')
-  #   beforeRender: ->
-
-  #     # Watch for when 'filter' changes...
-  #     @watch (-> @get 'filter'),
-
-  #       # ... and query for a new list of cards that match 'filter'
-  #       (filter)-> @set 'cards', CommentCard.query name: filter
-
-  #       # If 'filter' changes too frequently, only evaluate every 100ms at most
-  #       debounce: 100
-
-  #   render: (_)-> [
-  #     _ 'input', (x_model 'filter', @),
-  #       type:'text'
-  #       onkeypress:(e)->
-  #         if e.which is '13'
-  #           @set 'cards', CommentCard.query name: @get 'filter'
-  #     _ 'ul',
-  #       -> @get('cards').map (card)->
-  #         _ 'li', card.get 'name'
-  #   ]
-
   copyObj = (obj)->
     newObj = {}
-    for k of obj
-      newObj[k] = obj[k]
+    if obj
+      newObj[k] = obj[k] for k of obj
     newObj
 
   Resource = (@url, @_params)->
 
   Resource::defaultParams = (params)->
-    params[k] = @_params[k] for k of @_params
+    for k of @_params
+      params[k] = @_params[k] unless params[k]?
     return
 
-  Resource::create = (params)->
-    inst = new Resource.Instance()
-    params = copyObj params
-    http
-      method: 'POST'
-      url: @genUrl params, true
-      data: JSON.stringify params
-      (status,response)->
-        for k,v of (JSON.parse response)
-          inst.set k, v
-        return
-    inst
+  Resource::create = (attrs)->
+    new Resource.Instance @, attrs, true
 
-  Resource::get = (params)->
-    inst = new Resource.Instance()
+  Resource::get = (params,success,error)->
+    inst = new Resource.Instance @, undefined, false
     params = copyObj params
     http
       method: 'GET'
       url: @genUrl params, false
-      (status,response)->
-        for k,v of (JSON.parse response)
-          inst.set k, v
+      (status,response,isSuccess)->
+        if isSuccess
+          inst.set(k, v) for k,v of (JSON.parse response)
+          success?()
+        else error?()
         return
     inst
 
-  Resource::query = (params)->
-    inst = new Resource.CollectionInstance()
+  Resource::query = (params,success,error)->
+    inst = new Resource.CollectionInstance @
     params = copyObj params
     http
       method: 'GET'
       url: @genUrl params, false
-      (status,response)->
-        inst.add JSON.parse response
+      (status,response,isSuccess)->
+        if isSuccess
+          inst.add JSON.parse response
+          success?()
+        else error?()
         return
     inst
 
   Resource.Instance = Model.extend
-    delete: (params)->
+    constructor: (@_res, initialAttrs, @_isNew)->
+      Model.call @, initialAttrs
+      return
 
-    save: (params)->
+    $delete: (params,success,error)->
+      unless @_isNew
+        # Is it a new or updated
+        params = copyObj params
+        http
+          method: 'DELETE'
+          url: @_res.genUrl params, false
+          (status,response,isSuccess)->
+            if isSuccess then success?()
+            else error?()
+            return
+        return
+
+    $save: (params,success,error)->
+      # Is it a new or updated
+      params = copyObj params
+      http
+        method:
+          if @_isNew then 'POST'
+          else 'PUT'
+        url: @_res.genUrl params, false
+        data: JSON.stringify @_a
+        (status,response,isSuccess)=>
+          if isSuccess
+            @set(k, v) for k,v of (JSON.parse response)
+            @_isNew = false
+            success?()
+          else error?()
+          return
+      return
 
 
   Resource.CollectionInstance = Collection.extend
+    constructor: (@_res)->
+      Collection.call @
+      return
     requery: (params)->
 
   Resource::genUrl = (params, disableQueryParams)->

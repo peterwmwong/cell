@@ -6,8 +6,10 @@ define(['cell/Model', 'cell/Collection', 'cell/util/http', 'util/extend', 'util/
     var k, newObj;
 
     newObj = {};
-    for (k in obj) {
-      newObj[k] = obj[k];
+    if (obj) {
+      for (k in obj) {
+        newObj[k] = obj[k];
+      }
     }
     return newObj;
   };
@@ -19,66 +21,123 @@ define(['cell/Model', 'cell/Collection', 'cell/util/http', 'util/extend', 'util/
     var k;
 
     for (k in this._params) {
-      params[k] = this._params[k];
+      if (params[k] == null) {
+        params[k] = this._params[k];
+      }
     }
   };
-  Resource.prototype.create = function(params) {
-    var inst;
-
-    inst = new Resource.Instance();
-    params = copyObj(params);
-    http({
-      method: 'POST',
-      url: this.genUrl(params, true),
-      data: JSON.stringify(params)
-    }, function(status, response) {
-      var k, v, _ref;
-
-      _ref = JSON.parse(response);
-      for (k in _ref) {
-        v = _ref[k];
-        inst.set(k, v);
-      }
-    });
-    return inst;
+  Resource.prototype.create = function(attrs) {
+    return new Resource.Instance(this, attrs, true);
   };
-  Resource.prototype.get = function(params) {
+  Resource.prototype.get = function(params, success, error) {
     var inst;
 
-    inst = new Resource.Instance();
+    inst = new Resource.Instance(this, void 0, false);
     params = copyObj(params);
     http({
       method: 'GET',
       url: this.genUrl(params, false)
-    }, function(status, response) {
+    }, function(status, response, isSuccess) {
       var k, v, _ref;
 
-      _ref = JSON.parse(response);
-      for (k in _ref) {
-        v = _ref[k];
-        inst.set(k, v);
+      if (isSuccess) {
+        _ref = JSON.parse(response);
+        for (k in _ref) {
+          v = _ref[k];
+          inst.set(k, v);
+        }
+        if (typeof success === "function") {
+          success();
+        }
+      } else {
+        if (typeof error === "function") {
+          error();
+        }
       }
     });
     return inst;
   };
-  Resource.prototype.query = function(params) {
+  Resource.prototype.query = function(params, success, error) {
     var inst;
 
-    inst = new Resource.CollectionInstance();
+    inst = new Resource.CollectionInstance(this);
     params = copyObj(params);
     http({
       method: 'GET',
       url: this.genUrl(params, false)
-    }, function(status, response) {
-      inst.add(JSON.parse(response));
+    }, function(status, response, isSuccess) {
+      if (isSuccess) {
+        inst.add(JSON.parse(response));
+        if (typeof success === "function") {
+          success();
+        }
+      } else {
+        if (typeof error === "function") {
+          error();
+        }
+      }
     });
     return inst;
   };
   Resource.Instance = Model.extend({
-    "delete": function(params) {},
-    save: function(params) {}
+    constructor: function(_res, initialAttrs, _isNew) {
+      this._res = _res;
+      this._isNew = _isNew;
+      Model.call(this, initialAttrs);
+    },
+    $delete: function(params, success, error) {
+      if (!this._isNew) {
+        params = copyObj(params);
+        http({
+          method: 'DELETE',
+          url: this._res.genUrl(params, false)
+        }, function(status, response, isSuccess) {
+          if (isSuccess) {
+            if (typeof success === "function") {
+              success();
+            }
+          } else {
+            if (typeof error === "function") {
+              error();
+            }
+          }
+        });
+      }
+    },
+    $save: function(params, success, error) {
+      var _this = this;
+
+      params = copyObj(params);
+      http({
+        method: this._isNew ? 'POST' : 'PUT',
+        url: this._res.genUrl(params, false),
+        data: JSON.stringify(this._a)
+      }, function(status, response, isSuccess) {
+        var k, v, _ref;
+
+        if (isSuccess) {
+          _ref = JSON.parse(response);
+          for (k in _ref) {
+            v = _ref[k];
+            _this.set(k, v);
+          }
+          _this._isNew = false;
+          if (typeof success === "function") {
+            success();
+          }
+        } else {
+          if (typeof error === "function") {
+            error();
+          }
+        }
+      });
+    }
   });
   Resource.CollectionInstance = Collection.extend({
+    constructor: function(_res) {
+      this._res = _res;
+      Collection.call(this);
+    },
     requery: function(params) {}
   });
   Resource.prototype.genUrl = function(params, disableQueryParams) {
