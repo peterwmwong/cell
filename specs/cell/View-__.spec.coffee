@@ -144,51 +144,7 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
         '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>'
         true
 
-    # describe '_.each( collection:Collection, renderer:function )', ->
-
-    #   beforeEach ->
-    #     @collection = new @Collection [
-    #       {name:'a'}
-    #       {name:'b'}
-    #       {name:'c'}
-    #     ]
-    #     @eachRenderer = jasmine.createSpy('eachRenderer')
-    #     @eachRenderer.andCallFake (item)=> @_ 'div', item.name or item.attributes.name
-
-    #   it 'when collection is not empty', ->
-    #     result = @_.each @collection, @eachRenderer
-    #     expect(@eachRenderer.callCount).toEqual 3
-    #     @collection.each (item, i)=>
-    #       expect(@eachRenderer.calls[i].args).toEqual [item,i,@collection]
-    #       expect(@eachRenderer.calls[i].object).toBe @view
-    #     nodeHTMLEquals result[0], '<div>a</div>'
-    #     nodeHTMLEquals result[1], '<div>b</div>'
-    #     nodeHTMLEquals result[2], '<div>c</div>'
-
-    #   it 'when collection is undefined', ->
-    #     result = @_.each undefined, @eachRenderer
-    #     expect(@eachRenderer).not.toHaveBeenCalled()
-
-    # describe '_.each( many:array, view:View )', ->
-
-    #   beforeEach ->
-    #     @SubView = @View.extend
-    #       _cellName: 'Sub'
-    #       render: (_)-> @model.name
-    #     @items = [
-    #       {name:'a'}
-    #       {name:'b'}
-    #       {name:'c'}
-    #     ]
-
-    #   it 'when many is non-empty array', ->
-    #     result = @_.each @items, @SubView
-    #     nodeHTMLEquals result[0], '<div cell="Sub" class="Sub">a</div>'
-    #     nodeHTMLEquals result[1], '<div cell="Sub" class="Sub">b</div>'
-    #     nodeHTMLEquals result[2], '<div cell="Sub" class="Sub">c</div>'
-
-    describe '_.each( array:array, renderer:function )', ->
-
+    describe '_.each( arrayOrCollection:[array,Collection], renderer:function )', ->
       beforeEach ->
         @items = [
           {name:'a'}
@@ -196,58 +152,126 @@ define ['../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})
           {name:'c'}
         ]
         @eachRenderer = jasmine.createSpy 'eachRenderer'
-        @eachRenderer.andCallFake (item)=> @_ 'b', item.name
+        @eachRenderer.andCallFake (item)=> @_ 'b', item.name or item.get 'name'
 
-        @ParentView = @View.extend
-          _cellName: 'Parent'
-          render: (_)=> _.each @items, @eachRenderer
+      describeEachRender = (renderValue,expectedInnerHTML)->
+        describe "when renderer returns #{renderValue}, expected #{expectedInnerHTML}", ->
+          beforeEach ->
+            @ParentView = @View.extend
+              _cellName: 'Parent'
+              render: (_)=> _.each @items, -> renderValue
+            @view = new @ParentView
 
-        @view = new @ParentView
+          it 'renders correctly', ->
+            nodeHTMLEquals @view.el,
+              '<div cell="Parent" class="Parent">'+
+                expectedInnerHTML+
+              '</div>'
 
-      it 'calls renderer for each model in the collection', ->
-        expect(@eachRenderer.callCount).toEqual 3
-        for item,i in @items
-          expect(@eachRenderer.calls[i].args).toEqual [item,i,@items]
-          expect(@eachRenderer.calls[i].object).toBe @view
+      describeEachRender 5, '555'
+      describeEachRender (-> 6), '666'
 
-      it 'renders correctly', ->
-        nodeHTMLEquals @view.el,
-          '<div cell="Parent" class="Parent">'+
-            '<b>a</b>'+
-            '<b>b</b>'+
-            '<b>c</b>'+
-          '</div>'
+      describeEachRender 'my string', 'my stringmy stringmy string'
+      describeEachRender (-> 'my string2'), 'my string2my string2my string2'
 
-    describe '_.each( collection:Collection, renderer:function )', ->
+      describeEachRender [node('b'), node('a')], '<b></b><a></a>'
+      describeEachRender (-> [node('a'), node('b')]), '<a></a><b></b><a></a><b></b><a></a><b></b>'
 
-      beforeEach ->
-        @collection = new @Collection [
-          {name:'a'}
-          {name:'b'}
-          {name:'c'}
-        ]
+      describeEachRender [], ''
+      describeEachRender undefined, ''
+      describeEachRender (-> -> 6), ''
 
-        eachRenderer = @eachRenderer = jasmine.createSpy 'eachRenderer'
-        @eachRenderer.andCallFake (item)=> @_ 'b', item.get 'name'
+      describe '_.each( undefined, renderer:function )', ->
 
-        @ParentView = @View.extend
-          _cellName: 'Parent'
-          render: (_)-> _.each @collection, eachRenderer
+        beforeEach ->
+          @ParentView = @View.extend
+            _cellName: 'Parent'
+            render: (_)=> _.each undefined, @eachRenderer
+          @view = new @ParentView
 
-        @view = new @ParentView collection: @collection
+        it 'does NOT calls renderer', ->
+          expect(@eachRenderer).not.toHaveBeenCalled()
 
-      it 'calls renderer for each model in the collection', ->
-        expect(@eachRenderer.callCount).toEqual 3
-        @collection.each (item, i)=>
-          debugger
-          expect(@eachRenderer.calls[i].args).toEqual [item,i,@collection]
-          expect(@eachRenderer.calls[i].object).toBe @view
-        # nodeHTMLEquals result[0], '<div>a</div>'
-        # nodeHTMLEquals result[1], '<div>b</div>'
-        # nodeHTMLEquals result[2], '<div>c</div>'
+        it 'renders correctly', ->
+          nodeHTMLEquals @view.el,
+            '<div cell="Parent" class="Parent"></div>'
 
-        # result = (new @ParentView collection: @collection).el.children
-        # nodeHTMLEquals result[0], '<div cell="Sub" class="Sub">a</div>'
-        # nodeHTMLEquals result[1], '<div cell="Sub" class="Sub">b</div>'
-        # nodeHTMLEquals result[2], '<div cell="Sub" class="Sub">c</div>'
-      
+      describe '_.each( array:array, renderer:function )', ->
+
+        beforeEach ->
+          @ParentView = @View.extend
+            _cellName: 'Parent'
+            render: (_)=> _.each @items, @eachRenderer
+          @view = new @ParentView
+
+        it 'calls renderer for each model in the collection', ->
+          expect(@eachRenderer.callCount).toEqual 3
+          for item,i in @items
+            expect(@eachRenderer.calls[i].args).toEqual [item,i,@items]
+            expect(@eachRenderer.calls[i].object).toBe @view
+
+        it 'renders correctly', ->
+          nodeHTMLEquals @view.el,
+            '<div cell="Parent" class="Parent">'+
+              '<b>a</b>'+
+              '<b>b</b>'+
+              '<b>c</b>'+
+            '</div>'
+
+      describe '_.each( array:array, renderer:function ), array is empty', ->
+
+        beforeEach ->
+          @ParentView = @View.extend
+            _cellName: 'Parent'
+            render: (_)=> _.each [], @eachRenderer
+          @view = new @ParentView
+
+        it 'does NOT calls renderer', ->
+          expect(@eachRenderer).not.toHaveBeenCalled()
+
+        it 'renders correctly', ->
+          nodeHTMLEquals @view.el,
+            '<div cell="Parent" class="Parent"></div>'
+
+      describe '_.each( collection:Collection, renderer:function )', ->
+
+        beforeEach ->
+          @collection = new @Collection @items
+          eachRenderer = @eachRenderer 
+
+          @ParentView = @View.extend
+            _cellName: 'Parent'
+            render: (_)-> _.each @collection, eachRenderer
+          @view = new @ParentView collection: @collection
+
+        it 'calls renderer for each model in the collection', ->
+          expect(@eachRenderer.callCount).toEqual 3
+          @collection.each (item, i)=>
+            expect(@eachRenderer.calls[i].args).toEqual [item,i,@collection]
+            expect(@eachRenderer.calls[i].object).toBe @view
+
+        it 'renders correctly', ->
+          nodeHTMLEquals @view.el,
+            '<div cell="Parent" class="Parent">'+
+              '<b>a</b>'+
+              '<b>b</b>'+
+              '<b>c</b>'+
+            '</div>'
+
+      describe '_.each( collection:Collection, renderer:function ), collection is empty', ->
+
+        beforeEach ->
+          @collection = new @Collection
+          eachRenderer = @eachRenderer 
+
+          @ParentView = @View.extend
+            _cellName: 'Parent'
+            render: (_)-> _.each @collection, eachRenderer
+          @view = new @ParentView collection: @collection
+
+        it 'does NOT calls renderer', ->
+          expect(@eachRenderer).not.toHaveBeenCalled()
+
+        it 'renders correctly', ->
+          nodeHTMLEquals @view.el,
+            '<div cell="Parent" class="Parent"></div>'

@@ -227,7 +227,7 @@ define(['defer'], function(defer) {
         }
         return html += "</" + (node.tagName.toLowerCase()) + ">";
       } else {
-        return node.textContent;
+        return node.textContent || node.nodeValue;
       }
     }
   };

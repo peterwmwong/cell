@@ -190,4 +190,4 @@ define ['defer'], (defer)->
         html += "</#{node.tagName.toLowerCase()}>"
 
       else
-        node.textContent
+        node.textContent or node.nodeValue

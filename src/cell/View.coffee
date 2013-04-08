@@ -15,6 +15,17 @@ define [
   noop = ->
   d = document
 
+  removeChildren = (nodes)->
+    i = 0
+    len = nodes.length
+    while i<len
+      n = nodes[i++]
+      if type.isA n
+        removeChildren n
+      else
+        mutate.remove n
+    return
+
   HashQueue = ->
     @h = {}
     return
@@ -53,37 +64,33 @@ define [
       if value instanceof Collection then value.toArray()
       else value
 
-    newEls = []
     newhq = new HashQueue
 
-    # Check if each item has been rendered
+    # Add each rendering for each item to parent
     i = -1
     len = array.length
     while ++i<len
       item = array[i]
       key = hash item
-      unless temp = @hq.shift key
-        temp = @renderer.call @view, item, i, value
-      
-      newhq.push key, temp
-      newEls.push temp
 
-    # Remove the elements for the itmes that were removed from the collection
+      # Track rendering (list of nodes) of item in the new HashQueue
+      newhq.push key,
+        @view._rcs (
+          # Add previous rendering of item to parent
+          @hq.shift(key) or
+            # ... or Add newly rendered item to parent
+            @renderer.call @view, item, i, value
+        ), @parent
+
+    # Remove the rendering for each items that was removed from the collection
     for key of @hq.h
-      temp = @hq.h[key]
-      i = 0
-      len = temp.length
-      mutate.remove temp[i++] while i<len
+      removeChildren @hq.h[key]
 
     @hq = newhq
-
-    # Add the elements for the current items
-    @view._rcs newEls, @parent
-
     return
 
   _each = (col,renderer)->
-    new EachBind @view, col, renderer
+    new EachBind @view, col, renderer if col
 
   _ = (viewOrHAML, optionsOrFirstChild)->
     children = [].slice.call arguments, 1
@@ -193,13 +200,14 @@ define [
       else if type.isF n
         nodes = []
         @watch n, (renderValue)->
-          prevNodes = nodes
-          renderValue = [d.createTextNode ''] unless renderValue?
-          nodes = @_rcs renderValue, parent, prevNodes[0]
-          renderValue = 0
-          while n = prevNodes[renderValue++]
-            mutate.remove n
+          renderValue = [d.createTextNode ''] if (not renderValue?) or (renderValue.length is 0)
+          prevNodes = nodes.slice()
+          nodes.length = 0
+          @_rcs renderValue, parent, prevNodes[0], nodes
+          removeChildren prevNodes
           return
+
+        rendered.push nodes
 
       # Is Element or Text Node
       else if n.nodeType in [1,3]

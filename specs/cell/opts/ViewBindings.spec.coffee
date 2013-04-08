@@ -16,21 +16,23 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
 
       describe '_.each(collection:Collection, renderer:function)', ->
 
+        describe 'when collection is initially empty', ->
+
         describe 'when renderer returns an array of nodes', ->
 
           beforeEach ->
             @collection = new @Collection [
+              {a: 0}
               {a: 1}
               {a: 2}
-              {a: 3}
             ]
             @CellWithEach = @View.extend
               _cellName: 'test'
-              eachKey: 'eachValue'
               render: (_)=> [
                 _ '.parent',
                   _.each @collection, (item)->
-                    _ ".item#{item.get 'a'}", @eachKey
+                    for i in [0...(item.get 'a')]
+                      _ ".item#{item.get 'a'}", i
               ]
             @view = new @CellWithEach()
 
@@ -38,34 +40,372 @@ define ['../../utils/spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigge
             nodeHTMLEquals @view.el,
               '<div cell="test" class="test">'+
                 '<div class="parent">'+
-                  '<div class="item1">eachValue</div>'+
-                  '<div class="item2">eachValue</div>'+
-                  '<div class="item3">eachValue</div>'+
+                  '<div class="item1">0</div>'+
+                  '<div class="item2">0</div>'+
+                  '<div class="item2">1</div>'+
                 '</div>'+
               '</div>'
 
-          describe 'when collection changes', ->
-
+          describe 'when collection changes...', ->
             beforeEach ->
-              [@item1, @item2, @item3] = @view.el.children[0].children
-              @collection.remove @collection.at 0
-              @collection.add new @Model a: 4
+              [@item10, @item20, @item21] = @view.el.children[0].children
+
+            describe 'by removing an item...', ->
+
+              describe 'from the top', ->
+                beforeEach ->
+                  @collection.remove @collection.at 0
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item1">0</div>'+
+                          '<div class="item2">0</div>'+
+                          '<div class="item2">1</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[0]).toBe @item10
+                    expect(@view.el.children[0].children[1]).toBe @item20
+                    expect(@view.el.children[0].children[2]).toBe @item21
+
+
+              describe 'from the middle', ->
+                beforeEach ->
+                  @collection.remove @collection.at 1
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item2">0</div>'+
+                          '<div class="item2">1</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[0]).toBe @item20
+                    expect(@view.el.children[0].children[1]).toBe @item21
+
+              describe 'from the bottom', ->
+                beforeEach ->
+                  @collection.remove @collection.at 2
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item1">0</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[0]).toBe @item10
+
+
+            describe 'by adding an item...', ->
+
+              describe 'to the top', ->
+                beforeEach ->
+                  @collection.add {a:3}, 0
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item3">0</div>'+
+                          '<div class="item3">1</div>'+
+                          '<div class="item3">2</div>'+
+                          '<div class="item1">0</div>'+
+                          '<div class="item2">0</div>'+
+                          '<div class="item2">1</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[3]).toBe @item10
+                    expect(@view.el.children[0].children[4]).toBe @item20
+                    expect(@view.el.children[0].children[5]).toBe @item21
+
+
+              describe 'to the middle', ->
+                beforeEach ->
+                  @collection.add {a:3}, 2
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item1">0</div>'+
+                          '<div class="item3">0</div>'+
+                          '<div class="item3">1</div>'+
+                          '<div class="item3">2</div>'+
+                          '<div class="item2">0</div>'+
+                          '<div class="item2">1</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[0]).toBe @item10
+                    expect(@view.el.children[0].children[4]).toBe @item20
+                    expect(@view.el.children[0].children[5]).toBe @item21
+
+              describe 'to the bottom', ->
+                beforeEach ->
+                  @collection.add {a:3}
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item1">0</div>'+
+                          '<div class="item2">0</div>'+
+                          '<div class="item2">1</div>'+
+                          '<div class="item3">0</div>'+
+                          '<div class="item3">1</div>'+
+                          '<div class="item3">2</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[0]).toBe @item10
+                    expect(@view.el.children[0].children[1]).toBe @item20
+                    expect(@view.el.children[0].children[2]).toBe @item21
+
+
+        describe 'when renderer returns a binding that returns an array of nodes', ->
+
+          beforeEach ->
+            @collection = new @Collection [
+              {a: 0}
+              {a: 1}
+              {a: 2}
+            ]
+            @CellWithEach = @View.extend
+              _cellName: 'test'
+              render: (_)=> [
+                _ '.parent',
+                  _.each @collection, (item)->
+                    ->
+                      for i in [0...(item.get 'a')]
+                        _ ".item#{item.get 'a'}", i
+              ]
+            @view = new @CellWithEach()
+
+          it 'renders initially correctly', ->
+            nodeHTMLEquals @view.el,
+              '<div cell="test" class="test">'+
+                '<div class="parent">'+
+                  '<div class="item1">0</div>'+
+                  '<div class="item2">0</div>'+
+                  '<div class="item2">1</div>'+
+                '</div>'+
+              '</div>'
+
+          describe 'when an item of the collection changes', ->
+            beforeEach ->
+              [@item10, @item20, @item21] = @view.el.children[0].children
+              @collection.at(0).set 'a', 3
 
             it 'renders after change correctly', ->
               waitOne ->
                 nodeHTMLEquals @view.el,
                   '<div cell="test" class="test">'+
                     '<div class="parent">'+
-                      '<div class="item2">eachValue</div>'+
-                      '<div class="item3">eachValue</div>'+
-                      '<div class="item4">eachValue</div>'+
+                      '<div class="item3">0</div>'+
+                      '<div class="item3">1</div>'+
+                      '<div class="item3">2</div>'+
+                      '<div class="item1">0</div>'+
+                      '<div class="item2">0</div>'+
+                      '<div class="item2">1</div>'+
                     '</div>'+
                   '</div>'
 
             it "doesn't rerender previous items", ->
               waitOne ->
-                expect(@view.el.children[0].children[0]).toBe @item2
-                expect(@view.el.children[0].children[1]).toBe @item3
+                expect(@view.el.children[0].children[3]).toBe @item10
+                expect(@view.el.children[0].children[4]).toBe @item20
+                expect(@view.el.children[0].children[5]).toBe @item21
+
+            describe '... and then that item is removed', ->
+              beforeEach ->
+                @collection.remove @collection.at 0
+
+              it 'renders after change correctly', ->
+                waitOne ->
+                  nodeHTMLEquals @view.el,
+                    '<div cell="test" class="test">'+
+                      '<div class="parent">'+
+                        '<div class="item1">0</div>'+
+                        '<div class="item2">0</div>'+
+                        '<div class="item2">1</div>'+
+                      '</div>'+
+                    '</div>'
+
+              it "doesn't rerender previous items", ->
+                waitOne ->
+                  expect(@view.el.children[0].children[0]).toBe @item10
+                  expect(@view.el.children[0].children[1]).toBe @item20
+                  expect(@view.el.children[0].children[2]).toBe @item21
+
+
+          describe 'when collection changes...', ->
+            beforeEach ->
+              [@item10, @item20, @item21] = @view.el.children[0].children
+
+            describe 'by removing an item...', ->
+
+              describe 'from the top', ->
+
+                beforeEach ->
+                  @collection.remove @collection.at 0
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item1">0</div>'+
+                          '<div class="item2">0</div>'+
+                          '<div class="item2">1</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[0]).toBe @item10
+                    expect(@view.el.children[0].children[1]).toBe @item20
+                    expect(@view.el.children[0].children[2]).toBe @item21
+
+
+              describe 'from the middle', ->
+
+                beforeEach ->
+                  @collection.remove @collection.at 1
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item2">0</div>'+
+                          '<div class="item2">1</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[0]).toBe @item20
+                    expect(@view.el.children[0].children[1]).toBe @item21
+
+              describe 'from the bottom', ->
+
+                beforeEach ->
+                  @collection.remove @collection.at 2
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item1">0</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[0]).toBe @item10
+
+
+            describe 'by adding an item...', ->
+
+              describe 'to the top', ->
+                beforeEach ->
+                  @collection.add {a:3}, 0
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item3">0</div>'+
+                          '<div class="item3">1</div>'+
+                          '<div class="item3">2</div>'+
+                          '<div class="item1">0</div>'+
+                          '<div class="item2">0</div>'+
+                          '<div class="item2">1</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[3]).toBe @item10
+                    expect(@view.el.children[0].children[4]).toBe @item20
+                    expect(@view.el.children[0].children[5]).toBe @item21
+
+
+              describe 'to the middle', ->
+
+                beforeEach ->
+                  @collection.add {a:3}, 2
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item1">0</div>'+
+                          '<div class="item3">0</div>'+
+                          '<div class="item3">1</div>'+
+                          '<div class="item3">2</div>'+
+                          '<div class="item2">0</div>'+
+                          '<div class="item2">1</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[0]).toBe @item10
+                    expect(@view.el.children[0].children[4]).toBe @item20
+                    expect(@view.el.children[0].children[5]).toBe @item21
+
+              describe 'to the bottom', ->
+                beforeEach ->
+                  @collection.add {a:3}
+
+                it 'renders after change correctly', ->
+                  waitOne ->
+                    nodeHTMLEquals @view.el,
+                      '<div cell="test" class="test">'+
+                        '<div class="parent">'+
+                          '<div class="item1">0</div>'+
+                          '<div class="item2">0</div>'+
+                          '<div class="item2">1</div>'+
+                          '<div class="item3">0</div>'+
+                          '<div class="item3">1</div>'+
+                          '<div class="item3">2</div>'+
+                        '</div>'+
+                      '</div>'
+
+                it "doesn't rerender previous items", ->
+                  waitOne ->
+                    expect(@view.el.children[0].children[0]).toBe @item10
+                    expect(@view.el.children[0].children[1]).toBe @item20
+                    expect(@view.el.children[0].children[2]).toBe @item21
 
 
       describe 'when a bind is passed as an attribute', ->

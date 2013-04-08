@@ -120,7 +120,9 @@ define(['../utils/spec-utils'], function(_arg) {
       ], '<p data-custom="myattr" data-custom2="myattr2"></p>');
       return it_renders_views("view:View", [], '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>', true);
     });
-    describe('_.each( array:array, renderer:function )', function() {
+    return describe('_.each( arrayOrCollection:[array,Collection], renderer:function )', function() {
+      var describeEachRender;
+
       beforeEach(function() {
         var _this = this;
 
@@ -134,69 +136,166 @@ define(['../utils/spec-utils'], function(_arg) {
           }
         ];
         this.eachRenderer = jasmine.createSpy('eachRenderer');
-        this.eachRenderer.andCallFake(function(item) {
-          return _this._('b', item.name);
+        return this.eachRenderer.andCallFake(function(item) {
+          return _this._('b', item.name || item.get('name'));
         });
-        this.ParentView = this.View.extend({
-          _cellName: 'Parent',
-          render: function(_) {
-            return _.each(_this.items, _this.eachRenderer);
-          }
-        });
-        return this.view = new this.ParentView;
       });
-      it('calls renderer for each model in the collection', function() {
-        var i, item, _i, _len, _ref, _results;
+      describeEachRender = function(renderValue, expectedInnerHTML) {
+        return describe("when renderer returns " + renderValue + ", expected " + expectedInnerHTML, function() {
+          beforeEach(function() {
+            var _this = this;
 
-        expect(this.eachRenderer.callCount).toEqual(3);
-        _ref = this.items;
-        _results = [];
-        for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-          item = _ref[i];
-          expect(this.eachRenderer.calls[i].args).toEqual([item, i, this.items]);
-          _results.push(expect(this.eachRenderer.calls[i].object).toBe(this.view));
-        }
-        return _results;
-      });
-      return it('renders correctly', function() {
-        return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent">' + '<b>a</b>' + '<b>b</b>' + '<b>c</b>' + '</div>');
-      });
-    });
-    return describe('_.each( collection:Collection, renderer:function )', function() {
-      beforeEach(function() {
-        var eachRenderer,
-          _this = this;
+            this.ParentView = this.View.extend({
+              _cellName: 'Parent',
+              render: function(_) {
+                return _.each(_this.items, function() {
+                  return renderValue;
+                });
+              }
+            });
+            return this.view = new this.ParentView;
+          });
+          return it('renders correctly', function() {
+            return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent">' + expectedInnerHTML + '</div>');
+          });
+        });
+      };
+      describeEachRender(5, '555');
+      describeEachRender((function() {
+        return 6;
+      }), '666');
+      describeEachRender('my string', 'my stringmy stringmy string');
+      describeEachRender((function() {
+        return 'my string2';
+      }), 'my string2my string2my string2');
+      describeEachRender([node('b'), node('a')], '<b></b><a></a>');
+      describeEachRender((function() {
+        return [node('a'), node('b')];
+      }), '<a></a><b></b><a></a><b></b><a></a><b></b>');
+      describeEachRender([], '');
+      describeEachRender(void 0, '');
+      describeEachRender((function() {
+        return function() {
+          return 6;
+        };
+      }), '');
+      describe('_.each( undefined, renderer:function )', function() {
+        beforeEach(function() {
+          var _this = this;
 
-        this.collection = new this.Collection([
-          {
-            name: 'a'
-          }, {
-            name: 'b'
-          }, {
-            name: 'c'
-          }
-        ]);
-        eachRenderer = this.eachRenderer = jasmine.createSpy('eachRenderer');
-        this.eachRenderer.andCallFake(function(item) {
-          return _this._('b', item.get('name'));
+          this.ParentView = this.View.extend({
+            _cellName: 'Parent',
+            render: function(_) {
+              return _.each(void 0, _this.eachRenderer);
+            }
+          });
+          return this.view = new this.ParentView;
         });
-        this.ParentView = this.View.extend({
-          _cellName: 'Parent',
-          render: function(_) {
-            return _.each(this.collection, eachRenderer);
-          }
+        it('does NOT calls renderer', function() {
+          return expect(this.eachRenderer).not.toHaveBeenCalled();
         });
-        return this.view = new this.ParentView({
-          collection: this.collection
+        return it('renders correctly', function() {
+          return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent"></div>');
         });
       });
-      return it('calls renderer for each model in the collection', function() {
-        var _this = this;
+      describe('_.each( array:array, renderer:function )', function() {
+        beforeEach(function() {
+          var _this = this;
 
-        expect(this.eachRenderer.callCount).toEqual(3);
-        return this.collection.each(function(item, i) {
-          debugger;          expect(_this.eachRenderer.calls[i].args).toEqual([item, i, _this.collection]);
-          return expect(_this.eachRenderer.calls[i].object).toBe(_this.view);
+          this.ParentView = this.View.extend({
+            _cellName: 'Parent',
+            render: function(_) {
+              return _.each(_this.items, _this.eachRenderer);
+            }
+          });
+          return this.view = new this.ParentView;
+        });
+        it('calls renderer for each model in the collection', function() {
+          var i, item, _i, _len, _ref, _results;
+
+          expect(this.eachRenderer.callCount).toEqual(3);
+          _ref = this.items;
+          _results = [];
+          for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+            item = _ref[i];
+            expect(this.eachRenderer.calls[i].args).toEqual([item, i, this.items]);
+            _results.push(expect(this.eachRenderer.calls[i].object).toBe(this.view));
+          }
+          return _results;
+        });
+        return it('renders correctly', function() {
+          return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent">' + '<b>a</b>' + '<b>b</b>' + '<b>c</b>' + '</div>');
+        });
+      });
+      describe('_.each( array:array, renderer:function ), array is empty', function() {
+        beforeEach(function() {
+          var _this = this;
+
+          this.ParentView = this.View.extend({
+            _cellName: 'Parent',
+            render: function(_) {
+              return _.each([], _this.eachRenderer);
+            }
+          });
+          return this.view = new this.ParentView;
+        });
+        it('does NOT calls renderer', function() {
+          return expect(this.eachRenderer).not.toHaveBeenCalled();
+        });
+        return it('renders correctly', function() {
+          return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent"></div>');
+        });
+      });
+      describe('_.each( collection:Collection, renderer:function )', function() {
+        beforeEach(function() {
+          var eachRenderer;
+
+          this.collection = new this.Collection(this.items);
+          eachRenderer = this.eachRenderer;
+          this.ParentView = this.View.extend({
+            _cellName: 'Parent',
+            render: function(_) {
+              return _.each(this.collection, eachRenderer);
+            }
+          });
+          return this.view = new this.ParentView({
+            collection: this.collection
+          });
+        });
+        it('calls renderer for each model in the collection', function() {
+          var _this = this;
+
+          expect(this.eachRenderer.callCount).toEqual(3);
+          return this.collection.each(function(item, i) {
+            expect(_this.eachRenderer.calls[i].args).toEqual([item, i, _this.collection]);
+            return expect(_this.eachRenderer.calls[i].object).toBe(_this.view);
+          });
+        });
+        return it('renders correctly', function() {
+          return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent">' + '<b>a</b>' + '<b>b</b>' + '<b>c</b>' + '</div>');
+        });
+      });
+      return describe('_.each( collection:Collection, renderer:function ), collection is empty', function() {
+        beforeEach(function() {
+          var eachRenderer;
+
+          this.collection = new this.Collection;
+          eachRenderer = this.eachRenderer;
+          this.ParentView = this.View.extend({
+            _cellName: 'Parent',
+            render: function(_) {
+              return _.each(this.collection, eachRenderer);
+            }
+          });
+          return this.view = new this.ParentView({
+            collection: this.collection
+          });
+        });
+        it('does NOT calls renderer', function() {
+          return expect(this.eachRenderer).not.toHaveBeenCalled();
+        });
+        return it('renders correctly', function() {
+          return nodeHTMLEquals(this.view.el, '<div cell="Parent" class="Parent"></div>');
         });
       });
     });

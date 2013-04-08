@@ -18,26 +18,32 @@ define(['../../utils/spec-utils'], function(_arg) {
         return this._ = this.view._;
       });
       describe('_.each(collection:Collection, renderer:function)', function() {
-        return describe('when renderer returns an array of nodes', function() {
+        describe('when collection is initially empty', function() {});
+        describe('when renderer returns an array of nodes', function() {
           beforeEach(function() {
             var _this = this;
 
             this.collection = new this.Collection([
               {
+                a: 0
+              }, {
                 a: 1
               }, {
                 a: 2
-              }, {
-                a: 3
               }
             ]);
             this.CellWithEach = this.View.extend({
               _cellName: 'test',
-              eachKey: 'eachValue',
               render: function(_) {
                 return [
                   _('.parent', _.each(_this.collection, function(item) {
-                    return _(".item" + (item.get('a')), this.eachKey);
+                    var i, _i, _ref, _results;
+
+                    _results = [];
+                    for (i = _i = 0, _ref = item.get('a'); 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                      _results.push(_(".item" + (item.get('a')), i));
+                    }
+                    return _results;
                   }))
                 ];
               }
@@ -45,27 +51,311 @@ define(['../../utils/spec-utils'], function(_arg) {
             return this.view = new this.CellWithEach();
           });
           it('renders initially correctly', function() {
-            return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">eachValue</div>' + '<div class="item2">eachValue</div>' + '<div class="item3">eachValue</div>' + '</div>' + '</div>');
+            return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
           });
-          return describe('when collection changes', function() {
+          return describe('when collection changes...', function() {
             beforeEach(function() {
               var _ref;
 
-              _ref = this.view.el.children[0].children, this.item1 = _ref[0], this.item2 = _ref[1], this.item3 = _ref[2];
-              this.collection.remove(this.collection.at(0));
-              return this.collection.add(new this.Model({
-                a: 4
-              }));
+              return _ref = this.view.el.children[0].children, this.item10 = _ref[0], this.item20 = _ref[1], this.item21 = _ref[2], _ref;
+            });
+            describe('by removing an item...', function() {
+              describe('from the top', function() {
+                beforeEach(function() {
+                  return this.collection.remove(this.collection.at(0));
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    expect(this.view.el.children[0].children[0]).toBe(this.item10);
+                    expect(this.view.el.children[0].children[1]).toBe(this.item20);
+                    return expect(this.view.el.children[0].children[2]).toBe(this.item21);
+                  });
+                });
+              });
+              describe('from the middle', function() {
+                beforeEach(function() {
+                  return this.collection.remove(this.collection.at(1));
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    expect(this.view.el.children[0].children[0]).toBe(this.item20);
+                    return expect(this.view.el.children[0].children[1]).toBe(this.item21);
+                  });
+                });
+              });
+              return describe('from the bottom', function() {
+                beforeEach(function() {
+                  return this.collection.remove(this.collection.at(2));
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    return expect(this.view.el.children[0].children[0]).toBe(this.item10);
+                  });
+                });
+              });
+            });
+            return describe('by adding an item...', function() {
+              describe('to the top', function() {
+                beforeEach(function() {
+                  return this.collection.add({
+                    a: 3
+                  }, 0);
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item3">0</div>' + '<div class="item3">1</div>' + '<div class="item3">2</div>' + '<div class="item1">0</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    expect(this.view.el.children[0].children[3]).toBe(this.item10);
+                    expect(this.view.el.children[0].children[4]).toBe(this.item20);
+                    return expect(this.view.el.children[0].children[5]).toBe(this.item21);
+                  });
+                });
+              });
+              describe('to the middle', function() {
+                beforeEach(function() {
+                  return this.collection.add({
+                    a: 3
+                  }, 2);
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '<div class="item3">0</div>' + '<div class="item3">1</div>' + '<div class="item3">2</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    expect(this.view.el.children[0].children[0]).toBe(this.item10);
+                    expect(this.view.el.children[0].children[4]).toBe(this.item20);
+                    return expect(this.view.el.children[0].children[5]).toBe(this.item21);
+                  });
+                });
+              });
+              return describe('to the bottom', function() {
+                beforeEach(function() {
+                  return this.collection.add({
+                    a: 3
+                  });
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '<div class="item3">0</div>' + '<div class="item3">1</div>' + '<div class="item3">2</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    expect(this.view.el.children[0].children[0]).toBe(this.item10);
+                    expect(this.view.el.children[0].children[1]).toBe(this.item20);
+                    return expect(this.view.el.children[0].children[2]).toBe(this.item21);
+                  });
+                });
+              });
+            });
+          });
+        });
+        return describe('when renderer returns a binding that returns an array of nodes', function() {
+          beforeEach(function() {
+            var _this = this;
+
+            this.collection = new this.Collection([
+              {
+                a: 0
+              }, {
+                a: 1
+              }, {
+                a: 2
+              }
+            ]);
+            this.CellWithEach = this.View.extend({
+              _cellName: 'test',
+              render: function(_) {
+                return [
+                  _('.parent', _.each(_this.collection, function(item) {
+                    return function() {
+                      var i, _i, _ref, _results;
+
+                      _results = [];
+                      for (i = _i = 0, _ref = item.get('a'); 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                        _results.push(_(".item" + (item.get('a')), i));
+                      }
+                      return _results;
+                    };
+                  }))
+                ];
+              }
+            });
+            return this.view = new this.CellWithEach();
+          });
+          it('renders initially correctly', function() {
+            return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
+          });
+          describe('when an item of the collection changes', function() {
+            beforeEach(function() {
+              var _ref;
+
+              _ref = this.view.el.children[0].children, this.item10 = _ref[0], this.item20 = _ref[1], this.item21 = _ref[2];
+              return this.collection.at(0).set('a', 3);
             });
             it('renders after change correctly', function() {
               return waitOne(function() {
-                return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item2">eachValue</div>' + '<div class="item3">eachValue</div>' + '<div class="item4">eachValue</div>' + '</div>' + '</div>');
+                return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item3">0</div>' + '<div class="item3">1</div>' + '<div class="item3">2</div>' + '<div class="item1">0</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
               });
             });
-            return it("doesn't rerender previous items", function() {
+            it("doesn't rerender previous items", function() {
               return waitOne(function() {
-                expect(this.view.el.children[0].children[0]).toBe(this.item2);
-                return expect(this.view.el.children[0].children[1]).toBe(this.item3);
+                expect(this.view.el.children[0].children[3]).toBe(this.item10);
+                expect(this.view.el.children[0].children[4]).toBe(this.item20);
+                return expect(this.view.el.children[0].children[5]).toBe(this.item21);
+              });
+            });
+            return describe('... and then that item is removed', function() {
+              beforeEach(function() {
+                return this.collection.remove(this.collection.at(0));
+              });
+              it('renders after change correctly', function() {
+                return waitOne(function() {
+                  return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
+                });
+              });
+              return it("doesn't rerender previous items", function() {
+                return waitOne(function() {
+                  expect(this.view.el.children[0].children[0]).toBe(this.item10);
+                  expect(this.view.el.children[0].children[1]).toBe(this.item20);
+                  return expect(this.view.el.children[0].children[2]).toBe(this.item21);
+                });
+              });
+            });
+          });
+          return describe('when collection changes...', function() {
+            beforeEach(function() {
+              var _ref;
+
+              return _ref = this.view.el.children[0].children, this.item10 = _ref[0], this.item20 = _ref[1], this.item21 = _ref[2], _ref;
+            });
+            describe('by removing an item...', function() {
+              describe('from the top', function() {
+                beforeEach(function() {
+                  return this.collection.remove(this.collection.at(0));
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    expect(this.view.el.children[0].children[0]).toBe(this.item10);
+                    expect(this.view.el.children[0].children[1]).toBe(this.item20);
+                    return expect(this.view.el.children[0].children[2]).toBe(this.item21);
+                  });
+                });
+              });
+              describe('from the middle', function() {
+                beforeEach(function() {
+                  return this.collection.remove(this.collection.at(1));
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    expect(this.view.el.children[0].children[0]).toBe(this.item20);
+                    return expect(this.view.el.children[0].children[1]).toBe(this.item21);
+                  });
+                });
+              });
+              return describe('from the bottom', function() {
+                beforeEach(function() {
+                  return this.collection.remove(this.collection.at(2));
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    return expect(this.view.el.children[0].children[0]).toBe(this.item10);
+                  });
+                });
+              });
+            });
+            return describe('by adding an item...', function() {
+              describe('to the top', function() {
+                beforeEach(function() {
+                  return this.collection.add({
+                    a: 3
+                  }, 0);
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item3">0</div>' + '<div class="item3">1</div>' + '<div class="item3">2</div>' + '<div class="item1">0</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    expect(this.view.el.children[0].children[3]).toBe(this.item10);
+                    expect(this.view.el.children[0].children[4]).toBe(this.item20);
+                    return expect(this.view.el.children[0].children[5]).toBe(this.item21);
+                  });
+                });
+              });
+              describe('to the middle', function() {
+                beforeEach(function() {
+                  return this.collection.add({
+                    a: 3
+                  }, 2);
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '<div class="item3">0</div>' + '<div class="item3">1</div>' + '<div class="item3">2</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    expect(this.view.el.children[0].children[0]).toBe(this.item10);
+                    expect(this.view.el.children[0].children[4]).toBe(this.item20);
+                    return expect(this.view.el.children[0].children[5]).toBe(this.item21);
+                  });
+                });
+              });
+              return describe('to the bottom', function() {
+                beforeEach(function() {
+                  return this.collection.add({
+                    a: 3
+                  });
+                });
+                it('renders after change correctly', function() {
+                  return waitOne(function() {
+                    return nodeHTMLEquals(this.view.el, '<div cell="test" class="test">' + '<div class="parent">' + '<div class="item1">0</div>' + '<div class="item2">0</div>' + '<div class="item2">1</div>' + '<div class="item3">0</div>' + '<div class="item3">1</div>' + '<div class="item3">2</div>' + '</div>' + '</div>');
+                  });
+                });
+                return it("doesn't rerender previous items", function() {
+                  return waitOne(function() {
+                    expect(this.view.el.children[0].children[0]).toBe(this.item10);
+                    expect(this.view.el.children[0].children[1]).toBe(this.item20);
+                    return expect(this.view.el.children[0].children[2]).toBe(this.item21);
+                  });
+                });
               });
             });
           });
