@@ -95,7 +95,7 @@ define [
         while ++i < len
           model = models[i]
           if (index = @indexOf model) > -1
-            delete model.collection
+            delete model.parent
             removedModels.push model
             indices.push index
             @_i.splice index, 1
@@ -114,6 +114,6 @@ define [
       o =
         if o instanceof @model then o
         else new Model o
-      o.collection = @
+      o.parent = @
       o
     _s: spy.addCol

@@ -66,7 +66,7 @@ define [
   addModel: (event)->
     if scope
       eventKey = event +
-        if ((obj = @collection) and scope.col[key = obj.$$hashkey]) then key
+        if ((obj = @parent) and scope.col[key = obj.$$hashkey]) then key
         else
           obj = @
           @$$hashkey

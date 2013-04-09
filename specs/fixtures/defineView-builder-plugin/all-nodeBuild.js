@@ -594,11 +594,14 @@ define('cell/Events',['cell/util/hash', 'cell/util/type', 'cell/util/extend', 'c
       }
     },
     trigger: function() {
-      var args, event;
+      var args, event, parent;
 
       event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       if (this._e) {
         triggerHandlers(this._e.all.concat(this._e[event] || []), event, args);
+        if (parent = this.parent) {
+          parent.trigger.apply(parent, [event].concat(args));
+        }
       }
     },
     destroy: function() {
@@ -766,7 +769,7 @@ define('cell/util/spy',['cell/util/hash', 'cell/util/fn', 'cell/util/type', 'cel
       var eventKey, key, obj;
 
       if (scope) {
-        eventKey = event + ((obj = this.collection) && scope.col[key = obj.$$hashkey] ? key : (obj = this, this.$$hashkey));
+        eventKey = event + ((obj = this.parent) && scope.col[key = obj.$$hashkey] ? key : (obj = this, this.$$hashkey));
         if (!scope.log[eventKey]) {
           scope.sig += eventKey;
           scope.log[eventKey] = {
@@ -828,9 +831,18 @@ define('cell/Model',['cell/util/type', 'cell/Events', 'cell/util/spy'], function
 
   Model = Events.extend({
     constructor: function(_a) {
+      var key, value, _ref;
+
       this._a = _a != null ? _a : {};
       Events.call(this);
-      this.collection = void 0;
+      this.parent = void 0;
+      _ref = this._a;
+      for (key in _ref) {
+        value = _ref[key];
+        if (value instanceof Events) {
+          value.parent = this;
+        }
+      }
     },
     attributes: function() {
       var attr, result;
@@ -847,21 +859,28 @@ define('cell/Model',['cell/util/type', 'cell/Events', 'cell/util/spy'], function
       return this._a[key];
     },
     set: function(key, value) {
-      var collection, event, old_value;
+      var old_value;
 
-      if ((type.isS(key)) && (this._a[key] !== value)) {
-        old_value = this._a[key];
-        this.trigger((event = "change:" + key), this, (this._a[key] = value), old_value);
-        if (collection = this.collection) {
-          collection.trigger(event, this, value, old_value);
+      old_value = this._a[key];
+      if ((type.isS(key)) && (old_value !== value)) {
+        if (old_value instanceof Events) {
+          delete old_value.parent;
         }
+        if (value instanceof Events) {
+          value.parent = this;
+        }
+        this.trigger("change:" + key, this, (this._a[key] = value), old_value);
         return true;
       }
     },
     destroy: function() {
+      var _ref;
+
       Events.prototype.destroy.call(this);
-      if (this.collection) {
-        this.collection.remove([this]);
+      if (this.parent) {
+        if ((_ref = this.parent) != null) {
+          _ref.remove([this]);
+        }
       }
       delete this._a;
       this.destroy = this.attributes = this.get = this.set = function() {};
@@ -961,7 +980,7 @@ define('cell/Collection',['cell/Events', 'cell/util/type', 'cell/Model', 'cell/u
         while (++i < len) {
           model = models[i];
           if ((index = this.indexOf(model)) > -1) {
-            delete model.collection;
+            delete model.parent;
             removedModels.push(model);
             indices.push(index);
             this._i.splice(index, 1);
@@ -980,7 +999,7 @@ define('cell/Collection',['cell/Events', 'cell/util/type', 'cell/Model', 'cell/u
     },
     _toM: function(o) {
       o = o instanceof this.model ? o : new Model(o);
-      o.collection = this;
+      o.parent = this;
       return o;
     },
     _s: spy.addCol

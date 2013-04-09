@@ -104,6 +104,58 @@ define -> ({beforeEachRequire})->
         b: 'b val'
         c: 'c val'
 
+    describe 'when model is contained in another Model or Collection', ->
+      beforeEach ->
+        @resetCallbacks = =>
+          @collectionCallback.reset()
+          @modelInAModelCallback.reset()
+          @modelParentCallback.reset()
+          @modelDeeplyNestedCallback.reset()
+          return
+
+        @collectionCallback = jasmine.createSpy 'collectionCallback'
+        @collection = new @Collection [@model]
+        @collection.on 'all', @collectionCallback
+
+        @modelInAModel = new @Model
+        @modelInAModelCallback = jasmine.createSpy 'modelInAModelCallback'
+        @modelInAModel.on 'all', @modelInAModelCallback
+
+        @modelParentCallback = jasmine.createSpy 'modelParentCallback'
+        @modelParent = new @Model key: @modelInAModel
+        @modelParent.on 'all', @modelParentCallback
+
+        @modelDeeplyNestedCallback = jasmine.createSpy 'modelDeeplyNestedCallback'
+        @modelDeeplyNested = new @Model
+        @modelDeeplyNested.on 'all', @modelDeeplyNestedCallback
+        @modelInAModel.set 'deeplyNested', @modelDeeplyNested
+
+      it 'propagates events to ancestors', ->
+        @resetCallbacks()
+
+        @model.set 'a', 'a val 1'
+        expect(@collectionCallback).toHaveBeenCalled()
+        expect(@modelInAModelCallback).not.toHaveBeenCalled()
+        expect(@modelParentCallback).not.toHaveBeenCalled()
+        expect(@modelDeeplyNestedCallback).not.toHaveBeenCalled()
+
+        @resetCallbacks()
+
+        @modelInAModel.set 'a', 'a val 2'
+        expect(@collectionCallback).not.toHaveBeenCalled()
+        expect(@modelInAModelCallback).toHaveBeenCalled()
+        expect(@modelParentCallback).toHaveBeenCalled()
+        expect(@modelDeeplyNestedCallback).not.toHaveBeenCalled()
+
+        @resetCallbacks()
+
+        @modelDeeplyNested.set 'a', 'a val 3'
+        expect(@collectionCallback).not.toHaveBeenCalled()
+        expect(@modelInAModelCallback).toHaveBeenCalled()
+        expect(@modelParentCallback).toHaveBeenCalled()
+        expect(@modelDeeplyNestedCallback).toHaveBeenCalled()
+
+
     describe 'when overwriting with a different value', ->
 
       beforeEach ->

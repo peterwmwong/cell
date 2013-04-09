@@ -55,6 +55,8 @@ define [
     trigger: (event, args...)->
       if @_e
         triggerHandlers (@_e.all.concat @_e[event] or []), event, args
+        if parent = @parent
+          parent.trigger.apply parent, [event].concat args
       return
 
     destroy: ->

@@ -42,8 +42,8 @@ define -> ({beforeEachRequire})->
         expect(@col.length()).toBe 2
         expect(@col.at 0).toBe @models[0]
         expect(@col.at 1).toBe @models[1]
-        expect(@col.at(0).collection).toBe @col
-        expect(@col.at(1).collection).toBe @col
+        expect(@col.at(0).parent).toBe @col
+        expect(@col.at(1).parent).toBe @col
 
     describe '@constructor( models:Array<Object> )', ->
       beforeEach ->
@@ -54,8 +54,8 @@ define -> ({beforeEachRequire})->
         expect(@col.length()).toBe 2
         expect(@col.at(0).attributes()).toEqual a: 0
         expect(@col.at(1).attributes()).toEqual b: 1
-        expect(@col.at(0).collection).toBe @col
-        expect(@col.at(1).collection).toBe @col
+        expect(@col.at(0).parent).toBe @col
+        expect(@col.at(1).parent).toBe @col
 
 
   describe '@filterBy( modelDesc:object )', ->
@@ -305,7 +305,7 @@ define -> ({beforeEachRequire})->
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[1]
         expect(@col.at 2).toBe @model
-        expect(@col.at(2).collection).toBe @col
+        expect(@col.at(2).parent).toBe @col
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'add'
@@ -317,7 +317,7 @@ define -> ({beforeEachRequire})->
         @col.add @model, 1
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @model
-        expect(@col.at(1).collection).toBe @col
+        expect(@col.at(1).parent).toBe @col
         expect(@col.at 2).toBe @initialModels[1]
 
         expect(@allEvents.callCount).toBe 1
@@ -338,7 +338,7 @@ define -> ({beforeEachRequire})->
         @model = @col.at 2
         expect(@model instanceof @Model).toBe true
         expect(@model.attributes()).toEqual c: 2
-        expect(@model.collection).toBe @col
+        expect(@model.parent).toBe @col
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'add'
@@ -353,7 +353,7 @@ define -> ({beforeEachRequire})->
         @model = @col.at 1
         expect(@model instanceof @Model).toBe true
         expect(@model.attributes()).toEqual c: 2
-        expect(@model.collection).toBe @col
+        expect(@model.parent).toBe @col
 
         expect(@col.at 2).toBe @initialModels[1]
 
@@ -375,9 +375,9 @@ define -> ({beforeEachRequire})->
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[1]
         expect(@col.at 2).toBe @models[0]
-        expect(@col.at(2).collection).toBe @col
+        expect(@col.at(2).parent).toBe @col
         expect(@col.at 3).toBe @models[1]
-        expect(@col.at(3).collection).toBe @col
+        expect(@col.at(3).parent).toBe @col
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'add'
@@ -389,9 +389,9 @@ define -> ({beforeEachRequire})->
         @col.add @models, 1
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @models[0]
-        expect(@col.at(1).collection).toBe @col
+        expect(@col.at(1).parent).toBe @col
         expect(@col.at 2).toBe @models[1]
-        expect(@col.at(2).collection).toBe @col
+        expect(@col.at(2).parent).toBe @col
         expect(@col.at 3).toBe @initialModels[1]
 
         expect(@allEvents.callCount).toBe 1
@@ -415,7 +415,7 @@ define -> ({beforeEachRequire})->
           @model = @col.at i++
           expect(@model instanceof @Model).toBe true
           expect(@model.attributes()).toEqual obj
-          expect(@model.collection).toBe @col
+          expect(@model.parent).toBe @col
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'add'
@@ -432,7 +432,7 @@ define -> ({beforeEachRequire})->
           @model = @col.at i++
           expect(@model instanceof @Model).toBe true
           expect(@model.attributes()).toEqual obj
-          expect(@model.collection).toBe @col
+          expect(@model.parent).toBe @col
 
         expect(@col.at 3).toBe @initialModels[1]
 
@@ -459,7 +459,7 @@ define -> ({beforeEachRequire})->
         @col.remove @initialModels[1]
 
       it 'removes Model', ->
-        expect(@initialModels[1].collection).toBeUndefined()
+        expect(@initialModels[1].parent).toBeUndefined()
         expect(@col.length()).toBe 2
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[2]
@@ -482,7 +482,7 @@ define -> ({beforeEachRequire})->
         @col.remove @col2.at(0)
         expect(@col.length()).toBe 2
         expect(@col2.length()).toBe 1
-        expect(@col2.at(0).collection).toBe @col2
+        expect(@col2.at(0).parent).toBe @col2
 
       it 'if collection is empty, does nothing', ->
         @allEvents.reset()
@@ -504,8 +504,8 @@ define -> ({beforeEachRequire})->
         expect(@col.length()).toBe 1
         expect(@col.at 0).toBe @initialModels[1]
 
-        expect(@initialModels[0].collection).toBeUndefined()
-        expect(@initialModels[2].collection).toBeUndefined()
+        expect(@initialModels[0].parent).toBeUndefined()
+        expect(@initialModels[2].parent).toBeUndefined()
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'remove'
@@ -522,3 +522,54 @@ define -> ({beforeEachRequire})->
         ]
         expect(@emptyCol.length()).toBe 0
         expect(@allEvents.callCount).toBe 0
+
+    describe 'add and remove events propagate to ancestors', ->
+      beforeEach ->
+        @colAAA = new @Collection()
+        @colAA = new @Collection a: @colAAA
+        @colA = new @Collection a: @colAA
+        @modelParent = new @Model col: @colA
+
+        @resetCallbacks = =>
+          @colAAACallback.reset()
+          @colAACallback.reset()
+          @colACallback.reset()
+          @modelParentCallback.reset()
+          return
+
+        for k in ['colAAA', 'colAA', 'colA', 'modelParent']
+          @[k].on "all", @["#{k}Callback"] = jasmine.createSpy "#{k}Callback"
+
+      it 'propagates events to ancestors', ->
+        @resetCallbacks()
+
+        @colAAA.add {}
+        expect(@colAAACallback).toHaveBeenCalled()
+        expect(@colAACallback).toHaveBeenCalled()
+        expect(@colACallback).toHaveBeenCalled()
+        expect(@modelParentCallback).toHaveBeenCalled()
+
+        @resetCallbacks()
+
+        @colAA.add {}
+        expect(@colAAACallback).not.toHaveBeenCalled()
+        expect(@colAACallback).toHaveBeenCalled()
+        expect(@colACallback).toHaveBeenCalled()
+        expect(@modelParentCallback).toHaveBeenCalled()
+
+        @resetCallbacks()
+
+        @colA.add {}
+        expect(@colAAACallback).not.toHaveBeenCalled()
+        expect(@colAACallback).not.toHaveBeenCalled()
+        expect(@colACallback).toHaveBeenCalled()
+        expect(@modelParentCallback).toHaveBeenCalled()
+
+        @resetCallbacks()
+
+        @modelParent.set 'a', 'a value'
+        expect(@colAAACallback).not.toHaveBeenCalled()
+        expect(@colAACallback).not.toHaveBeenCalled()
+        expect(@colACallback).not.toHaveBeenCalled()
+        expect(@modelParentCallback).toHaveBeenCalled()
+

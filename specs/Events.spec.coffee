@@ -167,6 +167,11 @@ define -> ({beforeEachRequire})->
   describe '@trigger(type:string, args...:any)', ->
     beforeEach ->
       @events = new @Events
+
+      @eventsParent = new @Events
+      @eventsParent.on 'custom', (@parentCustomHandler = jasmine.createSpy 'parent custom')
+
+      @events.parent = @eventsParent
       @events.on 'custom', (@customHandler = jasmine.createSpy 'custom')
 
     it 'calls handler with arguments', ->
@@ -174,5 +179,10 @@ define -> ({beforeEachRequire})->
       expect(@customHandler).toHaveBeenCalledWith 'custom'
 
       @customHandler.reset()
-      @events.trigger 'custom', (@arg1 = {}), (@arg2 = {})
-      expect(@customHandler).toHaveBeenCalledWith 'custom', @arg1, @arg2
+      @events.trigger 'custom', (arg1 = '1'), (arg2 = '2')
+      expect(@customHandler).toHaveBeenCalledWith 'custom', arg1, arg2
+
+    it 'calls parent handler with arguments', ->
+      @events.trigger 'custom', (arg1 = '1'), (arg2 = '2')
+      expect(@customHandler).toHaveBeenCalledWith 'custom', arg1, arg2
+      expect(@parentCustomHandler).toHaveBeenCalledWith 'custom', arg1, arg2
