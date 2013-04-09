@@ -9,9 +9,7 @@ define [
     spy.watch @view, v, callback, @
     return
 
-  Ext::run = (element, view)->
-    @view = view
-    @el = element
+  Ext::run = (@el, @view)->
     @render()
     return
 

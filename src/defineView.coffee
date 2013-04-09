@@ -3,9 +3,9 @@ define ['cell/View'], (View)->
 
   pluginBuilder: 'cell/defineView-builder-plugin'
   load: (name, req, load, config)->
-    # Attach te associated CSS file for cell
+    # Attach the associated CSS file for cell
     unless dfi[name]
-      dfi = true
+      dfi[name] = true
       el = document.createElement 'link'
       el.href = req.toUrl name+".css"
       el.rel = 'stylesheet'

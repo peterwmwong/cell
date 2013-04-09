@@ -5,9 +5,8 @@ define [
 ], (type, Events, spy)->
 
   Model = Events.extend
-    constructor: (attributes)->
+    constructor: (@_a={})->
       Events.call @
-      @_a = attributes or {}
       @collection = undefined
       return
 

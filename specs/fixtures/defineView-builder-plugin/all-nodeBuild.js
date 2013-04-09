@@ -420,7 +420,7 @@ define('cell/defineView',['cell/View'], function(View) {
       var el;
 
       if (!dfi[name]) {
-        dfi = true;
+        dfi[name] = true;
         el = document.createElement('link');
         el.href = req.toUrl(name + ".css");
         el.rel = 'stylesheet';
@@ -827,9 +827,9 @@ define('cell/Model',['cell/util/type', 'cell/Events', 'cell/util/spy'], function
   var Model;
 
   Model = Events.extend({
-    constructor: function(attributes) {
+    constructor: function(_a) {
+      this._a = _a != null ? _a : {};
       Events.call(this);
-      this._a = attributes || {};
       this.collection = void 0;
     },
     attributes: function() {
@@ -1001,9 +1001,9 @@ define('cell/Ext',['cell/util/extend', 'cell/util/spy'], function(extend, spy) {
   Ext.prototype.watch = function(v, callback) {
     spy.watch(this.view, v, callback, this);
   };
-  Ext.prototype.run = function(element, view) {
+  Ext.prototype.run = function(el, view) {
+    this.el = el;
     this.view = view;
-    this.el = element;
     this.render();
   };
   Ext.extend = extend;
