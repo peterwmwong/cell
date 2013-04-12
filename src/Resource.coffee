@@ -12,7 +12,23 @@ define [
       newObj[k] = obj[k] for k of obj
     newObj
 
-  Resource = (@url, @_params)->
+  jsonAndTransformModel = (response, model)->
+    jsonObj = JSON.parse response
+    jsonObj = @transform jsonObj if @transform
+    model.set(k, v) for k,v of jsonObj
+    return
+
+  jsonAndTransformCollection = (response, collection)->
+    jsonObjs = JSON.parse response
+    collection.add (if @transform then (@transform obj for obj in jsonObjs) else jsonObjs)
+    return
+
+  Resource = ({@url, params:@_params, model, collection, @transform})->
+    @Model = (model or Model).extend ModelInstance
+    @Collection = (collection or Collection).extend CollectionInstance
+    return
+
+  Resource.extend = extend
 
   Resource::defaultParams = (params)->
     for k of @_params
@@ -20,37 +36,37 @@ define [
     return
 
   Resource::create = (attrs)->
-    new Resource.Instance @, attrs, true
+    new @Model @, attrs, true
 
   Resource::get = (params,success,error)->
-    inst = new Resource.Instance @, undefined, false
+    inst = new @Model @, undefined, false
     params = copyObj params
     http
       method: 'GET'
       url: @genUrl params, false
-      (status,response,isSuccess)->
+      (status,response,isSuccess)=>
         if isSuccess
-          inst.set(k, v) for k,v of (JSON.parse response)
+          jsonAndTransformModel.call @, response, inst
           success?()
         else error?()
         return
     inst
 
   Resource::query = (params,success,error)->
-    inst = new Resource.CollectionInstance @
+    inst = new @Collection @
     params = copyObj params
     http
       method: 'GET'
       url: @genUrl params, false
-      (status,response,isSuccess)->
+      (status,response,isSuccess)=>
         if isSuccess
-          inst.add JSON.parse response
+          jsonAndTransformCollection.call @, response, inst
           success?()
         else error?()
         return
     inst
 
-  Resource.Instance = Model.extend
+  ModelInstance =
     constructor: (@_res, initialAttrs, @_isNew)->
       Model.call @, initialAttrs
       return
@@ -79,15 +95,14 @@ define [
         data: JSON.stringify @_a
         (status,response,isSuccess)=>
           if isSuccess
-            @set(k, v) for k,v of (JSON.parse response)
+            jsonAndTransformModel.call @_res, response, @
             @_isNew = false
             success?()
           else error?()
           return
       return
 
-
-  Resource.CollectionInstance = Collection.extend
+  CollectionInstance =
     constructor: (@_res)->
       Collection.call @
       return

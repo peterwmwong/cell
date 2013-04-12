@@ -27,10 +27,115 @@ define ->
             # Last arg should be the callback function
             return typeof actualArgs[args.length] is 'function'
 
+    describe 'new Resource( {url:string, params?:object, transform?:function, model?:Model, collection?:Collection} )', ->
 
-    describe 'new Resource( url:string, defaultParams:object )', ->
+      describe 'When a model is specified', ->
+        beforeEach ->
+          @MyModel = @Model.extend()
+          @res = new @Resource url: '/yolo/{id}', transform: @transform, model: @MyModel
+
+        describe 'Extends, instantiates, and returns specified model on...', ->
+
+          it '@get()', ->
+            @res_inst = @res.get id: 'blah'
+            expect(@res_inst instanceof @MyModel).toBe true
+            expect(@res_inst instanceof @Model).toBe true
+
+          it '@create()', ->
+            @res_inst = @res.create id: 'blah'
+            expect(@res_inst instanceof @MyModel).toBe true
+            expect(@res_inst instanceof @Model).toBe true            
+
+      describe 'When a collection is specified', ->
+        beforeEach ->
+          @MyCollection = @Collection.extend()
+          @res = new @Resource url: '/yolo/{id}', transform: @transform, collection: @MyCollection
+          @res_inst = @res.query id: 'blah'
+
+        it 'Extends, instantiates, and returns specified model on @query()', ->
+          expect(@res_inst instanceof @MyCollection).toBe true
+          expect(@res_inst instanceof @Collection).toBe true
+
+      describe 'When a transform function is specified', ->
+        beforeEach ->
+          @transform = jasmine.createSpy('transform').andCallFake (jsonObj)-> b: 777
+
+        describe 'called upon @get() response', ->
+          beforeEach ->
+            @res = new @Resource url: '/yolo/{id}', transform: @transform
+            @res_inst = @res.get id: 'blah'
+
+            # http callback
+            @http.calls[0].args[1] 200,
+              JSON.stringify
+                one: 1
+                two: 'deux'
+                three: 'san'
+              true
+
+          it 'calls transform()', ->
+            expect(@transform).toHaveBeenCalledWith
+              one: 1
+              two: 'deux'
+              three: 'san'
+
+          it 'assigns data returned from transform', ->
+            expect(@res_inst.attributes()).toEqual b: 777
+
+        describe 'called upon @query() response', ->
+          beforeEach ->
+            @res = new @Resource url: '/yolo/{id}', transform: @transform
+            @res_col = @res.query id: 'blah'
+
+            # http callback
+            @http.calls[0].args[1] 200,
+              JSON.stringify [
+                {one: 1}
+                {two: 'deux'}
+                {three: 'san'}
+              ]
+              true
+
+          it 'calls transform', ->
+            expect(@transform).toHaveBeenCalledWith one: 1
+            expect(@transform).toHaveBeenCalledWith two: 'deux'
+            expect(@transform).toHaveBeenCalledWith three: 'san'
+
+
+          it 'assigns data returned from transform', ->
+            @res_col.map (obj)->
+              expect(obj.attributes()).toEqual b: 777
+
+        describe 'called upon @$save() response', ->
+
+          beforeEach ->
+            @res = new @Resource url: '/yolo/{id}', transform: @transform
+            @res_inst = @res.create()
+            @res_inst.$save()
+
+            # http callback
+            @http.calls[0].args[1] 200,
+              JSON.stringify
+                one: 1
+                two: 'deux'
+                three: 'san'
+              true
+
+          it 'calls transform', ->
+            expect(@transform).toHaveBeenCalledWith
+              one: 1
+              two: 'deux'
+              three: 'san'
+
+          it 'assigns data returned from transform', ->
+            expect(@res_inst.attributes()).toEqual b: 777
+
+
       beforeEach ->
-        @resource = new @Resource '/{defaultPathParam}/{pathParam}', defaultPathParam:'default'
+        @resource = new @Resource
+          url: '/{defaultPathParam}/{pathParam}'
+          params:
+            defaultPathParam:'default'
 
       describe '@genUrl( params:object, disableQueryParams:boolean ) : String', ->
 
@@ -40,11 +145,11 @@ define ->
             inputParamsDisableQueryParams[k] = inputParams[k]
 
           it "When url is '#{urlWithParams}', resource.genUrl( #{JSON.stringify inputParams}, false ) === '#{outputUrl}'", ->
-            resource = new @Resource urlWithParams
+            resource = new @Resource url: urlWithParams
             expect(resource.genUrl inputParams ).toBe outputUrl
 
           it "... with disableQueryParams === true, resource.genUrl( #{JSON.stringify inputParamsDisableQueryParams}, true ) === '#{outputUrlDisableQueryParams}'", ->
-            resource = new @Resource urlWithParams
+            resource = new @Resource url: urlWithParams
             expect(resource.genUrl inputParamsDisableQueryParams, true ).toBe outputUrlDisableQueryParams
 
         params = -> one: 1, two2: 'deux', thr_ee: '{san}'
@@ -53,7 +158,7 @@ define ->
         describeGenUrl '/x/{thr_ee}', params(), '/x/%7Bsan%7D?one=1&two2=deux', '/x/%7Bsan%7D'
         describeGenUrl '/x/{one}/{two2}/{thr_ee}', params(), '/x/1/deux/%7Bsan%7D', '/x/1/deux/%7Bsan%7D'
 
-      describe '@create( attributes:object ) : Resource.Instance', ->
+      describe '@create( attributes:object ) : Model', ->
         beforeEach ->
           @resourceItem = @resource.create
             one: 1
@@ -64,7 +169,6 @@ define ->
           expect(@http).not.toHaveBeenCalled()
 
         it 'creates an empty Resource.Instance (Model)', ->
-          expect(@resourceItem instanceof @Resource.Instance).toBe true
           expect(@resourceItem instanceof @Model).toBe true
           expect(@resourceItem.attributes()).toEqual
             one: 1
@@ -92,7 +196,7 @@ define ->
           it "does NOT issue a HTTP request (because it's new)", ->
             expect(@http).not.toHaveBeenCalled()
 
-      describe '@get( params:object ) : Resource.Instance', ->
+      describe '@get( params:object ) : Model', ->
 
         beforeEach ->
           @resourceItem = @resource.get pathParam:'path', queryParam:'queryValue'
@@ -102,8 +206,7 @@ define ->
             method: 'GET'
             url: '/default/path?queryParam=queryValue'
 
-        it 'creates an empty Resource.Instance (Model)', ->
-          expect(@resourceItem instanceof @Resource.Instance).toBe true
+        it 'creates an empty Model', ->
           expect(@resourceItem instanceof @Model).toBe true
           expect(@resourceItem.attributes()).toEqual {}
 
@@ -161,7 +264,6 @@ define ->
             url: '/default/path?queryParam=queryValue'
 
         it 'creates an empty Resource.CollectionInstance (Model)', ->
-          expect(@resourceItem instanceof @Resource.CollectionInstance).toBe true
           expect(@resourceItem instanceof @Collection).toBe true
           expect(@resourceItem.length()).toBe 0
 
