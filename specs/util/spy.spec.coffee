@@ -494,6 +494,26 @@ define ['spec-utils'], ({waitOne})->
                     expect(@callback.callCount).toBe 1
                     expect(@callback.calls[0].object).toBe @context
 
+        describe 'and access changes', ->
+          beforeEach ->
+            @watch @context,
+              =>if @col.length() is 2
+                  @col.add z:'z val'
+                else
+                  @col.at(0).get 'x'
+              @callback
+
+          describe 'collection changes', ->
+            beforeEach ->
+              @col.add a:'a val'
+              waitOne ->
+                @callback.reset()
+                @col.add b:'b val'
+
+            it 'calls callback', ->
+              waitOne ->
+                expect(@callback).toHaveBeenCalled()
+
         describe 'and Models contained in the Collection', ->
           
           beforeEach ->

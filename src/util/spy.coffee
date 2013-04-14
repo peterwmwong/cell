@@ -39,14 +39,15 @@ define [
     value = context.e()
 
     if scope.sig isnt prevScope.sig
-      for eventKey of prevScope.log
-        if scope.log[eventKey]
-          delete scope.log[eventKey]
-        else
-          prevScope.log[eventKey].o.off prevScope.log[eventKey].e, undefined, context
-
+      plog = prevScope.log
       for eventKey of scope.log
-        scope.log[eventKey].o.on scope.log[eventKey].e, onChange, context
+        if plog[eventKey]
+          delete plog[eventKey]
+        else
+          scope.log[eventKey].o.on scope.log[eventKey].e, onChange, context
+
+      for eventKey of plog
+        plog[eventKey].o.off plog[eventKey].e, undefined, context
 
       context.scope = scope
 
@@ -58,18 +59,15 @@ define [
     if scope and not scope.col[key = @$$hashkey]
       scope.sig += key
       scope.col[key] = true
-      unless prevScope.col[key]
-        scope.log['add'+key] = o: @, e: 'add'
-        scope.log['remove'+key] = o: @, e: 'remove'
+      scope.log['add'+key] = o: @, e: 'add'
+      scope.log['remove'+key] = o: @, e: 'remove'
     return
       
   addModel: (event)->
     if scope
       eventKey = event +
-        if ((obj = @parent) and scope.col[key = obj.$$hashkey]) then key
-        else
-          obj = @
-          @$$hashkey
+        if (obj = @parent) and scope.col[key = obj.$$hashkey] then key
+        else (obj = @).$$hashkey
 
       unless scope.log[eventKey]
         scope.sig += eventKey
