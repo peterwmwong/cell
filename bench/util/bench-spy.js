@@ -6,7 +6,10 @@ define(function(require) {
   configs = {};
   requirejs.config({
     context: 'now',
-    baseUrl: '../../../src',
+    baseUrl: '../../../',
+    paths: {
+      cell: 'src'
+    },
     deps: ['cell/Model', 'cell/Collection', 'cell/util/spy'],
     callback: function(Model, Collection, spy) {
       configs.now = {
@@ -19,7 +22,10 @@ define(function(require) {
   });
   requirejs.config({
     context: 'baseline',
-    baseUrl: 'https://raw.github.com/peterwmwong/cell/master/src/',
+    baseUrl: '../../../cell-bench-baseline',
+    paths: {
+      cell: 'src'
+    },
     deps: ['cell/Model', 'cell/Collection', 'cell/util/spy'],
     callback: function(Model, Collection, spy) {
       configs.baseline = {

@@ -5,4 +5,5 @@
 *.js
 *.map
 
+cell-bench-baseline
 node_modules/*
