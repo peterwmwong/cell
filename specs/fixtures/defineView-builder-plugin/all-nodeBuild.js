@@ -725,22 +725,34 @@ define('cell/util/spy',['cell/util/hash', 'cell/util/fn', 'cell/util/type', 'cel
   };
   return {
     _eam: evaluateAndMonitor = function(context) {
-      var eventKey, suspendedScope, value;
+      var eventKey, log, plog, suspendedScope, value;
 
       suspendedScope = scope;
       prevScope = context.scope;
       scope = new Scope();
       value = context.e();
       if (scope.sig !== prevScope.sig) {
-        for (eventKey in prevScope.log) {
-          if (scope.log[eventKey]) {
-            delete scope.log[eventKey];
+        plog = prevScope.log;
+        log = scope.log;
+        for (eventKey in scope.col) {
+          log["add" + eventKey] = {
+            o: scope.col[eventKey],
+            e: 'add'
+          };
+          log["remove" + eventKey] = {
+            o: scope.col[eventKey],
+            e: 'remove'
+          };
+        }
+        for (eventKey in log) {
+          if (plog[eventKey]) {
+            delete plog[eventKey];
           } else {
-            prevScope.log[eventKey].o.off(prevScope.log[eventKey].e, void 0, context);
+            log[eventKey].o.on(log[eventKey].e, onChange, context);
           }
         }
-        for (eventKey in scope.log) {
-          scope.log[eventKey].o.on(scope.log[eventKey].e, onChange, context);
+        for (eventKey in plog) {
+          plog[eventKey].o.off(plog[eventKey].e, void 0, context);
         }
         context.scope = scope;
       }
@@ -752,24 +764,14 @@ define('cell/util/spy',['cell/util/hash', 'cell/util/fn', 'cell/util/type', 'cel
 
       if (scope && !scope.col[key = this.$$hashkey]) {
         scope.sig += key;
-        scope.col[key] = true;
-        if (!prevScope.col[key]) {
-          scope.log['add' + key] = {
-            o: this,
-            e: 'add'
-          };
-          scope.log['remove' + key] = {
-            o: this,
-            e: 'remove'
-          };
-        }
+        scope.col[key] = this;
       }
     },
     addModel: function(event) {
       var eventKey, key, obj;
 
       if (scope) {
-        eventKey = event + ((obj = this.parent) && scope.col[key = obj.$$hashkey] ? key : (obj = this, this.$$hashkey));
+        eventKey = event + ((obj = this.parent) && scope.col[key = obj.$$hashkey] ? key : (obj = this).$$hashkey);
         if (!scope.log[eventKey]) {
           scope.sig += eventKey;
           scope.log[eventKey] = {

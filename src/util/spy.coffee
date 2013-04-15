@@ -40,11 +40,17 @@ define [
 
     if scope.sig isnt prevScope.sig
       plog = prevScope.log
-      for eventKey of scope.log
+      log = scope.log
+
+      for eventKey of scope.col
+        log["add#{eventKey}"] = o:scope.col[eventKey], e:'add'
+        log["remove#{eventKey}"] = o:scope.col[eventKey], e:'remove'
+
+      for eventKey of log
         if plog[eventKey]
           delete plog[eventKey]
         else
-          scope.log[eventKey].o.on scope.log[eventKey].e, onChange, context
+          log[eventKey].o.on log[eventKey].e, onChange, context
 
       for eventKey of plog
         plog[eventKey].o.off plog[eventKey].e, undefined, context
@@ -58,9 +64,7 @@ define [
   addCol: ->
     if scope and not scope.col[key = @$$hashkey]
       scope.sig += key
-      scope.col[key] = true
-      scope.log['add'+key] = o: @, e: 'add'
-      scope.log['remove'+key] = o: @, e: 'remove'
+      scope.col[key] = @
     return
       
   addModel: (event)->
