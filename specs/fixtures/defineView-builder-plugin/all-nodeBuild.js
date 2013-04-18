@@ -759,6 +759,17 @@ define('cell/util/spy',['cell/util/hash', 'cell/util/fn', 'cell/util/type', 'cel
       scope = suspendedScope;
       context.f(value);
     },
+    addResStatus: function() {
+      var eventKey;
+
+      if (scope && !scope.log[eventKey = "status" + this.$$hashkey]) {
+        scope.sig += eventKey;
+        scope.log[eventKey] = {
+          o: this,
+          e: 'status'
+        };
+      }
+    },
     addCol: function() {
       var key;
 

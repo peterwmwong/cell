@@ -3,32 +3,30 @@ define [
   'cell/Collection'
   'cell/util/http'
   'cell/util/extend'
+  'cell/util/spy'
   'cell/util/type'
-], (Model,Collection,http,extend,type)->
+], (Model,Collection,http,extend,spy,type)->
 
-  copyObj = (obj)->
-    newObj = {}
-    if obj
-      newObj[k] = obj[k] for k of obj
-    newObj
+  idfunc = (o)->o
 
-  jsonAndTransformModel = (response, model)->
-    jsonObj = JSON.parse response
-    jsonObj = @transform jsonObj if @transform
-    model.set(k, v) for k,v of jsonObj
-    return
-
-  jsonAndTransformCollection = (response, collection)->
-    jsonObjs = JSON.parse response
-    collection.add (if @transform then (@transform obj for obj in jsonObjs) else jsonObjs)
-    return
-
-  Resource = ({@url, params:@_params, model, collection, @transform})->
+  Resource = ({@url, params:@_params, model, collection, transform})->
+    @transform = transform or idfunc
     @Model = (model or Model).extend ModelInstance
     @Collection = (collection or Collection).extend CollectionInstance
     return
 
   Resource.extend = extend
+
+  Resource::parseModelResponse = (response,model)->
+    jsonObj = JSON.parse response
+    jsonObj = @transform jsonObj
+    model.set(k, v) for k,v of jsonObj
+    return
+
+  Resource::parseCollectionResponse = (response,collection)->
+    jsonObjs = JSON.parse response
+    collection.add (@transform obj for obj in jsonObjs)
+    return
 
   Resource::defaultParams = (params)->
     for k of @_params
@@ -40,87 +38,112 @@ define [
 
   Resource::get = (params,success,error)->
     inst = new @Model @, undefined, false
-    params = copyObj params
     http
       method: 'GET'
       url: @genUrl params, false
       (status,response,isSuccess)=>
         if isSuccess
-          jsonAndTransformModel.call @, response, inst
+          @parseModelResponse response, inst
+          inst._setStatus 'ok'
           success?()
-        else error?()
+        else
+          inst._setStatus 'error'
+          error?()
         return
     inst
 
   Resource::query = (params,success,error)->
     inst = new @Collection @
-    params = copyObj params
     http
       method: 'GET'
       url: @genUrl params, false
       (status,response,isSuccess)=>
         if isSuccess
-          jsonAndTransformCollection.call @, response, inst
+          @parseCollectionResponse response, inst
           success?()
         else error?()
         return
     inst
 
+  Resource::genUrl = (params)->
+    newParams = {}
+    newParams[k] = params[k] for k of params
+    @defaultParams newParams
+    url = (url = @url).replace /{([A-z0-9]+)}/g, (match, key, index)->
+      value = newParams[key]
+      delete newParams[key]
+      encodeURIComponent value
+
+    delim = '?'
+    for k,v of newParams when v
+      url += "#{delim}#{encodeURIComponent k}=#{encodeURIComponent v}"
+      delim = '&'
+    url
+
+  getStatus = ->
+    spy.addResStatus.call @
+    @_status
+
+  setStatus = (newStatus)->
+    @trigger "status", @, @_status = newStatus
+    return
+
   ModelInstance =
-    constructor: (@_res, initialAttrs, @_isNew)->
+    constructor: (@_res, initialAttrs, isNew)->
       Model.call @, initialAttrs
+      @_status = (if isNew then 'new' else 'loading')
       return
 
+    _setStatus: setStatus
+    status: getStatus
+
     $delete: (params,success,error)->
-      unless @_isNew
+      unless @_status is 'new'
         # Is it a new or updated
-        params = copyObj params
         http
           method: 'DELETE'
           url: @_res.genUrl params, false
-          (status,response,isSuccess)->
-            if isSuccess then success?()
-            else error?()
+          (status,response,isSuccess)=>
+            if isSuccess
+              @_setStatus 'deleted'
+              success?()
+            else
+              @_setStatus 'error'
+              error?()
             return
+        @_setStatus 'deleting'
         return
 
     $save: (params,success,error)->
       # Is it a new or updated
-      params = copyObj params
       http
         method:
-          if @_isNew then 'POST'
+          if @_status is 'new' then 'POST'
           else 'PUT'
         url: @_res.genUrl params, false
         data: JSON.stringify @_a
         (status,response,isSuccess)=>
           if isSuccess
-            jsonAndTransformModel.call @_res, response, @
-            @_isNew = false
+            @_res.parseModelResponse response, @
+            @_setStatus 'ok'
             success?()
-          else error?()
+          else
+            @_setStatus 'error'
+            error?()
           return
+
+      @_setStatus 'saving'
       return
 
   CollectionInstance =
     constructor: (@_res)->
       Collection.call @
+      @_status = 'loading'
       return
+
+    _setStatus: setStatus
+    status: getStatus
+
     requery: (params)->
-
-  Resource::genUrl = (params, disableQueryParams)->
-    @defaultParams params
-    url = (url = @url).replace /{([A-z0-9]+)}/g, (match, key, index)->
-      value = params[key]
-      delete params[key]
-      encodeURIComponent value
-
-    unless disableQueryParams
-      delim = '?'
-      for k,v of params when v
-        url += "#{delim}#{encodeURIComponent k}=#{encodeURIComponent v}"
-        delim = '&'
-
-    url
 
   Resource

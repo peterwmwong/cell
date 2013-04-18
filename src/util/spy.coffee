@@ -61,6 +61,12 @@ define [
     context.f value
     return
 
+  addResStatus: ->
+    if scope and not scope.log[eventKey = "status#{@$$hashkey}"]
+      scope.sig += eventKey
+      scope.log[eventKey] = o:@, e:'status'
+    return
+
   addCol: ->
     if scope and not scope.col[key = @$$hashkey]
       scope.sig += key

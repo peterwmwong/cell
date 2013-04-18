@@ -1,15 +1,19 @@
 define ['spec-utils'], ({waitOne})->
   ({beforeEachRequire})->
 
-    beforeEachRequire [
-      'cell/Model'
-      'cell/Collection'
-      'cell/util/spy'
-    ], (@Model, @Collection, @spy)->
-      @watch = @spy.watch
-      @unwatch = @spy.unwatch
-      @suspendWatch = @spy.suspendWatch
-
+    beforeEachRequire {
+        'cell/util/http': http = jasmine.createSpy 'http'
+      }, [
+        'cell/Model'
+        'cell/Collection'
+        'cell/Resource'
+        'cell/util/spy'
+      ], (@Model, @Collection, @Resource, @spy)->
+        http.reset()
+        @http = http
+        @watch = @spy.watch
+        @unwatch = @spy.unwatch
+        @suspendWatch = @spy.suspendWatch
 
     describe '@suspendWatch( func:function )', ->
       beforeEach ->
@@ -332,6 +336,46 @@ define ['spec-utils'], ({waitOne})->
               expect(@callback).toHaveBeenCalledWith 3
               expect(@callback.callCount).toBe 1
               expect(@callback.calls[0].object).toBe @context
+
+
+      describe "When func accesses a Resource.status()", ->
+        beforeEach ->
+          @resource = new @Resource url: '/yolo/{id}'
+          @resourceItem = @resource.get id: 1
+
+          @func = jasmine.createSpy('func').andCallFake =>
+            @resourceItem.status()
+
+          @watch @context, @func, @callback
+
+        it 'call @callback with result of func', ->
+          expect(@func.callCount).toBe 1
+          expect(@func.calls[0].object).toBe @context
+          expect(@callback).toHaveBeenCalledWith 'loading'
+          expect(@callback.callCount).toBe 1
+          expect(@callback.calls[0].object).toBe @context
+
+        describe 'when the accessed Resource status changes', ->
+          beforeEach ->
+            @func.reset()
+            @callback.reset()
+
+            # http callback
+            @http.calls[0].args[1] 200,
+              JSON.stringify
+                one: 1
+                two: 'deux'
+                three: 'san'
+              true
+
+          it 'calls callback with result of func', ->
+            waitOne ->
+              expect(@func.callCount).toBe 1
+              expect(@func.calls[0].object).toBe @context
+              expect(@callback).toHaveBeenCalledWith 'ok'
+              expect(@callback.callCount).toBe 1
+              expect(@callback.calls[0].object).toBe @context
+
 
       describe "When func accesses a Model's properties", ->
         beforeEach ->

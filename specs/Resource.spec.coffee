@@ -137,9 +137,9 @@ define ->
           params:
             defaultPathParam:'default'
 
-      describe '@genUrl( params:object, disableQueryParams:boolean ) : String', ->
+      describe '@genUrl( params:object ) : String', ->
 
-        describeGenUrl = (urlWithParams, inputParams, outputUrl, outputUrlDisableQueryParams)->
+        describeGenUrl = (urlWithParams, inputParams, outputUrl)->
           inputParamsDisableQueryParams = {}
           for k of inputParams
             inputParamsDisableQueryParams[k] = inputParams[k]
@@ -147,10 +147,6 @@ define ->
           it "When url is '#{urlWithParams}', resource.genUrl( #{JSON.stringify inputParams}, false ) === '#{outputUrl}'", ->
             resource = new @Resource url: urlWithParams
             expect(resource.genUrl inputParams ).toBe outputUrl
-
-          it "... with disableQueryParams === true, resource.genUrl( #{JSON.stringify inputParamsDisableQueryParams}, true ) === '#{outputUrlDisableQueryParams}'", ->
-            resource = new @Resource url: urlWithParams
-            expect(resource.genUrl inputParamsDisableQueryParams, true ).toBe outputUrlDisableQueryParams
 
         params = -> one: 1, two2: 'deux', thr_ee: '{san}'
         describeGenUrl '/x', params(), '/x?one=1&two2=deux&thr_ee=%7Bsan%7D', '/x'
@@ -164,6 +160,7 @@ define ->
             one: 1
             two: 'duex'
             three: 'san'
+          @resourceItem.on 'status', @statusHandler = jasmine.createSpy 'status'
 
         it 'should NOT issue a HTTP request', ->
           expect(@http).not.toHaveBeenCalled()
@@ -189,6 +186,42 @@ define ->
                   two: 'duex'
                   three: 'san'
 
+          it 'sets status() to "saving"', ->
+            expect(@resourceItem.status()).toBe 'saving'
+
+          it 'emits "status" event', ->
+            expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'saving'
+
+          describe 'when http error occurs', ->
+            beforeEach ->
+              @statusHandler.reset()
+              # http callback
+              @http.calls[0].args[1] 404, undefined, false
+
+            it 'sets status() to "error"', ->
+              expect(@resourceItem.status()).toBe 'error'
+
+            it 'emits "status" event', ->
+              expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'error'
+
+          describe 'when http responds successfully', ->
+            beforeEach ->
+              @statusHandler.reset()
+
+              # http callback
+              @http.calls[0].args[1] 200,
+                JSON.stringify
+                  one: 1
+                  two: 'deux'
+                  three: 'san'
+                true
+
+            it 'sets status() to "ok"', ->
+              expect(@resourceItem.status()).toBe 'ok'
+
+            it 'emits "status" event', ->
+              expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'ok'
+
         describe 'when $delete() is called', ->
           beforeEach ->
             @resourceItem.$delete pathParam:'pathParam', queryParam:'queryValue'
@@ -200,6 +233,7 @@ define ->
 
         beforeEach ->
           @resourceItem = @resource.get pathParam:'path', queryParam:'queryValue'
+          @resourceItem.on 'status', @statusHandler = jasmine.createSpy 'status'
 
         it 'issues a HTTP request', ->
           expect(@http).toHaveBeenCalledWithCallback
@@ -210,9 +244,24 @@ define ->
           expect(@resourceItem instanceof @Model).toBe true
           expect(@resourceItem.attributes()).toEqual {}
 
-        describe 'when http JSON response received', ->
+        it 'sets status() to "loading"', ->
+          expect(@resourceItem.status()).toBe 'loading'
+
+        describe 'when http error occurs', ->
+          beforeEach ->
+            # http callback
+            @http.calls[0].args[1] 404, undefined, false
+
+          it 'sets status() to "error"', ->
+            expect(@resourceItem.status()).toBe 'error'
+
+          it 'emits "status" event', ->
+            expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'error'
+
+        describe 'when http responds successfully', ->
 
           beforeEach ->
+            @statusHandler.reset()
             # http callback
             @http.calls[0].args[1] 200,
               JSON.stringify
@@ -226,6 +275,12 @@ define ->
               one: 1
               two: 'deux'
               three: 'san'
+
+          it 'sets status() to "ok"', ->
+            expect(@resourceItem.status()).toBe 'ok'
+
+          it 'emits "status" event', ->
+            expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'ok'
 
           describe 'when $save() is called', ->
             beforeEach ->
@@ -245,6 +300,7 @@ define ->
 
           describe 'when $delete() is called', ->
             beforeEach ->
+              @statusHandler.reset()
               @http.reset()
               @resourceItem.$delete pathParam:'pathParam', queryParam:'queryValue'
 
@@ -253,7 +309,39 @@ define ->
                 method: 'DELETE'
                 url: '/default/pathParam?queryParam=queryValue'
 
-      describe '#query( params:object ) : ResourceCollectionInstance', ->
+            it 'sets status() to "deleting"', ->
+              expect(@resourceItem.status()).toBe 'deleting'
+
+            it 'emits "status" event', ->
+              expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'deleting'
+
+            describe 'when http error occurs', ->
+              beforeEach ->
+                @statusHandler.reset()
+
+                # http callback
+                @http.calls[0].args[1] 404, undefined, false
+
+              it 'sets status() to "error"', ->
+                expect(@resourceItem.status()).toBe 'error'
+
+              it 'emits "status" event', ->
+                expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'error'
+
+            describe 'when http responds successfully', ->
+              beforeEach ->
+                @statusHandler.reset()
+
+                # http callback
+                @http.calls[0].args[1] 200, {}, true
+
+              it 'sets status() to "deleted"', ->
+                expect(@resourceItem.status()).toBe 'deleted'
+
+              it 'emits "status" event', ->
+                expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'deleted'
+
+      describe '@query( params:object ) : ResourceCollectionInstance', ->
 
         beforeEach ->
           @resourceItem = @resource.query pathParam:'path', queryParam:'queryValue'
@@ -267,7 +355,7 @@ define ->
           expect(@resourceItem instanceof @Collection).toBe true
           expect(@resourceItem.length()).toBe 0
 
-        describe 'when http JSON response received', ->
+        describe 'when http responds successfully', ->
 
           beforeEach ->
             # http callback
