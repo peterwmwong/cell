@@ -345,6 +345,7 @@ define ->
 
         beforeEach ->
           @resourceItem = @resource.query pathParam:'path', queryParam:'queryValue'
+          @resourceItem.on 'status', @statusHandler = jasmine.createSpy 'status'
 
         it 'issues a HTTP request', ->
           expect(@http).toHaveBeenCalledWithCallback
@@ -354,6 +355,22 @@ define ->
         it 'creates an empty Resource.CollectionInstance (Model)', ->
           expect(@resourceItem instanceof @Collection).toBe true
           expect(@resourceItem.length()).toBe 0
+
+        it 'sets status() to "loading"', ->
+          expect(@resourceItem.status()).toBe 'loading'
+
+        describe 'when http error occurs', ->
+          beforeEach ->
+            @statusHandler.reset()
+
+            # http callback
+            @http.calls[0].args[1] 404, undefined, false
+
+          it 'sets status() to "error"', ->
+            expect(@resourceItem.status()).toBe 'error'
+
+          it 'emits "status" event', ->
+            expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'error'
 
         describe 'when http responds successfully', ->
 
@@ -374,6 +391,12 @@ define ->
             expect(@resourceItem.at(1).attributes()).toEqual
               id: 456
               name: 'Peter'
+
+          it 'sets status() to "ok"', ->
+            expect(@resourceItem.status()).toBe 'ok'
+
+          it 'emits "status" event', ->
+            expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'ok'
 
     describe 'ResourceCollectionInstance', ->
       it 'is an instanceof Collection', ->

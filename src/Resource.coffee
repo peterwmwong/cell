@@ -60,8 +60,11 @@ define [
       (status,response,isSuccess)=>
         if isSuccess
           @parseCollectionResponse response, inst
+          inst._setStatus 'ok'
           success?()
-        else error?()
+        else
+          inst._setStatus 'error'
+          error?()
         return
     inst
 
