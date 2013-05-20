@@ -1359,7 +1359,8 @@ define('cell/View',['cell/Collection', 'cell/Ext', 'cell/Model', 'cell/util/spy'
     }
   };
   _ = function(viewOrHAML, optionsOrFirstChild) {
-    var children, classes, exts, i, k, len, m, match, options, parent, v;
+    var children, classes, exts, i, k, len, m, match, options, parent, v,
+      _this = this;
 
     children = [].slice.call(arguments, 1);
     i = -1;
@@ -1400,7 +1401,23 @@ define('cell/View',['cell/Collection', 'cell/Ext', 'cell/Model', 'cell/util/spy'
       }
     } else if (viewOrHAML && viewOrHAML[protoProp] instanceof View) {
       suspendWatch(function() {
-        return parent = new viewOrHAML(options).el;
+        var view;
+
+        events = {};
+        for (k in options) {
+          v = options[k];
+          if (!(match = /^on(\w+)/.exec(k))) {
+            continue;
+          }
+          delete options[k];
+          events[match[1]] = v;
+        }
+        view = new viewOrHAML(options);
+        for (k in events) {
+          v = events[k];
+          view.on(k, v, _this);
+        }
+        return parent = view.el;
       });
     }
     if (parent) {

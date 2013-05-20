@@ -103,7 +103,6 @@ define ['spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})->
       it_renders 'selector:String, undefined',
         [ 'p#myid.myclass.myclass2', undefined ]
         '<p class="myclass myclass2" id="myid"></p>'
-        true
 
       it_renders "selector:String, attrHash:Object",
         [ 'p#myid.myclass.myclass2', class:'myclass3', 'data-custom':'myattr', 'data-custom2':'myattr2']
@@ -112,15 +111,6 @@ define ['spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})->
       it_renders "selector:String, attrHash:Object (innerHTML as a property)",
         [ 'p#myid.myclass.myclass2', class:'myclass3', 'data-custom':'myattr', innerHTML:'<b>wompa</b>']
         '<p class="myclass myclass2 myclass3" data-custom="myattr" id="myid"><b>wompa</b></p>'
-
-      describe "on* event handlers", ->
-
-        it 'registers event handler', ->
-          @node = @_ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
-          expect(@clickHandler).not.toHaveBeenCalled()
-          browserTrigger @node, 'click'
-          # expect(@clickHandler).toHaveBeenCalled()
-          # expect(@clickHandler.calls[0].object).toBe @view
 
       it_renders "selector:String, attrHash:Object, children...:[DOM Nodes, String, Number, Array, jQuery]",
         [ 'p', 'data-custom':'myattr', 'data-custom2':'myattr2',
@@ -142,7 +132,33 @@ define ['spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})->
       it_renders_views "view:View",
         []
         '<div cell="TestCell1" class="TestCell1">TestCell1 Contents</div>'
-        true
+
+      describe "on* event handlers", ->
+
+        it 'registers event handler when event is triggered on element', ->
+          @node = @_ '.bound', onclick: @clickHandler = jasmine.createSpy 'click'
+          expect(@clickHandler).not.toHaveBeenCalled()
+          
+          browserTrigger @node, 'click'
+          expect(@clickHandler).toHaveBeenCalled()
+          expect(@clickHandler.calls[0].object).toBe @view
+
+        describe 'registers View event handler', ->
+          beforeEach ->
+            customView = undefined
+            CustomView = @View.extend
+              beforeRender: -> customView = @
+            @node = @_ CustomView, oncustom: @customHandler = jasmine.createSpy 'custom'
+            @customView = customView
+
+          it 'removes on* attributes from View options', ->
+            expect(@customView.options.oncustom).toBeUndefined()
+
+          it 'triggers event handler when event is triggered on View', ->
+            expect(@customHandler).not.toHaveBeenCalled()
+            @customView.trigger 'custom'
+            expect(@customHandler).toHaveBeenCalled()
+            expect(@customHandler.calls[0].object).toBe @view
 
     describe '_.map( arrayOrCollection:[array,Collection], renderer:function )', ->
       beforeEach ->

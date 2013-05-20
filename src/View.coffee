@@ -138,8 +138,15 @@ define [
           
     # View
     else if viewOrHAML and viewOrHAML[protoProp] instanceof View
-      suspendWatch ->
-        parent = new viewOrHAML(options).el
+      suspendWatch =>
+        events = {}
+        for k,v of options when match = /^on(\w+)/.exec k
+          delete options[k]
+          events[match[1]] = v
+        view = new viewOrHAML options
+        for k,v of events
+          view.on k, v, @
+        parent = view.el
 
     if parent
       @_rcs children, parent
