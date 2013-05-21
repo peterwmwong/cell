@@ -1088,10 +1088,17 @@ define('cell/dom/data',[],function() {
         if (key != null) {
           delete expandoStore[key];
         } else {
-          if (expandoStore.handle && expandoStore.handle.destroy) {
-            expandoStore.handle.destroy();
-          }
           delete domCache[expandoId];
+          if ((key = expandoStore.cellRef) && key.destroy) {
+            try {
+              key.destroy();
+            } catch (_error) {}
+          }
+          if ((key = expandoStore.handle) && key.destroy) {
+            try {
+              key.destroy();
+            } catch (_error) {}
+          }
           element[domExpandoAttr] = void 0;
         }
       }

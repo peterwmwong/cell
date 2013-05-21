@@ -29,10 +29,15 @@ define ->
       if key?
         delete expandoStore[key]
       else
-        if expandoStore.handle and expandoStore.handle.destroy
-          expandoStore.handle.destroy()
-
         delete domCache[expandoId]
+
+        # Reuse key variable
+        if (key = expandoStore.cellRef) and key.destroy
+          try key.destroy()
+
+        # Reuse key variable
+        if (key = expandoStore.handle) and key.destroy
+          try key.destroy()
 
         # ie does not allow deletion of attributes on elements.
         element[domExpandoAttr] = undefined
