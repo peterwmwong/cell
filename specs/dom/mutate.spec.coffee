@@ -13,7 +13,7 @@ define [
       @parentElement = node 'div'
       @element = node 'div'
       @parentElement.appendChild @element
-      @CustomView = @View.extend()
+      @CustomView = @View.extend _cellName:'CustomView'
 
     describe '@remove( element:DOMElement )', ->
 
@@ -21,6 +21,7 @@ define [
         expect(@parentElement.children.length).toBe 1
         @mutate.remove @element
         expect(@parentElement.children.length).toBe 0
+
 
       describe 'When element is associated with a View', ->
         beforeEach ->
@@ -33,16 +34,43 @@ define [
           expect(@customView.destroy).toHaveBeenCalled()
 
 
-      describe 'When element has a child element associated with a View', ->
+      describe 'When element has child elements associated with a View', ->
         beforeEach ->
           @customView = new @CustomView()
-          spyOn @customView, 'destroy'
+          @customView2 = new @CustomView()
+          @customView.destroy = @destroySpy = jasmine.createSpy('destroy').andCallFake @CustomView::destroy
+          @customView2.destroy = @destroySpy2 = jasmine.createSpy('destroy2').andCallFake @CustomView::destroy
           @element.appendChild @customView.el
+          @element.appendChild @customView2.el
 
         it 'calls View.destroy()', ->
-          expect(@customView.destroy).not.toHaveBeenCalled()
+          expect(@destroySpy).not.toHaveBeenCalled()
+          expect(@destroySpy2).not.toHaveBeenCalled()
           @mutate.remove @element
-          expect(@customView.destroy).toHaveBeenCalled()
+          expect(@destroySpy).toHaveBeenCalled()
+          expect(@destroySpy2).toHaveBeenCalled()
+
+
+      describe 'When element has children with event listeners', ->
+        beforeEach ->
+          @child1 = node 'div'
+          @events.on @child1, 'click', @child1ClickHandler = jasmine.createSpy 'child1ClickHandler'
+          @child2 = node 'div'
+          @events.on @child2, 'click', @child2ClickHandler = jasmine.createSpy 'child2ClickHandler'
+          @element.appendChild @child1
+          @element.appendChild @child2
+          @element.appendChild node 'div'
+
+        it 'should remove event listeners from children', ->
+          expect(@child1ClickHandler).not.toHaveBeenCalled()
+          expect(@child2ClickHandler).not.toHaveBeenCalled()
+
+          @mutate.remove @element
+          browserTrigger @child1, 'click'
+          browserTrigger @child2, 'click'
+
+          expect(@child1ClickHandler).not.toHaveBeenCalled()
+          expect(@child2ClickHandler).not.toHaveBeenCalled()
 
 
       describe 'When element has an event listener', ->
