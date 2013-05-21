@@ -10,10 +10,17 @@ define [
       'cell/View'
     ], (@mutate, @events, @View)->
       @addMatchers matchers
+      @parentElement = node 'div'
       @element = node 'div'
+      @parentElement.appendChild @element
       @CustomView = @View.extend()
 
     describe '@remove( element:DOMElement )', ->
+
+      it "removes element from it's parent element", ->
+        expect(@parentElement.children.length).toBe 1
+        @mutate.remove @element
+        expect(@parentElement.children.length).toBe 0
 
       describe 'When element is associated with a View', ->
         beforeEach ->
@@ -25,6 +32,7 @@ define [
           @mutate.remove @customView.el
           expect(@customView.destroy).toHaveBeenCalled()
 
+
       describe 'When element has a child element associated with a View', ->
         beforeEach ->
           @customView = new @CustomView()
@@ -35,6 +43,7 @@ define [
           expect(@customView.destroy).not.toHaveBeenCalled()
           @mutate.remove @element
           expect(@customView.destroy).toHaveBeenCalled()
+
 
       describe 'When element has an event listener', ->
         beforeEach ->
