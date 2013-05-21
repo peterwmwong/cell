@@ -16,8 +16,6 @@ define ['spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger,waitOne})-
 
       describe '_.map(collection:Collection, renderer:function)', ->
 
-        describe 'when collection is initially empty', ->
-
         describe 'when renderer returns an array of nodes', ->
 
           beforeEach ->

@@ -62,7 +62,7 @@ define [
   EachBindOnChange = (value)->
     array =
       if value instanceof Collection then value.toArray()
-      else value
+      else value or []
 
     newhq = new HashQueue
 
@@ -139,12 +139,12 @@ define [
     # View
     else if viewOrHAML and viewOrHAML[protoProp] instanceof View
       suspendWatch =>
-        events = {}
+        optionEvents = {}
         for k,v of options when match = /^on(\w+)/.exec k
           delete options[k]
-          events[match[1]] = v
+          optionEvents[match[1]] = v
         view = new viewOrHAML options
-        for k,v of events
+        for k,v of optionEvents
           view.on k, v, @
         parent = view.el
 
