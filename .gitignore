@@ -2,8 +2,6 @@
 ##############
 *.swp
 *.DS_Store
-*.js
-*.map
 
 cell-bench-baseline
 node_modules/*
