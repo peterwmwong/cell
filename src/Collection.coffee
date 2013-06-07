@@ -28,7 +28,7 @@ define [
       @add array
       return
 
-    model: Model
+    Model: Model
 
     at: (index)->
       if @_i
@@ -112,8 +112,8 @@ define [
 
     _toM: (o)->
       o =
-        if o instanceof @model then o
-        else new Model o
+        if o instanceof @Model then o
+        else new @Model o
       o.parent = @
       o
     _s: spy.addCol

@@ -6,6 +6,20 @@ define -> ({beforeEachRequire})->
     'cell/Events'
   ], (@Model,@Collection,@Events)->
 
+  describe 'When @model is set with a custom Model type, creates custom Model on...', ->
+    beforeEach ->
+      @MyModel = @Model.extend()
+      @MyCollection = @Collection.extend
+        Model: @MyModel
+
+    it '@add()', ->
+      @col = new @MyCollection
+      @col.add [{}]
+      expect(@col.at(0) instanceof @MyModel).toBe true
+
+    it '@constructor()', ->
+      @col = new @MyCollection [{}]
+      expect(@col.at(0) instanceof @MyModel).toBe true
 
   describe '@destroy()', ->
     beforeEach ->
