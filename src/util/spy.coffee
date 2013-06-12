@@ -67,6 +67,12 @@ define [
       scope.log[eventKey] = o:@, e:'status'
     return
 
+  addParent: (obj)->
+    if scope and not scope.log[eventKey = "parent#{obj.$$hashkey}"]
+      scope.sig += eventKey
+      scope.log[eventKey] = o:obj, e:eventKey
+    return
+
   addCol: ->
     if scope and not scope.col[key = @$$hashkey]
       scope.sig += key
@@ -76,7 +82,7 @@ define [
   addModel: (event)->
     if scope
       eventKey = event +
-        if (obj = @parent) and scope.col[key = obj.$$hashkey] then key
+        if (obj = @parent()) and scope.col[key = obj.$$hashkey] then key
         else (obj = @).$$hashkey
 
       unless scope.log[eventKey]

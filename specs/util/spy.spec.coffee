@@ -265,6 +265,33 @@ define ['spec-utils'], ({waitOne})->
               expect(@callback.calls[0].object).toBe @context
 
 
+      describe "When func accesses a Model's parent()", ->
+        beforeEach ->
+          @model = new @Model a:1, b:{}, c:'x'
+          @func = jasmine.createSpy('func').andCallFake =>
+            @model.parent()
+          @watch @context, @func, @callback
+
+        it 'call @callback with result of func', ->
+          expect(@func.callCount).toBe 1
+          expect(@func.calls[0].object).toBe @context
+          expect(@callback).toHaveBeenCalledWith undefined
+          expect(@callback.callCount).toBe 1
+          expect(@callback.calls[0].object).toBe @context
+
+        describe 'when the accessed model parent changes', ->
+          beforeEach ->
+            @func.reset()
+            @callback.reset()
+            @model._setParent @newParent = new @Model
+
+          it 'calls callback with result of func', ->
+            waitOne ->
+              expect(@func.callCount).toBe 1
+              expect(@callback).toHaveBeenCalledWith @newParent
+              expect(@callback.callCount).toBe 1
+
+
       describe "When func accesses a Model's attributes() and a property", ->
         beforeEach ->
           @model = new @Model a:1, b:{}, c:'x'
@@ -574,6 +601,20 @@ define ['spec-utils'], ({waitOne})->
           it 'should not add any listeners to the model', ->
             expect(@col.at(0)._e['change:x']).toBeUndefined()
             expect(@col.at(1)._e['change:x']).toBeUndefined()
+
+        describe 'using parent()', ->
+          beforeEach ->
+            @watch @context, (=> @col.parent()), @callback
+            @callback.reset()
+
+          describe "when the Collection's parent changes", ->
+            beforeEach ->
+              @col._setParent @newParent = new @Model
+
+            it 'calls callback with result of func', ->
+              waitOne ->
+                expect(@callback).toHaveBeenCalledWith @newParent
+                expect(@callback.callCount).toBe 1
 
         describe 'using filterBy()', ->
 
