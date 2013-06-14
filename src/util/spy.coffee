@@ -20,12 +20,14 @@ define [
 
   onChange = ->
     allChanges[@$$hashkey or hash @] = @
-    unless onChangeCalled
+    if @scope.imm
+      evaluateAndMonitor @
+    else if not onChangeCalled
       onChangeCalled = true
       defer _onChange
     return
 
-  Scope = ->
+  Scope = (@imm)->
     @sig = ''
     @log = {}
     @col = {}
@@ -34,7 +36,7 @@ define [
   _eam: evaluateAndMonitor = (context)->
     suspendedScope = scope
     prevScope = context.scope
-    scope = new Scope()
+    scope = new Scope prevScope.imm
 
     value = context.e()
 
@@ -107,7 +109,7 @@ define [
           context.scope.log[key].o.off undefined, undefined, context
     return
 
-  watch: (keyObj, e, f, callContext)->
+  watch: (keyObj, e, f, callContext, immediate)->
     callContext or= keyObj
 
     unless type.isF e
@@ -118,7 +120,7 @@ define [
       (watches[key = hash keyObj] or (watches[key] = [])).push context =
         e: fn.b0 e, keyObj
         f: fn.b1 f, callContext
-        scope: new Scope()
+        scope: new Scope immediate
 
       evaluateAndMonitor context
       context

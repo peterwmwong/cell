@@ -95,11 +95,42 @@ define ['spec-utils'], ({waitOne})->
           expect(@callback2).toHaveBeenCalled()
           expect(@func2).toHaveBeenCalled()
 
-    describe '@watch( context:any, func:function, callback:function, callContext?:any )', ->
+    describe '@watch( context:any, func:function, callback:function, callContext?:any, immediate?:boolean )', ->
       beforeEach ->
         @context = {}
         @value = {}
         @callback = jasmine.createSpy 'callback'
+
+      describe "when immediate is specified...", ->
+        beforeEach ->
+          @model = new @Model a:1
+          @func = jasmine.createSpy('func').andCallFake => @model.get 'a'
+
+        describe "true", ->
+          beforeEach ->
+            @watch @context, @func, @callback, @context, true
+            @callback.reset()
+
+          it "When watched expression (func) changes, calling callback is NOT deferred", ->
+            @model.set 'a', 2
+            expect(@callback).toHaveBeenCalledWith 2
+            expect(@callback.callCount).toBe 1
+            expect(@callback.calls[0].object).toBe @context
+
+        describe "false", ->
+          beforeEach ->
+            @watch @context, @func, @callback, @context, false
+            @callback.reset()
+
+          it "When watched expression (func) changes, calling callback is NOT deferred", ->
+            @model.set 'a', 2
+            expect(@callback).not.toHaveBeenCalled()
+
+            waitOne ->
+              expect(@callback).toHaveBeenCalledWith 2
+              expect(@callback.callCount).toBe 1
+              expect(@callback.calls[0].object).toBe @context
+
       
       describe "when callContext is specified", ->
 
@@ -169,6 +200,7 @@ define ['spec-utils'], ({waitOne})->
             expect(@callback2).not.toHaveBeenCalled()
             expect(@callback3).toHaveBeenCalledWith 'c2'
 
+
       describe "When func does NOT access any Model or Collection", ->
         beforeEach ->
           @func = jasmine.createSpy('func').andReturn @value
@@ -184,6 +216,7 @@ define ['spec-utils'], ({waitOne})->
             expect(@callback).toHaveBeenCalledWith @value
             expect(@callback.callCount).toBe 1
             expect(@callback.calls[0].object).toBe @context
+
 
       describe "When func's accesses Model's differently from call to call", ->
         beforeEach ->
