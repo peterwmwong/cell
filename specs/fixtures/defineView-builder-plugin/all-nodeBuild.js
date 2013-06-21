@@ -686,7 +686,7 @@ define('cell/util/spy',['cell/util/hash', 'cell/util/fn', 'cell/util/type', 'cel
         scope.sig += eventKey;
         scope.log[eventKey] = {
           o: this,
-          e: 'status'
+          e: eventKey
         };
       }
     },

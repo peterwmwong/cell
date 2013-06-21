@@ -88,7 +88,7 @@ define [
     @_status
 
   setStatus = (newStatus)->
-    @trigger "status", @, @_status = newStatus
+    @trigger "status#{@$$hashkey}", @, @_status = newStatus
     return
 
   ModelInstance =

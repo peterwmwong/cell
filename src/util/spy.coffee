@@ -66,7 +66,7 @@ define [
   addResStatus: ->
     if scope and not scope.log[eventKey = "status#{@$$hashkey}"]
       scope.sig += eventKey
-      scope.log[eventKey] = o:@, e:'status'
+      scope.log[eventKey] = o:@, e:eventKey
     return
 
   addParent: (obj)->
