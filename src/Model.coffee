@@ -7,8 +7,7 @@ define [
   Model = Events.extend
     constructor: (@_a={})->
       Events.call @
-      @parent = undefined
-      value.parent = @ for key,value of @_a when value instanceof Events
+      value._setParent(@) for key,value of @_a when value instanceof Events
       return
 
     attributes: ->
@@ -27,17 +26,17 @@ define [
       if (type.isS key) and (old_value isnt value)
 
         if old_value instanceof Events
-          delete old_value.parent
+          old_value._setParent undefined
 
         if value instanceof Events
-          value.parent = @
+          value._setParent @
 
         @trigger "change:#{key}", @, (@_a[key] = value), old_value
         true
 
     destroy: ->
       Events::destroy.call @
-      @parent?.remove [@] if @parent
+      @_parent?.remove? [@] if @_parent
       delete @_a
       @destroy = @attributes = @get = @set = ->
       return

@@ -95,11 +95,42 @@ define ['spec-utils'], ({waitOne})->
           expect(@callback2).toHaveBeenCalled()
           expect(@func2).toHaveBeenCalled()
 
-    describe '@watch( context:any, func:function, callback:function, callContext?:any )', ->
+    describe '@watch( context:any, func:function, callback:function, callContext?:any, immediate?:boolean )', ->
       beforeEach ->
         @context = {}
         @value = {}
         @callback = jasmine.createSpy 'callback'
+
+      describe "when immediate is specified...", ->
+        beforeEach ->
+          @model = new @Model a:1
+          @func = jasmine.createSpy('func').andCallFake => @model.get 'a'
+
+        describe "true", ->
+          beforeEach ->
+            @watch @context, @func, @callback, @context, true
+            @callback.reset()
+
+          it "When watched expression (func) changes, calling callback is NOT deferred", ->
+            @model.set 'a', 2
+            expect(@callback).toHaveBeenCalledWith 2
+            expect(@callback.callCount).toBe 1
+            expect(@callback.calls[0].object).toBe @context
+
+        describe "false", ->
+          beforeEach ->
+            @watch @context, @func, @callback, @context, false
+            @callback.reset()
+
+          it "When watched expression (func) changes, calling callback is NOT deferred", ->
+            @model.set 'a', 2
+            expect(@callback).not.toHaveBeenCalled()
+
+            waitOne ->
+              expect(@callback).toHaveBeenCalledWith 2
+              expect(@callback.callCount).toBe 1
+              expect(@callback.calls[0].object).toBe @context
+
       
       describe "when callContext is specified", ->
 
@@ -169,6 +200,7 @@ define ['spec-utils'], ({waitOne})->
             expect(@callback2).not.toHaveBeenCalled()
             expect(@callback3).toHaveBeenCalledWith 'c2'
 
+
       describe "When func does NOT access any Model or Collection", ->
         beforeEach ->
           @func = jasmine.createSpy('func').andReturn @value
@@ -184,6 +216,7 @@ define ['spec-utils'], ({waitOne})->
             expect(@callback).toHaveBeenCalledWith @value
             expect(@callback.callCount).toBe 1
             expect(@callback.calls[0].object).toBe @context
+
 
       describe "When func's accesses Model's differently from call to call", ->
         beforeEach ->
@@ -263,6 +296,33 @@ define ['spec-utils'], ({waitOne})->
               expect(@callback).toHaveBeenCalledWith @model.attributes()
               expect(@callback.callCount).toBe 1
               expect(@callback.calls[0].object).toBe @context
+
+
+      describe "When func accesses a Model's parent()", ->
+        beforeEach ->
+          @model = new @Model a:1, b:{}, c:'x'
+          @func = jasmine.createSpy('func').andCallFake =>
+            @model.parent()
+          @watch @context, @func, @callback
+
+        it 'call @callback with result of func', ->
+          expect(@func.callCount).toBe 1
+          expect(@func.calls[0].object).toBe @context
+          expect(@callback).toHaveBeenCalledWith undefined
+          expect(@callback.callCount).toBe 1
+          expect(@callback.calls[0].object).toBe @context
+
+        describe 'when the accessed model parent changes', ->
+          beforeEach ->
+            @func.reset()
+            @callback.reset()
+            @model._setParent @newParent = new @Model
+
+          it 'calls callback with result of func', ->
+            waitOne ->
+              expect(@func.callCount).toBe 1
+              expect(@callback).toHaveBeenCalledWith @newParent
+              expect(@callback.callCount).toBe 1
 
 
       describe "When func accesses a Model's attributes() and a property", ->
@@ -574,6 +634,20 @@ define ['spec-utils'], ({waitOne})->
           it 'should not add any listeners to the model', ->
             expect(@col.at(0)._e['change:x']).toBeUndefined()
             expect(@col.at(1)._e['change:x']).toBeUndefined()
+
+        describe 'using parent()', ->
+          beforeEach ->
+            @watch @context, (=> @col.parent()), @callback
+            @callback.reset()
+
+          describe "when the Collection's parent changes", ->
+            beforeEach ->
+              @col._setParent @newParent = new @Model
+
+            it 'calls callback with result of func', ->
+              waitOne ->
+                expect(@callback).toHaveBeenCalledWith @newParent
+                expect(@callback.callCount).toBe 1
 
         describe 'using filterBy()', ->
 

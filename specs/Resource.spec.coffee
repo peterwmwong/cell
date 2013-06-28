@@ -180,6 +180,8 @@ define ->
             expect(@http).toHaveBeenCalledWithCallback
               method: 'POST'
               url: '/default/pathParam?queryParam=queryValue'
+              headers:
+                'Content-Type': 'application/json'
               data:
                 JSON.stringify
                   one: 1
@@ -189,9 +191,6 @@ define ->
           it 'sets status() to "saving"', ->
             expect(@resourceItem.status()).toBe 'saving'
 
-          it 'emits "status" event', ->
-            expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'saving'
-
           describe 'when http error occurs', ->
             beforeEach ->
               @statusHandler.reset()
@@ -200,9 +199,6 @@ define ->
 
             it 'sets status() to "error"', ->
               expect(@resourceItem.status()).toBe 'error'
-
-            it 'emits "status" event', ->
-              expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'error'
 
           describe 'when http responds successfully', ->
             beforeEach ->
@@ -218,9 +214,6 @@ define ->
 
             it 'sets status() to "ok"', ->
               expect(@resourceItem.status()).toBe 'ok'
-
-            it 'emits "status" event', ->
-              expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'ok'
 
         describe 'when $delete() is called', ->
           beforeEach ->
@@ -255,9 +248,6 @@ define ->
           it 'sets status() to "error"', ->
             expect(@resourceItem.status()).toBe 'error'
 
-          it 'emits "status" event', ->
-            expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'error'
-
         describe 'when http responds successfully', ->
 
           beforeEach ->
@@ -279,9 +269,6 @@ define ->
           it 'sets status() to "ok"', ->
             expect(@resourceItem.status()).toBe 'ok'
 
-          it 'emits "status" event', ->
-            expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'ok'
-
           describe 'when $save() is called', ->
             beforeEach ->
               @http.reset()
@@ -292,6 +279,8 @@ define ->
               expect(@http).toHaveBeenCalledWithCallback
                 method: 'PUT'
                 url: '/default/pathParam?queryParam=queryValue'
+                headers:
+                  'Content-Type': 'application/json'
                 data:
                   JSON.stringify
                     one: 'yi'
@@ -312,9 +301,6 @@ define ->
             it 'sets status() to "deleting"', ->
               expect(@resourceItem.status()).toBe 'deleting'
 
-            it 'emits "status" event', ->
-              expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'deleting'
-
             describe 'when http error occurs', ->
               beforeEach ->
                 @statusHandler.reset()
@@ -325,9 +311,6 @@ define ->
               it 'sets status() to "error"', ->
                 expect(@resourceItem.status()).toBe 'error'
 
-              it 'emits "status" event', ->
-                expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'error'
-
             describe 'when http responds successfully', ->
               beforeEach ->
                 @statusHandler.reset()
@@ -337,9 +320,6 @@ define ->
 
               it 'sets status() to "deleted"', ->
                 expect(@resourceItem.status()).toBe 'deleted'
-
-              it 'emits "status" event', ->
-                expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'deleted'
 
       describe '@query( params:object ) : ResourceCollectionInstance', ->
 
@@ -369,9 +349,6 @@ define ->
           it 'sets status() to "error"', ->
             expect(@resourceItem.status()).toBe 'error'
 
-          it 'emits "status" event', ->
-            expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'error'
-
         describe 'when http responds successfully', ->
 
           beforeEach ->
@@ -394,9 +371,6 @@ define ->
 
           it 'sets status() to "ok"', ->
             expect(@resourceItem.status()).toBe 'ok'
-
-          it 'emits "status" event', ->
-            expect(@statusHandler).toHaveBeenCalledWith 'status', @resourceItem, 'ok'
 
     describe 'ResourceCollectionInstance', ->
       it 'is an instanceof Collection', ->

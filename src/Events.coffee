@@ -1,9 +1,10 @@
 define [
-  'cell/util/hash'
-  'cell/util/type'
-  'cell/util/extend'
   'cell/util/ev'
-], (hash, type, extend, ev)->
+  'cell/util/extend'
+  'cell/util/hash'
+  'cell/util/spy'
+  'cell/util/type'
+], (ev, extend, hash, spy, type)->
 
   triggerHandlers = (handlers, event, args)->
     while (h = handlers.pop())
@@ -52,10 +53,20 @@ define [
 
       return
 
+    parent: ->
+      spy.addParent @
+      @_parent
+
+    _setParent: (newParent)->
+      unless @_parent is newParent
+        @_parent = newParent
+        @trigger "parent#{@$$hashkey}"
+      return
+
     trigger: (event, args...)->
       if @_e
         triggerHandlers (@_e.all.concat @_e[event] or []), event, args
-        if parent = @parent
+        if parent = @_parent
           parent.trigger.apply parent, [event].concat args
       return
 

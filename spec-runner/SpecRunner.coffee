@@ -7,3 +7,6 @@ define ['require','../specs/GENERATED_all-specs'], (require,specs)->
   jasmineEnv.addReporter trivialReporter
   jasmineEnv.specFilter = (spec)-> trivialReporter.specFilter spec
   jasmineEnv.execute()
+
+  # Allways show passed
+  $('#__jasmine_TrivialReporter_showPassed__').click()

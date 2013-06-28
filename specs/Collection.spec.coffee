@@ -6,6 +6,20 @@ define -> ({beforeEachRequire})->
     'cell/Events'
   ], (@Model,@Collection,@Events)->
 
+  describe 'When @model is set with a custom Model type, creates custom Model on...', ->
+    beforeEach ->
+      @MyModel = @Model.extend()
+      @MyCollection = @Collection.extend
+        Model: @MyModel
+
+    it '@add()', ->
+      @col = new @MyCollection
+      @col.add [{}]
+      expect(@col.at(0) instanceof @MyModel).toBe true
+
+    it '@constructor()', ->
+      @col = new @MyCollection [{}]
+      expect(@col.at(0) instanceof @MyModel).toBe true
 
   describe '@destroy()', ->
     beforeEach ->
@@ -42,8 +56,8 @@ define -> ({beforeEachRequire})->
         expect(@col.length()).toBe 2
         expect(@col.at 0).toBe @models[0]
         expect(@col.at 1).toBe @models[1]
-        expect(@col.at(0).parent).toBe @col
-        expect(@col.at(1).parent).toBe @col
+        expect(@col.at(0).parent()).toBe @col
+        expect(@col.at(1).parent()).toBe @col
 
     describe '@constructor( models:Array<Object> )', ->
       beforeEach ->
@@ -54,8 +68,8 @@ define -> ({beforeEachRequire})->
         expect(@col.length()).toBe 2
         expect(@col.at(0).attributes()).toEqual a: 0
         expect(@col.at(1).attributes()).toEqual b: 1
-        expect(@col.at(0).parent).toBe @col
-        expect(@col.at(1).parent).toBe @col
+        expect(@col.at(0).parent()).toBe @col
+        expect(@col.at(1).parent()).toBe @col
 
 
   describe '@filterBy( modelDesc:object )', ->
@@ -305,26 +319,26 @@ define -> ({beforeEachRequire})->
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[1]
         expect(@col.at 2).toBe @model
-        expect(@col.at(2).parent).toBe @col
+        expect(@col.at(2).parent()).toBe @col
 
-        expect(@allEvents.callCount).toBe 1
-        expect(@allEvents.calls[0].args[0]).toBe 'add'
-        expect(@allEvents.calls[0].args[1]).toEqual [@model]
-        expect(@allEvents.calls[0].args[2]).toBe @col
-        expect(@allEvents.calls[0].args[3]).toBe 2
+        expect(@allEvents.callCount).toBe 2
+        expect(@allEvents.calls[1].args[0]).toBe 'add'
+        expect(@allEvents.calls[1].args[1]).toEqual [@model]
+        expect(@allEvents.calls[1].args[2]).toBe @col
+        expect(@allEvents.calls[1].args[3]).toBe 2
 
       it 'when index is specified, adds model before index', ->
         @col.add @model, 1
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @model
-        expect(@col.at(1).parent).toBe @col
+        expect(@col.at(1).parent()).toBe @col
         expect(@col.at 2).toBe @initialModels[1]
 
-        expect(@allEvents.callCount).toBe 1
-        expect(@allEvents.calls[0].args[0]).toBe 'add'
-        expect(@allEvents.calls[0].args[1]).toEqual [@model]
-        expect(@allEvents.calls[0].args[2]).toBe @col
-        expect(@allEvents.calls[0].args[3]).toBe 1
+        expect(@allEvents.callCount).toBe 2
+        expect(@allEvents.calls[1].args[0]).toBe 'add'
+        expect(@allEvents.calls[1].args[1]).toEqual [@model]
+        expect(@allEvents.calls[1].args[2]).toBe @col
+        expect(@allEvents.calls[1].args[3]).toBe 1
 
     describe '@add( model:Object )', ->
       beforeEach ->
@@ -338,13 +352,13 @@ define -> ({beforeEachRequire})->
         @model = @col.at 2
         expect(@model instanceof @Model).toBe true
         expect(@model.attributes()).toEqual c: 2
-        expect(@model.parent).toBe @col
+        expect(@model.parent()).toBe @col
 
-        expect(@allEvents.callCount).toBe 1
-        expect(@allEvents.calls[0].args[0]).toBe 'add'
-        expect(@allEvents.calls[0].args[1]).toEqual [@model]
-        expect(@allEvents.calls[0].args[2]).toBe @col
-        expect(@allEvents.calls[0].args[3]).toBe 2
+        expect(@allEvents.callCount).toBe 2
+        expect(@allEvents.calls[1].args[0]).toBe 'add'
+        expect(@allEvents.calls[1].args[1]).toEqual [@model]
+        expect(@allEvents.calls[1].args[2]).toBe @col
+        expect(@allEvents.calls[1].args[3]).toBe 2
 
       it 'when index is specified, adds model before index', ->
         @col.add @modelObj, 1
@@ -353,15 +367,15 @@ define -> ({beforeEachRequire})->
         @model = @col.at 1
         expect(@model instanceof @Model).toBe true
         expect(@model.attributes()).toEqual c: 2
-        expect(@model.parent).toBe @col
+        expect(@model.parent()).toBe @col
 
         expect(@col.at 2).toBe @initialModels[1]
 
-        expect(@allEvents.callCount).toBe 1
-        expect(@allEvents.calls[0].args[0]).toBe 'add'
-        expect(@allEvents.calls[0].args[1]).toEqual [@model]
-        expect(@allEvents.calls[0].args[2]).toBe @col
-        expect(@allEvents.calls[0].args[3]).toBe 1
+        expect(@allEvents.callCount).toBe 2
+        expect(@allEvents.calls[1].args[0]).toBe 'add'
+        expect(@allEvents.calls[1].args[1]).toEqual [@model]
+        expect(@allEvents.calls[1].args[2]).toBe @col
+        expect(@allEvents.calls[1].args[3]).toBe 1
 
     describe '@add( model:Array<Model>, index?:number )', ->
       beforeEach ->
@@ -375,30 +389,30 @@ define -> ({beforeEachRequire})->
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[1]
         expect(@col.at 2).toBe @models[0]
-        expect(@col.at(2).parent).toBe @col
+        expect(@col.at(2).parent()).toBe @col
         expect(@col.at 3).toBe @models[1]
-        expect(@col.at(3).parent).toBe @col
+        expect(@col.at(3).parent()).toBe @col
 
-        expect(@allEvents.callCount).toBe 1
-        expect(@allEvents.calls[0].args[0]).toBe 'add'
-        expect(@allEvents.calls[0].args[1]).toEqual @models
-        expect(@allEvents.calls[0].args[2]).toBe @col
-        expect(@allEvents.calls[0].args[3]).toBe 2
+        expect(@allEvents.callCount).toBe 3
+        expect(@allEvents.calls[2].args[0]).toBe 'add'
+        expect(@allEvents.calls[2].args[1]).toEqual @models
+        expect(@allEvents.calls[2].args[2]).toBe @col
+        expect(@allEvents.calls[2].args[3]).toBe 2
 
       it 'when index is specified, adds model before index', ->
         @col.add @models, 1
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @models[0]
-        expect(@col.at(1).parent).toBe @col
+        expect(@col.at(1).parent()).toBe @col
         expect(@col.at 2).toBe @models[1]
-        expect(@col.at(2).parent).toBe @col
+        expect(@col.at(2).parent()).toBe @col
         expect(@col.at 3).toBe @initialModels[1]
 
-        expect(@allEvents.callCount).toBe 1
-        expect(@allEvents.calls[0].args[0]).toBe 'add'
-        expect(@allEvents.calls[0].args[1]).toEqual @models
-        expect(@allEvents.calls[0].args[2]).toBe @col
-        expect(@allEvents.calls[0].args[3]).toBe 1
+        expect(@allEvents.callCount).toBe 3
+        expect(@allEvents.calls[2].args[0]).toBe 'add'
+        expect(@allEvents.calls[2].args[1]).toEqual @models
+        expect(@allEvents.calls[2].args[2]).toBe @col
+        expect(@allEvents.calls[2].args[3]).toBe 1
 
     describe '@add( model:Array<Object>, index?:number )', ->
 
@@ -415,15 +429,15 @@ define -> ({beforeEachRequire})->
           @model = @col.at i++
           expect(@model instanceof @Model).toBe true
           expect(@model.attributes()).toEqual obj
-          expect(@model.parent).toBe @col
+          expect(@model.parent()).toBe @col
 
-        expect(@allEvents.callCount).toBe 1
-        expect(@allEvents.calls[0].args[0]).toBe 'add'
-        expect(@allEvents.calls[0].args[1]).toEqual [@col.at(2), @col.at(3)]
-        expect(@allEvents.calls[0].args[2]).toBe @col
-        expect(@allEvents.calls[0].args[3]).toBe 2
+        expect(@allEvents.callCount).toBe 3
+        expect(@allEvents.calls[2].args[0]).toBe 'add'
+        expect(@allEvents.calls[2].args[1]).toEqual [@col.at(2), @col.at(3)]
+        expect(@allEvents.calls[2].args[2]).toBe @col
+        expect(@allEvents.calls[2].args[3]).toBe 2
 
-      it 'when index is undefined, adds model as last entry', ->
+      it 'when index is the last index', ->
         @col.add @modelObjs, 1
         expect(@col.at 0).toBe @initialModels[0]
 
@@ -432,15 +446,15 @@ define -> ({beforeEachRequire})->
           @model = @col.at i++
           expect(@model instanceof @Model).toBe true
           expect(@model.attributes()).toEqual obj
-          expect(@model.parent).toBe @col
+          expect(@model.parent()).toBe @col
 
         expect(@col.at 3).toBe @initialModels[1]
 
-        expect(@allEvents.callCount).toBe 1
-        expect(@allEvents.calls[0].args[0]).toBe 'add'
-        expect(@allEvents.calls[0].args[1]).toEqual [@col.at(1), @col.at(2)]
-        expect(@allEvents.calls[0].args[2]).toBe @col
-        expect(@allEvents.calls[0].args[3]).toBe 1
+        expect(@allEvents.callCount).toBe 3
+        expect(@allEvents.calls[2].args[0]).toBe 'add'
+        expect(@allEvents.calls[2].args[1]).toEqual [@col.at(1), @col.at(2)]
+        expect(@allEvents.calls[2].args[2]).toBe @col
+        expect(@allEvents.calls[2].args[3]).toBe 1
 
   describe '@remove( modelOrArray:[Model or Array<Model>] )', ->
     beforeEach ->
@@ -459,7 +473,7 @@ define -> ({beforeEachRequire})->
         @col.remove @initialModels[1]
 
       it 'removes Model', ->
-        expect(@initialModels[1].parent).toBeUndefined()
+        expect(@initialModels[1].parent()).toBeUndefined()
         expect(@col.length()).toBe 2
         expect(@col.at 0).toBe @initialModels[0]
         expect(@col.at 1).toBe @initialModels[2]
@@ -482,7 +496,7 @@ define -> ({beforeEachRequire})->
         @col.remove @col2.at(0)
         expect(@col.length()).toBe 2
         expect(@col2.length()).toBe 1
-        expect(@col2.at(0).parent).toBe @col2
+        expect(@col2.at(0).parent()).toBe @col2
 
       it 'if collection is empty, does nothing', ->
         @allEvents.reset()
@@ -504,8 +518,8 @@ define -> ({beforeEachRequire})->
         expect(@col.length()).toBe 1
         expect(@col.at 0).toBe @initialModels[1]
 
-        expect(@initialModels[0].parent).toBeUndefined()
-        expect(@initialModels[2].parent).toBeUndefined()
+        expect(@initialModels[0].parent()).toBeUndefined()
+        expect(@initialModels[2].parent()).toBeUndefined()
 
         expect(@allEvents.callCount).toBe 1
         expect(@allEvents.calls[0].args[0]).toBe 'remove'

@@ -28,7 +28,7 @@ define [
       @add array
       return
 
-    model: Model
+    Model: Model
 
     at: (index)->
       if @_i
@@ -95,7 +95,7 @@ define [
         while ++i < len
           model = models[i]
           if (index = @indexOf model) > -1
-            delete model.parent
+            model._setParent undefined
             removedModels.push model
             indices.push index
             @_i.splice index, 1
@@ -112,8 +112,9 @@ define [
 
     _toM: (o)->
       o =
-        if o instanceof @model then o
-        else new Model o
-      o.parent = @
+        if o instanceof @Model then o
+        else new @Model o
+      o._setParent @
       o
+      
     _s: spy.addCol

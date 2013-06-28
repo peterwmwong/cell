@@ -212,6 +212,21 @@ define ['spec-utils'], ({nodeHTMLEquals,stringify,node,browserTrigger})->
           nodeHTMLEquals @view.el,
             '<div cell="Parent" class="Parent"></div>'
 
+      describe '_.map( undefined, renderer:function )', ->
+
+        beforeEach ->
+          @ParentView = @View.extend
+            _cellName: 'Parent'
+            render: (_)=> _.map (->), @mapRenderer
+          @view = new @ParentView
+
+        it 'does NOT calls renderer', ->
+          expect(@mapRenderer).not.toHaveBeenCalled()
+
+        it 'renders correctly', ->
+          nodeHTMLEquals @view.el,
+            '<div cell="Parent" class="Parent"></div>'
+
       describe '_.map( array:array, renderer:function )', ->
 
         beforeEach ->

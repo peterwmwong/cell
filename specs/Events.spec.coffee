@@ -171,7 +171,7 @@ define -> ({beforeEachRequire})->
       @eventsParent = new @Events
       @eventsParent.on 'custom', (@parentCustomHandler = jasmine.createSpy 'parent custom')
 
-      @events.parent = @eventsParent
+      @events._parent = @eventsParent
       @events.on 'custom', (@customHandler = jasmine.createSpy 'custom')
 
     it 'calls handler with arguments', ->
