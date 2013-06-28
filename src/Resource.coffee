@@ -12,7 +12,7 @@ define [
   Resource = ({@url, params:@_params, model, collection, transform})->
     @transform = transform or idfunc
     @Model = (model or Model).extend ModelInstance
-    @Collection = (collection or Collection).extend CollectionInstance
+    @Collection = (collection or Collection).extend CollectionInstance @Model
     return
 
   Resource.extend = extend
@@ -24,6 +24,7 @@ define [
     return
 
   Resource::parseCollectionResponse = (response,collection)->
+    collection.remove collection.toArray()
     jsonObjs = JSON.parse response
     collection.add (@transform obj for obj in jsonObjs)
     return
@@ -52,8 +53,8 @@ define [
         return
     inst
 
-  Resource::query = (params,success,error)->
-    inst = new @Collection @
+  Resource::query = (params,success,error,inst)->
+    inst ?= new @Collection @
     http
       method: 'GET'
       url: @genUrl params, false
@@ -109,6 +110,7 @@ define [
           (status,response,isSuccess)=>
             if isSuccess
               @_setStatus 'deleted'
+              @destroy()
               success?()
             else
               @_setStatus 'error'
@@ -125,6 +127,8 @@ define [
           else 'PUT'
         url: @_res.genUrl params, false
         data: JSON.stringify @_a
+        headers:
+          'Content-Type': 'application/json;charset=UTF-8'
         (status,response,isSuccess)=>
           if isSuccess
             @_res.parseModelResponse response, @
@@ -138,15 +142,25 @@ define [
       @_setStatus 'saving'
       return
 
-  CollectionInstance =
+  CollectionInstance = (ModelType)->
     constructor: (@_res)->
       Collection.call @
       @_status = 'loading'
       return
 
+    Model: ModelType
     _setStatus: setStatus
     status: getStatus
 
     requery: (params)->
+      @_res.query params, undefined, undefined, @
+      @
+
+    _toM: (o)->
+      o =
+        if o instanceof @Model then o
+        else new @Model @_res, o, false
+      o._setParent @
+      o
 
   Resource
