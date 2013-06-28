@@ -128,7 +128,7 @@ define [
         url: @_res.genUrl params, false
         data: JSON.stringify @_a
         headers:
-          'Content-Type': 'application/json;charset=UTF-8'
+          'Content-Type': 'application/json'
         (status,response,isSuccess)=>
           if isSuccess
             @_res.parseModelResponse response, @

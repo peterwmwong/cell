@@ -180,6 +180,8 @@ define ->
             expect(@http).toHaveBeenCalledWithCallback
               method: 'POST'
               url: '/default/pathParam?queryParam=queryValue'
+              headers:
+                'Content-Type': 'application/json'
               data:
                 JSON.stringify
                   one: 1
@@ -277,6 +279,8 @@ define ->
               expect(@http).toHaveBeenCalledWithCallback
                 method: 'PUT'
                 url: '/default/pathParam?queryParam=queryValue'
+                headers:
+                  'Content-Type': 'application/json'
                 data:
                   JSON.stringify
                     one: 'yi'
