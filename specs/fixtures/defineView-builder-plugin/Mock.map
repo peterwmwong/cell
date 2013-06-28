@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "Mock.js",
+  "sourceRoot": "../../..",
+  "sources": [
+    "specs/fixtures/defineView-builder-plugin/Mock.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,CAAO,EAAA,GAAP,CAAO,EAAC;CACN,KAAA,IAAA;CAAA,CAAA,CAAa,IAAA,GAAb,MAAa;CAEL,MAAR,EAAA,SAAA;CACE,CAAQ,CAAA,CAAR,EAAA,GAAS;CACP,CACA,MAFa,EAEb,GAFa;CAAf,IAAQ;CAJL,GAGL;CAHK"
+}

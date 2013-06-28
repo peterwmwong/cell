@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "SpecHelpers.js",
+  "sourceRoot": "..",
+  "sources": [
+    "spec-runner/SpecHelpers.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,CACE,KADF;CACE,CAAA,CAAU,KAAV,CAAW;CACT,GAAA,IAAA;AAAA,CAAA,KAAA,GAAA;gBAAA;CAAkB,CAAS,GAAT,CAAA,QAAA;CAAlB,IAAA;CADQ,UAER;CAFF,EAAU;CADZ,CAAA"
+}
